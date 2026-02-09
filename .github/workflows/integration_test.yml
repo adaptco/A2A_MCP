@@ -1,0 +1,19 @@
+name: A2A Persistence Integration
+
+on: [push]
+
+jobs:
+  test-persistence:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Build and Start Services
+        run: |
+          docker-compose up -d --build
+          sleep 10 # Wait for DB and FastAPI to settle
+      - name: Run Persistence Test
+        run: |
+          docker-compose exec -T orchestrator python test_api.py
+      - name: Verify Database Record
+        run: |
+          docker-compose exec -T orchestrator python inspect_db.py

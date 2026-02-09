@@ -10,4 +10,5 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
       - PYTHONPATH=/app
+      - DATABASE_URL=sqlite:///./a2a_mcp.db
     restart: always

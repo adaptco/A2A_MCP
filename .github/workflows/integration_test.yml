@@ -1,19 +1,37 @@
-name: A2A Persistence Integration
+name: A2A-MCP Integration Tests
 
-on: [push]
+on: [push, pull_request]
 
 jobs:
-  test-persistence:
+  test:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: pass
+          POSTGRES_DB: mcp_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - uses: actions/checkout@v3
-      - name: Build and Start Services
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      
+      - name: Install dependencies
         run: |
-          docker-compose up -d --build
-          sleep 10 # Wait for DB and FastAPI to settle
-      - name: Run Persistence Test
+          pip install sqlalchemy psycopg2-binary pydantic pytest
+      
+      - name: Run Persistence Unit Tests
+        env:
+          DATABASE_URL: postgresql://postgres:pass@localhost:5432/mcp_db
         run: |
-          docker-compose exec -T orchestrator python test_api.py
-      - name: Verify Database Record
-        run: |
-          docker-compose exec -T orchestrator python inspect_db.py
+          pytest tests/test_storage.py

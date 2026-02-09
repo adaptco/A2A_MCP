@@ -18,9 +18,17 @@ class CoderAgent:
         # Retrieve context from persistence layer
         parent_context = self.db.get_artifact(parent_id)
         
+        # --- FIX: Handle Empty Database (NoneType) ---
+        if parent_context:
+            context_content = parent_context.content
+        else:
+            context_content = "No previous context found. Proceeding with initial architectural build."
+
         # Phase 3 Logic: Intelligent generation vs. Heuristic fixes
-        prompt = f"Context: {parent_context.content}\nFeedback: {feedback if feedback else 'Initial build'}"
-        code_solution = await self.llm.generate(prompt)
+        prompt = f"Context: {context_content}\nFeedback: {feedback if feedback else 'Initial build'}"
+        
+        # Ensure we use the 'call_llm' method defined in your llm_util.py
+        code_solution = self.llm.call_llm(prompt)
 
         # Create Contract-First Artifact
         artifact = MCPArtifact(

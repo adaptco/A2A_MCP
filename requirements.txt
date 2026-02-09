@@ -1,5 +1,6 @@
-fastapi
-uvicorn
-pydantic
 sqlalchemy
-requests
+psycopg2-binary
+pydantic
+pytest
+asyncio
+python-dotenv

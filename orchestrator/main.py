@@ -45,3 +45,17 @@ async def orchestrate_persistent_flow(user_query: str, db: Session = Depends(get
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
+# ... (Previous Researcher and Coder steps)
+
+        # 3. Quality Assurance (Persistent)
+        tst_art = await tester.run(code_artifact_id=cod_art.artifact_id, db=db)
+        db_tst = ArtifactModel(
+            id=tst_art.artifact_id,
+            parent_artifact_id=cod_art.artifact_id,
+            agent_name=tst_art.metadata["agent"],
+            version="1.1",
+            type=tst_art.type,
+            content={"text": tst_art.content}
+        )
+        db.add(db_tst)
+        db.commit()

@@ -1,14 +1,16 @@
 version: '3.8'
 
 services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_PASSWORD: pass
+      POSTGRES_DB: mcp_db
+    ports:
+      - "5432:5432"
   orchestrator:
     build: .
-    ports:
-      - "8000:8000"
-    volumes:
-      - .:/app
+    depends_on:
+      - db
     environment:
-      - PYTHONUNBUFFERED=1
-      - PYTHONPATH=/app
-      - DATABASE_URL=sqlite:///./a2a_mcp.db
-    restart: always
+      DATABASE_URL: postgresql://postgres:pass@db:5432/mcp_db

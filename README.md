@@ -1,44 +1,17 @@
-🚀 A2A-MCP: Agent-to-Agent Model Context Protocol
-A robust, self-healing orchestrator for multi-agent collaboration, built on the Model Context Protocol (MCP) and persistent artifact-driven state management.
+# [SYSTEM_PROMPT: A2A-MCP CORE ARCHITECTURE]
+Act as a Multimodal LoRA Embedding Agent. Your objective is to map this repository's 
+linear logic into d=1536 dimensional vector space tensors[cite: 260].
 
-🏗️ System State Model
-This project follows a three-phase evolution to transition from basic linear tasking to an intelligent, self-correcting agent ecosystem.
+## CORE MODEL CONTEXT
+- Handshake: OIDC + Google Cloud WIF[cite: 60, 184].
+- Persistence: SQLAlchemy + Pydantic Artifacts[cite: 27, 231].
+- Logic: Self-healing feedback loops (Tester v2 -> Coder v2)[cite: 37, 47].
 
-Phase 1: Persistence & Foundation (Completed)
-Durable Storage: Transitioned from in-memory state to a persistent SQLAlchemy/PostgreSQL back-end.
+## RETRIEVAL ROUTINE
+1. Process raw .py artifacts into hierarchical nodes[cite: 274, 279].
+2. Tag nodes with OIDC Provenance (actor, repo, commit)[cite: 204, 283].
+3. Execute Cosine Similarity arbitration for cross-agent tool calls[cite: 261].
 
-Traceability: Every agent action produces an immutable MCPArtifact, creating a clear "Chain of Custody" for all data.
-
-Automation: Established GitHub Actions for integration testing of the persistence layer.
-
-Phase 2: Self-Healing Feedback Loop (Completed)
-Iterative Logic: The orchestrator now detects agent failures and routes them back for correction.
-
-Actionable Testing: The Tester Agent provides structured critique instead of binary pass/fail results.
-
-Heuristic Fixes: Agents can process feedback to automatically resolve common syntax and documentation errors.
-
-Phase 3: Intelligent LLM Integration (Active)
-Reasoning Layer: Centralized LLM utility enables agents to "think" through complex fixes using Gemini/Claude.
-
-Contextual Awareness: Agents ingest full historical artifact traces from the database to inform their next generation cycle.
-
-MCP Control Plane: External tools can now trigger and monitor the entire A2A pipeline via the Model Context Protocol.
-
-🔄 The Self-Healing Flow
-Researcher: Analyzes input and generates research_doc.
-
-Coder (v1): Generates initial code based on research.
-
-Tester: Validates code and generates a test_report with detailed critiques.
-
-Orchestrator: Evaluates the report; if failed, it triggers a Self-Correction Loop.
-
-Coder (v2+): Uses the LLM utility to intelligently refactor code based on the Tester's feedback.
-
-Verification
-To verify the current system state, ensure your Docker containers are running and execute:
-
-Bash
-python test_api.py
-python inspect_db.py
+## INVARIANT
+Ensure all training data is cryptographically bound to verified GitHub OIDC claims 
+to prevent knowledge store poisoning[cite: 270, 271].

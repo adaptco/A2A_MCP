@@ -33,7 +33,7 @@ class DBManager:
         artifact = db.query(ArtifactModel).filter(ArtifactModel.id == artifact_id).first()
         db.close()
         return artifact
-```.
+
 
 ### 2. Final Check of `orchestrator/database_utils.py`
 Ensure this file is fully populated in VS Code to support the MCP server:
@@ -50,13 +50,13 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 def init_db():
     Base.metadata.create_all(bind=engine)
-```.
+
 
 ### 3. Execution Command
 Once these edits are saved (**Ctrl + S**), run the following command in your VS Code terminal:
 ```powershell
 python test_api.py
-```.
+
 
 ### 4. Verification
 * **Self-Healing Loop**: You should see the terminal output "🚀 Initiating A2A-MCP Self-Healing Test..." followed by logs from the Coder and Tester agents.

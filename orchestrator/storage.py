@@ -3,11 +3,14 @@ from sqlalchemy.orm import sessionmaker
 from schemas.database import Base, ArtifactModel
 import os
 
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://user:pass@localhost:5432/mcp_db")
+# Database Configuration
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./a2a_mcp.db")
 
 class DBManager:
     def __init__(self):
-        self.engine = create_engine(DATABASE_URL)
+        # check_same_thread is required for SQLite
+        connect_args = {"check_same_thread": False} if "sqlite" in DATABASE_URL else {}
+        self.engine = create_engine(DATABASE_URL, connect_args=connect_args)
         self.SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=self.engine)
         Base.metadata.create_all(bind=self.engine)
 
@@ -34,31 +37,8 @@ class DBManager:
         db.close()
         return artifact
 
-
-### 2. Final Check of `orchestrator/database_utils.py`
-Ensure this file is fully populated in VS Code to support the MCP server:
-```python
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from schemas.database import Base
-import os
-
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./a2a_mcp.db")
-
-engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
 def init_db():
+    engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
     Base.metadata.create_all(bind=engine)
 
-
-### 3. Execution Command
-Once these edits are saved (**Ctrl + S**), run the following command in your VS Code terminal:
-```powershell
-python test_api.py
-
-
-### 4. Verification
-* **Self-Healing Loop**: You should see the terminal output "🚀 Initiating A2A-MCP Self-Healing Test..." followed by logs from the Coder and Tester agents.
-* **Database Persistence**: After the test completes, run `python inspect_db.py` to verify the "A2A-MCP Artifact Trace Log" shows the newly created artifacts.
-* **Integration Status**: If you have pushed these changes to GitHub, check the "Agentic Ingestion & LoRA Synthesis" workflow for a green checkmark indicating a successful OIDC handshake and knowledge indexing.
+# All instructional text has been removed to prevent SyntaxErrors.

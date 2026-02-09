@@ -1,31 +1,26 @@
 import requests
-import json
+import time
 
-def test_orchestrator():
+def test_persistent_orchestrator():
     url = "http://localhost:8000/orchestrate"
-    params = {"user_query": "Create a Python script that calculates Fibonacci numbers"}
+    # Example query to trigger the full Research -> Code -> Test chain
+    params = {"user_query": "Create a robust Python function for calculating compound interest"}
     
-    print(f"🚀 Sending request to Orchestrator...")
+    print(f"🚀 Triggering Persistent A2A Pipeline...")
     try:
         response = requests.post(url, params=params)
         response.raise_for_status()
         
         data = response.json()
-        print("\n✅ A2A Pipeline Success!")
-        print(f"--- Pipeline Trace ---")
-        print(f"Research ID: {data['pipeline_results']['research']}")
-        print(f"Coding ID:   {data['pipeline_results']['coding']}")
-        print(f"Testing ID:  {data['pipeline_results']['testing']}")
+        root_id = data.get("root_id")
         
-        print("\n--- Final Test Summary ---")
-        print(data['test_summary'])
-        
-        print("\n--- Generated Code Snippet ---")
-        print(data['final_code'][:200] + "...")
+        print(f"\n✅ Success! Workflow initiated.")
+        print(f"Root Artifact ID (Stored in DB): {root_id}")
+        print(f"\nNext Step: Run 'python inspect_db.py' to see the full trace.")
         
     except Exception as e:
-        print(f"❌ Error: Could not connect to the orchestrator. Is Docker running?")
-        print(e)
+        print(f"❌ Error: {e}")
+        print("Tip: Ensure your Docker containers are running with 'docker-compose up'")
 
 if __name__ == "__main__":
-    test_orchestrator()
+    test_persistent_orchestrator()

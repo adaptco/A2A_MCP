@@ -1,26 +1,22 @@
-import requests
-import time
+import asyncio
+from orchestrator.main import MCPHub
 
-def test_persistent_orchestrator():
-    url = "http://localhost:8000/orchestrate"
-    # Example query to trigger the full Research -> Code -> Test chain
-    params = {"user_query": "Create a robust Python function for calculating compound interest"}
+async def main():
+    print("🚀 Initiating A2A-MCP Self-Healing Test...")
+    hub = MCPHub()
     
-    print(f"🚀 Triggering Persistent A2A Pipeline...")
-    try:
-        response = requests.post(url, params=params)
-        response.raise_for_status()
-        
-        data = response.json()
-        root_id = data.get("root_id")
-        
-        print(f"\n✅ Success! Workflow initiated.")
-        print(f"Root Artifact ID (Stored in DB): {root_id}")
-        print(f"\nNext Step: Run 'python inspect_db.py' to see the full trace.")
-        
-    except Exception as e:
-        print(f"❌ Error: {e}")
-        print("Tip: Ensure your Docker containers are running with 'docker-compose up'")
+    # Task: Create a specific storage function
+    # Note: We intentionally provide a slightly vague task to see 
+    # if the Tester Agent triggers a refinement cycle.
+    task = "Implement a secure file-deletion utility in storage.py"
+    
+    final_artifact = await hub.run_healing_loop(task)
+    
+    if final_artifact:
+        print(f"\n✅ Success! Final Verified Artifact ID: {final_artifact.artifact_id}")
+        print(f"Agent Trace: {final_artifact.agent_name} (v{final_artifact.version})")
+    else:
+        print("\n❌ System failed to converge within retry limits.")
 
 if __name__ == "__main__":
-    test_persistent_orchestrator()
+    asyncio.run(main())

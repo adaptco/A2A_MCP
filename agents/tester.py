@@ -1,5 +1,5 @@
 from schemas.agent_artifacts import MCPArtifact
-from orchestrator.llm_utils import LLMService
+from orchestrator.llm_util import LLMService
 from orchestrator.storage import DBManager
 from pydantic import BaseModel
 

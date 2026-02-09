@@ -26,3 +26,5 @@ class LLMService:
         response = requests.post(self.endpoint, headers=headers, json=payload)
         response.raise_for_status()
         return response.json()["choices"][0]["message"]["content"]
+    
+    

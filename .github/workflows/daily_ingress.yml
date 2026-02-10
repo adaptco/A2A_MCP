@@ -1,0 +1,20 @@
+name: Daily Plan Ingress
+on:
+  schedule:
+    - cron: '0 6 * * *'    # daily at 06:00 UTC
+  workflow_dispatch:
+
+jobs:
+  call_ingress:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger plan ingress
+        env:
+          MCP_ENDPOINT: ${{ secrets.MCP_ENDPOINT }}  # e.g., https://mcp.example.com
+          MCP_TOKEN: ${{ secrets.MCP_TOKEN }}
+        run: |
+          PLAN_ID="daily-game-design-run"
+          curl -X POST "${MCP_ENDPOINT}/plans/${PLAN_ID}/ingress" \
+            -H "Authorization: Bearer ${MCP_TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d '{}'

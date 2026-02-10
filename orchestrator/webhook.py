@@ -2,18 +2,31 @@ from fastapi import FastAPI, HTTPException, BackgroundTasks
 from orchestrator.stateflow import StateMachine, State
 from orchestrator.intent_engine import IntentEngine
 from orchestrator.scheduler import SimpleScheduler
+from orchestrator import storage
 
 app = FastAPI(...)
 engine = IntentEngine()
 
-# in-memory plan store for demo (persist to DB in prod)
+# in-memory cache of live state machines
 PLAN_STATE_MACHINES = {}
 SCHED = SimpleScheduler()
 
 @app.post("/plans/{plan_id}/ingress")
 async def plan_ingress(plan_id: str, background: BackgroundTasks):
-    # Create or fetch plan and create state machine
-    sm = StateMachine(max_retries=3)
+    # Create or fetch persisted state machine snapshot
+    persisted_snapshot = storage.load_plan_state(plan_id)
+    if persisted_snapshot:
+        sm = StateMachine.from_dict(
+            persisted_snapshot,
+            persistence_callback=lambda pid, snap: storage.save_plan_state(pid, snap),
+        )
+    else:
+        sm = StateMachine(
+            max_retries=3,
+            persistence_callback=lambda pid, snap: storage.save_plan_state(pid, snap),
+        )
+    sm.plan_id = plan_id
+
     # register callback: when executing, run the intent engine
     def on_executing(rec):
         # run IntentEngine asynchronously
@@ -38,6 +51,14 @@ async def plan_ingress(plan_id: str, background: BackgroundTasks):
 async def dispatch_plan(plan_id: str):
     sm = PLAN_STATE_MACHINES.get(plan_id)
     if not sm:
-        raise HTTPException(404, "no plan")
+        persisted_snapshot = storage.load_plan_state(plan_id)
+        if not persisted_snapshot:
+            raise HTTPException(404, "no plan")
+        sm = StateMachine.from_dict(
+            persisted_snapshot,
+            persistence_callback=lambda pid, snap: storage.save_plan_state(pid, snap),
+        )
+        sm.plan_id = plan_id
+        PLAN_STATE_MACHINES[plan_id] = sm
     rec = sm.trigger("RUN_DISPATCHED")
     return {"status":"ok","transition":rec.__dict__}

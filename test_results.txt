@@ -54,16 +54,8 @@ tests/test_state_space.py::TestLoRAConfig::test_lora_config_survives_transition 
 tests/test_stateflow.py::test_happy_path PASSED                          [ 93%]
 tests/test_stateflow.py::test_retry_limit_exceeded PASSED                [ 95%]
 tests/test_stateflow.py::test_override_forward_only PASSED               [ 97%]
-tests/test_storage.py::test_artifact_persistence_lifecycle FAILED        [100%]
+tests/test_storage.py::test_artifact_persistence_lifecycle PASSED        [100%]
 
-================================== FAILURES ===================================
-_____________________ test_artifact_persistence_lifecycle _____________________
-tests\test_storage.py:32: in test_artifact_persistence_lifecycle
-    assert retrieved.agent_name == "TestAgent"
-E   AssertionError: assert 'UnknownAgent' == 'TestAgent'
-E     
-E     - TestAgent
-E     + UnknownAgent
 ============================== warnings summary ===============================
 schemas\database.py:6
   C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP\schemas\database.py:6: MovedIn20Warning: The ``declarative_base()`` function is now available as sqlalchemy.orm.declarative_base(). (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
@@ -93,7 +85,7 @@ tests/test_state_space.py: 25 warnings
 
 tests/test_full_pipeline.py: 81 warnings
 tests/test_storage.py: 1 warning
-  C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP\schemas\agent_artifacts.py:12: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP\schemas\agent_artifacts.py:15: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
     timestamp: str = Field(default_factory=lambda: datetime.utcnow().isoformat())
 
 tests/test_full_pipeline.py: 28 warnings
@@ -110,6 +102,4 @@ tests/test_storage.py::test_artifact_persistence_lifecycle
     return util.wrap_callable(lambda ctx: fn(), fn)  # type: ignore
 
 -- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
-=========================== short test summary info ===========================
-FAILED tests/test_storage.py::test_artifact_persistence_lifecycle - Assertion...
-================= 1 failed, 47 passed, 215 warnings in 1.23s ==================
+====================== 48 passed, 215 warnings in 1.11s =======================

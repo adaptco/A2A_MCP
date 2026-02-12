@@ -30,7 +30,8 @@ def test_artifact_persistence_lifecycle():
     
     assert retrieved is not None
     assert retrieved.agent_name == "TestAgent"
-    assert retrieved.content["status"] == "verified"
+    content = json.loads(retrieved.content) if isinstance(retrieved.content, str) else retrieved.content
+    assert content["status"] == "verified"
     print(f"✓ Persistence Lifecycle Verified for ID: {test_id}")
 
 if __name__ == "__main__":

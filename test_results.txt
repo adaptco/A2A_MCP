@@ -58,70 +58,12 @@ tests/test_storage.py::test_artifact_persistence_lifecycle FAILED        [100%]
 
 ================================== FAILURES ===================================
 _____________________ test_artifact_persistence_lifecycle _____________________
-.venv\Lib\site-packages\sqlalchemy\engine\base.py:1967: in _exec_single_context
-    self.dialect.do_execute(
-.venv\Lib\site-packages\sqlalchemy\engine\default.py:952: in do_execute
-    cursor.execute(statement, parameters)
-E   sqlite3.ProgrammingError: Error binding parameter 6: type 'dict' is not supported
-
-The above exception was the direct cause of the following exception:
-tests\test_storage.py:25: in test_artifact_persistence_lifecycle
-    db.save_artifact(artifact)
-orchestrator\storage.py:31: in save_artifact
-    db.commit()
-.venv\Lib\site-packages\sqlalchemy\orm\session.py:2030: in commit
-    trans.commit(_to_root=True)
-<string>:2: in commit
-    ???
-.venv\Lib\site-packages\sqlalchemy\orm\state_changes.py:137: in _go
-    ret_value = fn(self, *arg, **kw)
-                ^^^^^^^^^^^^^^^^^^^^
-.venv\Lib\site-packages\sqlalchemy\orm\session.py:1311: in commit
-    self._prepare_impl()
-<string>:2: in _prepare_impl
-    ???
-.venv\Lib\site-packages\sqlalchemy\orm\state_changes.py:137: in _go
-    ret_value = fn(self, *arg, **kw)
-                ^^^^^^^^^^^^^^^^^^^^
-.venv\Lib\site-packages\sqlalchemy\orm\session.py:1286: in _prepare_impl
-    self.session.flush()
-.venv\Lib\site-packages\sqlalchemy\orm\session.py:4331: in flush
-    self._flush(objects)
-.venv\Lib\site-packages\sqlalchemy\orm\session.py:4466: in _flush
-    with util.safe_reraise():
-         ^^^^^^^^^^^^^^^^^^^
-.venv\Lib\site-packages\sqlalchemy\util\langhelpers.py:224: in __exit__
-    raise exc_value.with_traceback(exc_tb)
-.venv\Lib\site-packages\sqlalchemy\orm\session.py:4427: in _flush
-    flush_context.execute()
-.venv\Lib\site-packages\sqlalchemy\orm\unitofwork.py:466: in execute
-    rec.execute(self)
-.venv\Lib\site-packages\sqlalchemy\orm\unitofwork.py:642: in execute
-    util.preloaded.orm_persistence.save_obj(
-.venv\Lib\site-packages\sqlalchemy\orm\persistence.py:93: in save_obj
-    _emit_insert_statements(
-.venv\Lib\site-packages\sqlalchemy\orm\persistence.py:1048: in _emit_insert_statements
-    result = connection.execute(
-.venv\Lib\site-packages\sqlalchemy\engine\base.py:1419: in execute
-    return meth(
-.venv\Lib\site-packages\sqlalchemy\sql\elements.py:527: in _execute_on_connection
-    return connection._execute_clauseelement(
-.venv\Lib\site-packages\sqlalchemy\engine\base.py:1641: in _execute_clauseelement
-    ret = self._execute_context(
-.venv\Lib\site-packages\sqlalchemy\engine\base.py:1846: in _execute_context
-    return self._exec_single_context(
-.venv\Lib\site-packages\sqlalchemy\engine\base.py:1986: in _exec_single_context
-    self._handle_dbapi_exception(
-.venv\Lib\site-packages\sqlalchemy\engine\base.py:2363: in _handle_dbapi_exception
-    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
-.venv\Lib\site-packages\sqlalchemy\engine\base.py:1967: in _exec_single_context
-    self.dialect.do_execute(
-.venv\Lib\site-packages\sqlalchemy\engine\default.py:952: in do_execute
-    cursor.execute(statement, parameters)
-E   sqlalchemy.exc.ProgrammingError: (sqlite3.ProgrammingError) Error binding parameter 6: type 'dict' is not supported
-E   [SQL: INSERT INTO artifacts (id, parent_artifact_id, agent_name, version, type, content, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)]
-E   [parameters: ('6e2246b5-6e78-4f94-994d-5cab1fd257a9', None, 'UnknownAgent', '1.0.0', 'unit_test_artifact', {'status': 'verified'}, '2026-02-12 04:57:12.598822')]
-E   (Background on this error at: https://sqlalche.me/e/20/f405)
+tests\test_storage.py:32: in test_artifact_persistence_lifecycle
+    assert retrieved.agent_name == "TestAgent"
+E   AssertionError: assert 'UnknownAgent' == 'TestAgent'
+E     
+E     - TestAgent
+E     + UnknownAgent
 ============================== warnings summary ===============================
 schemas\database.py:6
   C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP\schemas\database.py:6: MovedIn20Warning: The ``declarative_base()`` function is now available as sqlalchemy.orm.declarative_base(). (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
@@ -169,5 +111,5 @@ tests/test_storage.py::test_artifact_persistence_lifecycle
 
 -- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
 =========================== short test summary info ===========================
-FAILED tests/test_storage.py::test_artifact_persistence_lifecycle - sqlalchem...
-================= 1 failed, 47 passed, 215 warnings in 1.64s ==================
+FAILED tests/test_storage.py::test_artifact_persistence_lifecycle - Assertion...
+================= 1 failed, 47 passed, 215 warnings in 1.23s ==================

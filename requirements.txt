@@ -2,5 +2,7 @@ sqlalchemy
 psycopg2-binary
 pydantic
 pytest
+pytest-asyncio
 asyncio
 python-dotenv
+mcp[cli]

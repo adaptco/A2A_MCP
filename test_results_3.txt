@@ -1,0 +1,124 @@
+============================= test session starts =============================
+platform win32 -- Python 3.13.7, pytest-9.0.2, pluggy-1.6.0
+rootdir: C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP
+configfile: pyproject.toml
+plugins: anyio-4.12.1, asyncio-1.3.0
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 48 items
+
+tests\test_cicd_pipeline.py ........                                     [ 16%]
+tests\test_full_pipeline.py .....                                        [ 27%]
+tests\test_healing_loop.py .                                             [ 29%]
+tests\test_ingestion_api.py ..                                           [ 33%]
+tests\test_intent_engine.py ..                                           [ 37%]
+tests\test_lora_harness.py ........                                      [ 54%]
+tests\test_plan_state_persistence.py .                                   [ 56%]
+tests\test_rag_pipeline.py ......                                        [ 68%]
+tests\test_state_space.py ...........                                    [ 91%]
+tests\test_stateflow.py .F.                                              [ 97%]
+tests\test_storage.py F                                                  [100%]
+
+================================== FAILURES ===================================
+__________________________ test_retry_limit_exceeded __________________________
+
+    def test_retry_limit_exceeded():
+        sm = StateMachine(max_retries=2)
+        sm.trigger("OBJECTIVE_INGRESS")
+        sm.trigger("RUN_DISPATCHED")
+        sm.trigger("EXECUTION_COMPLETE")
+    
+        # policy that requests partial verdict (retry) by raising PartialVerdict
+        def policy_partial():
+            raise PartialVerdict()
+    
+        # first partial -> RETRY
+        sm.evaluate_apply_policy(policy_partial)
+        assert sm.current_state() == State.RETRY
+        # dispatch retry
+        sm.trigger("RETRY_DISPATCHED")
+        assert sm.current_state() == State.EXECUTING
+        # execution completes again
+        sm.trigger("EXECUTION_COMPLETE")
+        # second partial -> now max_retries is 2 => should lead to TERMINATED_FAIL
+        sm.evaluate_apply_policy(policy_partial)
+>       assert sm.current_state() == State.TERMINATED_FAIL
+E       AssertionError: assert <State.RETRY: 'RETRY'> == <State.TERMIN...MINATED_FAIL'>
+E         
+E         - TERMINATED_FAIL
+E         + RETRY
+
+tests\test_stateflow.py:41: AssertionError
+_____________________ test_artifact_persistence_lifecycle _____________________
+
+    def test_artifact_persistence_lifecycle():
+        """
+        Validates the 'Schematic Rigor' directive by testing
+        the full Save -> Retrieve cycle.
+        """
+        db = DBManager()
+        test_id = str(uuid.uuid4())
+    
+        # 1. Setup Mock Artifact
+>       artifact = MCPArtifact(
+            artifact_id=test_id,
+            parent_artifact_id="root-node",
+            agent_name="TestAgent",
+            version="1.0.0",
+            type="unit_test_artifact",
+            content={"status": "verified"}
+        )
+E       pydantic_core._pydantic_core.ValidationError: 1 validation error for MCPArtifact
+E       content
+E         Input should be a valid string [type=string_type, input_value={'status': 'verified'}, input_type=dict]
+E           For further information visit https://errors.pydantic.dev/2.12/v/string_type
+
+tests\test_storage.py:15: ValidationError
+============================== warnings summary ===============================
+schemas\database.py:6
+  C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP\schemas\database.py:6: MovedIn20Warning: The ``declarative_base()`` function is now available as sqlalchemy.orm.declarative_base(). (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    Base = declarative_base()
+
+agents\tester.py:6
+  C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP\agents\tester.py:6: PytestCollectionWarning: cannot collect test class 'TestReport' because it has a __init__ constructor (from: tests/test_full_pipeline.py)
+    class TestReport(BaseModel):
+
+agents\tester.py:6
+  C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP\agents\tester.py:6: PytestCollectionWarning: cannot collect test class 'TestReport' because it has a __init__ constructor (from: tests/test_intent_engine.py)
+    class TestReport(BaseModel):
+
+tests/test_cicd_pipeline.py: 8 warnings
+tests/test_lora_harness.py: 2 warnings
+tests/test_rag_pipeline.py: 1 warning
+tests/test_state_space.py: 10 warnings
+  C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP\schemas\model_artifact.py:65: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp: str = Field(default_factory=lambda: datetime.utcnow().isoformat())
+
+tests/test_cicd_pipeline.py: 40 warnings
+tests/test_lora_harness.py: 8 warnings
+tests/test_rag_pipeline.py: 2 warnings
+tests/test_state_space.py: 25 warnings
+  C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP\schemas\model_artifact.py:86: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    "timestamp": datetime.utcnow().isoformat()
+
+tests/test_full_pipeline.py: 81 warnings
+tests/test_storage.py: 1 warning
+  C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP\schemas\agent_artifacts.py:12: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp: str = Field(default_factory=lambda: datetime.utcnow().isoformat())
+
+tests/test_full_pipeline.py: 28 warnings
+  C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP\.venv\Lib\site-packages\pydantic\main.py:250: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    validated_self = self.__pydantic_validator__.validate_python(data, self_instance=self)
+
+tests/test_plan_state_persistence.py::test_plan_state_save_load_roundtrip
+tests/test_plan_state_persistence.py::test_plan_state_save_load_roundtrip
+tests/test_plan_state_persistence.py::test_plan_state_save_load_roundtrip
+tests/test_plan_state_persistence.py::test_plan_state_save_load_roundtrip
+tests/test_plan_state_persistence.py::test_plan_state_save_load_roundtrip
+  C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP\.venv\Lib\site-packages\sqlalchemy\sql\schema.py:3624: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    return util.wrap_callable(lambda ctx: fn(), fn)  # type: ignore
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/test_stateflow.py::test_retry_limit_exceeded - AssertionError: a...
+FAILED tests/test_storage.py::test_artifact_persistence_lifecycle - pydantic_...
+================= 2 failed, 46 passed, 214 warnings in 1.66s ==================

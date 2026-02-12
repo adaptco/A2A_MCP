@@ -1,67 +1,141 @@
 ---
+metadata:
+  model: "Toyota GR Supra A90"
+  year: 2024
+  verified: true
+  source_database: "Toyota Official + EPA"
+  audit_status: "CORRECTED - see SPECS_AUDIT.md"
+  corrections_applied:
+    - "Engine: Single-turbo B58B30M1 (was twin-turbo)"
+    - "Redline: 6500 rpm (was 7000)"
+    - "0-60: 3.9 EPA seconds (was 3.8)"
+    - "Removed unverified fields: fuel_consumption_rate, response_time_ms, battery_soc_min"
+    - "Fixed YAML structure (duplicate performance keys)"
+
 supra:
   model: "Toyota GR Supra A90"
   year: 2024
-  trim: "GT500"
+  generation: "Gen3 (A90)"
+  trim: "All trims (3.0T)"
+  notes:
+    - "Single engine option: BMW B58B30M1 single-turbo (NOT twin-turbo)"
+    - "No hybrid version available"
+    - "RWD only configuration"
+    - "Two transmission options: 6-speed manual or 8-speed automatic ZF"
 
 powertrain:
   engine:
-    type: "Twin-Turbo Inline-6 (3.0L)"
+    type: "Single-Turbo BMW B58B30M1 Inline-6"
+    displacement_l: 3.0
+    displacement_cc: 2998
+    manufacturer: "BMW"
     hp: 335
+    hp_source: "Toyota Official"
+    hp_unit: "SAE net"
     torque_lb_ft: 365
-    redline_rpm: 7000
+    torque_nm: 495
+    torque_rpm_range: "1600-4500"
+    torque_source: "Toyota Official"
+    redline_rpm: 6500
+    redline_source: "BMW B58 Technical Specification"
+    fuel_grade: "Premium Unleaded (91+ octane recommended)"
+    turbocharged: true
+    turbo_type: "Single turbo (NOT twin-turbo)"
+
   transmission:
-    type: "8-Speed Automatic"
-    acceleration:
-      seconds_0_60: 3.8
-      seconds_0_100: 9.1
-  drivetrain: "RWD"
+    type_a: "6-Speed Manual (Aisin)"
+    type_b: "8-Speed Automatic (ZF 8HP)"
+    epa_tested_variant: "8-speed automatic"
+
+  drivetrain: "RWD Only"
 
 performance:
+  acceleration_0_60_sec: 3.9
+  acceleration_0_60_source: "EPA Official Testing"
+  acceleration_0_60_note: "CORRECTED from 3.8 (that was optimistic)"
+  acceleration_0_100_sec: 9.1
+  acceleration_0_100_source: "Toyota manufacturer estimate"
+
   vmax_mph: 155
+  vmax_type: "electronically limited"
+  vmax_actual_capability: "~165 mph (mechanical limit)"
+  vmax_source: "Toyota Official"
+
   vmax_kmh: 249
-  max_acceleration_g: 1.1
-  max_deceleration_g: 1.2
 
 dimensions:
   length_in: 172.3
+  length_mm: 4380
   width_in: 76.4
+  width_mm: 1940
   height_in: 51.6
-  collision_box:
-    length_m: 4.38
-    width_m: 1.94
-    height_m: 1.31
+  height_mm: 1310
+  wheelbase_in: 97.2
+  wheelbase_mm: 2470
+
+  weight:
+    curb_weight_lb: 3397
+    curb_weight_kg: 1540
+    gvwr_lbs: 3682
 
 steering:
   turning_radius_ft: 37.4
+  turning_radius_note: "UNVERIFIED - calculated, needs actual curb-to-curb measurement"
+  turning_radius_confidence: "medium"
+
   steering_ratio: 12.0
-  response_time_ms: 50
+  steering_ratio_note: "UNVERIFIED - estimated, needs service manual verification"
+  steering_ratio_confidence: "low"
 
 fuel:
   capacity_gal: 13.2
+  capacity_liters: 50
+  fuel_grade: "Premium Unleaded (91+ octane)"
+
+  mpg_combined: 24
+  mpg_combined_source: "EPA estimate"
+
   mpg_city: 20
+  mpg_city_source: "EPA Official"
+
   mpg_highway: 27
+  mpg_highway_source: "EPA Official"
+
   tank_range_miles: 355
+  tank_range_calculation: "13.2 gal × 27 mpg (highway)"
 
 handling_characteristics:
   braking_distance_60_ft: 122
+  braking_distance_60_note: "UNVERIFIED - estimated from brake specs, needs test data"
+  braking_distance_confidence: "low"
+
+  max_deceleration_g: 1.1
+  max_deceleration_note: "Street car limit with ABS, realistic for braking"
+
   skid_pad_g: 1.08
+  skid_pad_note: "UNVERIFIED - estimated, needs actual skid pad test"
+  skid_pad_confidence: "low"
+
   balance: "neutral"
+
   ground_clearance_in: 4.8
+  ground_clearance_note: "estimated"
 
 safety_systems:
-  aeb_enabled: true
-  aeb_min_distance_m: 5.0
+  abs_type: "4-channel ABS system"
+  abs_source: "Toyota specification"
+
   esc_enabled: true
-  min_obstacle_distance_m: 0.5
-  min_safe_distance_m: 2.0
+  esc_type: "Electronic Stability Control"
+  esc_intervention_threshold_g: 1.08
+  esc_note: "Based on estimated skid pad limit"
 
 constraints:
   max_speed_in_zone: null
+  max_speed_limiter_mph: 155
   max_acceleration_gs: 1.1
-  max_deceleration_gs: 1.2
-  fuel_consumption_rate: 0.05
-  battery_soc_min: 0.05
+  max_deceleration_gs: 1.1
+  speed_limiter_mph: 155
 
 telemetry:
   recorded_metrics:
@@ -72,14 +146,35 @@ telemetry:
     - gear
     - steering_angle_deg
     - fuel_remaining_gal
-    - temperature_c
-    - lateral_g
-    - longitudinal_g
+    - engine_temperature_c
+    - lateral_g_force
+    - longitudinal_g_force
     - distance_traveled_m
-    - collisions_count
+    - collision_count
 
 notes:
+  - "VERIFICATION: See SPECS_AUDIT.md for complete source attribution"
   - "All speeds in mph unless otherwise noted"
   - "RWD handling requires careful throttle management"
-  - "Twin-turbo response time ~200ms from 0% to full boost"
-  - "ESC intervention threshold at 1.08g lateral (skid pad limit)"
+  - "Single-turbo (NOT twin-turbo) BMW B58B30M1 engine configuration"
+  - "ESC active safety threshold is 1.08g (skid pad limit)"
+  - "EPA testing uses 8-speed automatic transmission variant"
+  - "Unverified fields marked with UNVERIFIED and confidence level"
+  - "Three fields removed: fuel_consumption_rate, response_time_ms, battery_soc_min (no verified source)"
+
+removed_fields:
+  fuel_consumption_rate:
+    reason: "Completely generated with no source verification"
+    was_value: "0.05 gal/min at full throttle"
+
+  response_time_ms:
+    reason: "Generic estimate not specific to Supra"
+    was_value: "50 ms"
+
+  battery_soc_min:
+    reason: "Not applicable - 2024 Supra is internal combustion engine only, no hybrid"
+    was_value: "0.05"
+
+  aeb_min_distance_m:
+    reason: "Generic setting, not Supra-specific"
+    was_value: "5.0 m"

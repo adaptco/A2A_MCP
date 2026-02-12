@@ -9,7 +9,6 @@ import uuid
 from datetime import datetime
 from typing import Dict, List, Optional, Tuple, Any
 from scipy.spatial.distance import cosine
-import numpy as np
 
 from schemas.telemetry import (
     DTC_CATALOG,
@@ -145,7 +144,11 @@ class TelemetryService:
         if expected_embedding and actual_embedding:
             semantic_distance = cosine(expected_embedding, actual_embedding)
 
-        if not missing_fields and not extra_fields and not semantic_distance:
+        if (
+            not missing_fields
+            and not extra_fields
+            and semantic_distance is None
+        ):
             # No gap detected
             return None
 

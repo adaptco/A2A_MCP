@@ -1,12 +1,12 @@
 """Game engine integrating Three.js rendering with WHAM physics and Judge."""
 
-from typing import Dict, Any, Optional, List
+from typing import Dict, Any, Optional
 from dataclasses import dataclass
 from frontend.three.scene_manager import SceneManager, Vector3
 from frontend.three.world_renderer import WorldRenderer
 from frontend.three.avatar_renderer import AvatarRenderer
-from judge.decision import JudgmentModel
 from orchestrator.judge_orchestrator import get_judge_orchestrator
+from schemas.game_model import AgentRuntimeState, GameActionResult, GameModel, ZoneSpec
 
 
 @dataclass
@@ -31,6 +31,7 @@ class GameEngine:
         self.world_renderer = WorldRenderer()
         self.avatar_renderer = AvatarRenderer()
         self.judge_orchestrator = get_judge_orchestrator(preset=preset)
+        self.game_model = GameModel(preset=preset)
 
         # Game state
         self.player_states: Dict[str, PlayerState] = {}
@@ -42,6 +43,8 @@ class GameEngine:
 
     def _merge_scenes(self) -> None:
         """Merge world and avatar renderer objects into main scene."""
+        self._sync_zones_into_game_model()
+
         # Add world zones
         world_scene_dict = self.world_renderer.get_scene_dict()
         for obj_dict in world_scene_dict.get("objects", []):
@@ -62,6 +65,22 @@ class GameEngine:
             if avatar_obj:
                 self.scene.add_object(avatar_obj)
 
+    def _sync_zones_into_game_model(self) -> None:
+        """Mirror world renderer zone specs into the typed game model."""
+        for zone_id, renderer in self.world_renderer.zone_renderers.items():
+            zone_data = renderer.zone_data
+            self.game_model.register_zone(
+                ZoneSpec(
+                    zone_id=zone_id,
+                    name=zone_data.get("name", zone_id),
+                    layer=zone_data.get("layer", 0),
+                    speed_limit_mph=zone_data.get("zone_speed_limit_mph", 55),
+                    obstacle_density=zone_data.get("obstacle_density", 0.0),
+                    difficulty_rating=zone_data.get("difficulty_rating", 1),
+                    metadata={"grid_pos": zone_data.get("grid_pos")},
+                )
+            )
+
     def initialize_player(
         self, agent_name: str, position: Optional[Vector3] = None
     ) -> PlayerState:
@@ -79,6 +98,19 @@ class GameEngine:
         )
 
         self.player_states[agent_name] = state
+        self.game_model.upsert_agent_state(
+            AgentRuntimeState(
+                agent_name=agent_name,
+                x=position.x,
+                y=position.y,
+                z=position.z,
+                speed_mph=state.speed_mph,
+                heading_deg=state.rotation,
+                fuel_gal=state.fuel_gal,
+                current_zone=state.current_zone,
+                active=state.active,
+            )
+        )
         return state
 
     def update_player_state(
@@ -96,6 +128,19 @@ class GameEngine:
         # Update current zone
         state.current_zone = self.world_renderer.get_zone_at_position(
             state.position.x, state.position.z, int(state.position.y / 50)
+        )
+        self.game_model.upsert_agent_state(
+            AgentRuntimeState(
+                agent_name=state.agent_name,
+                x=state.position.x,
+                y=state.position.y,
+                z=state.position.z,
+                speed_mph=state.speed_mph,
+                heading_deg=state.rotation,
+                fuel_gal=state.fuel_gal,
+                current_zone=state.current_zone,
+                active=state.active,
+            )
         )
 
         return True
@@ -129,6 +174,15 @@ class GameEngine:
             self.avatar_renderer.update_avatar_score(
                 avatar.profile.avatar_id, score.overall_score
             )
+        result = GameActionResult(
+            agent_name=agent_name,
+            action=action,
+            score=score.overall_score,
+            zone=state.current_zone,
+            speed_mph=state.speed_mph,
+            fuel_gal=state.fuel_gal,
+        )
+        self.game_model.apply_action_result(result)
 
         return {
             "agent_name": agent_name,
@@ -156,11 +210,13 @@ class GameEngine:
                 for name, state in self.player_states.items()
             },
             "avatar_ui": self.avatar_renderer.get_ui_panels_json(),
+            "contract": self.game_model.model_dump(mode="json"),
         }
 
     def run_frame(self) -> Dict[str, Any]:
         """Execute one frame of game loop."""
         self.frame_count += 1
+        self.game_model.snapshot(self.frame_count)
         return self.get_game_state()
 
     def start(self) -> None:

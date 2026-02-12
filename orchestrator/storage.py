@@ -73,7 +73,13 @@ def load_plan_state(plan_id: str) -> Optional[dict]:
     finally:
         db.close()
 
+# Create engine for SessionLocal
+connect_args = {"check_same_thread": False} if "sqlite" in DATABASE_URL else {}
+engine = create_engine(DATABASE_URL, connect_args=connect_args)
+
+# SessionLocal for backward compatibility (used by mcp_server.py)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
 def init_db():
-    connect_args = {"check_same_thread": False} if "sqlite" in DATABASE_URL else {}
-    engine = create_engine(DATABASE_URL, connect_args=connect_args)
+    """Initialize database tables."""
     Base.metadata.create_all(bind=engine)

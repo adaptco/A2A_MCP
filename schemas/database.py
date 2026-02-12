@@ -1,5 +1,5 @@
 from sqlalchemy import Column, String, Text, DateTime, Float, Boolean, JSON, Integer
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import declarative_base
 from datetime import datetime
 import uuid
 
@@ -52,7 +52,7 @@ class TelemetryEventModel(Base):
     embedding_distance = Column(Float, nullable=True)
 
     # Metadata
-    metadata = Column(JSON, default={}, nullable=False)
+    metadata_json = Column("metadata", JSON, default=dict, nullable=False)
     duration_ms = Column(Float, nullable=True)
     success = Column(Boolean, default=True, nullable=False)
     error_message = Column(Text, nullable=True)

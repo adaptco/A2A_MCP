@@ -1,5 +1,12 @@
-from mcp.server.fastmcp import FastMCP
-from orchestrator.database_utils import SessionLocal
+from bootstrap import bootstrap_paths
+
+bootstrap_paths()
+
+try:
+    from fastmcp import FastMCP
+except ModuleNotFoundError:
+    from mcp.server.fastmcp import FastMCP
+from orchestrator.storage import SessionLocal
 from schemas.database import ArtifactModel
 
 # Initialize FastMCP Server

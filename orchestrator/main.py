@@ -1,8 +1,10 @@
 import asyncio
+from bootstrap import bootstrap_paths
 from orchestrator.storage import DBManager
-from orchestrator.llm_util import LLMService
 from agents.coder import CoderAgent
 from agents.tester import TesterAgent
+
+bootstrap_paths()
 
 class MCPHub:
     def __init__(self):

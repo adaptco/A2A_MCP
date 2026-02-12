@@ -27,7 +27,7 @@ class DBManager:
                 agent_name=getattr(artifact, 'agent_name', 'UnknownAgent'),
                 version=getattr(artifact, 'version', '1.0.0'),
                 type=artifact.type,
-                content=artifact.content
+                content=artifact.content if isinstance(artifact.content, str) else json.dumps(artifact.content)
             )
             db.add(db_artifact)
             db.commit()

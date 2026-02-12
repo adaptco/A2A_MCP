@@ -6,3 +6,5 @@ pytest-asyncio
 asyncio
 python-dotenv
 mcp[cli]
+fastapi 
+httpx

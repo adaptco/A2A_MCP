@@ -77,5 +77,3 @@ def init_db():
     connect_args = {"check_same_thread": False} if "sqlite" in DATABASE_URL else {}
     engine = create_engine(DATABASE_URL, connect_args=connect_args)
     Base.metadata.create_all(bind=engine)
-
-# All instructional text has been removed to prevent SyntaxErrors.

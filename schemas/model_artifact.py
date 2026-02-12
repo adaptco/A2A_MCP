@@ -5,7 +5,7 @@ Extends MCPArtifact with model-specific fields for CI/CD traceability.
 
 from pydantic import BaseModel, Field
 from typing import Optional, Dict, Any, List
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 
 
@@ -62,7 +62,7 @@ class ModelArtifact(BaseModel):
     # Metadata
     type: str = Field(default="model_artifact")
     content: str = Field(default="", description="Serialized model config or description")
-    timestamp: str = Field(default_factory=lambda: datetime.utcnow().isoformat())
+    timestamp: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     metadata: Dict[str, Any] = Field(default_factory=dict)
 
     def can_transition_to(self, target: AgentLifecycleState) -> bool:
@@ -83,5 +83,5 @@ class ModelArtifact(BaseModel):
         return self.model_copy(update={
             "state": target,
             "parent_artifact_id": self.artifact_id,
-            "timestamp": datetime.utcnow().isoformat()
+            "timestamp": datetime.now(timezone.utc).isoformat()
         })

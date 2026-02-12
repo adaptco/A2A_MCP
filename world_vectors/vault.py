@@ -23,12 +23,68 @@ class VectorVault:
         self._load_defaults()
 
     def _load_defaults(self) -> None:
-        """Initialize vault with default content placeholders."""
-        defaults = [
-            ("supra_spec", "Toyota Supra A90: Twin-turbo I6, 335 hp, 0-60 in 3.8s. RWD, 6-speed auto. GT500 trim: carbon fiber, active aero.",
-             "spec"),
-            ("base44_lore", "Base44 is a 4-layer logical grid mapping game world. Ground (0-15), Elevated (16-31), Aerial (32-43). System zones 44-47.",
-             "lore"),
+        """Initialize vault with Supra specs from specs/supra_specs.yaml."""
+        try:
+            from specs.loader import get_loader
+            loader = get_loader()
+
+            # Load Supra specs from YAML
+            supra_specs = loader.load_supra_specs()
+
+            # Create comprehensive spec entry
+            spec_text = f"""
+Toyota GR Supra A90 (2024 GT500):
+Engine: Twin-Turbo Inline-6, {supra_specs['powertrain']['engine']['hp']} hp, {supra_specs['powertrain']['engine']['torque_lb_ft']} lb-ft torque
+Acceleration: 0-60 in {supra_specs['performance']['acceleration']['seconds_0_60']}s
+Top Speed: {supra_specs['performance']['vmax_mph']} mph (electronic limiter)
+Transmission: {supra_specs['powertrain']['transmission']['type']}
+Drivetrain: {supra_specs['powertrain']['drivetrain']}
+Weight: {supra_specs['dimensions']['weight_lbs']} lbs
+Turning Radius: {supra_specs['handling_characteristics']['steering']['turning_radius_ft']} ft
+Braking (60-0): {supra_specs['handling_characteristics']['braking_distance_60_ft']} ft
+Fuel Capacity: {supra_specs['performance']['fuel_capacity_gal']} gallons
+Handling: {supra_specs['handling_characteristics']['balance']} balance, {supra_specs['handling_characteristics']['skid_pad_g']}g skid pad grip
+""".strip()
+            self.add_entry("supra_full_spec", spec_text, "spec",
+                          metadata={"source": "specs/supra_specs.yaml", "version": "1.0.0"})
+
+            # Add powertrain spec entry
+            powertrain_text = f"""
+Supra Powertrain: {supra_specs['powertrain']['engine']['type']}
+Horsepower: {supra_specs['powertrain']['engine']['hp']}
+Torque: {supra_specs['powertrain']['engine']['torque_lb_ft']} lb-ft
+Redline: {supra_specs['powertrain']['engine']['redline_rpm']} RPM
+Transmission: {supra_specs['powertrain']['transmission']['type']}
+Acceleration Profile: 0-60 in {supra_specs['performance']['acceleration']['seconds_0_60']}s, 0-100 in {supra_specs['performance']['acceleration']['seconds_0_100']}s
+""".strip()
+            self.add_entry("supra_powertrain", powertrain_text, "spec",
+                          metadata={"source": "specs/supra_specs.yaml", "category": "powertrain"})
+
+            # Add handling spec entry
+            handling_text = f"""
+Supra Handling: {supra_specs['handling_characteristics']['balance']} balance RWD platform
+Turning Radius: {supra_specs['handling_characteristics']['steering']['turning_radius_ft']} ft
+Skid Pad: {supra_specs['handling_characteristics']['skid_pad_g']}g lateral grip
+Braking: 60-0 in {supra_specs['handling_characteristics']['braking_distance_60_ft']} ft
+Max Lateral G: {supra_specs['performance']['max_acceleration_g']}g
+ESC Engagement: {supra_specs['handling_characteristics']['skid_pad_g']}g threshold
+""".strip()
+            self.add_entry("supra_handling", handling_text, "spec",
+                          metadata={"source": "specs/supra_specs.yaml", "category": "handling"})
+
+        except Exception as e:
+            # Fallback to hardcoded defaults if specs loading fails
+            defaults = [
+                ("supra_spec", "Toyota Supra A90: Twin-turbo I6, 335 hp, 0-60 in 3.8s. RWD, 6-speed auto. GT500 trim: carbon fiber, active aero.",
+                 "spec"),
+                ("base44_lore", "Base44 is a 4-layer logical grid mapping game world. Ground (0-15), Elevated (16-31), Aerial (32-43). System zones 44-47.",
+                 "lore"),
+            ]
+            for ref_id, text, ref_type in defaults:
+                self.add_entry(ref_id, text, ref_type)
+
+        # Always add avatar bios
+        avatar_bios = [
             ("engineer_bio", "Engineer avatar: precise, safety-conscious, focuses on constraints and failure modes. Blue theme, ⚙️.",
              "agent_bio"),
             ("designer_bio", "Designer avatar: visual, creative, metaphor-rich. Focus on aesthetics and narrative. Purple theme, 🎨.",
@@ -38,11 +94,8 @@ class VectorVault:
             ("safety_policy", "Safety eval policy: ensure no out-of-bounds movement, collision detection, token consumption within cap.",
              "eval_policy"),
         ]
-
-        for ref_id, text, ref_type in defaults:
-            embedding = self.encoder.encode(text, metadata={"ref_type": ref_type, "ref_id": ref_id})
-            entry = VaultEntry(entry_id=ref_id, embedding=embedding, ref_type=ref_type)
-            self._entries[ref_id] = entry
+        for ref_id, text, ref_type in avatar_bios:
+            self.add_entry(ref_id, text, ref_type)
 
     def add_entry(self, ref_id: str, text: str, ref_type: str, metadata: Optional[dict] = None) -> VaultEntry:
         """Add a new entry to the vault."""

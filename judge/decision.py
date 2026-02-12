@@ -47,11 +47,31 @@ class JudgmentModel:
     """
     Multi-criteria decision analysis for agent judgment.
     Synchronous per-frame evaluation; no RL (extensible for future MARL).
+    Loads criteria weights from specs/judge_criteria.yaml.
     """
 
-    def __init__(self):
+    def __init__(self, preset: str = "simulation"):
         self._criteria: Dict[CriteriaType, DecisionCriteria] = {}
-        self._load_default_criteria()
+        self._preset = preset
+        self._load_criteria_from_specs()
+
+    def _load_criteria_from_specs(self) -> None:
+        """Load criteria weights from specs/judge_criteria.yaml."""
+        try:
+            from specs.loader import get_loader
+            loader = get_loader()
+            weights = loader.get_judge_preset(self._preset)
+
+            # Update weights from loaded specs
+            self._load_default_criteria()
+            for crit_type in self._criteria:
+                key = crit_type.value
+                if key in weights:
+                    self._criteria[crit_type].weight = weights[key]
+        except Exception as e:
+            # Fallback to defaults if specs loading fails
+            if not self._criteria:
+                self._load_default_criteria()
 
     def _load_default_criteria(self) -> None:
         """Initialize default criteria."""

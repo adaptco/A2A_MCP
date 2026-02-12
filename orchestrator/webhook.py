@@ -3,6 +3,8 @@ from fastapi import FastAPI, HTTPException, Body
 from orchestrator.stateflow import StateMachine
 from orchestrator.utils import extract_plan_id_from_path
 from orchestrator.storage import save_plan_state
+from orchestrator.intent_engine import IntentEngine
+import asyncio
 
 app = FastAPI(title="A2A Plan Orchestrator")
 
@@ -42,3 +44,35 @@ async def plan_ingress(payload: dict = Body(...)):
 
     rec = sm.trigger("OBJECTIVE_INGRESS")
     return {"status": "scheduled", "plan_id": plan_id, "transition": rec.to_dict()}
+
+
+@app.post("/orchestrate")
+async def orchestrate(user_query: str):
+    """
+    Triggers the full A2A pipeline (Managing->Orchestration->Architecture->Coder->Tester).
+    Matches the contract expected by mcp_server.py.
+    """
+    engine = IntentEngine()
+    # Run the pipeline in background or wait?
+    # For MVP synchronous wait is acceptable, though blocking.
+    # The mcp_server.py expects a response.
+    
+    try:
+        result = await engine.run_full_pipeline(description=user_query, requester="api_user")
+        
+        # Summarize results
+        summary = {
+            "status": "A2A Workflow Complete",
+            "success": result.success,
+            "pipeline_results": {
+                "plan_id": result.plan.plan_id,
+                "blueprint_id": result.blueprint.plan_id,
+                "code_artifacts": [a.artifact_id for a in result.code_artifacts],
+            },
+            # Return last code artifact content as 'final_code' for the MCP tool
+            "final_code": result.code_artifacts[-1].content if result.code_artifacts else None,
+            "test_summary": f"Passed: {sum(1 for v in result.test_verdicts if v['status'] == 'PASS')}/{len(result.test_verdicts)}"
+        }
+        return summary
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

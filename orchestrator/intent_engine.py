@@ -106,7 +106,7 @@ class IntentEngine:
                 parent_id=blueprint.plan_id,
                 feedback=action.instruction,
             )
-            self.db.save_artifact(artifact)
+
 
             # Self-healing loop
             healed = False
@@ -125,7 +125,7 @@ class IntentEngine:
                     parent_id=artifact.artifact_id,
                     feedback=report.critique,
                 )
-                self.db.save_artifact(artifact)
+
 
             result.code_artifacts.append(artifact)
             action.status = "completed" if healed else "failed"
@@ -154,7 +154,7 @@ class IntentEngine:
                 parent_id=plan.plan_id,
                 feedback=action.instruction,
             )
-            self.db.save_artifact(artifact)
+
             artifact_ids.append(artifact.artifact_id)
 
             # Validate the artifact
@@ -166,7 +166,7 @@ class IntentEngine:
                 parent_id=artifact.artifact_id,
                 feedback=report.critique,
             )
-            self.db.save_artifact(refined)
+
             artifact_ids.append(refined.artifact_id)
 
             action.status = "completed"

@@ -1,6 +1,6 @@
 from sqlalchemy import Column, String, Text, DateTime
-from sqlalchemy.ext.declarative import declarative_base
-from datetime import datetime
+from sqlalchemy.orm import declarative_base
+from datetime import datetime, timezone
 import uuid
 
 Base = declarative_base()
@@ -15,7 +15,7 @@ class ArtifactModel(Base):
     version = Column(String, default="1.0.0")
     type = Column(String, nullable=False)  # e.g., 'code', 'test_report'
     content = Column(Text, nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     def __repr__(self):
         return f"<Artifact(id={self.id}, type={self.type}, agent={self.agent_name})>"
@@ -26,8 +26,8 @@ class PlanStateModel(Base):
 
     plan_id = Column(Text, primary_key=True)
     snapshot = Column(Text, nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
+    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc), nullable=False)
 
     def __repr__(self):
         return f"<PlanState(plan_id={self.plan_id})>"

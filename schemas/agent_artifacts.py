@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field
 from typing import Optional, Dict, Any, List
-from datetime import datetime
+from datetime import datetime, timezone
 
 class MCPArtifact(BaseModel):
     """
@@ -12,7 +12,7 @@ class MCPArtifact(BaseModel):
     agent_name: str = Field(default="UnknownAgent", description="Name of the agent that produced this artifact")
     version: str = Field(default="1.0.0", description="Schema version")
     parent_artifact_id: Optional[str] = Field(default=None, description="ID of the parent artifact in the trace chain")
-    timestamp: str = Field(default_factory=lambda: datetime.utcnow().isoformat())
+    timestamp: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     metadata: Optional[Dict[str, Any]] = Field(default_factory=dict, description="Storage for agent names, models used, etc.")
 
 class AgentTask(BaseModel):

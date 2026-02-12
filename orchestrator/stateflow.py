@@ -16,6 +16,7 @@ from typing import Callable, Dict, List, Optional, Any
 import time
 import threading
 import json
+import sys
 
 
 class State(str, Enum):
@@ -123,16 +124,16 @@ class StateMachine:
         if self._persistence_callback and callable(self._persistence_callback):
             try:
                 self._persistence_callback(plan_id, snapshot)
-            except Exception:
-                pass
+            except Exception as e:
+                print(f"Stateflow persistence error: {e}", file=sys.stderr)
 
     def _run_post_transition(self, rec: TransitionRecord, callbacks: List[Callable[[TransitionRecord], None]], snapshot: Dict[str, Any], plan_id: Optional[str]) -> None:
         self._persist_snapshot(snapshot, plan_id)
         for cb in callbacks:
             try:
                 cb(rec)
-            except Exception:
-                pass
+            except Exception as e:
+                print(f"Stateflow callback error: {e}", file=sys.stderr)
 
     def trigger(self, event: str, **meta) -> TransitionRecord:
         with self._lock:

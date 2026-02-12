@@ -3,6 +3,7 @@
 from typing import Dict, Any, Optional
 from avatars.registry import get_avatar_registry
 from avatars.avatar import AvatarStyle
+from avatars.setup import setup_default_avatars
 from frontend.three.scene_manager import ThreeJSObject, Vector3
 
 
@@ -72,6 +73,8 @@ class AvatarRenderer:
     def __init__(self):
         self.registry = get_avatar_registry()
         self.avatar_panels: Dict[str, AvatarUIPanel] = {}
+        if not self.registry.list_avatars():
+            setup_default_avatars()
         self._create_avatar_objects()
 
     def _create_avatar_objects(self) -> None:

@@ -124,6 +124,7 @@ class SceneManager:
 
     def export_scene_json(self) -> str:
         """Export scene as JSON for Three.js."""
+        serialized_objects = [obj.to_dict() for obj in self.objects.values()]
         scene_data = {
             "metadata": {
                 "type": "Object",
@@ -134,9 +135,11 @@ class SceneManager:
                 "uuid": self.scene_id,
                 "type": "Scene",
                 "name": self.scene_id,
-                "children": [obj.to_dict() for obj in self.objects.values()],
+                "children": serialized_objects,
                 "background": 0x87ceeb,  # Sky blue
             },
+            # Compatibility key for consumers that expect a flat "objects" list.
+            "objects": serialized_objects,
             "lights": self.lights,
             "cameras": self.cameras,
         }

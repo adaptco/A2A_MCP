@@ -43,6 +43,13 @@ except ImportError:
     TelemetryIntegration = None
 
 try:
+    from orchestrator.release_orchestrator import ReleaseOrchestrator, ReleaseSignals, ReleasePhase
+except ImportError:
+    ReleaseOrchestrator = None
+    ReleaseSignals = None
+    ReleasePhase = None
+
+try:
     from orchestrator.webhook import app as webhook_app
 except ImportError:
     # webhook depends on FastAPI which may not be installed
@@ -63,6 +70,9 @@ __all__ = [
     'JudgeOrchestrator',
     'TelemetryService',
     'TelemetryIntegration',
+    'ReleaseOrchestrator',
+    'ReleaseSignals',
+    'ReleasePhase',
     'schedule_job',
     'webhook_app',
 ]

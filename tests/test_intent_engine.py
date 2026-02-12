@@ -27,12 +27,10 @@ def test_intent_engine_executes_plan(monkeypatch):
     engine = IntentEngine()
 
     async def fake_generate_solution(parent_id, feedback=None):
-        artifact = SimpleNamespace(
+        return SimpleNamespace(
             artifact_id=str(uuid.uuid4()),
             content=f"solution for {feedback}",
         )
-        engine.db.save_artifact(artifact)
-        return artifact
 
     async def fake_validate(_artifact_id):
         return TestReport(status="PASS", critique="looks good")

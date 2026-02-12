@@ -8,13 +8,14 @@ from typing import Optional, Dict, Any
 
 # Database Configuration
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./a2a_mcp.db")
+connect_args = {"check_same_thread": False} if "sqlite" in DATABASE_URL else {}
+engine = create_engine(DATABASE_URL, connect_args=connect_args)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 class DBManager:
     def __init__(self) -> None:
-        # check_same_thread is required for SQLite
-        connect_args = {"check_same_thread": False} if "sqlite" in DATABASE_URL else {}
-        self.engine = create_engine(DATABASE_URL, connect_args=connect_args)
-        self.SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=self.engine)
+        self.engine = engine
+        self.SessionLocal = SessionLocal
         Base.metadata.create_all(bind=self.engine)
 
     def save_artifact(self, artifact: MCPArtifact) -> ArtifactModel:
@@ -82,6 +83,4 @@ def load_plan_state(plan_id: str) -> Optional[Dict[str, Any]]:
 
 def init_db() -> None:
     """Initialize database tables."""
-    connect_args = {"check_same_thread": False} if "sqlite" in DATABASE_URL else {}
-    engine = create_engine(DATABASE_URL, connect_args=connect_args)
     Base.metadata.create_all(bind=engine)

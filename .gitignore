@@ -23,9 +23,13 @@ Thumbs.db
 
 # Runtime artifacts
 *.db
+*.sqlite
 
 # Agent temp files
 tmpclaude-*
+tmpclaude-*-cwd/
+tmpclaude-*-cwd
+specs/tmpclaude-*-cwd
 
 # Test output dumps
 test_output*.txt

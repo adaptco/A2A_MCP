@@ -85,6 +85,18 @@ class AvatarRegistry:
         """Return all registered avatars."""
         return dict(self._avatars)
 
+    def get_avatar_for_agent(self, agent_name: str) -> Optional[Avatar]:
+        """Retrieve avatar bound to a given agent name."""
+        for avatar in self._avatars.values():
+            if avatar.profile.bound_agent == agent_name:
+                return avatar
+        return None
+
+    def clear(self) -> None:
+        """Clear registry state; useful for tests."""
+        self._avatars.clear()
+        self._profiles.clear()
+
     def __repr__(self) -> str:
         return f"<AvatarRegistry avatars={list(self._avatars.keys())}>"
 
@@ -96,3 +108,8 @@ _global_registry = AvatarRegistry()
 def get_registry() -> AvatarRegistry:
     """Access the global avatar registry."""
     return _global_registry
+
+
+def get_avatar_registry() -> AvatarRegistry:
+    """Compatibility alias used by newer avatar integrations."""
+    return get_registry()

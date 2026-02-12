@@ -19,3 +19,15 @@ class ArtifactModel(Base):
 
     def __repr__(self):
         return f"<Artifact(id={self.id}, type={self.type}, agent={self.agent_name})>"
+
+
+class PlanStateModel(Base):
+    __tablename__ = "plan_states"
+
+    plan_id = Column(Text, primary_key=True)
+    snapshot = Column(Text, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+
+    def __repr__(self):
+        return f"<PlanState(plan_id={self.plan_id})>"

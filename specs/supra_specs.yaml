@@ -1,0 +1,167 @@
+---
+# Supra A90 (2020+) Domain Specification Contract
+# This spec locks vehicle physics, performance, and constraints.
+# All agents, judges, and simulators must respect these parameters.
+# Version: 1.0.0
+# Last Updated: 2026-02-12
+
+supra:
+  model: "Toyota GR Supra A90"
+  year: 2024
+  trim: "GT500"
+
+powertrain:
+  engine:
+    type: "Twin-Turbo Inline-6 (3.0L)"
+    hp: 335
+    torque_lb_ft: 365
+    # Engine parameters for physics simulation
+    redline_rpm: 7000
+    idle_rpm: 650
+
+  transmission:
+    type: "8-Speed Automatic"
+    # Acceleration profile (0-60 mph times)
+    acceleration:
+      seconds_0_60: 3.8
+      seconds_0_100: 9.1
+      seconds_60_100: 4.8
+
+  drivetrain: "RWD (Rear-Wheel Drive)"
+
+dimensions:
+  length_in: 172.3
+  width_in: 76.4
+  height_in: 51.6
+  wheelbase_in: 97.2
+  weight_lbs: 3397
+  # Bounding box for collision detection (meters, scaled)
+  collision_box:
+    length_m: 4.38
+    width_m: 1.94
+    height_m: 1.31
+
+performance:
+  # Top-speed constraints
+  vmax_mph: 155  # Electronic limiter
+  vmax_kmh: 249
+
+  # Acceleration limits (for physics cap)
+  max_acceleration_g: 1.1  # Lateral grip in turns
+  max_deceleration_g: 1.2  # Braking deceleration
+
+  # Turning radius and response
+  steering:
+    turning_radius_ft: 37.4
+    steering_ratio: 12.0  # Degrees steering wheel per degree wheel turn
+    response_time_ms: 50  # Steering command latency (simulated)
+
+  # Efficiency and fuel
+  fuel_capacity_gal: 13.2
+  mpg_city: 20
+  mpg_highway: 27
+  tank_range_miles: 355
+
+handling_characteristics:
+  # Stability and balance
+  braking_distance_60_ft: 122  # 60 mph to complete stop
+  skid_pad_g: 1.08  # Lateral grip capability
+
+  # Understeer/oversteer bias
+  balance: "neutral"  # Can be adjusted per trim/mode
+
+  # Ride height and ground clearance
+  ground_clearance_in: 4.8
+  approach_angle_deg: 13.0
+  departure_angle_deg: 20.0
+
+  # AWD simulation (not actual Supra, but for future variants)
+  traction_control_modes:
+    - "Full"
+    - "Sport"
+    - "Off"
+
+safety_systems:
+  # Autonomous emergency braking
+  aeb_enabled: true
+  aeb_min_distance_m: 5.0
+
+  # Stability control
+  esc_enabled: true
+
+  # Collision avoidance constraints
+  min_obstacle_distance_m: 0.5  # Hard minimum
+  min_safe_distance_m: 2.0     # Recommended safe margin
+
+constraints:
+  # Operational boundaries (agents must respect these)
+  max_speed_in_zone: null  # Null = use vmax; can be overridden per Base44 cell
+  max_acceleration_gs: 1.1
+  max_deceleration_gs: 1.2
+
+  # Fuel and energy
+  fuel_consumption_rate: 0.05  # gal/min at full throttle
+  battery_soc_min: 0.05  # 5% minimum (if hybrid mode used)
+
+  # Maintenance windows
+  service_interval_miles: 5000
+  tire_wear_rate: 0.01  # % per hour of driving
+
+telemetry:
+  # Parameters sent to judge and world state
+  recorded_metrics:
+    - speed_mph
+    - rpm
+    - throttle_percent
+    - brake_percent
+    - gear
+    - steering_angle_deg
+    - fuel_remaining_gal
+    - temperature_c  # Engine, transmission
+    - lateral_g
+    - longitudinal_g
+    - distance_traveled_m
+    - collisions_count
+
+ui_config:
+  # Visual representation
+  display_name: "GR Supra"
+  color_primary: "Toyota Red"
+  color_secondary: "Carbon Black"
+  icon_emoji: "🏎️"
+
+  # Cockpit UI elements
+  gauges:
+    - speedometer_mph: { min: 0, max: 200 }
+    - tachometer_rpm: { min: 0, max: 7500 }
+    - fuel_gauge_gal: { min: 0, max: 13.2 }
+    - coolant_temperature_c: { min: 70, max: 110 }
+
+degradation:
+  # Simulate wear over time
+  tire_degradation_per_hour: 0.001
+  brake_wear_per_stop: 0.0001
+  fuel_efficiency_degradation_per_mile: 0.00001
+
+behaviors:
+  # Agent-specific behavior profiles
+  profiles:
+    "aggressive":
+      target_speed_percent: 0.95  # 95% of vmax
+      acceleration_aggression: 0.9
+      braking_sensitivity: 1.2
+    "eco":
+      target_speed_percent: 0.60  # 60% of vmax
+      acceleration_aggression: 0.3
+      braking_sensitivity: 0.8
+    "balanced":
+      target_speed_percent: 0.75
+      acceleration_aggression: 0.6
+      braking_sensitivity: 1.0
+
+notes:
+  - "All speeds in mph unless otherwise noted"
+  - "RWD handling requires careful throttle management"
+  - "Twin-turbo response time ~200ms from 0% to full boost"
+  - "ESC intervention threshold at 1.08g lateral (skid pad limit)"
+  - "Future: support AWD variants with locked/unlocked differentials"

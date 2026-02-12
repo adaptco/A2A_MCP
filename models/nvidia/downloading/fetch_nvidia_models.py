@@ -14,10 +14,71 @@ logger = logging.getLogger(__name__)
 
 
 def load_model_manifest() -> dict:
-    """Load the model manifest configuration."""
+    """
+    Load the model manifest configuration.
+
+    Returns:
+        Dictionary containing model configuration
+
+    Raises:
+        FileNotFoundError: If manifest.yaml is missing
+        ValueError: If manifest YAML is invalid
+    """
     manifest_path = Path(__file__).parent / "manifest.yaml"
-    with open(manifest_path) as f:
-        return yaml.safe_load(f)
+
+    if not manifest_path.exists():
+        raise FileNotFoundError(
+            f"Model manifest not found at {manifest_path}. "
+            f"Please ensure models/nvidia/manifest.yaml exists with model configuration."
+        )
+
+    try:
+        with open(manifest_path) as f:
+            manifest = yaml.safe_load(f)
+
+        # Validate manifest structure
+        _validate_manifest_structure(manifest)
+        return manifest
+    except yaml.YAMLError as e:
+        raise ValueError(f"Invalid YAML in manifest.yaml: {e}")
+
+
+def _validate_manifest_structure(manifest: dict) -> None:
+    """
+    Validate that manifest has required structure.
+
+    Raises:
+        ValueError: If manifest is missing required sections or fields
+    """
+    if not isinstance(manifest, dict):
+        raise ValueError("Manifest must be a dictionary")
+
+    required_sections = ['nvidia_foundation_models', 'trained_models']
+    for section in required_sections:
+        if section not in manifest:
+            raise ValueError(f"Manifest missing required section: {section}")
+
+        if not isinstance(manifest[section], dict):
+            raise ValueError(f"Manifest section '{section}' must be a dictionary")
+
+        # Validate each model has required fields
+        for model_key, model_config in manifest[section].items():
+            if not isinstance(model_config, dict):
+                raise ValueError(
+                    f"Model '{model_key}' in '{section}' must have a dict configuration"
+                )
+
+            if section == 'nvidia_foundation_models':
+                if 'huggingface_id' not in model_config:
+                    raise ValueError(
+                        f"Foundation model '{model_key}' missing required field: huggingface_id"
+                    )
+            elif section == 'trained_models':
+                if 'local_cache' not in model_config:
+                    raise ValueError(
+                        f"Trained model '{model_key}' missing required field: local_cache"
+                    )
+
 
 
 def download_foundation_model(

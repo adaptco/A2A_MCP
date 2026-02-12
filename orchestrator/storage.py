@@ -38,9 +38,16 @@ class DBManager:
 
     def get_artifact(self, artifact_id):
         db = self.SessionLocal()
-        artifact = db.query(ArtifactModel).filter(ArtifactModel.id == artifact_id).first()
-        db.close()
-        return artifact
+        try:
+            artifact = db.query(ArtifactModel).filter(ArtifactModel.id == artifact_id).first()
+            return artifact
+        except Exception as e:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.exception(f"Error retrieving artifact {artifact_id}")
+            raise
+        finally:
+            db.close()
 
 
 _db_manager = DBManager()

@@ -55,6 +55,15 @@ class TrainedVehicleAgent:
                 model_key,
                 use_s3=use_s3
             )
+
+            # Validate that model path was returned
+            if not model_weights_path:
+                raise FileNotFoundError(
+                    f"Model weights path is None for version {model_version}. "
+                    f"Please ensure the model has been trained using: "
+                    f"python mlops/train_vehicle_agents.py --version {model_version} --export"
+                )
+
             self.model = self._load_model(model_weights_path)
             self.model.to(self.device)
             self.model.eval()
@@ -221,7 +230,28 @@ class TrainedVehicleAgent:
         [0-2]: steering, acceleration, braking
         [3-5]: target_x, target_y, target_z
         [6-7]: confidence, decision_code
+
+        Raises:
+            ValueError: If predictions shape is invalid
         """
+        # Validate tensor shape before indexing
+        if predictions.dim() != 2:
+            raise ValueError(
+                f"Expected predictions tensor to be 2D (batch x output_size), "
+                f"got shape {predictions.shape}"
+            )
+
+        if predictions.size(0) < 1:
+            raise ValueError(
+                f"Expected predictions batch size >= 1, got {predictions.size(0)}"
+            )
+
+        if predictions.size(1) < 8:
+            raise ValueError(
+                f"Expected predictions output size >= 8, "
+                f"got {predictions.size(1)}"
+            )
+
         pred_values = predictions.cpu().numpy()[0]
 
         steering = float(torch.tanh(predictions[0, 0]))  # -1 to 1

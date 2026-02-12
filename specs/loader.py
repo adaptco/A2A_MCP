@@ -1,9 +1,11 @@
 """Specifications loader for Supra domain and Judge criteria."""
 
 import yaml
+import logging
 from typing import Dict, Any, Optional
 from pathlib import Path
 
+logger = logging.getLogger(__name__)
 
 class SpecsLoader:
     """Load and cache specification files."""
@@ -21,8 +23,17 @@ class SpecsLoader:
             return self._cache[cache_key]
 
         spec_file = self.specs_dir / "supra_specs.yaml"
-        with open(spec_file, "r") as f:
-            specs = yaml.safe_load(f)
+        if not spec_file.exists():
+            raise FileNotFoundError(
+                f"Supra specs file not found at {spec_file}. "
+                f"Please ensure specs/supra_specs.yaml exists."
+            )
+
+        try:
+            with open(spec_file, "r") as f:
+                specs = yaml.safe_load(f)
+        except yaml.YAMLError as e:
+            raise ValueError(f"Invalid YAML in supra_specs.yaml: {e}")
 
         self._cache[cache_key] = specs
         return specs
@@ -34,8 +45,17 @@ class SpecsLoader:
             return self._cache[cache_key]
 
         criteria_file = self.specs_dir / "judge_criteria.yaml"
-        with open(criteria_file, "r") as f:
-            criteria = yaml.safe_load(f)
+        if not criteria_file.exists():
+            raise FileNotFoundError(
+                f"Judge criteria file not found at {criteria_file}. "
+                f"Please ensure specs/judge_criteria.yaml exists."
+            )
+
+        try:
+            with open(criteria_file, "r") as f:
+                criteria = yaml.safe_load(f)
+        except yaml.YAMLError as e:
+            raise ValueError(f"Invalid YAML in judge_criteria.yaml: {e}")
 
         self._cache[cache_key] = criteria
         return criteria
@@ -47,8 +67,17 @@ class SpecsLoader:
             return self._cache[cache_key]
 
         map_file = self.specs_dir / "base44_map.yaml"
-        with open(map_file, "r") as f:
-            world_map = yaml.safe_load(f)
+        if not map_file.exists():
+            raise FileNotFoundError(
+                f"Base44 map file not found at {map_file}. "
+                f"Please ensure specs/base44_map.yaml exists."
+            )
+
+        try:
+            with open(map_file, "r") as f:
+                world_map = yaml.safe_load(f)
+        except yaml.YAMLError as e:
+            raise ValueError(f"Invalid YAML in base44_map.yaml: {e}")
 
         self._cache[cache_key] = world_map
         return world_map

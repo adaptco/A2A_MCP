@@ -6,6 +6,7 @@ embeddings, and formal diagnostic reports for the A2A-MCP system.
 """
 
 import uuid
+import logging
 from datetime import datetime
 from typing import Dict, List, Optional, Tuple, Any
 from scipy.spatial.distance import cosine
@@ -27,6 +28,7 @@ from schemas.database import (
     DMNTokenModel,
 )
 
+logger = logging.getLogger(__name__)
 
 class TelemetryService:
     """Core telemetry and diagnostic service for system monitoring"""
@@ -117,7 +119,9 @@ class TelemetryService:
             self.db_session.add(db_event)
             self.db_session.commit()
         except Exception as e:
-            print(f"Failed to persist telemetry event: {e}")
+            logger.error(f"Failed to persist telemetry event: {e}", exc_info=True)
+            self.db_session.rollback()
+            raise
 
     def detect_structural_gap(
         self,
@@ -210,7 +214,9 @@ class TelemetryService:
             self.db_session.add(db_gap)
             self.db_session.commit()
         except Exception as e:
-            print(f"Failed to persist structural gap: {e}")
+            logger.error(f"Failed to persist structural gap: {e}", exc_info=True)
+            self.db_session.rollback()
+            raise
 
     def track_transformer_diff(
         self,

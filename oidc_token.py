@@ -1,51 +1,26 @@
+"""Stub module for GitHub OIDC token verification.
+
+TODO: Replace with real verification using PyJWT + GitHub's JWKS endpoint
+      (https://token.actions.githubusercontent.com/.well-known/jwks).
 """
-oidc_token – Stub for GitHub OIDC token verification.
-
-Replace this stub with a real implementation (e.g. PyJWT + jwcrypto)
-when deploying to production.
-"""
-from __future__ import annotations
-
-import logging
-from typing import Any
-
-logger = logging.getLogger(__name__)
 
 
-def verify_github_oidc_token(token: str) -> dict[str, Any]:
-    """Validate a GitHub Actions OIDC JWT and return its claims.
-
-    **Stub behaviour**: accepts any non-empty token and returns
-    synthetic claims so that the rest of the pipeline can run
-    in local / test environments.
+def verify_github_oidc_token(token: str) -> dict:
+    """Verify a GitHub Actions OIDC token and return its claims.
 
     Parameters
     ----------
     token : str
-        The raw JWT string from the ``Authorization: Bearer <token>`` header.
+        The raw JWT bearer token from the Authorization header.
 
     Returns
     -------
-    dict[str, Any]
-        A dictionary of OIDC claims.
-
-    Raises
-    ------
-    ValueError
-        If *token* is empty or ``None``.
+    dict
+        Decoded claims including 'sub', 'repository', and 'jti'.
     """
-    if not token:
-        raise ValueError("OIDC token must not be empty")
-
-    logger.warning(
-        "oidc_token stub: accepting token without cryptographic verification"
-    )
-
+    # Stub implementation – always returns synthetic claims.
     return {
         "sub": "repo:stub-org/stub-repo:ref:refs/heads/main",
-        "aud": "a2a-mcp",
-        "iss": "https://token.actions.githubusercontent.com",
-        "jti": "stub-jti-00000000",
         "repository": "stub-org/stub-repo",
-        "actor": "stub-user",
+        "jti": f"stub-jti-{hash(token) % 10000:04d}",
     }

@@ -3,11 +3,13 @@
 ## 1. Repository Inventory
 
 ### Local Repositories
+
 - **A2A_MCP** (main): Multi-agent orchestration system for code generation and testing
 - **PhysicalAI-Autonomous-Vehicles** (subproject): Autonomous vehicle sensor data and ML training datasets
 
 ### GitHub Repositories
-- **Primary**: https://github.com/adaptco/A2A_MCP
+
+- **Primary**: [A2A_MCP](https://github.com/adaptco/A2A_MCP)
 - **Dependencies**: Mistral API, MCP CLI tools
 
 ---
@@ -16,7 +18,7 @@
 
 ### 2.1 Component Overview
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────┐
 │                    MCP Server Layer                         │
 │  (mcp_server.py - FastMCP endpoint)                        │
@@ -81,7 +83,7 @@
 ### 2.2 Orchestrator Files
 
 | File | Purpose | Key Classes/Functions |
-|------|---------|------------------------|
+| --- | --- | --- |
 | **intent_engine.py** | Pipeline coordinator | `IntentEngine`, `PipelineResult` |
 | **stateflow.py** | Finite state machine | `StateMachine`, `State`, `TransitionRecord` |
 | **storage.py** | Database manager | `DBManager`, `save_plan_state()`, `load_plan_state()` |
@@ -100,7 +102,7 @@
 
 **Source**: `orchestrator/intent_engine.py:54-136`
 
-```
+```text
 User Description
     ↓
 IntentEngine.run_full_pipeline()
@@ -141,7 +143,7 @@ FINAL OUTPUT: PipelineResult
 
 **Source**: `orchestrator/stateflow.py:85-107`
 
-```
+```text
 IDLE
   ↓ OBJECTIVE_INGRESS
 SCHEDULED
@@ -161,7 +163,7 @@ EVALUATING    REPAIR_COMPLETE
 
 **Source**: `orchestrator/storage.py`
 
-```
+```text
 save_artifact(MCPArtifact):
     ├── Extract: artifact_id, type, content, metadata
     ├── Create: ArtifactModel row
@@ -182,6 +184,7 @@ load_plan_state(plan_id):
 ## 4. Key Source File Locations
 
 ### Orchestrator Core
+
 - **Main Coordinator**: `orchestrator/intent_engine.py:39-49` (IntentEngine.__init__)
 - **Pipeline Execution**: `orchestrator/intent_engine.py:54-136` (run_full_pipeline)
 - **State Machine**: `orchestrator/stateflow.py:64-229` (StateMachine class)
@@ -190,12 +193,14 @@ load_plan_state(plan_id):
 - **Webhook Ingress**: `orchestrator/webhook.py:11-37` (plan_ingress endpoint)
 
 ### Data Models
+
 - **Artifacts**: `schemas/agent_artifacts.py`
 - **Plans**: `schemas/project_plan.py`
 - **Database**: `schemas/database.py` (SQLAlchemy models)
 - **World Model**: `schemas/world_model.py`
 
 ### Agents
+
 - **Managing**: `agents/managing_agent.py`
 - **Orchestration**: `agents/orchestration_agent.py`
 - **Architecture**: `agents/architecture_agent.py`
@@ -203,6 +208,7 @@ load_plan_state(plan_id):
 - **Tester**: `agents/tester.py`
 
 ### MCP Server
+
 - **FastMCP Tools**: `mcp_server.py:8-25`
 
 ---
@@ -210,50 +216,74 @@ load_plan_state(plan_id):
 ## 5. Known Issues & Cleanup Tasks
 
 ### Issue #1: Redundant Database Utils
+
 **Location**: `orchestrator/database_utils.py`
+
 **Problem**: Duplicates `DBManager` functionality from `storage.py`
+
 **Impact**: `mcp_server.py` imports `SessionLocal` from here instead of using `DBManager`
+
 **Fix**: Consolidate to use `storage.DBManager` in `mcp_server.py`
 
 ### Issue #2: Incomplete FastAPI Initialization
+
 **Location**: `orchestrator/webhook.py:6`
+
 **Problem**: `app = FastAPI(...)` uses placeholder `...`
+
 **Impact**: Invalid Python syntax, should be proper initialization
+
 **Fix**: Replace with `app = FastAPI(title="A2A Plan Orchestrator")`
 
 ### Issue #3: Redundant Import
+
 **Location**: `orchestrator/webhook.py:31`
+
 **Problem**: `StateMachine` imported twice (lines 3 and 31)
+
 **Impact**: Code smell, inefficient
+
 **Fix**: Remove the import at line 31
 
 ### Issue #4: Missing Type Hints
+
 **Location**: `orchestrator/storage.py:19-43`
+
 **Problem**: `save_artifact()` and `get_artifact()` methods lack type hints
+
 **Impact**: Reduced IDE support and documentation
+
 **Fix**: Add return types and parameter types
 
 ### Issue #5: Global Eager Singleton
+
 **Location**: `orchestrator/storage.py:46`
+
 **Problem**: `_db_manager = DBManager()` instantiates immediately
+
 **Impact**: Database connection created at import time (inefficient)
+
 **Fix**: Use lazy initialization or factory pattern
 
 ### Issue #6: In-Memory FSM State in Webhook
+
 **Location**: `orchestrator/webhook.py:9`
+
 **Problem**: `PLAN_STATE_MACHINES = {}` is not persisted
+
 **Impact**: FSM state lost on restart, violates stateful requirements
+
 **Fix**: Add persistence callback using `storage.save_plan_state()`
 
 ---
 
 ## 6. Integration Checklist
 
-- [ ] `mcp_server.py` uses `storage.DBManager` instead of `database_utils`
-- [ ] `webhook.py` has proper FastAPI initialization
-- [ ] No duplicate imports in `webhook.py`
-- [ ] Type hints added to `storage.py` methods
-- [ ] FSM state machine in webhook persists via callback
+- [x] `mcp_server.py` uses `storage.DBManager` instead of `database_utils`
+- [x] `webhook.py` has proper FastAPI initialization
+- [x] No duplicate imports in `webhook.py`
+- [x] Type hints added to `storage.py` methods
+- [x] FSM state machine in webhook persists via callback
 - [ ] All agents properly initialized with `LLMService` and `DBManager`
 - [ ] Database tables (`artifacts`, `plan_states`) created on startup
 - [ ] Tests pass for orchestrator layer
@@ -262,14 +292,20 @@ load_plan_state(plan_id):
 
 ## 7. Configuration
 
-**Environment Variables** (`.env`):
-```
+### Environment Variables
+
+Create a `.env` file with:
+
+```text
 DATABASE_URL=sqlite:///./a2a_mcp.db
 LLM_API_KEY=<your-mistral-key>
 LLM_ENDPOINT=https://api.mistral.ai/v1/chat/completions
 ```
 
-**FastMCP Config** (`mcp_config.json`):
+### FastMCP Config
+
+Create `mcp_config.json`:
+
 ```json
 {
   "mcpServers": {
@@ -302,3 +338,4 @@ LLM_ENDPOINT=https://api.mistral.ai/v1/chat/completions
 ---
 
 Generated: 2026-02-11
+

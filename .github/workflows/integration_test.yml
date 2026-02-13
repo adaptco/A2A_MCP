@@ -38,5 +38,7 @@ jobs:
           pytest tests/test_storage.py
 
       - name: Run MCP Handshake Tests
+        env:
+          PYTHONPATH: .
         run: |
           pytest tests/test_mcp_agents.py

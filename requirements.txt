@@ -4,3 +4,5 @@ pydantic
 pytest
 asyncio
 python-dotenv
+fastmcp
+requests

@@ -1,16 +1,17 @@
 import pytest
+import uuid
+import json
 from orchestrator.storage import DBManager
 from schemas.agent_artifacts import MCPArtifact
-import uuid
 
 def test_artifact_persistence_lifecycle():
     """
-    Validates the 'Schematic Rigor' directive by testing 
+    Validates the 'Schematic Rigor' directive by testing
     the full Save -> Retrieve cycle.
     """
     db = DBManager()
     test_id = str(uuid.uuid4())
-    
+
     # 1. Setup Mock Artifact
     artifact = MCPArtifact(
         artifact_id=test_id,
@@ -18,9 +19,8 @@ def test_artifact_persistence_lifecycle():
         agent_name="TestAgent",
         version="1.0.0",
         type="unit_test_artifact",
-        content={"status": "verified"}
+        content='{"status": "verified"}'
     )
-
     # 2. Test Save (Persistence Directive)
     db.save_artifact(artifact)
 
@@ -29,7 +29,9 @@ def test_artifact_persistence_lifecycle():
     
     assert retrieved is not None
     assert retrieved.agent_name == "TestAgent"
-    assert retrieved.content["status"] == "verified"
+    # Content is stored as a string in the DB
+    content_dict = json.loads(retrieved.content)
+    assert content_dict["status"] == "verified"
     print(f"✓ Persistence Lifecycle Verified for ID: {test_id}")
 
 if __name__ == "__main__":

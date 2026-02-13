@@ -1,6 +1,6 @@
 # tests/test_stateflow.py
 import pytest
-from A2A_MCP.orchestrator.stateflow import StateMachine, State, PartialVerdict
+from orchestrator.stateflow import StateMachine, State, PartialVerdict
 
 def test_happy_path():
     sm = StateMachine(max_retries=3)

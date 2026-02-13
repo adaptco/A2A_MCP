@@ -40,8 +40,8 @@ class GridCell:
     world_bounds: WorldBounds = field(default_factory=WorldBounds)
     spawn_points: List[Tuple[float, float, float]] = field(default_factory=list)
     wasd_blocking_map: Dict[str, bool] = field(default_factory=lambda: {
-        "W": False, "A": False, "S": False, "D": False
-    })  # Can move North, West, South, East?
+        "N": False, "S": False, "E": False, "W": False
+    })  # Can move North, South, East, West
     properties: Dict[str, Any] = field(default_factory=dict)
 
     def is_passable(self, direction: str) -> bool:

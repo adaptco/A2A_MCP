@@ -33,6 +33,7 @@ jobs:
       - name: Run Persistence Unit Tests
         env:
           DATABASE_URL: postgresql://postgres:pass@localhost:5432/mcp_db
+          PYTHONPATH: .
         run: |
           pytest tests/test_storage.py
 

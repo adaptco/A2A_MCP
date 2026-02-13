@@ -26,5 +26,5 @@ async def test_ingestion_with_valid_handshake(mock_snapshot):
                 "authorization": "Bearer valid_mock_token"
             })
             
-            assert "success" in response[0].text
-            assert "adaptco/A2A_MCP" in response[0].text
+            assert "success" in response.content[0].text
+            assert "adaptco/A2A_MCP" in response.content[0].text

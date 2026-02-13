@@ -25,6 +25,12 @@ async def test_ingestion_with_valid_handshake(mock_snapshot):
                 "snapshot": mock_snapshot,
                 "authorization": "Bearer valid_mock_token"
             })
-            
-            assert "success" in response[0].text
-            assert "adaptco/A2A_MCP" in response[0].text
+
+            # fastmcp v2 returns CallToolResult(content=[...]); older versions may return a list
+            if hasattr(response, "content"):
+                text = response.content[0].text
+            else:
+                text = response[0].text
+
+            assert "success" in text
+            assert "adaptco/A2A_MCP" in text

@@ -1,0 +1,243 @@
+---
+version: "1.0"
+map_id: "xml_to_manifold_v1"
+description: "Normalization map for XML inputs into manifold engine canonical schema."
+
+parser:
+  format: "xml"
+  encoding: "utf-8"
+  namespace_mode: "strip_prefix"
+  whitespace_policy: "trim_and_collapse"
+  entity_policy: "resolve_safe_entities"
+  cdata_policy: "preserve_text"
+  list_detection:
+    strategy: "repeated_elements"
+    min_repetitions: 2
+
+defaults:
+  timestamp_format: "iso8601"
+  timezone: "UTC"
+  language: "en"
+  source_system: "unknown"
+  confidence: 0.5
+  risk_score: 0.5
+  urgency: 0.5
+  impact: 0.5
+  feasibility: 0.5
+  coordination_cost: 0.5
+  verification_confidence: 0.5
+
+type_coercion:
+  booleans:
+    true_values: ["true", "1", "yes", "y", "on"]
+    false_values: ["false", "0", "no", "n", "off"]
+  numerics:
+    allow_scientific: true
+    decimal_separator: "."
+  timestamps:
+    accepted_formats:
+      - "%Y-%m-%dT%H:%M:%S.%fZ"
+      - "%Y-%m-%dT%H:%M:%SZ"
+      - "%Y-%m-%d %H:%M:%S"
+      - "%Y-%m-%d"
+
+canonical_schema:
+  root: "manifold_input"
+  fields:
+    - name: "task_id"
+      type: "string"
+      required: true
+      target_path: "$.task.task_id"
+      source_paths:
+        - "/task/@id"
+        - "/Task/@id"
+        - "/event/task/id"
+
+    - name: "title"
+      type: "string"
+      required: true
+      target_path: "$.task.title"
+      source_paths:
+        - "/task/title"
+        - "/Task/Title"
+        - "/event/task/name"
+
+    - name: "instruction"
+      type: "string"
+      required: true
+      target_path: "$.task.instruction"
+      source_paths:
+        - "/task/instruction"
+        - "/Task/Instruction"
+        - "/event/task/description"
+
+    - name: "requester"
+      type: "string"
+      required: false
+      target_path: "$.task.requester"
+      source_paths:
+        - "/task/requester"
+        - "/Task/Requester"
+        - "/event/meta/requester"
+      fallback: "system"
+
+    - name: "created_at"
+      type: "datetime"
+      required: false
+      target_path: "$.task.created_at"
+      source_paths:
+        - "/task/created_at"
+        - "/Task/CreatedAt"
+        - "/event/meta/timestamp"
+      fallback_from_default: "timestamp_format"
+
+    - name: "impact"
+      type: "float"
+      required: false
+      target_path: "$.decision_axes.impact"
+      source_paths:
+        - "/task/metrics/impact"
+        - "/Task/Metrics/Impact"
+        - "/event/decision/impact"
+      clamp: [0.0, 1.0]
+      fallback_from_default: "impact"
+
+    - name: "urgency"
+      type: "float"
+      required: false
+      target_path: "$.decision_axes.urgency"
+      source_paths:
+        - "/task/metrics/urgency"
+        - "/Task/Metrics/Urgency"
+        - "/event/decision/urgency"
+      clamp: [0.0, 1.0]
+      fallback_from_default: "urgency"
+
+    - name: "feasibility"
+      type: "float"
+      required: false
+      target_path: "$.decision_axes.feasibility"
+      source_paths:
+        - "/task/metrics/feasibility"
+        - "/Task/Metrics/Feasibility"
+        - "/event/decision/feasibility"
+      clamp: [0.0, 1.0]
+      fallback_from_default: "feasibility"
+
+    - name: "verification_confidence"
+      type: "float"
+      required: false
+      target_path: "$.decision_axes.verification_confidence"
+      source_paths:
+        - "/task/metrics/verification_confidence"
+        - "/Task/Metrics/VerificationConfidence"
+        - "/event/decision/verifiability"
+      clamp: [0.0, 1.0]
+      fallback_from_default: "verification_confidence"
+
+    - name: "coordination_cost"
+      type: "float"
+      required: false
+      target_path: "$.decision_axes.coordination_cost"
+      source_paths:
+        - "/task/metrics/coordination_cost"
+        - "/Task/Metrics/CoordinationCost"
+        - "/event/decision/coordination_cost"
+      clamp: [0.0, 1.0]
+      fallback_from_default: "coordination_cost"
+
+    - name: "risk_score"
+      type: "float"
+      required: false
+      target_path: "$.decision_axes.risk_score"
+      source_paths:
+        - "/task/metrics/risk"
+        - "/Task/Metrics/Risk"
+        - "/event/decision/risk"
+      clamp: [0.0, 1.0]
+      fallback_from_default: "risk_score"
+
+    - name: "dependencies"
+      type: "array[string]"
+      required: false
+      target_path: "$.task.dependencies"
+      source_paths:
+        - "/task/dependencies/dependency/@id"
+        - "/Task/Dependencies/Dependency/@id"
+        - "/event/task/dependencies/dependency/id"
+      fallback: []
+
+    - name: "constraints"
+      type: "array[object]"
+      required: false
+      target_path: "$.task.constraints"
+      source_paths:
+        - "/task/constraints/constraint"
+        - "/Task/Constraints/Constraint"
+      object_map:
+        id:
+          source_paths: ["@id", "id"]
+          type: "string"
+        kind:
+          source_paths: ["@kind", "kind", "type"]
+          type: "string"
+        value:
+          source_paths: ["@value", "value", "text()"]
+          type: "string"
+      fallback: []
+
+    - name: "context"
+      type: "object"
+      required: false
+      target_path: "$.context"
+      source_paths:
+        - "/task/context"
+        - "/Task/Context"
+        - "/event/context"
+      fallback: {}
+
+normalization_rules:
+  - id: "normalize_task_id"
+    action: "slugify"
+    target_path: "$.task.task_id"
+    params:
+      lowercase: true
+      separator: "-"
+
+  - id: "normalize_title"
+    action: "trim"
+    target_path: "$.task.title"
+
+  - id: "normalize_instruction"
+    action: "collapse_whitespace"
+    target_path: "$.task.instruction"
+
+  - id: "dedupe_dependencies"
+    action: "dedupe_array"
+    target_path: "$.task.dependencies"
+
+  - id: "fill_missing_axes"
+    action: "set_defaults"
+    target_path: "$.decision_axes"
+    params:
+      impact: 0.5
+      urgency: 0.5
+      feasibility: 0.5
+      verification_confidence: 0.5
+      coordination_cost: 0.5
+      risk_score: 0.5
+
+embedding_contract:
+  output_format: "json"
+  embed_target_schema: "schemas/manifold_action_language.schema.json"
+  target_root: "$.records[]"
+  include_source_trace: true
+  source_trace_fields:
+    - "source_system"
+    - "source_document_id"
+    - "source_xpath"
+  envelope:
+    record_type: "manifold_input"
+    schema_version: "1.0"
+    language: "MEL-1"
+

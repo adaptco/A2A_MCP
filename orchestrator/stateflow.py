@@ -156,8 +156,6 @@ class StateMachine:
                     snapshot = self.to_dict()
                     plan_id = self.plan_id
             else:
-                if event == "RETRY_DISPATCHED":
-                    self.attempts = 0
                 if event == "VERDICT_PASS":
                     self.attempts = 0
                 rec = self._record(self.state, to_state, event, meta)

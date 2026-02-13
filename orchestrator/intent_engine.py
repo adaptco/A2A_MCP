@@ -2,13 +2,16 @@
 
 from __future__ import annotations
 
+import uuid
 from dataclasses import dataclass, field
+from types import SimpleNamespace
 from typing import Dict, List
 
 from agents.architecture_agent import ArchitectureAgent
 from agents.coder import CoderAgent
 from agents.managing_agent import ManagingAgent
 from agents.orchestration_agent import OrchestrationAgent
+from agents.pinn_agent import PINNAgent
 from agents.tester import TesterAgent
 from orchestrator.judge_orchestrator import get_judge_orchestrator
 from orchestrator.storage import DBManager
@@ -37,6 +40,7 @@ class IntentEngine:
         self.architect = ArchitectureAgent()
         self.coder = CoderAgent()
         self.tester = TesterAgent()
+        self.pinn = PINNAgent()
         self.judge = get_judge_orchestrator()
         self.db = DBManager()
 
@@ -138,24 +142,50 @@ class IntentEngine:
 
         for action in plan.actions:
             action.status = "in_progress"
+            parent_id = artifact_ids[-1] if artifact_ids else "project-plan-root"
 
-            artifact = await self.coder.generate_solution(
-                parent_id=plan.plan_id,
+            # 1. Generate Solution
+            code_artifact = await self.coder.generate_solution(
+                parent_id=parent_id,
                 feedback=action.instruction,
             )
-            self.db.save_artifact(artifact)
-            artifact_ids.append(artifact.artifact_id)
+            artifact_ids.append(code_artifact.artifact_id)
 
-            report = await self.tester.validate(artifact.artifact_id)
-            artifact_ids.append(report.status)
+            # 2. Validate with Tester
+            report = await self.tester.validate(code_artifact.artifact_id)
+            action.validation_feedback = report.critique
 
-            refined = await self.coder.generate_solution(
-                parent_id=artifact.artifact_id,
-                feedback=report.critique,
+            # 3. Save Test Report
+            test_artifact_id = str(uuid.uuid4())
+            report_artifact = SimpleNamespace(
+                artifact_id=test_artifact_id,
+                parent_artifact_id=code_artifact.artifact_id,
+                agent_name=self.tester.agent_name,
+                version="1.0.0",
+                type="test_report",
+                content=report.model_dump_json(),
             )
-            self.db.save_artifact(refined)
-            artifact_ids.append(refined.artifact_id)
+            self.db.save_artifact(report_artifact)
+            artifact_ids.append(test_artifact_id)
 
-            action.status = "completed"
+            # 4. Ingest into PINN (Vector Store)
+            pinn_artifact_id = str(uuid.uuid4())
+            token = self.pinn.ingest_artifact(
+                artifact_id=pinn_artifact_id,
+                content=code_artifact.content,
+                parent_id=code_artifact.artifact_id,
+            )
+            pinn_artifact = SimpleNamespace(
+                artifact_id=pinn_artifact_id,
+                parent_artifact_id=code_artifact.artifact_id,
+                agent_name=self.pinn.agent_name,
+                version="1.0.0",
+                type="vector_token",
+                content=token.model_dump_json(),
+            )
+            self.db.save_artifact(pinn_artifact)
+            artifact_ids.append(pinn_artifact_id)
+
+            action.status = "completed" if report.status == "PASS" else "failed"
 
         return artifact_ids

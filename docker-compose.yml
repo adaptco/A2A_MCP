@@ -12,3 +12,10 @@ services:
       - db
     environment:
       DATABASE_URL: postgresql://postgres:pass@db:5432/mcp_db
+
+  rbac:
+    build: ./rbac
+    ports:
+      - "8001:8001"
+    environment:
+      RBAC_SECRET: dev-secret-change-me

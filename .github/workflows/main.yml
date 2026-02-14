@@ -4,8 +4,10 @@ on:
   push:
     branches: [ main ]
   workflow_dispatch:
+  # NEW: Runs every day at 8:00 AM UTC
+  schedule:
+    - cron: '0 8 * * *'
 
-# NEW: Prevents multiple runs from clashing
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -37,8 +39,6 @@ jobs:
         shell: bash
         run: |
           PLAN_ID="daily-game-design-run"
-          
-          # Debug: Ensure secret isn't empty
           echo "Endpoint character count: ${#MCP_ENDPOINT}"
           
           RESPONSE=$(curl -s -w "\n%{http_code}" \
@@ -64,10 +64,13 @@ jobs:
       - name: Post Ingestion Receipt
         if: success()
         uses: actions/github-script@v7
+        env:
+          RESPONSE_BODY: ${{ env.RESPONSE_BODY }}
         with:
           script: |
-            // FIX: Only attempt to comment if there is a valid issue/PR number
-            const issue_number = context.issue.number;
+            // FIX: Ensure context.issue exists to avoid 404
+            const issue_number = context.payload.pull_request ? context.payload.pull_request.number : context.payload.issue ? context.payload.issue.number : null;
+            
             if (issue_number) {
               await github.rest.issues.createComment({
                 owner: context.repo.owner,
@@ -76,7 +79,7 @@ jobs:
                 body: `✅ Ingestion receipt processed successfully!\n\n**Server Response:**\n${process.env.RESPONSE_BODY}`
               });
             } else {
-              console.log('Ingress successful, but no issue/PR found to comment on.');
+              console.log('Ingress successful. Skipping comment because this run is not linked to a Pull Request or Issue.');
             }
 
       - name: Report Ingress Failure

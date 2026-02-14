@@ -5,10 +5,14 @@ on:
     branches: [ main ]
   workflow_dispatch:
 
+# NEW: Prevents multiple runs from clashing
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   ingress-job:
     runs-on: ubuntu-latest
-    # Connects the job to the 'env' environment secrets
     environment: env
     
     steps:
@@ -20,14 +24,13 @@ jobs:
           MCP_ENDPOINT: ${{ secrets.MCP_ENDPOINT }}
         run: |
           echo "Pinging MCP Orchestrator..."
-          # Performs a simple GET to the base URL to check heartbeat/existence
           if curl -s --head --request GET "$MCP_ENDPOINT" | grep "200" > /dev/null; then
             echo "✅ Endpoint is online."
           else
-            echo "⚠️ Warning: Could not confirm endpoint health, but proceeding with ingress..."
+            echo "⚠️ Warning: Could not confirm endpoint health, but proceeding..."
           fi
 
-     - name: Trigger plan ingress
+      - name: Trigger plan ingress
         env:
           MCP_ENDPOINT: ${{ secrets.MCP_ENDPOINT }}
           MCP_TOKEN: ${{ secrets.MCP_TOKEN }}
@@ -35,16 +38,9 @@ jobs:
         run: |
           PLAN_ID="daily-game-design-run"
           
-          # 1. Debug: Check if the secret is actually loading
+          # Debug: Ensure secret isn't empty
           echo "Endpoint character count: ${#MCP_ENDPOINT}"
-          if [ "${#MCP_ENDPOINT}" -lt 5 ]; then 
-            echo "❌ Error: MCP_ENDPOINT secret appears to be empty or too short!"
-            exit 1
-          fi
-
-          echo "Initiating ingress for Plan: $PLAN_ID"
-
-          # 2. Execute the POST request
+          
           RESPONSE=$(curl -s -w "\n%{http_code}" \
             --retry 3 \
             --retry-delay 5 \
@@ -54,21 +50,36 @@ jobs:
             -H "Content-Type: application/json" \
             -d "{\"plan_id\": \"$PLAN_ID\"}")
 
-          # 3. Parse and Validate
           HTTP_STATUS=$(echo "$RESPONSE" | tail -n1)
           BODY=$(echo "$RESPONSE" | sed '$d')
 
           if [ "$HTTP_STATUS" -eq 200 ] || [ "$HTTP_STATUS" -eq 201 ]; then
             echo "✅ Success: Plan ingress triggered."
-            echo "Response: $BODY"
+            echo "RESPONSE_BODY=$BODY" >> $GITHUB_ENV
           else
             echo "❌ Error: Ingress failed with status $HTTP_STATUS"
-            echo "Response: $BODY"
             exit 1
           fi
 
-- name: Report Ingress Failure
+      - name: Post Ingestion Receipt
+        if: success()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            // FIX: Only attempt to comment if there is a valid issue/PR number
+            const issue_number = context.issue.number;
+            if (issue_number) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue_number,
+                body: `✅ Ingestion receipt processed successfully!\n\n**Server Response:**\n${process.env.RESPONSE_BODY}`
+              });
+            } else {
+              console.log('Ingress successful, but no issue/PR found to comment on.');
+            }
+
+      - name: Report Ingress Failure
         if: failure()
         run: |
           echo "::error title=Ingress Failed::The daily-game-design-run failed to reach the MCP Orchestrator."
-          echo "Please check if the MCP_ENDPOINT is active and the MCP_TOKEN is valid in the 'env' environment secrets."

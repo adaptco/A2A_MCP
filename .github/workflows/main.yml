@@ -27,16 +27,24 @@ jobs:
             echo "⚠️ Warning: Could not confirm endpoint health, but proceeding with ingress..."
           fi
 
-      - name: Trigger plan ingress
+     - name: Trigger plan ingress
         env:
           MCP_ENDPOINT: ${{ secrets.MCP_ENDPOINT }}
           MCP_TOKEN: ${{ secrets.MCP_TOKEN }}
         shell: bash
         run: |
           PLAN_ID="daily-game-design-run"
+          
+          # 1. Debug: Check if the secret is actually loading
+          echo "Endpoint character count: ${#MCP_ENDPOINT}"
+          if [ "${#MCP_ENDPOINT}" -lt 5 ]; then 
+            echo "❌ Error: MCP_ENDPOINT secret appears to be empty or too short!"
+            exit 1
+          fi
+
           echo "Initiating ingress for Plan: $PLAN_ID"
 
-          # Execute the POST request with automatic retries
+          # 2. Execute the POST request
           RESPONSE=$(curl -s -w "\n%{http_code}" \
             --retry 3 \
             --retry-delay 5 \
@@ -46,6 +54,7 @@ jobs:
             -H "Content-Type: application/json" \
             -d "{\"plan_id\": \"$PLAN_ID\"}")
 
+          # 3. Parse and Validate
           HTTP_STATUS=$(echo "$RESPONSE" | tail -n1)
           BODY=$(echo "$RESPONSE" | sed '$d')
 
@@ -57,9 +66,3 @@ jobs:
             echo "Response: $BODY"
             exit 1
           fi
-
-      - name: Report Ingress Failure
-        if: failure()
-        run: |
-          echo "::error title=Ingress Failed::The daily-game-design-run failed to reach the MCP Orchestrator."
-          echo "Please check if the MCP_ENDPOINT is active and the MCP_TOKEN is valid in the 'env' environment secrets."

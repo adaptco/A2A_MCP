@@ -46,6 +46,8 @@ jobs:
           if [ -f scripts/train_model.py ]; then python scripts/train_model.py --bucket $S3_BUCKET; fi
 
       - name: Run tests
+        env:
+          PYTHONPATH: .
         run: |
           echo "Running unit tests..."
           if [ -d tests ]; then pytest -q tests; fi

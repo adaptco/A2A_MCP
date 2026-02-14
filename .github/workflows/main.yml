@@ -1,37 +1,36 @@
-name: A2A Pipeline CI
+name: Trigger Game Design Ingress
 
 on:
   push:
     branches: [ main ]
-  pull_request:
-    branches: [ main ]
+  workflow_dispatch:
 
 jobs:
-  test-pipeline:
+  ingress-job:
     runs-on: ubuntu-latest
-
+    # This line is critical! It connects the job to your new 'env' environment
+    environment: env
+    
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v2
+      - name: Trigger plan ingress
+        env:
+          # Use 'vars' because they are Environment Variables, not Secrets
+          MCP_ENDPOINT: ${{ vars.MCP_ENDPOINT }}
+          MCP_TOKEN: ${{ vars.MCP_TOKEN }}
+        run: |
+          PLAN_ID="daily-game-design-run"
+          
+          echo "Connecting to endpoint: $MCP_ENDPOINT"
+          
+          if [ -z "$MCP_ENDPOINT" ]; then
+            echo "Error: MCP_ENDPOINT is empty. Check your Environment Variables."
+            exit 1
+          fi
 
-    - name: Build and start container
-      run: |
-        docker-compose up -d --build
-        # Wait for FastAPI to be ready
-        sleep 5
-
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.11'
-
-    - name: Install dependencies
-      run: |
-        pip install -r requirements.txt
-
-    - name: Run A2A Integration Test
-      run: |
-        python test_api.py
+          curl -X POST "$MCP_ENDPOINT/ingress" \
+            -H "Authorization: Bearer $MCP_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "{\"plan_id\": \"$PLAN_ID\"}"

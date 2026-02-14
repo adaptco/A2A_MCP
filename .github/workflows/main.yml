@@ -31,13 +31,17 @@ jobs:
         env:
           MCP_ENDPOINT: ${{ secrets.MCP_ENDPOINT }}
           MCP_TOKEN: ${{ secrets.MCP_TOKEN }}
+        shell: bash
         run: |
           PLAN_ID="daily-game-design-run"
-          
           echo "Initiating ingress for Plan: $PLAN_ID"
-          
-          # Execute the POST request to the ingress endpoint
-          RESPONSE=$(curl -s -w "\n%{http_code}" -X POST "$MCP_ENDPOINT/ingress" \
+
+          # Execute the POST request with automatic retries
+          RESPONSE=$(curl -s -w "\n%{http_code}" \
+            --retry 3 \
+            --retry-delay 5 \
+            --retry-all-errors \
+            -X POST "$MCP_ENDPOINT/ingress" \
             -H "Authorization: Bearer $MCP_TOKEN" \
             -H "Content-Type: application/json" \
             -d "{\"plan_id\": \"$PLAN_ID\"}")
@@ -53,3 +57,9 @@ jobs:
             echo "Response: $BODY"
             exit 1
           fi
+
+      - name: Report Ingress Failure
+        if: failure()
+        run: |
+          echo "::error title=Ingress Failed::The daily-game-design-run failed to reach the MCP Orchestrator."
+          echo "Please check if the MCP_ENDPOINT is active and the MCP_TOKEN is valid in the 'env' environment secrets."

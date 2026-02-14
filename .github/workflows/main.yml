@@ -66,3 +66,9 @@ jobs:
             echo "Response: $BODY"
             exit 1
           fi
+
+- name: Report Ingress Failure
+        if: failure()
+        run: |
+          echo "::error title=Ingress Failed::The daily-game-design-run failed to reach the MCP Orchestrator."
+          echo "Please check if the MCP_ENDPOINT is active and the MCP_TOKEN is valid in the 'env' environment secrets."

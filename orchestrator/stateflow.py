@@ -10,7 +10,7 @@ This implementation hardens the original stateflow with:
 """
 from __future__ import annotations
 
-from dataclasses import dataclass, field, asdict
+from dataclasses import dataclass, field
 from enum import Enum
 from typing import Callable, Dict, List, Optional, Any
 import time
@@ -79,11 +79,12 @@ class StateMachine:
         self.max_retries = int(max_retries)
         self.callbacks: Dict[State, List[Callable[[TransitionRecord], None]]] = {}
         self._lock = threading.RLock()
-        self._persistence_callback = persistence_callback  # optional hook
-        # optional plan id the FSM may be associated with (useful for persistence)
+        self._persistence_callback = persistence_callback
         self.plan_id: Optional[str] = None
+        self._transition_seq: int = 0
+        self._last_persisted_seq: int = 0
+        self._persist_cond = threading.Condition(self._lock)
 
-    # event -> (allowed_from_states, to_state)
     _TRANSITIONS: Dict[str, Any] = {
         "OBJECTIVE_INGRESS": ([State.IDLE], State.SCHEDULED),
         "RUN_DISPATCHED": ([State.SCHEDULED], State.EXECUTING),
@@ -109,10 +110,6 @@ class StateMachine:
     }
 
     def register_callback(self, state: State, fn: Callable[[TransitionRecord], None]) -> None:
-        """
-        Register a callback to be invoked when the FSM enters `state`.
-        The callback receives the TransitionRecord.
-        """
         with self._lock:
             self.callbacks.setdefault(state, []).append(fn)
 
@@ -121,35 +118,35 @@ class StateMachine:
         self.history.append(rec)
         return rec
 
-    def _enter_state(self, rec: TransitionRecord) -> None:
+    def _enter_state(self, rec: TransitionRecord) -> List[Callable[[TransitionRecord], None]]:
         self.state = rec.to_state
-        # persist snapshot after entering state
+        return list(self.callbacks.get(rec.to_state, []))
+
+    def _persist_snapshot(self, snapshot: Dict[str, Any], plan_id: Optional[str]) -> None:
         if self._persistence_callback and callable(self._persistence_callback):
             try:
-                snapshot = self.to_dict()
-                if self.plan_id:
-                    self._persistence_callback(self.plan_id, snapshot)
-                else:
-                    # allow persistence without plan_id by passing None
-                    self._persistence_callback(None, snapshot)
+                self._persistence_callback(plan_id, snapshot)
             except Exception:
-                # persistence errors should not crash the state machine
                 pass
 
-        for cb in list(self.callbacks.get(rec.to_state, [])):
+    def _run_post_transition(self, rec: TransitionRecord, callbacks: List[Callable[[TransitionRecord], None]], snapshot: Dict[str, Any], plan_id: Optional[str], seq: int) -> None:
+        with self._persist_cond:
+            while seq != self._last_persisted_seq + 1:
+                self._persist_cond.wait()
+
+        self._persist_snapshot(snapshot, plan_id)
+
+        with self._persist_cond:
+            self._last_persisted_seq = seq
+            self._persist_cond.notify_all()
+
+        for cb in callbacks:
             try:
                 cb(rec)
             except Exception:
-                # callbacks must not crash the state machine
                 pass
 
     def trigger(self, event: str, **meta) -> TransitionRecord:
-        """
-        Trigger an event synchronously. Returns the TransitionRecord.
-
-        Raises ValueError if the event is unknown or not valid in the current
-        state.
-        """
         with self._lock:
             if event not in self._TRANSITIONS:
                 raise ValueError(f"Unknown event: {event}")
@@ -158,35 +155,37 @@ class StateMachine:
             if self.state not in valid_from:
                 raise ValueError(f"Event '{event}' not valid from state {self.state}")
 
-            # Special logic for retries
             if event == "VERDICT_PARTIAL":
-                # entering RETRY increments attempts
                 self.attempts += 1
-                # if we've just reached or exceeded max_retries, escalate
                 if self.attempts >= self.max_retries:
                     rec = self._record(self.state, State.TERMINATED_FAIL, "RETRY_LIMIT_EXCEEDED", meta)
-                    self._enter_state(rec)
-                    return rec
+                    callbacks = self._enter_state(rec)
+                    snapshot = self.to_dict()
+                    plan_id = self.plan_id
+                    self._transition_seq += 1
+                    seq = self._transition_seq
+                else:
+                    rec = self._record(self.state, to_state, event, meta)
+                    callbacks = self._enter_state(rec)
+                    snapshot = self.to_dict()
+                    plan_id = self.plan_id
+                    self._transition_seq += 1
+                    seq = self._transition_seq
+            else:
+                # Do not reset attempts on RETRY_DISPATCHED; only reset after PASS.
+                if event == "VERDICT_PASS":
+                    self.attempts = 0
+                rec = self._record(self.state, to_state, event, meta)
+                callbacks = self._enter_state(rec)
+                snapshot = self.to_dict()
+                plan_id = self.plan_id
+                self._transition_seq += 1
+                seq = self._transition_seq
 
-            if event == "RETRY_DISPATCHED":
-                # reset attempts once retry is dispatched
-                self.attempts = 0
-
-            if event == "VERDICT_PASS":
-                # upon pass, reset attempts
-                self.attempts = 0
-
-            rec = self._record(self.state, to_state, event, meta)
-            self._enter_state(rec)
-            return rec
+        self._run_post_transition(rec, callbacks, snapshot, plan_id, seq)
+        return rec
 
     def evaluate_apply_policy(self, policy_fn: Callable[[], bool], **meta) -> TransitionRecord:
-        """
-        Representative inner transition for EVALUATING -> APPLY_POLICY.
-
-        If policy_ok is True, emit VERDICT_PASS otherwise VERDICT_FAIL.
-        If the policy wishes to request a retry, it may raise PartialVerdict.
-        """
         with self._lock:
             if self.state != State.EVALUATING:
                 raise ValueError("apply_policy may only be executed from EVALUATING state")
@@ -197,18 +196,9 @@ class StateMachine:
             return self.trigger("VERDICT_PASS" if ok else "VERDICT_FAIL", **meta)
 
     def override(self, to_state: State, reason: str = "manual_override", override_by: Optional[str] = None, forward_only: bool = True) -> TransitionRecord:
-        """
-        Force the state machine into `to_state` via an OVERRIDE event.
-
-        The FigJam board marks the OVERRIDE event as forward-only; we
-        therefore allow overrides only to the configured override targets
-        and optionally prevent overriding from terminated states when
-        forward_only is True.
-        """
         with self._lock:
             if to_state not in self._OVERRIDE_TARGETS:
                 raise ValueError(f"Cannot override to {to_state}")
-
             if forward_only and self.state in (State.TERMINATED_SUCCESS, State.TERMINATED_FAIL):
                 raise ValueError("Cannot override from a terminated state when forward_only=True")
 
@@ -217,13 +207,16 @@ class StateMachine:
                 meta["override_by"] = override_by
 
             rec = self._record(self.state, to_state, "OVERRIDE_EVENT", meta)
-            self._enter_state(rec)
-            return rec
+            callbacks = self._enter_state(rec)
+            snapshot = self.to_dict()
+            plan_id = self.plan_id
+            self._transition_seq += 1
+            seq = self._transition_seq
+
+        self._run_post_transition(rec, callbacks, snapshot, plan_id, seq)
+        return rec
 
     def to_dict(self) -> Dict[str, Any]:
-        """
-        Serialize FSM snapshot to a JSON-friendly dict.
-        """
         with self._lock:
             return {
                 "plan_id": self.plan_id,
@@ -235,14 +228,13 @@ class StateMachine:
 
     @staticmethod
     def from_dict(d: Dict[str, Any], persistence_callback: Optional[Callable[[str, Dict[str, Any]], None]] = None) -> "StateMachine":
-        """
-        Reconstruct a StateMachine from a snapshot created by to_dict().
-        """
         sm = StateMachine(max_retries=d.get("max_retries", 3), persistence_callback=persistence_callback)
         sm.plan_id = d.get("plan_id")
         sm.state = State(d["state"])
         sm.attempts = int(d.get("attempts", 0))
         sm.history = [TransitionRecord.from_dict(h) for h in d.get("history", [])]
+        sm._transition_seq = len(sm.history)
+        sm._last_persisted_seq = len(sm.history)
         return sm
 
     def current_state(self) -> State:

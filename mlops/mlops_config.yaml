@@ -1,0 +1,84 @@
+# MLOps Configuration for Vehicle Agent Training
+# Defines training parameters, data sources, and deployment settings
+
+training:
+  model_version: "v1.0"
+  base_model: "megatron_gpt"
+
+  hyperparameters:
+    epochs: 100
+    batch_size: 32
+    learning_rate: 0.0001
+    weight_decay: 0.01
+    dropout: 0.2
+    gradient_clip: 1.0
+
+  architecture:
+    input_size: 64
+    hidden_size: 128
+    num_layers: 2
+    output_size: 8  # [steering, accel, brake, target_x, target_y, target_z, confidence, decision_code]
+
+  loss_function: "mse"
+  optimizer: "adamw"
+
+  validation:
+    split_ratio: 0.2
+    eval_every_n_epochs: 10
+    early_stopping_patience: 20
+
+data:
+  training_data_source: "local"  # "local", "s3", "huggingface"
+  synthetic_data:
+    enabled: true
+    num_samples: 1000
+    sequence_length: 50
+
+  # For production, specify real data source:
+  # s3_bucket: "adaptco-datasets"
+  # s3_prefix: "driving_data/raw/"
+  # huggingface_dataset: "adaptco/drive-observations"
+
+export:
+  format: "safetensors"  # "safetensors" or "torch"
+  include_metadata: true
+  include_config: true
+
+  deployment_targets:
+    - s3  # Upload to S3 after training
+    - local  # Save locally
+    # - huggingface  # Push to HF Hub
+
+s3:
+  enabled: true
+  bucket: "adaptco-models"
+  prefix: "mlops/vehicle_agents/"
+  region: "us-west-2"
+
+monitoring:
+  tensorboard:
+    enabled: true
+    log_dir: "./logs/tensorboard/"
+
+  metrics_to_track:
+    - training_loss
+    - validation_loss
+    - steering_mae
+    - acceleration_mae
+    - braking_mae
+
+  checkpoint:
+    save_best: true
+    save_every_n_epochs: 10
+
+deployment:
+  agent_class: "TrainedVehicleAgent"
+  agent_module: "agents.trained_model_agent"
+
+  orchestrator_integration: true
+  orchestrator_module: "orchestrator"
+
+  inference:
+    device: "auto"  # "cuda", "cpu", or "auto"
+    batch_inference: false
+    cache_enabled: true

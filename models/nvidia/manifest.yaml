@@ -1,0 +1,63 @@
+# Nvidia Foundation Models Manifest
+# These models are downloaded on-demand from Hugging Face Hub
+# to avoid storage bloat in the repository
+
+nvidia_foundation_models:
+  llama2_7b:
+    huggingface_id: "meta-llama/Llama-2-7b"
+    download_url: "https://huggingface.co/meta-llama/Llama-2-7b"
+    local_cache: "./models/nvidia/cache/llama2_7b"
+    description: "Meta's Llama 2 7B foundation model"
+    type: "language_model"
+
+  llama2_13b:
+    huggingface_id: "meta-llama/Llama-2-13b"
+    download_url: "https://huggingface.co/meta-llama/Llama-2-13b"
+    local_cache: "./models/nvidia/cache/llama2_13b"
+    description: "Meta's Llama 2 13B foundation model"
+    type: "language_model"
+
+  megatron_gpt:
+    huggingface_id: "nvidia/Megatron-GPT3"
+    download_url: "https://huggingface.co/nvidia/Megatron-GPT3"
+    local_cache: "./models/nvidia/cache/megatron_gpt"
+    description: "Nvidia's Megatron-GPT foundation model"
+    type: "language_model"
+
+  bert_base:
+    huggingface_id: "bert-base-uncased"
+    download_url: "https://huggingface.co/bert-base-uncased"
+    local_cache: "./models/nvidia/cache/bert_base"
+    description: "BERT base uncased for embeddings"
+    type: "encoder"
+
+trained_models:
+  vehicle_agent_v1_0:
+    type: "fine_tuned_lstm"
+    base_model: "megatron_gpt"
+    training_date: "2026-02-12"
+    epochs: 100
+    batch_size: 32
+    learning_rate: 0.0001
+    metrics_url: "s3://adaptco-models/mlops/vehicle_agent_v1.0/metrics.json"
+    weights_url: "s3://adaptco-models/mlops/vehicle_agent_v1.0/model.safetensors"
+    local_cache: "./models/trained/vehicle_agent_v1.0"
+    description: "Vehicle navigation agent trained on driving observation data"
+
+  vehicle_agent_v1_1:
+    type: "fine_tuned_lstm"
+    base_model: "megatron_gpt"
+    training_date: "2026-02-12"
+    epochs: 150
+    batch_size: 64
+    learning_rate: 0.00005
+    metrics_url: "s3://adaptco-models/mlops/vehicle_agent_v1.1/metrics.json"
+    weights_url: "s3://adaptco-models/mlops/vehicle_agent_v1.1/model.safetensors"
+    local_cache: "./models/trained/vehicle_agent_v1.1"
+    description: "Vehicle navigation agent v1.1 - improved accuracy"
+
+download_config:
+  resume_on_interrupt: true
+  verify_checksums: true
+  cache_locally: true
+  max_retries: 3

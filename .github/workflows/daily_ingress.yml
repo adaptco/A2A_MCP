@@ -14,7 +14,7 @@ jobs:
           MCP_TOKEN: ${{ secrets.MCP_TOKEN }}
         run: |
           PLAN_ID="daily-game-design-run"
-          curl -X POST "${MCP_ENDPOINT}/plans/${PLAN_ID}/ingress" \
+          curl -X POST "${MCP_ENDPOINT}/plans/ingress" \
             -H "Authorization: Bearer ${MCP_TOKEN}" \
             -H "Content-Type: application/json" \
-            -d '{}'
+            -d "{\"plan_id\":\"${PLAN_ID}\"}"

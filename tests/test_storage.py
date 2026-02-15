@@ -1,7 +1,9 @@
 import pytest
 from orchestrator.storage import DBManager
 from schemas.agent_artifacts import MCPArtifact
+import json
 import uuid
+import json
 
 def test_artifact_persistence_lifecycle():
     """
@@ -18,7 +20,7 @@ def test_artifact_persistence_lifecycle():
         agent_name="TestAgent",
         version="1.0.0",
         type="unit_test_artifact",
-        content={"status": "verified"}
+        content="{\"status\": \"verified\"}"
     )
 
     # 2. Test Save (Persistence Directive)
@@ -29,7 +31,8 @@ def test_artifact_persistence_lifecycle():
     
     assert retrieved is not None
     assert retrieved.agent_name == "TestAgent"
-    assert retrieved.content["status"] == "verified"
+    content_payload = json.loads(retrieved.content)
+    assert content_payload["status"] == "verified"
     print(f"✓ Persistence Lifecycle Verified for ID: {test_id}")
 
 if __name__ == "__main__":

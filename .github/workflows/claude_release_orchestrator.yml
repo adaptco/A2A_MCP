@@ -1,0 +1,195 @@
+name: Claude Release Orchestrator
+
+on:
+  workflow_dispatch:
+    inputs:
+      todo_issue_number:
+        description: "Issue number with Claude TODO checklist (optional)"
+        required: false
+        type: string
+      pr_number:
+        description: "PR number to post bot review status (optional)"
+        required: false
+        type: string
+      claude_task_complete:
+        description: "Set true to override TODO parsing and force completion"
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  wait-for-claude:
+    runs-on: ubuntu-latest
+    outputs:
+      claude_complete: ${{ steps.progress.outputs.claude_complete }}
+      checked_todos: ${{ steps.progress.outputs.checked_todos }}
+      total_todos: ${{ steps.progress.outputs.total_todos }}
+    steps:
+      - name: Evaluate Claude progress
+        id: progress
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const overrideComplete = "${{ inputs.claude_task_complete }}" === "true";
+            const issueNumberRaw = "${{ inputs.todo_issue_number }}".trim();
+            let checked = 0;
+            let total = 0;
+            let complete = overrideComplete;
+
+            if (!overrideComplete && issueNumberRaw) {
+              const issue_number = Number(issueNumberRaw);
+              const issue = await github.rest.issues.get({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number
+              });
+              const body = issue.data.body || "";
+              const lines = body.split("\n");
+              for (const line of lines) {
+                if (line.match(/^\s*-\s*\[[ xX]\]/)) {
+                  total += 1;
+                  if (line.match(/^\s*-\s*\[[xX]\]/)) checked += 1;
+                }
+              }
+              complete = total > 0 && checked === total;
+            }
+
+            core.setOutput("claude_complete", complete ? "true" : "false");
+            core.setOutput("checked_todos", String(checked));
+            core.setOutput("total_todos", String(total));
+
+            core.summary
+              .addHeading("Claude Progress Gate")
+              .addRaw(`Complete: ${complete}\n\n`)
+              .addRaw(`Checklist progress: ${checked}/${total}\n`);
+            await core.summary.write();
+
+      - name: Stop if Claude work is incomplete
+        if: steps.progress.outputs.claude_complete != 'true'
+        run: |
+          echo "Claude task is still in progress. Waiting for completion before validation/review."
+          exit 1
+
+  validate-and-check-conflicts:
+    needs: wait-for-claude
+    runs-on: ubuntu-latest
+    outputs:
+      tests_passed: ${{ steps.tests.outcome == 'success' && 'true' || 'false' }}
+      conflicts_resolved: ${{ steps.conflicts.outputs.conflicts_resolved }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run orchestrator validation tests
+        id: tests
+        run: |
+          pytest -q tests/test_release_orchestrator.py tests/test_mcp_agents.py
+
+      - name: Check merge conflicts against main
+        id: conflicts
+        run: |
+          git fetch origin main
+          BASE="$(git merge-base HEAD origin/main)"
+          git merge-tree "$BASE" HEAD origin/main > merge_preview.txt
+          if grep -q '<<<<<<<' merge_preview.txt; then
+            echo "conflicts_resolved=false" >> "$GITHUB_OUTPUT"
+            echo "Merge conflicts detected against origin/main"
+            exit 1
+          fi
+          echo "conflicts_resolved=true" >> "$GITHUB_OUTPUT"
+
+  bot-review-and-state:
+    needs: [wait-for-claude, validate-and-check-conflicts]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Build release orchestration state
+        run: |
+          python - <<'PY'
+          import json
+          from orchestrator.release_orchestrator import ReleaseOrchestrator, ReleaseSignals
+
+          signals = ReleaseSignals(
+              claude_task_complete=True,
+              tests_passed="${{ needs.validate-and-check-conflicts.outputs.tests_passed }}" == "true",
+              conflicts_resolved="${{ needs.validate-and-check-conflicts.outputs.conflicts_resolved }}" == "true",
+              bot_review_complete=False,
+              claude_checked_todos=int("${{ needs.wait-for-claude.outputs.checked_todos }}" or "0"),
+              claude_total_todos=int("${{ needs.wait-for-claude.outputs.total_todos }}" or "0"),
+          )
+          state = ReleaseOrchestrator().system_state(signals)
+          with open("system_state.json", "w", encoding="utf-8") as f:
+              json.dump(state, f, indent=2)
+          print(json.dumps(state, indent=2))
+          PY
+
+      - name: Post bot review summary to PR
+        if: ${{ inputs.pr_number != '' }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr_number = Number("${{ inputs.pr_number }}");
+            const marker = "<!-- a2a-release-orchestrator -->";
+            const body = `${marker}
+            ## Automated Release Review Gate
+            - Claude complete: ${{ needs.wait-for-claude.outputs.claude_complete }}
+            - TODO progress: ${{ needs.wait-for-claude.outputs.checked_todos }}/${{ needs.wait-for-claude.outputs.total_todos }}
+            - Tests passed: ${{ needs.validate-and-check-conflicts.outputs.tests_passed }}
+            - Conflicts resolved: ${{ needs.validate-and-check-conflicts.outputs.conflicts_resolved }}
+            - System state artifact: \`system-state-${{ github.run_number }}\`
+            `;
+
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: pr_number,
+              per_page: 100
+            });
+            const existing = comments.find(
+              (c) => c.user.type === "Bot" && c.body.includes(marker)
+            );
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: pr_number,
+                body
+              });
+            }
+
+      - name: Upload system state and foundation bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: system-state-${{ github.run_number }}
+          path: |
+            system_state.json
+            docs/release/FOUNDATION_MODEL_RELEASE_SPEC.md
+            docs/release/AGENT_IDLE_STATE_RELEASE_NOTES.md
+            specs/release_milestones.yaml
+            specs/xml_normalization_map.yaml
+            schemas/manifold_action_language.schema.json
+

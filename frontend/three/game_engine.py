@@ -69,13 +69,20 @@ class GameEngine:
         """Mirror world renderer zone specs into the typed game model."""
         for zone_id, renderer in self.world_renderer.zone_renderers.items():
             zone_data = renderer.zone_data
+            obstacle_density = zone_data.get("obstacle_density", 0.0)
+            if isinstance(obstacle_density, str):
+                obstacle_density = {
+                    "low": 0.2,
+                    "medium": 0.5,
+                    "high": 0.8,
+                }.get(obstacle_density.lower(), 0.0)
             self.game_model.register_zone(
                 ZoneSpec(
                     zone_id=zone_id,
                     name=zone_data.get("name", zone_id),
                     layer=zone_data.get("layer", 0),
                     speed_limit_mph=zone_data.get("zone_speed_limit_mph", 55),
-                    obstacle_density=zone_data.get("obstacle_density", 0.0),
+                    obstacle_density=obstacle_density,
                     difficulty_rating=zone_data.get("difficulty_rating", 1),
                     metadata={"grid_pos": zone_data.get("grid_pos")},
                 )

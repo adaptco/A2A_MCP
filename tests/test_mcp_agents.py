@@ -2,7 +2,7 @@
 import pytest
 from fastmcp import Client
 from knowledge_ingestion import app_ingest
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
 @pytest.fixture
 def mock_snapshot():
@@ -34,3 +34,35 @@ async def test_ingestion_with_valid_handshake(mock_snapshot):
 
             assert "success" in text
             assert "adaptco/A2A_MCP" in text
+
+
+@pytest.mark.asyncio
+async def test_ingestion_rejects_repository_claim_mismatch(mock_snapshot):
+    """Verifies that repository provenance is bound to verified token claims."""
+    mock_claims = {"repository": "adaptco/another-repo", "actor": "github-actions"}
+
+    with patch("knowledge_ingestion.verify_github_oidc_token", return_value=mock_claims):
+        async with Client(app_ingest) as client:
+            response = await client.call_tool("ingest_repository_data", {
+                "snapshot": mock_snapshot,
+                "authorization": "Bearer valid_mock_token"
+            })
+
+            if hasattr(response, "content"):
+                text = response.content[0].text
+            else:
+                text = response[0].text
+
+            assert text == "error: repository claim mismatch"
+
+
+@pytest.mark.asyncio
+async def test_ingestion_rejects_invalid_token(mock_snapshot):
+    """Verifies that invalid tokens cannot bypass authentication."""
+    with patch("knowledge_ingestion.verify_github_oidc_token", side_effect=ValueError("Invalid OIDC token")):
+        async with Client(app_ingest) as client:
+            with pytest.raises(Exception):
+                await client.call_tool("ingest_repository_data", {
+                    "snapshot": mock_snapshot,
+                    "authorization": "Bearer invalid"
+                })

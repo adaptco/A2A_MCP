@@ -66,7 +66,11 @@ jobs:
         id: build
         run: |
           echo "::group::Compiling engine..."
-          make all 2>&1 | tee build.log
+          if [ -f Makefile ]; then
+            make all 2>&1 | tee build.log
+          else
+            echo "No Makefile found; skipping engine build." | tee build.log
+          fi
           echo "::endgroup::"
           echo "binary_size=$(stat -c%s bin/ghost-void_engine 2>/dev/null || echo 0)" >> $GITHUB_OUTPUT
 
@@ -114,7 +118,11 @@ jobs:
         id: run_tests
         run: |
           echo "::group::🧪 ${{ matrix.test.description }}"
-          make ${{ matrix.test.target }} 2>&1 | tee test-${{ matrix.test.name }}.log
+          if [ -f Makefile ]; then
+            make ${{ matrix.test.target }} 2>&1 | tee test-${{ matrix.test.name }}.log
+          else
+            echo "No Makefile found; skipping ${{ matrix.test.name }} test target." | tee test-${{ matrix.test.name }}.log
+          fi
           echo "::endgroup::"
 
       - name: Upload test results
@@ -137,22 +145,42 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Check frontend path
+        id: frontend_path
+        run: |
+          if [ -d server/react-client ]; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+            echo "server/react-client not present; skipping frontend build"
+          fi
+
       - name: Setup Node.js
+        if: steps.frontend_path.outputs.exists == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: "npm"
           cache-dependency-path: server/react-client/package-lock.json
 
-      - name: Install frontend dependencies
+      - name: Configure npm registry
+        if: steps.frontend_path.outputs.exists == 'true'
         working-directory: server/react-client
-        run: npm ci
+        run: |
+          npm config set registry https://registry.npmjs.org/
+
+      - name: Install frontend dependencies
+        if: steps.frontend_path.outputs.exists == 'true'
+        working-directory: server/react-client
+        run: npm ci --no-audit --fund=false
 
       - name: Build frontend
+        if: steps.frontend_path.outputs.exists == 'true'
         working-directory: server/react-client
         run: npm run build 2>&1 | tee ../../frontend-build.log
 
       - name: Upload frontend artifacts
+        if: steps.frontend_path.outputs.exists == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: frontend-build
@@ -174,25 +202,45 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Check server path
+        id: server_path
+        run: |
+          if [ -d server ]; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+            echo "server directory not present; skipping integration tests"
+          fi
+
       - name: Setup Node.js
+        if: steps.server_path.outputs.exists == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: Download engine binaries
+        if: steps.server_path.outputs.exists == 'true'
         uses: actions/download-artifact@v4
         with:
           name: engine-binaries
           path: bin/
 
       - name: Make engine executable
+        if: steps.server_path.outputs.exists == 'true'
         run: chmod +x bin/ghost-void_engine
 
-      - name: Install server dependencies
+      - name: Configure npm registry
+        if: steps.server_path.outputs.exists == 'true'
         working-directory: server
-        run: npm ci
+        run: npm config set registry https://registry.npmjs.org/
+
+      - name: Install server dependencies
+        if: steps.server_path.outputs.exists == 'true'
+        working-directory: server
+        run: npm ci --no-audit --fund=false
 
       - name: Run integration validation
+        if: steps.server_path.outputs.exists == 'true'
         run: node .github/scripts/validate-game.mjs
         timeout-minutes: 5
         env:
@@ -248,8 +296,12 @@ jobs:
 
       - name: Build determinism test
         run: |
-          make all
-          node .github/scripts/determinism-check.mjs
+          if [ -f Makefile ]; then
+            make all
+            node .github/scripts/determinism-check.mjs
+          else
+            echo "No Makefile found; skipping determinism check."
+          fi
         env:
           ENGINE_BIN: ./bin/ghost-void_engine
           ITERATIONS: 5

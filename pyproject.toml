@@ -12,6 +12,7 @@ dependencies = [
     "uvicorn",
     "httpx",
     "requests",
+    "jsonschema",
     "mcp[cli]",
 ]
 

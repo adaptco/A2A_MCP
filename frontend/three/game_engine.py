@@ -75,11 +75,29 @@ class GameEngine:
                     name=zone_data.get("name", zone_id),
                     layer=zone_data.get("layer", 0),
                     speed_limit_mph=zone_data.get("zone_speed_limit_mph", 55),
-                    obstacle_density=zone_data.get("obstacle_density", 0.0),
+                    obstacle_density=self._normalize_obstacle_density(
+                        zone_data.get("obstacle_density")
+                    ),
                     difficulty_rating=zone_data.get("difficulty_rating", 1),
                     metadata={"grid_pos": zone_data.get("grid_pos")},
                 )
             )
+
+    @staticmethod
+    def _normalize_obstacle_density(value: Any) -> float:
+        """Normalize zone obstacle density from string or numeric values."""
+        if isinstance(value, (int, float)):
+            return float(value)
+        if isinstance(value, str):
+            mapping = {
+                "none": 0.0,
+                "low": 0.25,
+                "medium": 0.5,
+                "high": 0.75,
+                "extreme": 1.0,
+            }
+            return mapping.get(value.strip().lower(), 0.0)
+        return 0.0
 
     def initialize_player(
         self, agent_name: str, position: Optional[Vector3] = None

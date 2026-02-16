@@ -87,6 +87,55 @@ A2A_MCP/
 |--------|------|-------------|
 | `POST` | `/orchestrate` | Full 5-agent pipeline trigger |
 | `POST` | `/plans/ingress` | Plan state machine ingress |
+### WhatsApp Notifications (Task Completion)
+Set these environment variables to enable Twilio WhatsApp alerts when agent coding tasks complete:
+
+```bash
+WHATSAPP_NOTIFICATIONS_ENABLED=true
+TWILIO_ACCOUNT_SID=ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+TWILIO_AUTH_TOKEN=your_auth_token
+WHATSAPP_FROM=whatsapp:+14155238886
+WHATSAPP_TO=whatsapp:+15551234567
+WHATSAPP_CHANNEL_BRIDGE_TO=whatsapp:+15551234567
+```
+
+Bootstrap those keys into `.env` automatically:
+
+```bash
+python scripts/configure_twilio_agent.py
+```
+
+The notifier is wired into `IntentEngine` and sends a summary when plan execution finishes.
+
+### Notification App (Agent -> WhatsApp Channel Workflow)
+Run the notification app:
+
+```bash
+uvicorn app.notification_app:app_notify --reload --port 8082
+```
+
+Send a request:
+
+```bash
+curl -X POST http://127.0.0.1:8082/notify/whatsapp/channel \
+  -H "Content-Type: application/json" \
+  -d "{\"channel_url\":\"https://whatsapp.com/channel/0029Vb6UzUH5a247SNGocW26\",\"message\":\"Build complete\"}"
+```
+
+The `NotificationAgent` currently uses bridge mode: it sends the message to `WHATSAPP_CHANNEL_BRIDGE_TO` for operator posting into the channel.
+
+CLI option:
+
+```bash
+python scripts/send_channel_message.py --message "Build complete"
+```
+
+### Verify Installation
+```bash
+python -c "from orchestrator import MCPHub; print('✓ Orchestrator loaded')"
+python -c "from agents import *; print('✓ All agents loaded')"
+python -c "from schemas import *; print('✓ All schemas loaded')"
+```
 
 See [docs/API.md](docs/API.md) for full documentation.
 

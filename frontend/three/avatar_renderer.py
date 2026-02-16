@@ -6,6 +6,16 @@ from avatars.avatar import AvatarStyle
 from avatars.setup import setup_default_avatars
 from frontend.three.scene_manager import ThreeJSObject, Vector3
 
+CANONICAL_AGENTS = [
+    "ManagingAgent",
+    "OrchestrationAgent",
+    "ArchitectureAgent",
+    "CoderAgent",
+    "TesterAgent",
+    "ResearcherAgent",
+    "PINNAgent",
+]
+
 
 class AvatarUIPanel:
     """UI panel for displaying avatar information and Judge scores."""
@@ -73,13 +83,22 @@ class AvatarRenderer:
     def __init__(self):
         self.registry = get_avatar_registry()
         self.avatar_panels: Dict[str, AvatarUIPanel] = {}
-        if not self.registry.list_avatars():
+        if len(self._canonical_avatars()) < len(CANONICAL_AGENTS):
             setup_default_avatars()
         self._create_avatar_objects()
 
+    def _canonical_avatars(self):
+        avatars = []
+        for agent_name in CANONICAL_AGENTS:
+            avatar = self.registry.get_avatar_for_agent(agent_name)
+            if avatar is not None:
+                avatars.append(avatar)
+        return avatars
+
     def _create_avatar_objects(self) -> None:
         """Create UI panel for each avatar."""
-        avatars = self.registry.list_avatars()
+        avatars = self._canonical_avatars()
+        self.avatar_panels = {}
 
         for idx, avatar in enumerate(avatars):
             # Position avatars in UI space

@@ -60,3 +60,40 @@ def test_intent_engine_executes_plan(monkeypatch):
     assert len(artifact_ids) == 6
     assert all(action.status == "completed" for action in plan.actions)
     assert len(saved) == 4
+
+
+def test_intent_engine_sends_completion_notification(monkeypatch):
+    engine = IntentEngine()
+
+    async def fake_generate_solution(parent_id, feedback=None):
+        return SimpleNamespace(
+            artifact_id=str(uuid.uuid4()),
+            content=f"solution for {feedback}",
+        )
+
+    async def fake_validate(_artifact_id):
+        return TestReport(status="PASS", critique="looks good")
+
+    monkeypatch.setattr(engine.coder, "generate_solution", fake_generate_solution)
+    monkeypatch.setattr(engine.tester, "validate", fake_validate)
+    monkeypatch.setattr(engine.db, "save_artifact", lambda artifact: artifact)
+
+    sent_messages = []
+
+    class StubNotifier:
+        def send(self, message):
+            sent_messages.append(message)
+
+    engine.whatsapp_notifier = StubNotifier()
+
+    plan = ProjectPlan(
+        plan_id="plan-2",
+        project_name="notify-demo",
+        requester="qa",
+        actions=[PlanAction(action_id="a1", title="Build", instruction="Write code")],
+    )
+
+    asyncio.run(engine.execute_plan(plan))
+
+    assert len(sent_messages) == 1
+    assert "notify-demo" in sent_messages[0]

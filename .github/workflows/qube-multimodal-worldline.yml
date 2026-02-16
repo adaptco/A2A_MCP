@@ -1,0 +1,72 @@
+name: Qube Multimodal Worldline
+
+on:
+  workflow_dispatch:
+    inputs:
+      prompt:
+        description: "Prompt to orchestrate text->image->video->multimodal worldline"
+        required: true
+        type: string
+      cluster_count:
+        description: "Number of artifact clusters for LoRA attention weights"
+        required: false
+        default: "4"
+        type: string
+  push:
+    branches: [main]
+    paths:
+      - "orchestrator/multimodal_worldline.py"
+      - "scripts/build_worldline_block.py"
+      - ".github/workflows/qube-multimodal-worldline.yml"
+
+jobs:
+  build-worldline:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Build worldline block artifact
+        env:
+          INPUT_PROMPT: ${{ github.event.inputs.prompt }}
+          INPUT_CLUSTER_COUNT: ${{ github.event.inputs.cluster_count }}
+        run: |
+          PROMPT="${INPUT_PROMPT:-Infrastructure avatar worldline build for multimodal MCP orchestration}"
+          CLUSTER_COUNT="${INPUT_CLUSTER_COUNT:-4}"
+          python scripts/build_worldline_block.py \
+            --prompt "$PROMPT" \
+            --repository "${GITHUB_REPOSITORY}" \
+            --commit-sha "${GITHUB_SHA}" \
+            --actor "${GITHUB_ACTOR}" \
+            --cluster-count "${CLUSTER_COUNT}" \
+            --output worldline_block.json
+          cat worldline_block.json
+
+      - name: Upload worldline block
+        uses: actions/upload-artifact@v4
+        with:
+          name: worldline-block-${{ github.run_number }}
+          path: worldline_block.json
+
+      - name: Call GitHub MCP API mapping (optional)
+        if: ${{ secrets.GITHUB_MCP_API_URL != '' }}
+        env:
+          GITHUB_MCP_API_URL: ${{ secrets.GITHUB_MCP_API_URL }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          curl -sS -X POST "${GITHUB_MCP_API_URL}/tools/call" \
+            -H "Authorization: Bearer ${GITHUB_TOKEN}" \
+            -H "Content-Type: application/json" \
+            --data-binary @worldline_block.json \
+            -o mcp_response.json
+          cat mcp_response.json
+

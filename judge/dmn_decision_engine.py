@@ -9,9 +9,13 @@ formal decision-making and remediation.
 from typing import Dict, List, Optional, Tuple, Any
 from enum import Enum
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 
 from schemas.telemetry import DMNToken, DTCSeverity, ConstraintViolation
+
+
+def _utc_now_iso() -> str:
+    return datetime.now(timezone.utc).isoformat()
 
 
 class DecisionOutcome(str, Enum):
@@ -250,7 +254,7 @@ class DMNDecisionEngine:
         decision_outcome = DecisionOutcome.PROCEED
         findings = {
             "token_id": token.token_id,
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": _utc_now_iso(),
             "table_evaluations": {},
         }
 
@@ -285,7 +289,7 @@ class DMNDecisionEngine:
             "token_id": token.token_id,
             "outcome": decision_outcome,
             "findings": findings,
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": _utc_now_iso(),
         }
         self.decisions_made.append(decision_record)
 
@@ -406,7 +410,7 @@ class DMNDecisionEngine:
         """
         decision = {
             "decision_id": str(uuid.uuid4()),
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": _utc_now_iso(),
             "judge_score": judge_score,
             "loose_thread_count": len(loose_threads),
             "thread_outcomes": [],

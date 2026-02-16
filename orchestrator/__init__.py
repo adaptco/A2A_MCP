@@ -55,6 +55,17 @@ except ImportError:
     # webhook depends on FastAPI which may not be installed
     webhook_app = None
 
+try:
+    from orchestrator.notifier import WhatsAppNotifier, send_pipeline_completion_notification
+except ImportError:
+    WhatsAppNotifier = None
+    send_pipeline_completion_notification = None
+
+try:
+    from orchestrator.multimodal_worldline import build_worldline_block
+except ImportError:
+    build_worldline_block = None
+
 __all__ = [
     # Core classes (always available)
     'StateMachine',
@@ -75,4 +86,7 @@ __all__ = [
     'ReleasePhase',
     'schedule_job',
     'webhook_app',
+    'WhatsAppNotifier',
+    'send_pipeline_completion_notification',
+    'build_worldline_block',
 ]

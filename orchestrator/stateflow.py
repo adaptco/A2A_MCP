@@ -172,8 +172,7 @@ class StateMachine:
                     self._transition_seq += 1
                     seq = self._transition_seq
             else:
-                if event == "RETRY_DISPATCHED":
-                    self.attempts = 0
+                # Do not reset attempts on RETRY_DISPATCHED; only reset after PASS.
                 if event == "VERDICT_PASS":
                     self.attempts = 0
                 rec = self._record(self.state, to_state, event, meta)

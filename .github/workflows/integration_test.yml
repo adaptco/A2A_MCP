@@ -27,11 +27,19 @@ jobs:
           python-version: '3.10'
       
       - name: Install dependencies
-        run: |
-          pip install sqlalchemy psycopg2-binary pydantic pytest
+      run: |
+        pip install -r requirements.txt
+        pip install -e .
       
       - name: Run Persistence Unit Tests
         env:
           DATABASE_URL: postgresql://postgres:pass@localhost:5432/mcp_db
+          PYTHONPATH: .
         run: |
           pytest tests/test_storage.py
+
+      - name: Run MCP Handshake Tests
+        env:
+          PYTHONPATH: .
+        run: |
+          pytest tests/test_mcp_agents.py

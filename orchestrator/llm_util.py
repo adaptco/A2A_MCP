@@ -1,5 +1,4 @@
 import os
-import requests
 from dotenv import load_dotenv
 
 # This tells Python to look for your local .env file
@@ -14,6 +13,8 @@ class LLMService:
     def call_llm(self, prompt: str, system_prompt: str = "You are a helpful coding assistant."):
         if not self.api_key or not self.endpoint:
             raise ValueError("API Key or Endpoint missing from your local .env file!")
+
+        import requests
 
         headers = {
             "Authorization": f"Bearer {self.api_key}",

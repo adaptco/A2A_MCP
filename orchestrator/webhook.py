@@ -1,72 +1,56 @@
-from fastapi import FastAPI, HTTPException, BackgroundTasks
-from orchestrator.stateflow import StateMachine, State
-from orchestrator.intent_engine import IntentEngine
-from orchestrator.scheduler import SimpleScheduler
-from orchestrator import storage
+from fastapi import FastAPI, HTTPException, Body
+from orchestrator.stateflow import StateMachine
+from orchestrator.utils import extract_plan_id_from_path
+from orchestrator.verify_api import router as verify_router
 
-app = FastAPI(...)
-engine = IntentEngine()
+app = FastAPI(title="A2A MCP Webhook")
+app.include_router(verify_router)
 
-# in-memory cache of live state machines
+# in-memory map (replace with DB-backed persistence or plan state store in prod)
 PLAN_STATE_MACHINES = {}
-SCHED = SimpleScheduler()
 
 
-def _register_executing_callback(sm: StateMachine, plan) -> None:
-    """Register the EXECUTING callback that launches the intent engine."""
+def _resolve_plan_id(path_plan_id: str | None, payload: dict) -> str | None:
+    if path_plan_id:
+        return path_plan_id.strip()
 
-    def on_executing(rec):
-        async def run_engine():
-            try:
-                await engine.process_plan(plan)
-                sm.trigger("EXECUTION_COMPLETE", artifact_id="...")
-            except Exception as exc:
-                sm.trigger("EXECUTION_ERROR", details=str(exc))
+    plan_id = payload.get("plan_id")
+    if plan_id:
+        return str(plan_id).strip()
 
-        import asyncio
+    plan_file_path = payload.get("plan_file_path", "")
+    extracted = extract_plan_id_from_path(plan_file_path)
+    return extracted.strip() if extracted else None
 
-        asyncio.create_task(run_engine())
 
-    sm.register_callback(State.EXECUTING, on_executing)
+async def _plan_ingress_impl(path_plan_id: str | None, payload: dict):
+    """
+    Accepts either:
+      - /plans/ingress with JSON body: {"plan_id": "..."} or {"plan_file_path": "..."}
+      - /plans/{plan_id}/ingress with optional JSON body
+    """
+    plan_id = _resolve_plan_id(path_plan_id, payload or {})
+    if not plan_id:
+        raise HTTPException(status_code=400, detail="Unable to determine plan_id; provide plan_id or plan_file_path")
 
-@app.post("/plans/{plan_id}/ingress")
-async def plan_ingress(plan_id: str, background: BackgroundTasks):
-    # Create or fetch persisted state machine snapshot
-    persisted_snapshot = storage.load_plan_state(plan_id)
-    if persisted_snapshot:
-        sm = StateMachine.from_dict(
-            persisted_snapshot,
-            persistence_callback=lambda pid, snap: storage.save_plan_state(pid, snap),
-        )
-    else:
-        sm = StateMachine(
-            max_retries=3,
-            persistence_callback=lambda pid, snap: storage.save_plan_state(pid, snap),
-        )
-    sm.plan_id = plan_id
-
-    # register callback: when executing, run the intent engine
-    _register_executing_callback(sm, sm)
-    # persist mapping
-    PLAN_STATE_MACHINES[plan_id] = sm
-    rec = sm.trigger("OBJECTIVE_INGRESS")
-    return {"status":"ok","transition":rec.__dict__}
-
-@app.post("/plans/{plan_id}/dispatch")
-async def dispatch_plan(plan_id: str):
     sm = PLAN_STATE_MACHINES.get(plan_id)
     if not sm:
-        persisted_snapshot = storage.load_plan_state(plan_id)
-        if not persisted_snapshot:
-            raise HTTPException(404, "no plan")
-        sm = StateMachine.from_dict(
-            persisted_snapshot,
-            persistence_callback=lambda pid, snap: storage.save_plan_state(pid, snap),
-        )
+        sm = StateMachine(max_retries=3)
         sm.plan_id = plan_id
 
         # restored machines still need the EXECUTING callback to launch processing
         _register_executing_callback(sm, sm)
         PLAN_STATE_MACHINES[plan_id] = sm
-    rec = sm.trigger("RUN_DISPATCHED")
-    return {"status":"ok","transition":rec.__dict__}
+
+    rec = sm.trigger("OBJECTIVE_INGRESS")
+    return {"status": "scheduled", "plan_id": plan_id, "transition": rec.to_dict()}
+
+
+@app.post("/plans/ingress")
+async def plan_ingress(payload: dict = Body(...)):
+    return await _plan_ingress_impl(None, payload)
+
+
+@app.post("/plans/{plan_id}/ingress")
+async def plan_ingress_by_id(plan_id: str, payload: dict = Body(default={})):
+    return await _plan_ingress_impl(plan_id, payload)

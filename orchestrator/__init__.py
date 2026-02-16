@@ -55,6 +55,16 @@ except ImportError:
     # webhook depends on FastAPI which may not be installed
     webhook_app = None
 
+try:
+    from orchestrator.multimodal_worldline import build_worldline_block
+except ImportError:
+    build_worldline_block = None
+
+try:
+    from orchestrator.end_to_end_orchestration import EndToEndOrchestrator
+except ImportError:
+    EndToEndOrchestrator = None
+
 __all__ = [
     # Core classes (always available)
     'StateMachine',
@@ -75,4 +85,6 @@ __all__ = [
     'ReleasePhase',
     'schedule_job',
     'webhook_app',
+    'build_worldline_block',
+    'EndToEndOrchestrator',
 ]

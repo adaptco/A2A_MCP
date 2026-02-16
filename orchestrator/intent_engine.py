@@ -35,7 +35,6 @@ class IntentEngine:
                     parent_id=parent_code_artifact_id,
                     feedback=action.validation_feedback or action.instruction,
                 )
-                self.db.save_artifact(code_artifact)
                 artifact_ids.append(code_artifact.artifact_id)
 
                 test_report = await self.tester.validate(code_artifact.artifact_id)

@@ -38,9 +38,16 @@ class DBManager:
 
     def get_artifact(self, artifact_id):
         db = self.SessionLocal()
-        artifact = db.query(ArtifactModel).filter(ArtifactModel.id == artifact_id).first()
-        db.close()
-        return artifact
+        try:
+            artifact = db.query(ArtifactModel).filter(ArtifactModel.id == artifact_id).first()
+            return artifact
+        except Exception as e:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.exception(f"Error retrieving artifact {artifact_id}")
+            raise
+        finally:
+            db.close()
 
 
 _db_manager = DBManager()
@@ -73,9 +80,13 @@ def load_plan_state(plan_id: str) -> Optional[dict]:
     finally:
         db.close()
 
-def init_db():
-    connect_args = {"check_same_thread": False} if "sqlite" in DATABASE_URL else {}
-    engine = create_engine(DATABASE_URL, connect_args=connect_args)
-    Base.metadata.create_all(bind=engine)
+# Create engine for SessionLocal
+connect_args = {"check_same_thread": False} if "sqlite" in DATABASE_URL else {}
+engine = create_engine(DATABASE_URL, connect_args=connect_args)
 
-# All instructional text has been removed to prevent SyntaxErrors.
+# SessionLocal for backward compatibility (used by mcp_server.py)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+def init_db():
+    """Initialize database tables."""
+    Base.metadata.create_all(bind=engine)

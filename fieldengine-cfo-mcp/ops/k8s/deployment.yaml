@@ -1,0 +1,17 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fieldengine-cfo-mcp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fieldengine-cfo-mcp
+  template:
+    metadata:
+      labels:
+        app: fieldengine-cfo-mcp
+    spec:
+      containers:
+        - name: app
+          image: fieldengine-cfo-mcp:latest

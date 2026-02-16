@@ -11,6 +11,24 @@ engine = IntentEngine()
 PLAN_STATE_MACHINES = {}
 SCHED = SimpleScheduler()
 
+
+def _register_executing_callback(sm: StateMachine, plan) -> None:
+    """Register the EXECUTING callback that launches the intent engine."""
+
+    def on_executing(rec):
+        async def run_engine():
+            try:
+                await engine.process_plan(plan)
+                sm.trigger("EXECUTION_COMPLETE", artifact_id="...")
+            except Exception as exc:
+                sm.trigger("EXECUTION_ERROR", details=str(exc))
+
+        import asyncio
+
+        asyncio.create_task(run_engine())
+
+    sm.register_callback(State.EXECUTING, on_executing)
+
 @app.post("/plans/{plan_id}/ingress")
 async def plan_ingress(plan_id: str, background: BackgroundTasks):
     # Create or fetch persisted state machine snapshot
@@ -28,20 +46,7 @@ async def plan_ingress(plan_id: str, background: BackgroundTasks):
     sm.plan_id = plan_id
 
     # register callback: when executing, run the intent engine
-    def on_executing(rec):
-        # run IntentEngine asynchronously
-        async def run_engine():
-            try:
-                await engine.process_plan(plan)  # plan must be loaded or passed in
-                # after engine finishes: trigger completion
-                sm.trigger("EXECUTION_COMPLETE", artifact_id="...") 
-            except Exception as exc:
-                # on error trigger repair
-                sm.trigger("EXECUTION_ERROR", details=str(exc))
-        import asyncio
-        asyncio.create_task(run_engine())
-
-    sm.register_callback(State.EXECUTING, on_executing)
+    _register_executing_callback(sm, sm)
     # persist mapping
     PLAN_STATE_MACHINES[plan_id] = sm
     rec = sm.trigger("OBJECTIVE_INGRESS")
@@ -61,17 +66,7 @@ async def dispatch_plan(plan_id: str):
         sm.plan_id = plan_id
 
         # restored machines still need the EXECUTING callback to launch processing
-        def on_executing(rec):
-            async def run_engine():
-                try:
-                    await engine.process_plan(plan)
-                    sm.trigger("EXECUTION_COMPLETE", artifact_id="...")
-                except Exception as exc:
-                    sm.trigger("EXECUTION_ERROR", details=str(exc))
-            import asyncio
-            asyncio.create_task(run_engine())
-
-        sm.register_callback(State.EXECUTING, on_executing)
+        _register_executing_callback(sm, sm)
         PLAN_STATE_MACHINES[plan_id] = sm
     rec = sm.trigger("RUN_DISPATCHED")
     return {"status":"ok","transition":rec.__dict__}

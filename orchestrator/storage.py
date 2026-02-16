@@ -1,7 +1,9 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from schemas.database import Base, ArtifactModel
+from schemas.database import Base, ArtifactModel, PlanStateModel
 import os
+import json
+from typing import Optional
 
 # Database Configuration
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./a2a_mcp.db")
@@ -28,17 +30,63 @@ class DBManager:
             db.add(db_artifact)
             db.commit()
             return db_artifact
+        except Exception:
+            db.rollback()
+            raise
         finally:
             db.close()
 
     def get_artifact(self, artifact_id):
         db = self.SessionLocal()
-        artifact = db.query(ArtifactModel).filter(ArtifactModel.id == artifact_id).first()
+        try:
+            artifact = db.query(ArtifactModel).filter(ArtifactModel.id == artifact_id).first()
+            return artifact
+        except Exception as e:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.exception(f"Error retrieving artifact {artifact_id}")
+            raise
+        finally:
+            db.close()
+
+
+_db_manager = DBManager()
+
+
+def save_plan_state(plan_id: str, snapshot: dict) -> None:
+    db = _db_manager.SessionLocal()
+    try:
+        serialized_snapshot = json.dumps(snapshot)
+        existing = db.query(PlanStateModel).filter(PlanStateModel.plan_id == plan_id).first()
+        if existing:
+            existing.snapshot = serialized_snapshot
+        else:
+            db.add(PlanStateModel(plan_id=plan_id, snapshot=serialized_snapshot))
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
+    finally:
         db.close()
-        return artifact
+
+
+def load_plan_state(plan_id: str) -> Optional[dict]:
+    db = _db_manager.SessionLocal()
+    try:
+        state = db.query(PlanStateModel).filter(PlanStateModel.plan_id == plan_id).first()
+        if not state:
+            return None
+        return json.loads(state.snapshot)
+    finally:
+        db.close()
+
+# Create engine for SessionLocal
+connect_args = {"check_same_thread": False} if "sqlite" in DATABASE_URL else {}
+engine = create_engine(DATABASE_URL, connect_args=connect_args)
+
+# SessionLocal for backward compatibility (used by mcp_server.py)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 def init_db():
-    engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
+    """Initialize database tables."""
     Base.metadata.create_all(bind=engine)
-
-# All instructional text has been removed to prevent SyntaxErrors.

@@ -26,11 +26,16 @@ def test_pinn_deterministic_embedding_is_stable():
 def test_intent_engine_executes_plan(monkeypatch):
     engine = IntentEngine()
 
+    generate_calls = []
+
     async def fake_generate_solution(parent_id, feedback=None):
-        return SimpleNamespace(
+        artifact = SimpleNamespace(
             artifact_id=str(uuid.uuid4()),
             content=f"solution for {feedback}",
+            type="code_solution",
         )
+        generate_calls.append((parent_id, artifact.artifact_id))
+        return artifact
 
     async def fake_validate(_artifact_id):
         return TestReport(status="PASS", critique="looks good")

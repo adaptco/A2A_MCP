@@ -39,17 +39,7 @@ async def _plan_ingress_impl(path_plan_id: str | None, payload: dict):
         sm.plan_id = plan_id
 
         # restored machines still need the EXECUTING callback to launch processing
-        def on_executing(rec):
-            async def run_engine():
-                try:
-                    await engine.process_plan(plan)
-                    sm.trigger("EXECUTION_COMPLETE", artifact_id="...")
-                except Exception as exc:
-                    sm.trigger("EXECUTION_ERROR", details=str(exc))
-            import asyncio
-            asyncio.create_task(run_engine())
-
-        sm.register_callback(State.EXECUTING, on_executing)
+        _register_executing_callback(sm, sm)
         PLAN_STATE_MACHINES[plan_id] = sm
 
     rec = sm.trigger("OBJECTIVE_INGRESS")

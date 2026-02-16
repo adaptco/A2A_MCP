@@ -21,10 +21,20 @@ ENV/
 .DS_Store
 Thumbs.db
 
-# Local transient orchestration sandboxes
+# Runtime artifacts
+*.db
+*.sqlite
+
+# Agent temp files
+tmpclaude-*
 tmpclaude-*-cwd/
 tmpclaude-*-cwd
 specs/tmpclaude-*-cwd
 
-# Local runtime artifacts
-*.sqlite
+# Test output dumps
+test_output*.txt
+test_results*.txt
+test_full_output*.txt
+
+# Pytest
+.pytest_cache/

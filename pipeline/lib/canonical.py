@@ -5,8 +5,30 @@ Implements RFC8785-style JSON canonicalization for deterministic hashing.
 
 import json
 import hashlib
+import math
 from pathlib import Path
 from typing import Any, Dict
+
+
+def _normalize_numbers(value: Any) -> Any:
+    """Normalize numbers so JSON serialization is stable across runtimes."""
+    if isinstance(value, bool) or value is None:
+        return value
+
+    if isinstance(value, float):
+        if not math.isfinite(value):
+            raise ValueError("NaN or infinite values are not allowed in canonical JSON")
+        if value.is_integer():
+            return int(value)
+        return value
+
+    if isinstance(value, list):
+        return [_normalize_numbers(item) for item in value]
+
+    if isinstance(value, dict):
+        return {key: _normalize_numbers(item) for key, item in value.items()}
+
+    return value
 
 
 def jcs_canonical_bytes(obj: Any) -> bytes:
@@ -15,11 +37,13 @@ def jcs_canonical_bytes(obj: Any) -> bytes:
     Returns canonical JSON bytes for deterministic hashing.
     """
     # Python's json.dumps with separators and sort_keys approximates JCS
+    normalized_obj = _normalize_numbers(obj)
     canonical_str = json.dumps(
-        obj,
+        normalized_obj,
         ensure_ascii=False,
         sort_keys=True,
-        separators=(',', ':')
+        separators=(',', ':'),
+        allow_nan=False,
     )
     return canonical_str.encode('utf-8')
 

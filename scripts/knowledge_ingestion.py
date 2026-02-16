@@ -2,7 +2,10 @@ from __future__ import annotations
 
 from typing import Any
 
-from fastmcp import FastMCP
+try:
+    from fastmcp import FastMCP
+except ModuleNotFoundError:
+    from mcp.server.fastmcp import FastMCP
 
 app_ingest = FastMCP("knowledge-ingestion")
 

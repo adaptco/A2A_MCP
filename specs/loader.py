@@ -1,11 +1,9 @@
 """Specifications loader for Supra domain and Judge criteria."""
 
 import yaml
-import logging
 from typing import Dict, Any, Optional
 from pathlib import Path
 
-logger = logging.getLogger(__name__)
 
 class SpecsLoader:
     """Load and cache specification files."""
@@ -23,17 +21,8 @@ class SpecsLoader:
             return self._cache[cache_key]
 
         spec_file = self.specs_dir / "supra_specs.yaml"
-        if not spec_file.exists():
-            raise FileNotFoundError(
-                f"Supra specs file not found at {spec_file}. "
-                f"Please ensure specs/supra_specs.yaml exists."
-            )
-
-        try:
-            with open(spec_file, "r") as f:
-                specs = yaml.safe_load(f)
-        except yaml.YAMLError as e:
-            raise ValueError(f"Invalid YAML in supra_specs.yaml: {e}")
+        with open(spec_file, "r") as f:
+            specs = yaml.safe_load(f)
 
         self._cache[cache_key] = specs
         return specs
@@ -45,42 +34,11 @@ class SpecsLoader:
             return self._cache[cache_key]
 
         criteria_file = self.specs_dir / "judge_criteria.yaml"
-        if not criteria_file.exists():
-            raise FileNotFoundError(
-                f"Judge criteria file not found at {criteria_file}. "
-                f"Please ensure specs/judge_criteria.yaml exists."
-            )
-
-        try:
-            with open(criteria_file, "r") as f:
-                criteria = yaml.safe_load(f)
-        except yaml.YAMLError as e:
-            raise ValueError(f"Invalid YAML in judge_criteria.yaml: {e}")
+        with open(criteria_file, "r") as f:
+            criteria = yaml.safe_load(f)
 
         self._cache[cache_key] = criteria
         return criteria
-
-    def load_base44_map(self) -> Dict[str, Any]:
-        """Load and cache Base44 world map configuration."""
-        cache_key = "base44_map"
-        if cache_key in self._cache:
-            return self._cache[cache_key]
-
-        map_file = self.specs_dir / "base44_map.yaml"
-        if not map_file.exists():
-            raise FileNotFoundError(
-                f"Base44 map file not found at {map_file}. "
-                f"Please ensure specs/base44_map.yaml exists."
-            )
-
-        try:
-            with open(map_file, "r") as f:
-                world_map = yaml.safe_load(f)
-        except yaml.YAMLError as e:
-            raise ValueError(f"Invalid YAML in base44_map.yaml: {e}")
-
-        self._cache[cache_key] = world_map
-        return world_map
 
     def get_supra_config(self) -> Dict[str, Any]:
         """Return supra section from specs."""
@@ -121,7 +79,7 @@ class SpecsLoader:
 
         # Convert preset weights
         weights = {}
-        for key in ["safety", "spec", "intent", "latency"]:
+        for key in ["safety", "spec_alignment", "player_intent", "latency"]:
             weight_key = f"{key}_weight"
             weights[key] = preset.get(weight_key, 1.0)
 

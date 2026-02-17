@@ -14,6 +14,7 @@ on:
 jobs:
   build-train-deploy:
     runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request'
     env:
       AWS_REGION: us-east-1
       # ECR repository URI and S3 bucket name should be stored in repository secrets.

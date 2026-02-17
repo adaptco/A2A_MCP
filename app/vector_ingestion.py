@@ -1,6 +1,6 @@
 # knowledge_ingestion.py (Updated)
 from fastapi import FastAPI, HTTPException, Header
-from oidc_token import verify_github_oidc_token
+from app.oidc_token import verify_github_oidc_token
 from pipeline.vector_ingestion import VectorIngestionEngine, upsert_to_knowledge_store
 
 app_ingest = FastAPI()

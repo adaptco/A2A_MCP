@@ -58,6 +58,8 @@ class GameEngine:
 
         # Add avatar representations
         avatars = self.avatar_renderer.registry.list_avatars()
+        if isinstance(avatars, dict):
+            avatars = avatars.values()
         for avatar in avatars:
             avatar_obj = self.avatar_renderer.create_avatar_representation(
                 avatar.profile.avatar_id

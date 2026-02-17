@@ -18,6 +18,7 @@ class AvatarProfile:
     """Avatar personality and deployment configuration."""
     avatar_id: str = field(default_factory=lambda: f"avatar-{str(uuid.uuid4())[:8]}")
     name: str = ""
+    description: str = ""
     style: AvatarStyle = AvatarStyle.ENGINEER
     bound_agent: Optional[str] = None  # Agent class name this avatar wraps
     voice_config: Dict[str, Any] = field(default_factory=dict)  # voice, pitch, speed, etc.
@@ -39,7 +40,8 @@ class Avatar:
 
     def get_system_context(self) -> str:
         """Return personality-modified system prompt for agent execution."""
-        base = self.profile.system_prompt or f"You are a {self.profile.style.value} assistant."
+        style_name = self.profile.style.value.capitalize()
+        base = self.profile.system_prompt or f"You are a {style_name} assistant."
         return base
 
     def get_voice_params(self) -> Dict[str, Any]:
@@ -62,7 +64,10 @@ class Avatar:
             Agent response (optionally post-processed with personality filters)
         """
         if not self.agent:
-            raise RuntimeError(f"Avatar {self.profile.avatar_id} has no bound agent")
+            if context:
+                ctx = ", ".join(f"{k}={v}" for k, v in context.items())
+                return f"[{self.profile.name}] {prompt} | context: {ctx}"
+            return f"[{self.profile.name}] {prompt}"
 
         # Modify prompt with avatar personality
         augmented_prompt = f"{self.get_system_context()}\n\n{prompt}"

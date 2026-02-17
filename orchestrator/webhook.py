@@ -1,23 +1,14 @@
 from fastapi import FastAPI, HTTPException, Body
 from orchestrator.stateflow import StateMachine
 from orchestrator.utils import extract_plan_id_from_path
-<<<<<<< HEAD
-from orchestrator.verify_api import router as verify_router
-
-app = FastAPI(title="A2A MCP Webhook")
-app.include_router(verify_router)
-=======
 from orchestrator.storage import save_plan_state
 from orchestrator.intent_engine import IntentEngine
 
 app = FastAPI(title="A2A MCP Webhook")
->>>>>>> cde431b91765a0efa58a544c6bbce7e87c940fbe
 
 # in-memory map (replace with DB-backed persistence or plan state store in prod)
 PLAN_STATE_MACHINES = {}
 
-<<<<<<< HEAD
-=======
 def persistence_callback(plan_id: str, state_dict: dict) -> None:
     """Callback to persist FSM state to database."""
     try:
@@ -25,7 +16,6 @@ def persistence_callback(plan_id: str, state_dict: dict) -> None:
     except Exception as e:
         print(f"Warning: Failed to persist plan state for {plan_id}: {e}")
 
->>>>>>> cde431b91765a0efa58a544c6bbce7e87c940fbe
 
 def _resolve_plan_id(path_plan_id: str | None, payload: dict) -> str | None:
     if path_plan_id:
@@ -52,15 +42,8 @@ async def _plan_ingress_impl(path_plan_id: str | None, payload: dict):
 
     sm = PLAN_STATE_MACHINES.get(plan_id)
     if not sm:
-<<<<<<< HEAD
-        sm = StateMachine(max_retries=3)
-=======
         sm = StateMachine(max_retries=3, persistence_callback=persistence_callback)
->>>>>>> cde431b91765a0efa58a544c6bbce7e87c940fbe
         sm.plan_id = plan_id
-
-        # restored machines still need the EXECUTING callback to launch processing
-        _register_executing_callback(sm, sm)
         PLAN_STATE_MACHINES[plan_id] = sm
 
     rec = sm.trigger("OBJECTIVE_INGRESS")
@@ -75,8 +58,6 @@ async def plan_ingress(payload: dict = Body(...)):
 @app.post("/plans/{plan_id}/ingress")
 async def plan_ingress_by_id(plan_id: str, payload: dict = Body(default={})):
     return await _plan_ingress_impl(plan_id, payload)
-<<<<<<< HEAD
-=======
 
 
 @app.post("/orchestrate")
@@ -109,4 +90,3 @@ async def orchestrate(user_query: str):
         return summary
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
->>>>>>> cde431b91765a0efa58a544c6bbce7e87c940fbe

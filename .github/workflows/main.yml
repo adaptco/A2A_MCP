@@ -42,11 +42,4 @@ jobs:
 
     - name: Run A2A Integration Test
       run: |
-        if [ -f test_api.py ]; then
-          python test_api.py
-        elif [ -f scripts/test_api.py ]; then
-          python scripts/test_api.py
-        else
-          echo "No integration test script found (test_api.py or scripts/test_api.py)."
-          exit 1
-        fi
+        python -m pytest -q tests/test_cicd_pipeline.py

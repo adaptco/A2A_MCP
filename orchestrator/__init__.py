@@ -66,6 +66,17 @@ try:
 except ImportError:
     build_worldline_block = None
 
+try:
+    from orchestrator.multimodal_rag_workflow import (
+        build_cicd_logic_tree,
+        build_workflow_bundle,
+        reconstruct_tokens_for_nodes,
+    )
+except ImportError:
+    build_cicd_logic_tree = None
+    build_workflow_bundle = None
+    reconstruct_tokens_for_nodes = None
+
 __all__ = [
     # Core classes (always available)
     'StateMachine',
@@ -89,4 +100,7 @@ __all__ = [
     'WhatsAppNotifier',
     'send_pipeline_completion_notification',
     'build_worldline_block',
+    'build_cicd_logic_tree',
+    'build_workflow_bundle',
+    'reconstruct_tokens_for_nodes',
 ]

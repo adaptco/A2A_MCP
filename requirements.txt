@@ -4,7 +4,13 @@ pydantic
 pytest
 pytest-asyncio
 python-dotenv
+<<<<<<< HEAD
 requests
 httpx
 fastapi
 uvicorn
+=======
+mcp[cli]
+fastmcp
+requests
+>>>>>>> 117e2e444ff3d500482857ebf717156179fbdeed

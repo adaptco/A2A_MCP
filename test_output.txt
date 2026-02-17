@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ﻿============================= test session starts =============================
 platform win32 -- Python 3.13.7, pytest-9.0.2, pluggy-1.6.0 -- C:\Python313\python.exe
 cachedir: .pytest_cache
@@ -157,3 +158,33 @@ tests/test_storage.py::test_artifact_persistence_lifecycle
 FAILED tests/test_stateflow.py::test_retry_limit_exceeded - AssertionError: a...
 FAILED tests/test_storage.py::test_artifact_persistence_lifecycle - Assertion...
 ================== 2 failed, 44 passed, 28 warnings in 7.18s ==================
+=======
+============================= test session starts =============================
+collecting ... collected 5 items
+
+tests/test_full_pipeline.py::TestFullPipeline::test_happy_path_all_pass PASSED [ 20%]
+tests/test_full_pipeline.py::TestFullPipeline::test_self_healing_fail_then_pass PASSED [ 40%]
+tests/test_full_pipeline.py::TestFullPipeline::test_all_fail_reports_failure PASSED [ 60%]
+tests/test_full_pipeline.py::TestFullPipeline::test_artifact_counts PASSED [ 80%]
+tests/test_full_pipeline.py::TestFullPipeline::test_legacy_execute_plan_still_works PASSED [100%]
+
+============================== warnings summary ===============================
+schemas\database.py:6
+  C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP\schemas\database.py:6: MovedIn20Warning: The ``declarative_base()`` function is now available as sqlalchemy.orm.declarative_base(). (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    Base = declarative_base()
+
+agents\tester.py:6
+  C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP\agents\tester.py:6: PytestCollectionWarning: cannot collect test class 'TestReport' because it has a __init__ constructor (from: tests/test_full_pipeline.py)
+    class TestReport(BaseModel):
+
+tests/test_full_pipeline.py: 81 warnings
+  C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP\schemas\agent_artifacts.py:12: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp: str = Field(default_factory=lambda: datetime.utcnow().isoformat())
+
+tests/test_full_pipeline.py: 28 warnings
+  C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP\.venv\Lib\site-packages\pydantic\main.py:250: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    validated_self = self.__pydantic_validator__.validate_python(data, self_instance=self)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================= 5 passed, 111 warnings in 0.91s =======================
+>>>>>>> 117e2e444ff3d500482857ebf717156179fbdeed

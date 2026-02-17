@@ -19,6 +19,11 @@ class TesterAgent:
         actionable feedback for self-healing.
         """
         artifact = self.db.get_artifact(artifact_id)
+        if artifact is None:
+            return TestReport(
+                status="FAIL",
+                critique=f"Artifact not found: {artifact_id}",
+            )
         
         # Phase 3 Logic: Using LLM to verify code logic vs. requirements
         prompt = f"Analyze this code for bugs or anti-patterns:\n{artifact.content}"

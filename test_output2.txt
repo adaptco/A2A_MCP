@@ -1,0 +1,104 @@
+﻿============================= test session starts =============================
+platform win32 -- Python 3.13.7, pytest-9.0.2, pluggy-1.6.0 -- C:\Python313\python.exe
+cachedir: .pytest_cache
+rootdir: C:\Users\eqhsp\.gemini\antigravity\scratch\A2A_MCP
+configfile: pytest.ini
+plugins: anyio-4.12.1, asyncio-1.3.0
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 46 items
+
+tests/test_architecture_agent.py::TestArchitectureAgent::test_map_system_returns_artifacts PASSED [  2%]
+tests/test_architecture_agent.py::TestArchitectureAgent::test_map_system_records_in_world_model PASSED [  4%]
+tests/test_architecture_agent.py::TestArchitectureAgent::test_map_system_persists_all_artifacts PASSED [  6%]
+tests/test_dot_product.py::TestDotProduct::test_dot_product_basic PASSED [  8%]
+tests/test_dot_product.py::TestDotProduct::test_dot_product_zero_vector PASSED [ 10%]
+tests/test_dot_product.py::TestDotProduct::test_dot_product_length_mismatch_raises PASSED [ 13%]
+tests/test_dot_product.py::TestDotProduct::test_magnitude PASSED         [ 15%]
+tests/test_dot_product.py::TestDotProduct::test_magnitude_zero PASSED    [ 17%]
+tests/test_dot_product.py::TestCosineSimilarity::test_identical_vectors PASSED [ 19%]
+tests/test_dot_product.py::TestCosineSimilarity::test_orthogonal_vectors PASSED [ 21%]
+tests/test_dot_product.py::TestCosineSimilarity::test_opposite_vectors PASSED [ 23%]
+tests/test_dot_product.py::TestCosineSimilarity::test_zero_vector_returns_zero PASSED [ 26%]
+tests/test_dot_product.py::TestRankCandidates::test_ranking_order PASSED [ 28%]
+tests/test_dot_product.py::TestRankCandidates::test_ranking_returns_all_candidates PASSED [ 30%]
+tests/test_healing_loop.py::test_healing_loop_convergence PASSED         [ 32%]
+tests/test_intent_engine.py::test_pinn_deterministic_embedding_is_stable PASSED [ 34%]
+tests/test_intent_engine.py::test_intent_engine_executes_plan PASSED     [ 36%]
+tests/test_managing_agent.py::TestManagingAgent::test_categorize_produces_plan PASSED [ 39%]
+tests/test_managing_agent.py::TestManagingAgent::test_categorize_persists_artifact PASSED [ 41%]
+tests/test_managing_agent.py::TestManagingAgent::test_categorize_fallback_single_action PASSED [ 43%]
+tests/test_managing_agent.py::TestManagingAgent::test_parse_actions_handles_varied_formats PASSED [ 45%]
+tests/test_orchestration_agent.py::TestOrchestrationAgent::test_build_blueprint_returns_project_plan PASSED [ 47%]
+tests/test_orchestration_agent.py::TestOrchestrationAgent::test_blueprint_creates_actions_per_pipeline_stage PASSED [ 50%]
+tests/test_orchestration_agent.py::TestOrchestrationAgent::test_blueprint_action_metadata_contains_delegation PASSED [ 52%]
+tests/test_orchestration_agent.py::TestOrchestrationAgent::test_blueprint_persists_artifact PASSED [ 54%]
+tests/test_plan_state_persistence.py::test_plan_state_save_load_roundtrip PASSED [ 56%]
+tests/test_stateflow.py::test_happy_path PASSED                          [ 58%]
+tests/test_stateflow.py::test_retry_limit_exceeded PASSED                [ 60%]
+tests/test_stateflow.py::test_override_forward_only PASSED               [ 63%]
+tests/test_storage.py::test_artifact_persistence_lifecycle FAILED        [ 65%]
+tests/test_system_prompt.py::TestSystemPromptSchema::test_minimal_valid_prompt PASSED [ 67%]
+tests/test_system_prompt.py::TestSystemPromptSchema::test_custom_embedding_dim PASSED [ 69%]
+tests/test_system_prompt.py::TestSystemPromptSchema::test_model_context_defaults_to_empty PASSED [ 71%]
+tests/test_system_prompt.py::TestSystemPromptSchema::test_serialisation_round_trip PASSED [ 73%]
+tests/test_system_prompt.py::TestSystemPromptSchema::test_missing_required_fields_raises PASSED [ 76%]
+tests/test_system_prompt.py::TestPreBuiltPrompts::test_prebuilt_has_non_empty_system_text[prompt0] PASSED [ 78%]
+tests/test_system_prompt.py::TestPreBuiltPrompts::test_prebuilt_has_non_empty_system_text[prompt1] PASSED [ 80%]
+tests/test_system_prompt.py::TestPreBuiltPrompts::test_prebuilt_has_non_empty_system_text[prompt2] PASSED [ 82%]
+tests/test_system_prompt.py::TestPreBuiltPrompts::test_prebuilt_has_non_empty_system_text[prompt3] PASSED [ 84%]
+tests/test_system_prompt.py::TestPreBuiltPrompts::test_prebuilt_has_non_empty_system_text[prompt4] PASSED [ 86%]
+tests/test_system_prompt.py::TestPreBuiltPrompts::test_prebuilt_has_valid_role[prompt0] PASSED [ 89%]
+tests/test_system_prompt.py::TestPreBuiltPrompts::test_prebuilt_has_valid_role[prompt1] PASSED [ 91%]
+tests/test_system_prompt.py::TestPreBuiltPrompts::test_prebuilt_has_valid_role[prompt2] PASSED [ 93%]
+tests/test_system_prompt.py::TestPreBuiltPrompts::test_prebuilt_has_valid_role[prompt3] PASSED [ 95%]
+tests/test_system_prompt.py::TestPreBuiltPrompts::test_prebuilt_has_valid_role[prompt4] PASSED [ 97%]
+tests/test_system_prompt.py::TestPreBuiltPrompts::test_all_prompt_ids_unique PASSED [100%]
+
+================================== FAILURES ===================================
+_____________________ test_artifact_persistence_lifecycle _____________________
+tests\test_storage.py:23: in test_artifact_persistence_lifecycle
+    artifact.parent_artifact_id = "root-node"  # type: ignore[attr-defined]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\..\AppData\Roaming\Python\Python313\site-packages\pydantic\main.py:1032: in __setattr__
+    elif (setattr_handler := self._setattr_handler(name, value)) is not None:
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\..\AppData\Roaming\Python\Python313\site-packages\pydantic\main.py:1079: in _setattr_handler
+    raise ValueError(f'"{cls.__name__}" object has no field "{name}"')
+E   ValueError: "MCPArtifact" object has no field "parent_artifact_id"
+============================== warnings summary ===============================
+schemas\database.py:6
+  C:\Users\eqhsp\.gemini\antigravity\scratch\A2A_MCP\schemas\database.py:6: MovedIn20Warning: The ``declarative_base()`` function is now available as sqlalchemy.orm.declarative_base(). (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    Base = declarative_base()
+
+agents\tester.py:6
+  C:\Users\eqhsp\.gemini\antigravity\scratch\A2A_MCP\agents\tester.py:6: PytestCollectionWarning: cannot collect test class 'TestReport' because it has a __init__ constructor (from: tests/test_intent_engine.py)
+    class TestReport(BaseModel):
+
+tests/test_architecture_agent.py: 6 warnings
+tests/test_managing_agent.py: 3 warnings
+tests/test_orchestration_agent.py: 4 warnings
+tests/test_storage.py: 1 warning
+  C:\Users\eqhsp\.gemini\antigravity\scratch\A2A_MCP\schemas\agent_artifacts.py:12: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp: str = Field(default_factory=lambda: datetime.utcnow().isoformat())
+
+tests/test_architecture_agent.py::TestArchitectureAgent::test_map_system_returns_artifacts
+tests/test_architecture_agent.py::TestArchitectureAgent::test_map_system_returns_artifacts
+tests/test_architecture_agent.py::TestArchitectureAgent::test_map_system_records_in_world_model
+tests/test_architecture_agent.py::TestArchitectureAgent::test_map_system_records_in_world_model
+tests/test_architecture_agent.py::TestArchitectureAgent::test_map_system_persists_all_artifacts
+tests/test_architecture_agent.py::TestArchitectureAgent::test_map_system_persists_all_artifacts
+  C:\Users\eqhsp\AppData\Roaming\Python\Python313\site-packages\pydantic\main.py:250: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    validated_self = self.__pydantic_validator__.validate_python(data, self_instance=self)
+
+tests/test_plan_state_persistence.py::test_plan_state_save_load_roundtrip
+tests/test_plan_state_persistence.py::test_plan_state_save_load_roundtrip
+tests/test_plan_state_persistence.py::test_plan_state_save_load_roundtrip
+tests/test_plan_state_persistence.py::test_plan_state_save_load_roundtrip
+tests/test_plan_state_persistence.py::test_plan_state_save_load_roundtrip
+  C:\Users\eqhsp\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\sql\schema.py:3624: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    return util.wrap_callable(lambda ctx: fn(), fn)  # type: ignore
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/test_storage.py::test_artifact_persistence_lifecycle - ValueErro...
+================== 1 failed, 45 passed, 27 warnings in 9.57s ==================

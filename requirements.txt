@@ -11,6 +11,15 @@ fastapi
 uvicorn
 =======
 mcp[cli]
+<<<<<<< HEAD
 fastmcp
 requests
 >>>>>>> 117e2e444ff3d500482857ebf717156179fbdeed
+=======
+fastapi
+uvicorn
+httpx
+fastmcp
+requests
+jsonschema
+>>>>>>> cde431b91765a0efa58a544c6bbce7e87c940fbe

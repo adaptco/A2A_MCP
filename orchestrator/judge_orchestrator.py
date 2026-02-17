@@ -35,7 +35,18 @@ class JudgeOrchestrator:
 
     def get_avatar_for_agent(self, agent_name: str) -> Optional[Avatar]:
         """Get avatar bound to a specific agent."""
+<<<<<<< HEAD
         return self.avatar_registry.get_avatar_for_agent(agent_name)
+=======
+        if hasattr(self.avatar_registry, "get_avatar_for_agent"):
+            return self.avatar_registry.get_avatar_for_agent(agent_name)
+
+        # Backward-compatible fallback for older registry API.
+        for avatar in self.avatar_registry.list_avatars().values():
+            if avatar.profile.bound_agent == agent_name:
+                return avatar
+        return None
+>>>>>>> cde431b91765a0efa58a544c6bbce7e87c940fbe
 
     def judge_action(
         self,
@@ -119,13 +130,22 @@ class JudgeOrchestrator:
     def list_avatars(self) -> List[Dict[str, Any]]:
         """List all registered avatars with their bindings."""
         avatars = self.avatar_registry.list_avatars()
+<<<<<<< HEAD
+=======
+        if isinstance(avatars, dict):
+            avatars = list(avatars.values())
+>>>>>>> cde431b91765a0efa58a544c6bbce7e87c940fbe
         return [
             {
                 "avatar_id": a.profile.avatar_id,
                 "name": a.profile.name,
                 "style": a.profile.style.value,
                 "bound_agent": a.profile.bound_agent,
+<<<<<<< HEAD
                 "description": a.profile.description,
+=======
+                "description": getattr(a.profile, "description", ""),
+>>>>>>> cde431b91765a0efa58a544c6bbce7e87c940fbe
             }
             for a in avatars
         ]

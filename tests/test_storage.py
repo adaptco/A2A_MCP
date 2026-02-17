@@ -1,3 +1,4 @@
+import json
 import pytest
 from orchestrator.storage import DBManager
 from schemas.agent_artifacts import MCPArtifact
@@ -41,11 +42,16 @@ def test_artifact_persistence_lifecycle():
     assert retrieved is not None
     assert retrieved.agent_name == "TestAgent"
 <<<<<<< HEAD
+<<<<<<< HEAD
     assert '"status"' in retrieved.content
 =======
     content_payload = json.loads(retrieved.content)
     assert content_payload["status"] == "verified"
 >>>>>>> 117e2e444ff3d500482857ebf717156179fbdeed
+=======
+    content = json.loads(retrieved.content) if isinstance(retrieved.content, str) else retrieved.content
+    assert content["status"] == "verified"
+>>>>>>> cde431b91765a0efa58a544c6bbce7e87c940fbe
     print(f"✓ Persistence Lifecycle Verified for ID: {test_id}")
 
 if __name__ == "__main__":

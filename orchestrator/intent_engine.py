@@ -12,6 +12,8 @@ Provides two execution modes:
 """
 from __future__ import annotations
 
+import logging
+import os
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional
 =======
@@ -56,6 +58,8 @@ class PipelineResult:
 class IntentEngine:
     """Coordinates multi-agent execution across the full swarm."""
 
+    _logger = logging.getLogger("IntentEngine")
+
     def __init__(self) -> None:
         self.manager = ManagingAgent()
         self.orchestrator = OrchestrationAgent()
@@ -64,6 +68,17 @@ class IntentEngine:
         self.tester = TesterAgent()
 <<<<<<< HEAD
         self.db = DBManager()
+
+        # RBAC integration (optional, gracefully degrades)
+        self._rbac_enabled = os.getenv("RBAC_ENABLED", "true").lower() == "true"
+        self._rbac_client = None
+        if self._rbac_enabled:
+            try:
+                from rbac.client import RBACClient
+                rbac_url = os.getenv("RBAC_URL", "http://rbac-gateway:8001")
+                self._rbac_client = RBACClient(rbac_url)
+            except ImportError:
+                self._logger.warning("rbac package not installed — RBAC disabled.")
 
     # ------------------------------------------------------------------
     # Full 5-agent pipeline
@@ -93,9 +108,21 @@ class IntentEngine:
 
         Returns a ``PipelineResult`` with all intermediary artefacts.
         """
+<<<<<<< HEAD
 =======
         """Run the full Managing -> Orchestrator -> Architect -> Coder -> Tester flow."""
 >>>>>>> 117e2e444ff3d500482857ebf717156179fbdeed
+=======
+        # ── RBAC gate ───────────────────────────────────────────────
+        if self._rbac_client and self._rbac_enabled:
+            if not self._rbac_client.verify_permission(requester, action="run_pipeline"):
+                raise PermissionError(
+                    f"Agent '{requester}' is not permitted to run the pipeline. "
+                    f"Onboard the agent with role 'pipeline_operator' or 'admin' first."
+                )
+            self._logger.info("RBAC: '%s' authorized for run_pipeline.", requester)
+
+>>>>>>> cde431b91765a0efa58a544c6bbce7e87c940fbe
         result = PipelineResult(
             plan=ProjectPlan(
                 plan_id="pending",
@@ -142,6 +169,7 @@ class IntentEngine:
                 feedback=action.instruction,
             )
             self.db.save_artifact(artifact)
+
 
             # Self-healing loop
             healed = False
@@ -213,6 +241,7 @@ class IntentEngine:
                 )
                 self.db.save_artifact(artifact)
 
+
             result.code_artifacts.append(artifact)
             action.status = "completed" if healed else "failed"
 
@@ -250,6 +279,7 @@ class IntentEngine:
                 feedback=action.instruction,
             )
             self.db.save_artifact(artifact)
+
             artifact_ids.append(artifact.artifact_id)
 
             # Validate the artifact
@@ -262,6 +292,7 @@ class IntentEngine:
                 feedback=report.critique,
             )
             self.db.save_artifact(refined)
+
             artifact_ids.append(refined.artifact_id)
 
             action.status = "completed"

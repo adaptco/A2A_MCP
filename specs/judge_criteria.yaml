@@ -1,4 +1,5 @@
 ---
+<<<<<<< HEAD
 judge:
   evaluation_mode: "Synchronous"
   scoring_method: "Weighted MCDA"
@@ -7,11 +8,31 @@ criteria:
   safety:
     weight: 1.0
     description: "Vehicle and environment safety constraints"
+=======
+# Judge Criteria Scoring Rubric
+# Defines multi-criteria decision framework for agent action evaluation.
+# All criteria contribute to overall action score [0, 1].
+# Version: 1.0.0
+# Last Updated: 2026-02-12
+
+judge:
+  evaluation_mode: "Synchronous"  # Per-frame, no offline batch
+  scoring_method: "Weighted MCDA"  # Multi-Criteria Decision Analysis
+
+criteria:
+
+  # ========== SAFETY (Weight: 1.0 | Critical) ==========
+  safety:
+    weight: 1.0
+    description: "Vehicle and environment safety constraints"
+
+>>>>>>> cde431b91765a0efa58a544c6bbce7e87c940fbe
     sub_criteria:
       bounds_check:
         description: "Entity stays within Base44 cell bounds"
         scoring:
           in_bounds: 1.0
+<<<<<<< HEAD
           warning_zone: 0.7
           out_of_bounds: 0.0
       collision_avoidance:
@@ -26,6 +47,30 @@ criteria:
           within_limit: 1.0
           slightly_over: 0.7
           overspeed: 0.0
+=======
+          warning_zone: 0.7  # 90% into bounds
+          out_of_bounds: 0.0
+
+      collision_avoidance:
+        description: "Minimum safe distance from obstacles"
+        scoring:
+          clear_safe_distance: 1.0  # > 5m from any obstacle
+          approaching: 0.6  # 2m-5m distance (caution zone)
+          collision: 0.0  # Contact or < 0.5m
+
+      overspeed_check:
+        description: "Respect vehicle max speed and zone limits"
+        scoring_formula: |
+          def score_speed(current_speed, max_speed, zone_limit=null):
+            limit = zone_limit if zone_limit else max_speed
+            if current_speed <= limit * 0.95:
+              return 1.0
+            elif current_speed <= limit:
+              return 0.7
+            else:
+              return 0.0  # Overspeed penalty
+
+>>>>>>> cde431b91765a0efa58a544c6bbce7e87c940fbe
       fuel_viability:
         description: "Sufficient fuel to execute action safely"
         scoring:
@@ -34,13 +79,33 @@ criteria:
           fuel_lt_10_percent: 0.3
           no_fuel: 0.0
 
+<<<<<<< HEAD
   spec_alignment:
     weight: 0.8
     description: "Adherence to Supra physics and performance specs"
+=======
+      stability_margin:
+        description: "Lateral g-forces within ESC threshold"
+        scoring_formula: |
+          def score_stability(lateral_g, esc_threshold=1.08):
+            if lateral_g <= esc_threshold * 0.8:
+              return 1.0  # Well-controlled
+            elif lateral_g <= esc_threshold:
+              return 0.8  # ESC engaged but stable
+            else:
+              return 0.0  # Skid/oversteer
+
+  # ========== SPEC_ALIGNMENT (Weight: 0.8 | Strong) ==========
+  spec_alignment:
+    weight: 0.8
+    description: "Adherence to Supra physics and performance specs"
+
+>>>>>>> cde431b91765a0efa58a544c6bbce7e87c940fbe
     sub_criteria:
       acceleration_realism:
         description: "Acceleration matches Supra 0-60 envelope"
         scoring:
+<<<<<<< HEAD
           within_envelope: 1.0
           slightly_slow: 0.8
           well_below_spec: 0.4
@@ -60,10 +125,43 @@ criteria:
   intent:
     weight: 0.7
     description: "Alignment with user/player goal"
+=======
+          within_envelope: 1.0  # 3.8s ≤ 0-60 time
+          slightly_slow: 0.8    # 3.8-4.5s
+          well_below_spec: 0.4  # > 4.5s
+
+      handling_compliance:
+        description: "Turning radius and steering ratio respected"
+        scoring:
+          within_turning_spec: 1.0  # ≤ 37.4 ft radius
+          slight_deviation: 0.85
+          significant_deviation: 0.4
+
+      braking_fidelity:
+        description: "Braking distance matches Supra spec"
+        scoring:
+          within_braking_spec: 1.0  # ≤ 122 ft from 60 mph
+          slightly_longer: 0.85
+          well_longer: 0.4
+
+      engine_response:
+        description: "Engine power delivery realistic"
+        scoring:
+          realistic_ramp: 1.0  # Gradual spool-up of turbos
+          too_sharp: 0.6     # Unrealistic instant power
+          underpowered: 0.5
+
+  # ========== PLAYER_INTENT (Weight: 0.7 | Moderate) ==========
+  player_intent:
+    weight: 0.7
+    description: "Alignment with user/player goal"
+
+>>>>>>> cde431b91765a0efa58a544c6bbce7e87c940fbe
     sub_criteria:
       objective_progress:
         description: "Action advances toward stated goal"
         scoring:
+<<<<<<< HEAD
           direct_progress: 1.0
           contributing: 0.85
           neutral: 0.5
@@ -118,10 +216,181 @@ tuning:
       safety_weight: 0.9
       spec_weight: 0.6
       intent_weight: 0.9
+=======
+          direct_progress: 1.0      # Directly enables objective
+          contributing: 0.85        # Indirect help
+          neutral: 0.5              # No impact
+          regressive: 0.0           # Moves away from goal
+
+      tactical_fit:
+        description: "Action fits current game situation"
+        scoring:
+          perfect_fit: 1.0          # Ideal for current context
+          acceptable: 0.8
+          marginal: 0.5
+          poor_fit: 0.0
+
+      style_match:
+        description: "Action matches avatar personality"
+        scoring_note: |
+          Engineer: prefers safe, conservative actions
+          Designer: prefers visually interesting, creative paths
+          Driver: prefers fun, engaging, in-universe actions
+        example_weights:
+          engineer_conservative: 1.0
+          designer_creative: 0.8
+          designer_unsafe: 0.3
+          driver_fun: 1.0
+          driver_boring: 0.4
+
+  # ========== LATENCY (Weight: 0.5 | Light) ==========
+  latency:
+    weight: 0.5
+    description: "Execution within time budget (frame-level)"
+
+    sub_criteria:
+      execution_time:
+        description: "Action computes within frame budget"
+        budget_ms: 16.67  # ~60 FPS (16.67ms per frame)
+        warning_threshold_ms: 12.0  # 75% of budget
+        scoring_formula: |
+          def score_latency(elapsed_ms, budget_ms=16.67):
+            if elapsed_ms <= budget_ms * 0.75:
+              return 1.0
+            elif elapsed_ms <= budget_ms:
+              return 0.9
+            elif elapsed_ms <= budget_ms * 1.5:
+              return 0.5  # Frame drop acceptable
+            else:
+              return 0.0  # Too slow for real-time
+
+      response_quality:
+        description: "Action is fully computed, not skipped"
+        scoring:
+          complete: 1.0
+          partial: 0.7  # Fallback executed
+          timeout: 0.0  # Timed out, skipped
+
+# ========== OVERALL SCORING ==========
+scoring:
+  method: "Weighted Sum"
+  formula: |
+    overall_score = sum(criterion.weight * criterion.score for all criteria)
+                    / sum(criterion.weight for all criteria)
+
+  interpretation:
+    excellent: [0.9, 1.0]      # All criteria green
+    good: [0.7, 0.9]           # Mostly good, some trade-offs
+    acceptable: [0.5, 0.7]     # Mixed results, salvageable
+    poor: [0.0, 0.5]           # Multiple failures
+
+# ========== CONTEXT VARIABLES ==========
+context:
+  required_keys:
+    - current_speed_mph
+    - max_speed_mph
+    - zone_max_speed_mph
+    - fuel_remaining_gal
+    - fuel_capacity_gal
+    - position_x
+    - position_y
+    - position_z
+    - nearest_obstacle_distance_m
+    - lateral_g_force
+    - elapsed_time_ms
+    - objective_type
+    - objective_target
+    - avatar_style
+
+  optional_keys:
+    - player_goal
+    - tactical_situation
+    - weather_conditions
+    - time_of_day
+
+# ========== SCORING EXAMPLES ==========
+examples:
+  action_a_move_forward:
+    description: "Accelerate to 60 mph, maintain lane"
+    context:
+      current_speed_mph: 30
+      max_speed_mph: 155
+      fuel_remaining_gal: 11.0
+      distance_to_obstacle_m: 50.0
+      lateral_g_force: 0.1
+      objective_type: "reach_checkpoint"
+      avatar_style: "balanced"
+    expected_scores:
+      safety: 1.0  # Clear road, sub-limit
+      spec_alignment: 1.0  # Realistic acceleration curve
+      player_intent: 0.85  # Progresses toward checkpoint
+      latency: 1.0  # Computed in <10ms
+      overall: 0.96  # Excellent action
+
+  action_b_sharp_turn:
+    description: "Hard right turn at current speed (50 mph)"
+    context:
+      current_speed_mph: 50
+      max_speed_mph: 155
+      lateral_g_force: 1.2  # ESC threshold is 1.08
+      turning_radius_ft: 25  # spec is 37.4
+      objective_type: "avoid_obstacle"
+      avatar_style: "driver"
+    expected_scores:
+      safety: 0.0  # Lateral g over limit, risk of skid
+      spec_alignment: 0.4  # Unrealistic turn tightness
+      player_intent: 1.0  # Avoids obstacle
+      latency: 0.9  # Slight delay
+      overall: 0.38  # Poor - safety critical failure
+
+  action_c_eco_cruise:
+    description: "Cruise at 45 mph (eco mode)"
+    context:
+      current_speed_mph: 45
+      max_speed_mph: 155
+      fuel_remaining_gal: 3.0  # Low!
+      distance_to_obstacle_m: 200
+      lateral_g_force: 0.0
+      objective_type: "reach_gas_station"
+      avatar_style: "engineer"
+    expected_scores:
+      safety: 0.3  # Low fuel is risky
+      spec_alignment: 0.8  # Realistic idle/cruise
+      player_intent: 1.0  # Direct path to objective
+      latency: 1.0
+      overall: 0.68  # Acceptable but fuel concern noted
+
+# ========== JUDGE TUNING ==========
+tuning:
+  presets:
+    "arcade":
+      safety_weight: 0.5      # More lenient
+      spec_alignment_weight: 0.4
+      player_intent_weight: 1.0
+      latency_weight: 0.3
+      description: "Fast, fun, forgiving"
+
+    "simulation":
+      safety_weight: 1.0      # Strict
+      spec_alignment_weight: 1.0
+      player_intent_weight: 0.5
+      latency_weight: 1.0
+      description: "Realistic, challenging"
+
+    "casual":
+      safety_weight: 0.9
+      spec_alignment_weight: 0.6
+      player_intent_weight: 0.9
+>>>>>>> cde431b91765a0efa58a544c6bbce7e87c940fbe
       latency_weight: 0.2
       description: "Balanced for fun"
 
 notes:
   - "All agents MUST respect safety criteria (weight 1.0)"
   - "Judge runs synchronously every frame; no offline batch processing"
+<<<<<<< HEAD
+=======
+  - "Context must include all required_keys or defaults apply"
+  - "Override weights per game mode via tuning.presets"
+>>>>>>> cde431b91765a0efa58a544c6bbce7e87c940fbe
   - "ESC threshold (1.08g) is hard limit for Supra physics"

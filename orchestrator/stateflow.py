@@ -16,6 +16,7 @@ from typing import Callable, Dict, List, Optional, Any
 import time
 import threading
 import json
+import sys
 
 
 class State(str, Enum):
@@ -126,8 +127,8 @@ class StateMachine:
         if self._persistence_callback and callable(self._persistence_callback):
             try:
                 self._persistence_callback(plan_id, snapshot)
-            except Exception:
-                pass
+            except Exception as e:
+                print(f"Stateflow persistence error: {e}", file=sys.stderr)
 
     def _run_post_transition(self, rec: TransitionRecord, callbacks: List[Callable[[TransitionRecord], None]], snapshot: Dict[str, Any], plan_id: Optional[str], seq: int) -> None:
         with self._persist_cond:
@@ -143,8 +144,8 @@ class StateMachine:
         for cb in callbacks:
             try:
                 cb(rec)
-            except Exception:
-                pass
+            except Exception as e:
+                print(f"Stateflow callback error: {e}", file=sys.stderr)
 
     def trigger(self, event: str, **meta) -> TransitionRecord:
         with self._lock:
@@ -172,7 +173,10 @@ class StateMachine:
                     self._transition_seq += 1
                     seq = self._transition_seq
             else:
+<<<<<<< HEAD
                 # Do not reset attempts on RETRY_DISPATCHED; only reset after PASS.
+=======
+>>>>>>> cde431b91765a0efa58a544c6bbce7e87c940fbe
                 if event == "VERDICT_PASS":
                     self.attempts = 0
                 rec = self._record(self.state, to_state, event, meta)

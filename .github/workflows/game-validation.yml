@@ -87,8 +87,12 @@ jobs:
         run: |
           echo "📊 Build Summary"
           echo "───────────────────────────"
-          ls -lh bin/
-          echo "Binary size: $(stat -c%s bin/ghost-void_engine) bytes"
+          if [ -f bin/ghost-void_engine ]; then
+            ls -lh bin/
+            echo "Binary size: $(stat -c%s bin/ghost-void_engine) bytes"
+          else
+            echo "No engine binary found; skipping size report."
+          fi
 
   # ═══════════════════════════════════════════════════════════════════
   #  Stage 2: C++ Unit Tests

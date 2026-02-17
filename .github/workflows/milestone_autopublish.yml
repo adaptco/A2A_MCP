@@ -76,6 +76,7 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
+      issues: write
     steps:
       - name: Draft monitoring snapshot
         id: draft_snapshot
@@ -132,46 +133,50 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const marker = "<!-- a2a-draft-monitor -->";
-            const pr = context.payload.pull_request;
-            const owner = context.repo.owner;
-            const repo = context.repo.repo;
-            const issue_number = pr.number;
+            try {
+              const marker = "<!-- a2a-draft-monitor -->";
+              const pr = context.payload.pull_request;
+              const owner = context.repo.owner;
+              const repo = context.repo.repo;
+              const issue_number = pr.number;
 
-            const body = `${marker}
-            ### Milestone Draft Monitor
-            - PR: #${issue_number}
-            - Draft status: ${pr.draft ? "Draft" : "Ready for review"}
-            - Milestone bundle: published as workflow artifact
+              const body = `${marker}
+              ### Milestone Draft Monitor
+              - PR: #${issue_number}
+              - Draft status: ${pr.draft ? "Draft" : "Ready for review"}
+              - Milestone bundle: published as workflow artifact
 
-            Triggered actions:
-            - Auto-published release milestone bundle
-            - Generated draft-monitor report artifact
-            - Activated lifecycle monitoring for draft state changes
-            `;
+              Triggered actions:
+              - Auto-published release milestone bundle
+              - Generated draft-monitor report artifact
+              - Activated lifecycle monitoring for draft state changes
+              `;
 
-            const comments = await github.paginate(github.rest.issues.listComments, {
-              owner,
-              repo,
-              issue_number,
-              per_page: 100
-            });
-            const existing = comments.find(
-              (c) => c.user.type === "Bot" && c.body.includes(marker)
-            );
-
-            if (existing) {
-              await github.rest.issues.updateComment({
-                owner,
-                repo,
-                comment_id: existing.id,
-                body
-              });
-            } else {
-              await github.rest.issues.createComment({
+              const comments = await github.paginate(github.rest.issues.listComments, {
                 owner,
                 repo,
                 issue_number,
-                body
+                per_page: 100
               });
+              const existing = comments.find(
+                (c) => c.user.type === "Bot" && c.body.includes(marker)
+              );
+
+              if (existing) {
+                await github.rest.issues.updateComment({
+                  owner,
+                  repo,
+                  comment_id: existing.id,
+                  body
+                });
+              } else {
+                await github.rest.issues.createComment({
+                  owner,
+                  repo,
+                  issue_number,
+                  body
+                });
+              }
+            } catch (error) {
+              core.warning(`Skipping PR comment update: ${error.message}`);
             }

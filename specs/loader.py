@@ -40,6 +40,19 @@ class SpecsLoader:
         self._cache[cache_key] = criteria
         return criteria
 
+    def load_base44_map(self) -> Dict[str, Any]:
+        """Load and cache Base44 world-map configuration."""
+        cache_key = "base44_map"
+        if cache_key in self._cache:
+            return self._cache[cache_key]
+
+        map_file = self.specs_dir / "base44_map.yaml"
+        with open(map_file, "r", encoding="utf-8") as f:
+            base44_map = yaml.safe_load(f)
+
+        self._cache[cache_key] = base44_map
+        return base44_map
+
     def get_supra_config(self) -> Dict[str, Any]:
         """Return supra section from specs."""
         specs = self.load_supra_specs()

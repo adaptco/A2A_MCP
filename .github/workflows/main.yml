@@ -19,7 +19,11 @@ jobs:
 
     - name: Build and start container
       run: |
-        docker-compose up -d --build
+        if docker compose version >/dev/null 2>&1; then
+          docker compose up -d --build
+        else
+          docker-compose up -d --build
+        fi
         # Wait for FastAPI to be ready
         sleep 5
 

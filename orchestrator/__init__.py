@@ -77,6 +77,26 @@ except ImportError:
     build_workflow_bundle = None
     reconstruct_tokens_for_nodes = None
 
+try:
+    from orchestrator.mcp_core import MCPResult, MCPCore, namespace_project_embedding
+except ImportError:
+    MCPResult = None
+    MCPCore = None
+    namespace_project_embedding = None
+
+try:
+    from orchestrator.client_token_pipe import (
+        ClientTokenContext,
+        ClientTokenPipe,
+        ContaminationError,
+        InMemoryEventStore,
+    )
+except ImportError:
+    ClientTokenContext = None
+    ClientTokenPipe = None
+    ContaminationError = None
+    InMemoryEventStore = None
+
 __all__ = [
     # Core classes (always available)
     'StateMachine',
@@ -103,4 +123,11 @@ __all__ = [
     'build_cicd_logic_tree',
     'build_workflow_bundle',
     'reconstruct_tokens_for_nodes',
+    'MCPResult',
+    'MCPCore',
+    'namespace_project_embedding',
+    'ClientTokenContext',
+    'ClientTokenPipe',
+    'ContaminationError',
+    'InMemoryEventStore',
 ]

@@ -20,7 +20,11 @@ from orchestrator.multimodal_worldline import (
 )
 from schemas.agent_artifacts import MCPArtifact
 from schemas.model_artifact import AgentLifecycleState, LoRAConfig, ModelArtifact
-from schemas.runtime_bridge import RuntimeAssignmentV1, RuntimeWorkerAssignment
+from schemas.runtime_bridge import (
+    KernelVectorControlModel,
+    RuntimeAssignmentV1,
+    RuntimeWorkerAssignment,
+)
 
 
 class MCPHandshakeConfig(BaseModel):
@@ -272,6 +276,29 @@ def _build_runtime_state(runtime: RuntimeHandshakeSpec) -> Dict[str, Any]:
     }
 
 
+def _build_kernel_model(
+    *,
+    plan_id: str,
+    token_stream: List[Dict[str, str]],
+) -> KernelVectorControlModel:
+    return KernelVectorControlModel(
+        kernel_id=f"kernel-{plan_id}",
+        vector_namespace=f"a2a.manifold.{plan_id}",
+        release_channel="stable",
+        api_token_env_var="A2A_MCP_API_TOKEN",
+        release_control={
+            "required_phase": "ready_for_release",
+            "token_stream_normalized": True,
+            "minimum_token_count": max(1, len(token_stream)),
+        },
+        spec_refs=[
+            "INDEX.md",
+            "KERNEL_MODEL_SPEC.md",
+            "MANIFOLD_VECTOR_RELEASE_SPEC.md",
+        ],
+    )
+
+
 def _build_runtime_assignment(
     *,
     payload: HandshakeInitRequest,
@@ -283,6 +310,7 @@ def _build_runtime_assignment(
     workflow_actions: List[Dict[str, Any]],
     onboarded_artifacts: List[Dict[str, Any]],
     api_key_fingerprint: str,
+    kernel_model: KernelVectorControlModel,
 ) -> RuntimeAssignmentV1:
     token_stream_stats = {
         "count": len(token_stream),
@@ -308,6 +336,7 @@ def _build_runtime_assignment(
         token_stream_stats=token_stream_stats,
         stateful_artifacts=onboarded_artifacts,
         orchestration_state=orchestration_state,
+        kernel_model=kernel_model,
         mcp={
             "provider": payload.mcp.provider,
             "tool_name": payload.mcp.tool_name,
@@ -363,6 +392,10 @@ def build_handshake_bundle(
     )
 
     runtime_state = _build_runtime_state(payload.runtime)
+    kernel_model = _build_kernel_model(
+        plan_id=plan_id,
+        token_stream=normalized_tokens,
+    )
     runtime_assignment = _build_runtime_assignment(
         payload=payload,
         handshake_id=handshake_id,
@@ -373,6 +406,7 @@ def build_handshake_bundle(
         workflow_actions=workflow_bundle["workflow_actions"],
         onboarded_artifacts=onboarded,
         api_key_fingerprint=api_key_fingerprint,
+        kernel_model=kernel_model,
     )
     runtime_assignment_artifact = MCPArtifact(
         artifact_id=f"bridge-{uuid.uuid4().hex[:12]}",
@@ -401,6 +435,7 @@ def build_handshake_bundle(
         },
         "token_reconstruction": workflow_bundle["token_reconstruction"],
         "workflow_actions": workflow_bundle["workflow_actions"],
+        "kernel_model": kernel_model.model_dump(mode="json"),
         "worldline_block": worldline_block,
         "runtime_assignment_artifact": runtime_assignment_artifact.model_dump(mode="json"),
     }

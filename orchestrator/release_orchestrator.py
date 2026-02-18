@@ -29,6 +29,9 @@ class ReleaseSignals:
     runtime_assignment_written: bool = False
     runtime_workers_ready: int = 0
     token_stream_normalized: bool = False
+    kernel_model_written: bool = False
+    root_specs_scaffolded: bool = False
+    api_token_release_controlled: bool = False
     blocking_reason: str = ""
 
 
@@ -44,6 +47,12 @@ class ReleaseOrchestrator:
         if not signals.claude_task_complete:
             return ReleasePhase.WAITING_FOR_CLAUDE
         if not (signals.tests_passed and signals.conflicts_resolved):
+            return ReleasePhase.RUNNING_VALIDATION
+        if not (
+            signals.kernel_model_written
+            and signals.root_specs_scaffolded
+            and signals.api_token_release_controlled
+        ):
             return ReleasePhase.RUNNING_VALIDATION
         if not signals.bot_review_complete:
             return ReleasePhase.RUNNING_BOT_REVIEW
@@ -73,6 +82,9 @@ class ReleaseOrchestrator:
                 "runtime_assignment_written": signals.runtime_assignment_written,
                 "runtime_workers_ready": signals.runtime_workers_ready,
                 "token_stream_normalized": signals.token_stream_normalized,
+                "kernel_model_written": signals.kernel_model_written,
+                "root_specs_scaffolded": signals.root_specs_scaffolded,
+                "api_token_release_controlled": signals.api_token_release_controlled,
             },
             "bot_review": {
                 "complete": signals.bot_review_complete,

@@ -32,6 +32,9 @@ def test_ready_for_release_phase():
         bot_review_complete=True,
         claude_checked_todos=9,
         claude_total_todos=9,
+        kernel_model_written=True,
+        root_specs_scaffolded=True,
+        api_token_release_controlled=True,
     )
     state = model.system_state(signals)
     assert state["phase"] == ReleasePhase.READY_FOR_RELEASE.value
@@ -49,6 +52,9 @@ def test_system_state_includes_runtime_bridge_snapshot():
         runtime_assignment_written=True,
         runtime_workers_ready=3,
         token_stream_normalized=True,
+        kernel_model_written=True,
+        root_specs_scaffolded=True,
+        api_token_release_controlled=True,
     )
     state = model.system_state(signals)
     runtime_bridge = state["runtime_bridge"]
@@ -56,4 +62,21 @@ def test_system_state_includes_runtime_bridge_snapshot():
     assert runtime_bridge["runtime_assignment_written"] is True
     assert runtime_bridge["runtime_workers_ready"] == 3
     assert runtime_bridge["token_stream_normalized"] is True
+    assert runtime_bridge["kernel_model_written"] is True
+    assert runtime_bridge["root_specs_scaffolded"] is True
+    assert runtime_bridge["api_token_release_controlled"] is True
     assert state["bridge_schema"] == "runtime.assignment.v1"
+
+
+def test_validation_phase_when_kernel_controls_not_ready():
+    model = ReleaseOrchestrator()
+    signals = ReleaseSignals(
+        claude_task_complete=True,
+        tests_passed=True,
+        conflicts_resolved=True,
+        bot_review_complete=True,
+        kernel_model_written=False,
+        root_specs_scaffolded=False,
+        api_token_release_controlled=False,
+    )
+    assert model.resolve_phase(signals) == ReleasePhase.RUNNING_VALIDATION

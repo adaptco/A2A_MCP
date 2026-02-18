@@ -25,6 +25,10 @@ class ReleaseSignals:
     bot_review_complete: bool = False
     claude_checked_todos: int = 0
     claude_total_todos: int = 0
+    handshake_initialized: bool = False
+    runtime_assignment_written: bool = False
+    runtime_workers_ready: int = 0
+    token_stream_normalized: bool = False
     blocking_reason: str = ""
 
 
@@ -55,6 +59,7 @@ class ReleaseOrchestrator:
         return {
             "model": self.model_name,
             "phase": phase.value,
+            "bridge_schema": "runtime.assignment.v1",
             "claude": {
                 "task_complete": signals.claude_task_complete,
                 "todo_progress": todo_progress,
@@ -62,6 +67,12 @@ class ReleaseOrchestrator:
             "validation": {
                 "tests_passed": signals.tests_passed,
                 "conflicts_resolved": signals.conflicts_resolved,
+            },
+            "runtime_bridge": {
+                "handshake_initialized": signals.handshake_initialized,
+                "runtime_assignment_written": signals.runtime_assignment_written,
+                "runtime_workers_ready": signals.runtime_workers_ready,
+                "token_stream_normalized": signals.token_stream_normalized,
             },
             "bot_review": {
                 "complete": signals.bot_review_complete,
@@ -81,4 +92,3 @@ class ReleaseOrchestrator:
         if phase == ReleasePhase.READY_FOR_RELEASE:
             return "publish_foundation_release_bundle"
         return "investigate_and_resolve_blocker"
-

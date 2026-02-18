@@ -36,3 +36,24 @@ def test_ready_for_release_phase():
     state = model.system_state(signals)
     assert state["phase"] == ReleasePhase.READY_FOR_RELEASE.value
     assert state["next_action"] == "publish_foundation_release_bundle"
+
+
+def test_system_state_includes_runtime_bridge_snapshot():
+    model = ReleaseOrchestrator()
+    signals = ReleaseSignals(
+        claude_task_complete=True,
+        tests_passed=True,
+        conflicts_resolved=True,
+        bot_review_complete=False,
+        handshake_initialized=True,
+        runtime_assignment_written=True,
+        runtime_workers_ready=3,
+        token_stream_normalized=True,
+    )
+    state = model.system_state(signals)
+    runtime_bridge = state["runtime_bridge"]
+    assert runtime_bridge["handshake_initialized"] is True
+    assert runtime_bridge["runtime_assignment_written"] is True
+    assert runtime_bridge["runtime_workers_ready"] == 3
+    assert runtime_bridge["token_stream_normalized"] is True
+    assert state["bridge_schema"] == "runtime.assignment.v1"

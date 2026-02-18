@@ -280,8 +280,20 @@ def _build_runtime_assignment(
     runtime_state: Dict[str, Any],
     workers: List[RuntimeWorkerAssignment],
     token_stream: List[Dict[str, str]],
+    workflow_actions: List[Dict[str, Any]],
+    onboarded_artifacts: List[Dict[str, Any]],
     api_key_fingerprint: str,
 ) -> RuntimeAssignmentV1:
+    token_stream_stats = {
+        "count": len(token_stream),
+        "unique_count": len({entry.get("token") for entry in token_stream}),
+        "normalized": True,
+    }
+    orchestration_state = {
+        "phase": "scheduled",
+        "selected_actions": workflow_actions,
+        "handshake_ready": True,
+    }
     return RuntimeAssignmentV1(
         assignment_id=f"rtassign-{uuid.uuid4().hex[:12]}",
         handshake_id=handshake_id,
@@ -293,6 +305,9 @@ def _build_runtime_assignment(
         runtime=runtime_state,
         workers=workers,
         token_stream=token_stream,
+        token_stream_stats=token_stream_stats,
+        stateful_artifacts=onboarded_artifacts,
+        orchestration_state=orchestration_state,
         mcp={
             "provider": payload.mcp.provider,
             "tool_name": payload.mcp.tool_name,
@@ -355,6 +370,8 @@ def build_handshake_bundle(
         runtime_state=runtime_state,
         workers=workers,
         token_stream=normalized_tokens,
+        workflow_actions=workflow_bundle["workflow_actions"],
+        onboarded_artifacts=onboarded,
         api_key_fingerprint=api_key_fingerprint,
     )
     runtime_assignment_artifact = MCPArtifact(

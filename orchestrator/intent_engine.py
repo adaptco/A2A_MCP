@@ -78,6 +78,7 @@ class IntentEngine:
         arch_artifacts = await self.architect.map_system(blueprint)
         result.architecture_artifacts = arch_artifacts
 
+        last_code_artifact_id: str | None = None
         for action in blueprint.actions:
             action.status = "in_progress"
 
@@ -88,9 +89,10 @@ class IntentEngine:
                 f"{action.instruction}"
             )
             artifact = await self.coder.generate_solution(
-                parent_id=blueprint.plan_id,
+                parent_id=last_code_artifact_id or blueprint.plan_id,
                 feedback=coding_task,
             )
+            last_code_artifact_id = artifact.artifact_id
 
             healed = False
             for attempt in range(max_healing_retries):
@@ -129,6 +131,7 @@ class IntentEngine:
                 )
 
             result.code_artifacts.append(artifact)
+            last_code_artifact_id = artifact.artifact_id
             action.status = "completed" if healed else "failed"
 
         result.success = all(a.status == "completed" for a in blueprint.actions)

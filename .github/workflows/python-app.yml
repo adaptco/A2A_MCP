@@ -40,4 +40,12 @@ jobs:
       env:
         PYTHONPATH: .
       run: |
-        pytest
+        mkdir -p artifacts
+        pytest --junitxml=artifacts/pytest-report.xml
+    - name: Upload pytest results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: pytest-report-${{ github.sha }}
+        path: artifacts/pytest-report.xml
+        if-no-files-found: warn

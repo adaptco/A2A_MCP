@@ -145,7 +145,7 @@ class IntentEngine:
 
             # 1. Generate Solution
             code_artifact = await self.coder.generate_solution(
-                parent_id=last_code_artifact_id,
+                parent_id=parent_id,
                 feedback=action.instruction,
             )
             artifact_ids.append(code_artifact.artifact_id)

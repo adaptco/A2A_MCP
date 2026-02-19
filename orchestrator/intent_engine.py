@@ -183,7 +183,6 @@ class IntentEngine:
                 type="vector_token",
                 content=token.model_dump_json(),
             )
-            self.db.save_artifact(pinn_artifact)
             artifact_ids.append(pinn_artifact_id)
 
             action.status = "completed" if report.status == "PASS" else "failed"

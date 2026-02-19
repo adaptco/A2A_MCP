@@ -4,6 +4,10 @@ version = "0.1.0"
 description = "A2A MCP Pipeline"
 requires-python = ">=3.11"
 
+dependencies = [
+    "PyJWT",
+]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 asyncio_mode = "auto"

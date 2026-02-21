@@ -25,13 +25,13 @@ class PlayerState:
 class GameEngine:
     """Main game engine combining rendering and physics."""
 
-    OBSTACLE_DENSITY_MAPPING = {
+    OBSTACLE_DENSITY_MAPPING = MappingProxyType({
         'none': 0.0,
         'low': 0.25,
         'medium': 0.5,
         'high': 0.75,
         'extreme': 1.0,
-    }
+    })
 
     def __init__(self, preset: str = "simulation"):
         self.preset = preset

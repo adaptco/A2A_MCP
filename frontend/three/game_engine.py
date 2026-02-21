@@ -110,7 +110,7 @@ class GameEngine:
     ) -> PlayerState:
         """Initialize a player/agent."""
         if position is None:
-            position = self.DEFAULT_PLAYER_POSITION
+            position = Vector3(**self.DEFAULT_PLAYER_POSITION.to_dict())
 
         state = PlayerState(
             agent_name=agent_name,

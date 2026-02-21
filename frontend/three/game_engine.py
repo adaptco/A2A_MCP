@@ -3,7 +3,7 @@
 from typing import Dict, Any, Optional
 from dataclasses import dataclass
 from frontend.three.scene_manager import SceneManager, Vector3
-from frontend.three.world_renderer import WorldRenderer
+from frontend.three.world_renderer import WorldRenderer, ZoneRenderer
 from frontend.three.avatar_renderer import AvatarRenderer
 from orchestrator.judge_orchestrator import get_judge_orchestrator
 from schemas.game_model import AgentRuntimeState, GameActionResult, GameModel, ZoneSpec
@@ -24,6 +24,10 @@ class PlayerState:
 
 class GameEngine:
     """Main game engine combining rendering and physics."""
+
+    DEFAULT_PLAYER_POSITION = Vector3(
+        x=ZoneRenderer.CELL_SIZE / 2, y=0, z=ZoneRenderer.CELL_SIZE / 2
+    )
 
     def __init__(self, preset: str = "simulation"):
         self.preset = preset
@@ -106,7 +110,7 @@ class GameEngine:
     ) -> PlayerState:
         """Initialize a player/agent."""
         if position is None:
-            position = Vector3(x=50, y=0, z=50)
+            position = self.DEFAULT_PLAYER_POSITION
 
         state = PlayerState(
             agent_name=agent_name,
@@ -147,7 +151,9 @@ class GameEngine:
 
         # Update current zone
         state.current_zone = self.world_renderer.get_zone_at_position(
-            state.position.x, state.position.z, int(state.position.y / 50)
+            state.position.x,
+            state.position.z,
+            int(state.position.y / ZoneRenderer.LAYER_HEIGHT),
         )
         self.game_model.upsert_agent_state(
             AgentRuntimeState(

@@ -25,6 +25,14 @@ class PlayerState:
 class GameEngine:
     """Main game engine combining rendering and physics."""
 
+    OBSTACLE_DENSITY_MAPPING = {
+        'none': 0.0,
+        'low': 0.25,
+        'medium': 0.5,
+        'high': 0.75,
+        'extreme': 1.0,
+    }
+
     def __init__(self, preset: str = "simulation"):
         self.preset = preset
         self.scene = SceneManager(scene_id="A2A_Game")
@@ -91,14 +99,7 @@ class GameEngine:
         if isinstance(value, (int, float)):
             return float(value)
         if isinstance(value, str):
-            mapping = {
-                "none": 0.0,
-                "low": 0.25,
-                "medium": 0.5,
-                "high": 0.75,
-                "extreme": 1.0,
-            }
-            return mapping.get(value.strip().lower(), 0.0)
+            return GameEngine.OBSTACLE_DENSITY_MAPPING.get(value.strip().lower(), 0.0)
         return 0.0
 
     def initialize_player(

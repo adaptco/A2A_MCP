@@ -1,71 +1,87 @@
-import {HumanMessage} from '@langchain/core/messages';
-import {ChatGoogleGenerativeAI} from '@langchain/google-genai';
-import {HarmBlockThreshold, HarmCategory} from '@google/generative-ai';
-import Base64 from 'base64-js';
-import MarkdownIt from 'markdown-it';
-import {maybeShowApiKeyBanner} from './gemini-api-banner';
-import './style.css';
 
-// 🔥 SET `GOOGLE_API_KEY` IN YOUR .env FILE! 🔥
-// 🔥 GET YOUR GEMINI API KEY AT 🔥
-// 🔥 https://g.co/ai/idxGetGeminiKey 🔥
+import { HumanMessage } from 'https://cdn.jsdelivr.net/npm/@langchain/core/dist/messages.js';
+import { ChatGoogleGenerativeAI } from 'https://cdn.jsdelivr.net/npm/@langchain/google-genai/dist/chat_models.js';
 
-const form = document.querySelector('form');
-const promptInput = document.querySelector('input[name="prompt"]');
-const output = document.querySelector('.output');
-
-form.onsubmit = async ev => {
-  ev.preventDefault();
-  output.textContent = 'Generating...';
-
-  try {
-    // Load the image as a base64 string
-    const imageUrl = form.elements.namedItem('chosen-image').value;
-    const imageBase64 = await fetch(imageUrl)
-      .then(r => r.arrayBuffer())
-      .then(a => Base64.fromByteArray(new Uint8Array(a)));
-
-    const contents = [
-      new HumanMessage({
-        content: [
-          {
-            type: 'text',
-            text: promptInput.value,
-          },
-          {
-            type: 'image_url',
-            image_url: `data:image/png;base64,${imageBase64}`,
-          },
-        ],
-      }),
-    ];
-
-    // Call the multimodal model, and get a stream of results
-    const vision = new ChatGoogleGenerativeAI({
-      modelName: 'gemini-2.5-flash', // or gemini-2.5-pro
-      safetySettings: [
-        {
-          category: HarmCategory.HARM_CATEGORY_HARASSMENT,
-          threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH,
+document.addEventListener('DOMContentLoaded', () => {
+    // Fidelity Monitor Chart
+    const fidelityChartCtx = document.getElementById('fidelityChart').getContext('2d');
+    const fidelityData = [0.05, 0.052, 0.051, 0.053, 0.054, 0.055, 0.054, 0.053, 0.052, 0.051, 0.050];
+    const fidelityChart = new Chart(fidelityChartCtx, {
+        type: 'line',
+        data: {
+            labels: ['T-10', 'T-9', 'T-8', 'T-7', 'T-6', 'T-5', 'T-4', 'T-3', 'T-2', 'T-1', 'T-0'],
+            datasets: [{
+                label: 'Deviation (u)',
+                data: fidelityData,
+                borderColor: '#2563EB',
+                tension: 0.1
+            }]
         },
-      ],
+        options: {
+            scales: {
+                y: {
+                    suggestedMin: 0.045,
+                    suggestedMax: 0.060
+                }
+            }
+        }
     });
 
-    // Multi-modal streaming
-    const streamRes = await vision.stream(contents);
+    // Resonance Radar Chart
+    const resonanceRadarChartCtx = document.getElementById('resonanceRadarChart').getContext('2d');
+    const resonanceData = [8, 7, 9, 6, 8];
+    const resonanceRadarChart = new Chart(resonanceRadarChartCtx, {
+        type: 'radar',
+        data: {
+            labels: ['Math Rigor', '90s Grit', 'Material Utilization', 'Social Flow', 'Kochi Stress Tensors'],
+            datasets: [{
+                label: 'Resonance',
+                data: resonanceData,
+                backgroundColor: 'rgba(217, 119, 6, 0.2)',
+                borderColor: '#D97706',
+                pointBackgroundColor: '#D97706',
+                pointBorderColor: '#fff',
+                pointHoverBackgroundColor: '#fff',
+                pointHoverBorderColor: '#D97706'
+            }]
+        },
+        options: {
+            scales: {
+                r: {
+                    suggestedMin: 0,
+                    suggestedMax: 10
+                }
+            }
+        }
+    });
 
-    // Read from the stream and interpret the output as markdown
-    const buffer = [];
-    const md = new MarkdownIt();
+    // Sovereign Intelligence Hub
+    const generateDebriefButton = document.getElementById('generate-debrief');
+    const debriefOutput = document.getElementById('debrief-output');
 
-    for await (const chunk of streamRes) {
-      buffer.push(chunk.content);
-      output.innerHTML = md.render(buffer.join(''));
-    }
-  } catch (e) {
-    output.innerHTML += '<hr>' + e;
-  }
-};
+    generateDebriefButton.addEventListener('click', async () => {
+        debriefOutput.textContent = 'Generating software artifact...';
 
-// You can delete this once you've filled out an API key
-maybeShowApiKeyBanner(process.env.GOOGLE_API_KEY, `enter it in your <code>.env</code> file.`);
+        const prompt = document.getElementById('prompt-input').value;
+
+        try {
+            const response = await fetch('/agent', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ prompt }),
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const result = await response.json();
+            debriefOutput.textContent = result;
+
+        } catch (error) {
+            debriefOutput.textContent = 'Error generating artifact: ' + error.message;
+        }
+    });
+});

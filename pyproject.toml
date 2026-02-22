@@ -14,8 +14,6 @@ dependencies = [
     "requests",
     "jsonschema",
     "mcp[cli]",
-    "PyJWT",
-    "cryptography",
 ]
 
 [project.optional-dependencies]

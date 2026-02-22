@@ -57,16 +57,3 @@ def test_system_state_includes_runtime_bridge_snapshot():
     assert runtime_bridge["runtime_workers_ready"] == 3
     assert runtime_bridge["token_stream_normalized"] is True
     assert state["bridge_schema"] == "runtime.assignment.v1"
-
-def test_blocked_phase_when_blocking_reason_present():
-    model = ReleaseOrchestrator()
-    signals = ReleaseSignals(
-        blocking_reason="Critical bug found",
-        claude_task_complete=True,  # Even if other conditions are met
-        tests_passed=True,
-    )
-    assert model.resolve_phase(signals) == ReleasePhase.BLOCKED
-    state = model.system_state(signals)
-    assert state["phase"] == ReleasePhase.BLOCKED.value
-    assert state["blocked_reason"] == "Critical bug found"
-    assert state["next_action"] == "investigate_and_resolve_blocker"

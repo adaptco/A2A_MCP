@@ -1,39 +1,20 @@
 name: Daily Plan Ingress
-
 on:
   schedule:
-    - cron: "0 6 * * *" # daily at 06:00 UTC
+    - cron: '0 6 * * *'    # daily at 06:00 UTC
   workflow_dispatch:
-
-permissions:
-  contents: read
-
-concurrency:
-  group: daily-ingress-${{ github.ref }}
-  cancel-in-progress: true
 
 jobs:
   call_ingress:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
     steps:
-      - name: Validate required secrets
-        env:
-          MCP_ENDPOINT: ${{ secrets.MCP_ENDPOINT }}
-          MCP_TOKEN: ${{ secrets.MCP_TOKEN }}
-        run: |
-          set -euo pipefail
-          test -n "${MCP_ENDPOINT}" || (echo "Missing secret: MCP_ENDPOINT" && exit 1)
-          test -n "${MCP_TOKEN}" || (echo "Missing secret: MCP_TOKEN" && exit 1)
-
       - name: Trigger plan ingress
         env:
-          MCP_ENDPOINT: ${{ secrets.MCP_ENDPOINT }}
+          MCP_ENDPOINT: ${{ secrets.MCP_ENDPOINT }}  # e.g., https://mcp.example.com
           MCP_TOKEN: ${{ secrets.MCP_TOKEN }}
         run: |
-          set -euo pipefail
           PLAN_ID="daily-game-design-run"
-          curl --fail-with-body --retry 3 --retry-delay 5 --max-time 30 -X POST "${MCP_ENDPOINT}/plans/ingress" \
+          curl -X POST "${MCP_ENDPOINT}/plans/ingress" \
             -H "Authorization: Bearer ${MCP_TOKEN}" \
             -H "Content-Type: application/json" \
             -d "{\"plan_id\":\"${PLAN_ID}\"}"

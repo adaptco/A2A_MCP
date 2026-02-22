@@ -1,11 +1,9 @@
 """Game engine integrating Three.js rendering with WHAM physics and Judge."""
 
 from typing import Dict, Any, Optional
-from types import MappingProxyType
 from dataclasses import dataclass
-from types import MappingProxyType
 from frontend.three.scene_manager import SceneManager, Vector3
-from frontend.three.world_renderer import WorldRenderer, ZoneRenderer
+from frontend.three.world_renderer import WorldRenderer
 from frontend.three.avatar_renderer import AvatarRenderer
 from orchestrator.judge_orchestrator import get_judge_orchestrator
 from schemas.game_model import AgentRuntimeState, GameActionResult, GameModel, ZoneSpec
@@ -26,14 +24,6 @@ class PlayerState:
 
 class GameEngine:
     """Main game engine combining rendering and physics."""
-
-    OBSTACLE_DENSITY_MAPPING = MappingProxyType({
-        'none': 0.0,
-        'low': 0.25,
-        'medium': 0.5,
-        'high': 0.75,
-        'extreme': 1.0,
-    })
 
     def __init__(self, preset: str = "simulation"):
         self.preset = preset
@@ -101,7 +91,14 @@ class GameEngine:
         if isinstance(value, (int, float)):
             return float(value)
         if isinstance(value, str):
-            return GameEngine.OBSTACLE_DENSITY_MAPPING.get(value.strip().lower(), 0.0)
+            mapping = {
+                "none": 0.0,
+                "low": 0.25,
+                "medium": 0.5,
+                "high": 0.75,
+                "extreme": 1.0,
+            }
+            return mapping.get(value.strip().lower(), 0.0)
         return 0.0
 
     def initialize_player(
@@ -109,7 +106,7 @@ class GameEngine:
     ) -> PlayerState:
         """Initialize a player/agent."""
         if position is None:
-            position = Vector3(**self.DEFAULT_PLAYER_POSITION.to_dict())
+            position = Vector3(x=50, y=0, z=50)
 
         state = PlayerState(
             agent_name=agent_name,
@@ -150,9 +147,7 @@ class GameEngine:
 
         # Update current zone
         state.current_zone = self.world_renderer.get_zone_at_position(
-            state.position.x,
-            state.position.z,
-            int(state.position.y / ZoneRenderer.LAYER_HEIGHT),
+            state.position.x, state.position.z, int(state.position.y / 50)
         )
         self.game_model.upsert_agent_state(
             AgentRuntimeState(

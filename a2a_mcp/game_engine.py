@@ -1,41 +1,66 @@
-import torch
-from typing import Dict, Any, Optional
 
-class WHAMGameEngine:
-    """
-    Phase 5: WHAM Game Engine (WASM-based runtime).
-    Mock implementation for 60 FPS agent execution.
-    """
-    def __init__(self, mcp_vector_store: torch.Tensor):
-        self.vector_store = mcp_vector_store
-        self.fps = 60
-        self.frame_time = 1.0 / self.fps
-        
-    async def run_frame(self, input_action: str, agent_state: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Execute a single frame of the simulation.
-        """
-        # Simulate logic influenced by the MCP vector store
-        # In a real impl, this would be a WASM call
-        
-        # Example: Vector store influences "intelligence" or "speed"
-        multiplier = torch.mean(self.vector_store).item()
-        
-        new_state = agent_state.copy()
-        new_state["pos_x"] += (1.0 if input_action == "D" else -1.0 if input_action == "A" else 0) * multiplier
-        new_state["pos_y"] += (1.0 if input_action == "W" else -1.0 if input_action == "S" else 0) * multiplier
-        
-        return {
-            "status": "success",
-            "frame_state": new_state,
-            "timestamp": torch.randn(1).item() # Mock timestamp
-        }
+import numpy as np
+from scipy.spatial import KDTree
 
-    def compile_to_wasm(self) -> bytes:
-        """
-        Phase 4: Compile MCP tensor to WASM artifact.
-        """
-        # Mock compilation: serialize the tensor and add a header
-        header = b"WASM_MCP_V1"
-        tensor_data = self.vector_store.numpy().tobytes()
-        return header + tensor_data
+def check_c5_symmetry(vertices, tolerance=1e-5):
+    """
+    Checks if a set of vertices has C5 symmetry using a vectorized approach.
+
+    Args:
+        vertices (np.ndarray): A NumPy array of shape (N, 3) representing the vertex coordinates.
+        tolerance (float): The tolerance for nearest neighbor distance checks.
+
+    Returns:
+        float: The percentage of vertices that adhere to C5 symmetry.
+    """
+    if len(vertices) == 0:
+        return 100.0  # An empty set is trivially symmetric.
+
+    # 1. Build the KDTree for efficient nearest neighbor searches.
+    tree = KDTree(vertices)
+
+    # 2. Define the C5 rotation matrix (72 degrees around the Z-axis).
+    theta = np.deg2rad(72)
+    c, s = np.cos(theta), np.sin(theta)
+    rotation_matrix = np.array([
+        [c, -s, 0],
+        [s,  c, 0],
+        [0,  0, 1]
+    ])
+
+    # 3. Vectorized Rotation and Validation
+    symmetric_vertices_count = 0
+    for _ in range(5):  # Apply five 72-degree rotations
+        # Rotate all vertices at once
+        vertices = vertices @ rotation_matrix.T
+
+        # Query the KDTree to find the distance to the nearest neighbor for each rotated vertex
+        distances, _ = tree.query(vertices, k=1)
+
+        # A vertex is considered symmetric if its rotated position is within the tolerance of an original vertex
+        symmetric_vertices_count += np.sum(distances < tolerance)
+
+    # To get a unique count of symmetric vertices, we divide by the number of rotations.
+    # We also need to be careful not to double-count. A simpler approach is to check
+    # if ANY rotation maps a vertex close to another.
+    
+    # A more direct approach to get a score:
+    total_possible_symmetric_checks = len(vertices) * 5
+    
+    # The percentage of successful symmetry checks
+    symmetry_percentage = (symmetric_vertices_count / total_possible_symmetric_checks) * 100
+    
+    # A more robust check might involve ensuring each vertex has a match in all rotations.
+    # For this implementation, we will use a simpler metric.
+    
+    # Let's refine the validation logic. For each vertex, we check if a 72-degree rotation
+    # lands it near *any* other vertex in the original set.
+    
+    rotated_vertices = vertices @ rotation_matrix.T
+    distances, _ = tree.query(rotated_vertices, k=1)
+    
+    # Count how many vertices have a corresponding symmetric partner.
+    valid_points = np.sum(distances < tolerance)
+    
+    return (valid_points / len(vertices)) * 100
+

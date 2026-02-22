@@ -15,7 +15,7 @@ def ingest_repository_data(snapshot: dict[str, Any], authorization: str) -> str:
 
     try:
         claims = verify_github_oidc_token(token)
-    except Exception as e:
+    except ValueError as e:
         return f"error: {str(e)}"
 
     repository = str(claims.get("repository", "")).strip()

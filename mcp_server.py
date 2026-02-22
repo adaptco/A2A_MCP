@@ -25,11 +25,12 @@ def get_artifact_trace(root_id: str):
         db.close()
 
 @mcp.tool()
-def trigger_new_research(query: str):
+async def trigger_new_research(query: str):
     """Triggers the A2A pipeline for a new user query via the orchestrator."""
-    import requests
-    response = requests.post("http://localhost:8000/orchestrate", params={"user_query": query})
-    return response.json()
+    import httpx
+    async with httpx.AsyncClient(timeout=None) as client:
+        response = await client.post("http://localhost:8000/orchestrate", params={"user_query": query})
+        return response.json()
 
 if __name__ == "__main__":
     mcp.run()

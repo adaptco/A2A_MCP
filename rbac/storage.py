@@ -30,9 +30,6 @@ class AgentRecordModel(Base):
     agent_name = Column(String, nullable=False)
     role = Column(SAEnum(AgentRole), nullable=False)
     embedding_config = Column(JSON, nullable=True)
-    # 'metadata' is reserved in SQLAlchemy Base, so we map it to 'metadata_json' or similar.
-    # But wait, Base.metadata is the MetaData object. Instances don't have metadata attribute unless defined.
-    # However, it's good practice to avoid conflict.
     metadata_ = Column("metadata", JSON, default=dict, nullable=False)
     active = Column(Boolean, default=True, nullable=False)
 

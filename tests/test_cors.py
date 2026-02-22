@@ -4,7 +4,7 @@ import sys
 import pytest
 
 # Add the current directory to sys.path so we can import rbac
-sys.path.append(os.getcwd())
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 def test_cors_config_is_not_wildcard():
     """

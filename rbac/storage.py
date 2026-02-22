@@ -28,10 +28,6 @@ class AgentRecordModel(Base):
 
     agent_id = Column(String, primary_key=True)
     agent_name = Column(String, nullable=False)
-    # Using String for Enum to avoid database-specific enum type issues during migration,
-    # but SAEnum is also fine. Let's use SAEnum for strictness if we were using Alembic,
-    # but here String is safer for MVP -> DB transition without complex migrations.
-    # However, to match Pydantic model strictly, let's use SAEnum.
     role = Column(SAEnum(AgentRole), nullable=False)
     embedding_config = Column(JSON, nullable=True)
     # 'metadata' is reserved in SQLAlchemy Base, so we map it to 'metadata_json' or similar.

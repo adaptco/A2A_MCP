@@ -22,6 +22,8 @@ from orchestrator.vector_gate import VectorGate, VectorGateDecision
 from schemas.agent_artifacts import MCPArtifact
 from schemas.project_plan import PlanAction, ProjectPlan
 
+logger = logging.getLogger(__name__)
+
 
 @dataclass
 class PipelineResult:
@@ -322,7 +324,7 @@ class IntentEngine:
             )
         except Exception:
             # Notifications are out-of-band and must never break task execution.
-            pass
+            logger.exception("Failed to send pipeline completion notification")
 
     async def _validate_with_gate(
         self,

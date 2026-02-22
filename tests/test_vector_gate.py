@@ -45,7 +45,7 @@ def test_evaluate_exact_match(vector_gate, empty_world_model):
         source_artifact_id="artifact-1",
         vector=query_vector,
         text="This is a test token matching the query.",
-        timestamp=datetime.now(timezone.utc)
+        timestamp=datetime(2023, 1, 1, tzinfo=timezone.utc)
     )
     empty_world_model.add_token(token)
 

@@ -87,9 +87,9 @@ def test_get_history():
     assert len(history) == 1
     assert history[0]["payload"]["p"] == 1
 
-    # Check if modifying history affects internal state
+    # Check that modifying history does not affect internal state
     history[0]["payload"]["p"] = 2
-    assert store.events[0]["payload"]["p"] == 2
+    assert store.events[0]["payload"]["p"] == 1
 
 def test_append_multiple_events():
     async def _test():

@@ -150,9 +150,8 @@ def test_dimension_mismatch_robustness(vector_gate, empty_world_model):
     )
 
     # The valid token should be matched
-    assert any(m.token_id == "token-valid" for m in decision.matches)
-    # The invalid token should be skipped (not in matches)
-    assert not any(m.token_id == "token-wrong-dim" for m in decision.matches)
+    assert len(decision.matches) == 1
+    assert decision.matches[0].token_id == "token-valid"
 
 def test_format_prompt_context(vector_gate, empty_world_model):
     """Test the string formatting of the gate decision."""

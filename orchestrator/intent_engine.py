@@ -13,7 +13,7 @@ from agents.coder import CoderAgent
 from agents.managing_agent import ManagingAgent
 from agents.orchestration_agent import OrchestrationAgent
 from agents.tester import TesterAgent
-from orchestrator.judge_orchestrator import get_judge_orchestrator
+from orchestrator.judge_orchestrator import get_judge_orchestrator, JudgeOrchestrator
 from orchestrator.notifier import (
     WhatsAppNotifier,
     send_pipeline_completion_notification,

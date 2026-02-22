@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Dict, List
+from typing import Any, Dict, List, Tuple
 
 from agents.architecture_agent import ArchitectureAgent
 from agents.coder import CoderAgent
@@ -18,7 +18,7 @@ from orchestrator.notifier import (
 from orchestrator.storage import DBManager
 from orchestrator.vector_gate import VectorGate, VectorGateDecision
 from schemas.agent_artifacts import MCPArtifact
-from schemas.project_plan import ProjectPlan
+from schemas.project_plan import PlanAction, ProjectPlan
 
 
 @dataclass
@@ -54,7 +54,44 @@ class IntentEngine:
         max_healing_retries: int = 3,
     ) -> PipelineResult:
         """Run the full Managing -> Orchestrator -> Architect -> Coder -> Tester flow."""
-        result = PipelineResult(
+        result = self._initialize_pipeline_result(description, requester)
+
+        plan = await self._create_plan(description, requester)
+        result.plan = plan
+
+        blueprint = await self._create_blueprint(plan, requester)
+        result.blueprint = blueprint
+
+        arch_artifacts = await self._generate_architecture(blueprint)
+        result.architecture_artifacts = arch_artifacts
+
+        for action in blueprint.actions:
+            artifact, verdicts, healed = await self._process_action(
+                action, blueprint.plan_id, max_healing_retries
+            )
+            result.code_artifacts.append(artifact)
+            result.test_verdicts.extend(verdicts)
+
+        result.success = all(a.status == "completed" for a in blueprint.actions)
+        completed_actions = sum(
+            1 for action in blueprint.actions if action.status == "completed"
+        )
+        failed_actions = sum(
+            1 for action in blueprint.actions if action.status == "failed"
+        )
+        self._notify_completion(
+            project_name=blueprint.project_name,
+            success=result.success,
+            completed_actions=completed_actions,
+            failed_actions=failed_actions,
+        )
+        return result
+
+    def _initialize_pipeline_result(
+        self, description: str, requester: str
+    ) -> PipelineResult:
+        """Create the initial empty PipelineResult."""
+        return PipelineResult(
             plan=ProjectPlan(
                 plan_id="pending",
                 project_name=description[:80],
@@ -67,114 +104,141 @@ class IntentEngine:
             ),
         )
 
-        plan = await self.manager.categorize_project(description, requester)
-        result.plan = plan
+    async def _create_plan(self, description: str, requester: str) -> ProjectPlan:
+        """Use ManagingAgent to categorize and plan the project."""
+        return await self.manager.categorize_project(description, requester)
 
+    async def _create_blueprint(
+        self, plan: ProjectPlan, requester: str
+    ) -> ProjectPlan:
+        """Use OrchestrationAgent to build a detailed blueprint."""
         task_descriptions = [a.instruction for a in plan.actions]
-        blueprint = await self.orchestrator.build_blueprint(
+        return await self.orchestrator.build_blueprint(
             project_name=plan.project_name,
             task_descriptions=task_descriptions,
             requester=requester,
         )
-        result.blueprint = blueprint
 
-        arch_artifacts = await self.architect.map_system(blueprint)
-        result.architecture_artifacts = arch_artifacts
+    async def _generate_architecture(
+        self, blueprint: ProjectPlan
+    ) -> List[MCPArtifact]:
+        """Use ArchitectureAgent to map the system architecture."""
+        return await self.architect.map_system(blueprint)
 
-        for action in blueprint.actions:
-            action.status = "in_progress"
+    async def _process_action(
+        self, action: PlanAction, plan_id: str, max_healing_retries: int
+    ) -> Tuple[MCPArtifact, List[Dict[str, str]], bool]:
+        """Handle the generate -> test -> fix loop for a single action."""
+        action.status = "in_progress"
 
-            coder_context = self.judge.get_agent_system_context("CoderAgent")
-            coder_gate = self.vector_gate.evaluate(
-                node="coder_input",
-                query=f"{action.title}\n{action.instruction}",
+        artifact = await self._generate_initial_code(action, plan_id)
+
+        final_artifact, verdicts, healed = await self._run_healing_loop(
+            action, artifact, max_healing_retries
+        )
+
+        action.status = "completed" if healed else "failed"
+
+        return final_artifact, verdicts, healed
+
+    async def _generate_initial_code(
+        self, action: PlanAction, plan_id: str
+    ) -> MCPArtifact:
+        """Generate the first draft of code for an action."""
+        coder_context = self.judge.get_agent_system_context("CoderAgent")
+        coder_gate = self.vector_gate.evaluate(
+            node="coder_input",
+            query=f"{action.title}\n{action.instruction}",
+            world_model=self.architect.pinn.world_model,
+        )
+        coder_vector_context = self.vector_gate.format_prompt_context(coder_gate)
+        coding_task = (
+            f"{coder_context}\n\n"
+            f"{coder_vector_context}\n\n"
+            "Implement this task with tests and safety checks:\n"
+            f"{action.instruction}"
+        )
+        artifact = await self._generate_with_gate(
+            parent_id=plan_id,
+            feedback=coding_task,
+            context_tokens=coder_gate.matches,
+        )
+        self._attach_gate_metadata(artifact, coder_gate)
+        self.db.save_artifact(artifact)
+        return artifact
+
+    async def _run_healing_loop(
+        self, action: PlanAction, artifact: MCPArtifact, max_healing_retries: int
+    ) -> Tuple[MCPArtifact, List[Dict[str, str]], bool]:
+        """
+        Repeatedly test and refine the artifact until it passes or retries run out.
+        Returns (final_artifact, list_of_verdicts, is_healed).
+        """
+        verdicts = []
+        healed = False
+        current_artifact = artifact
+
+        for attempt in range(max_healing_retries):
+            tester_gate = self.vector_gate.evaluate(
+                node="tester_input",
+                query=f"{action.instruction}\n{getattr(current_artifact, 'content', '')}",
                 world_model=self.architect.pinn.world_model,
             )
-            coder_vector_context = self.vector_gate.format_prompt_context(coder_gate)
-            coding_task = (
-                f"{coder_context}\n\n"
-                f"{coder_vector_context}\n\n"
-                "Implement this task with tests and safety checks:\n"
-                f"{action.instruction}"
+            tester_context = self.vector_gate.format_prompt_context(tester_gate)
+            report = await self._validate_with_gate(
+                artifact_id=current_artifact.artifact_id,
+                supplemental_context=tester_context,
+                context_tokens=tester_gate.matches,
             )
-            artifact = await self._generate_with_gate(
-                parent_id=blueprint.plan_id,
-                feedback=coding_task,
-                context_tokens=coder_gate.matches,
+            judgment = self.judge.judge_action(
+                action=(
+                    f"TesterAgent verdict for {current_artifact.artifact_id}: "
+                    f"{report.status}"
+                ),
+                context={
+                    "attempt": attempt + 1,
+                    "max_retries": max_healing_retries,
+                    "artifact_id": current_artifact.artifact_id,
+                },
+                agent_name="TesterAgent",
             )
-            self._attach_gate_metadata(artifact, coder_gate)
-            self.db.save_artifact(artifact)
 
-            healed = False
-            for attempt in range(max_healing_retries):
-                tester_gate = self.vector_gate.evaluate(
-                    node="tester_input",
-                    query=f"{action.instruction}\n{getattr(artifact, 'content', '')}",
-                    world_model=self.architect.pinn.world_model,
-                )
-                tester_context = self.vector_gate.format_prompt_context(tester_gate)
-                report = await self._validate_with_gate(
-                    artifact_id=artifact.artifact_id,
-                    supplemental_context=tester_context,
-                    context_tokens=tester_gate.matches,
-                )
-                judgment = self.judge.judge_action(
-                    action=(
-                        f"TesterAgent verdict for {artifact.artifact_id}: "
-                        f"{report.status}"
-                    ),
-                    context={
-                        "attempt": attempt + 1,
-                        "max_retries": max_healing_retries,
-                        "artifact_id": artifact.artifact_id,
-                    },
-                    agent_name="TesterAgent",
-                )
-                result.test_verdicts.append(
-                    {
-                        "artifact": artifact.artifact_id,
-                        "status": report.status,
-                        "vector_gate": "open" if tester_gate.is_open else "closed",
-                        "judge_score": f"{judgment.overall_score:.3f}",
-                    }
-                )
+            verdicts.append(
+                {
+                    "artifact": current_artifact.artifact_id,
+                    "status": report.status,
+                    "vector_gate": "open" if tester_gate.is_open else "closed",
+                    "judge_score": f"{judgment.overall_score:.3f}",
+                }
+            )
 
-                if report.status == "PASS":
-                    healed = True
-                    break
+            if report.status == "PASS":
+                healed = True
+                break
 
-                refine_context = self.judge.get_agent_system_context("CoderAgent")
-                healing_gate = self.vector_gate.evaluate(
-                    node="healing_input",
-                    query=f"{action.instruction}\n{report.critique}",
-                    world_model=self.architect.pinn.world_model,
-                )
-                healing_vector_context = self.vector_gate.format_prompt_context(healing_gate)
-                artifact = await self._generate_with_gate(
-                    parent_id=artifact.artifact_id,
-                    feedback=(
-                        f"{refine_context}\n\n"
-                        f"{healing_vector_context}\n\n"
-                        f"Tester feedback:\n{report.critique}"
-                    ),
-                    context_tokens=healing_gate.matches,
-                )
-                self._attach_gate_metadata(artifact, healing_gate)
-                self.db.save_artifact(artifact)
+            # If not healed, refine
+            refine_context = self.judge.get_agent_system_context("CoderAgent")
+            healing_gate = self.vector_gate.evaluate(
+                node="healing_input",
+                query=f"{action.instruction}\n{report.critique}",
+                world_model=self.architect.pinn.world_model,
+            )
+            healing_vector_context = self.vector_gate.format_prompt_context(healing_gate)
 
-            result.code_artifacts.append(artifact)
-            action.status = "completed" if healed else "failed"
+            refined_artifact = await self._generate_with_gate(
+                parent_id=current_artifact.artifact_id,
+                feedback=(
+                    f"{refine_context}\n\n"
+                    f"{healing_vector_context}\n\n"
+                    f"Tester feedback:\n{report.critique}"
+                ),
+                context_tokens=healing_gate.matches,
+            )
+            self._attach_gate_metadata(refined_artifact, healing_gate)
+            self.db.save_artifact(refined_artifact)
+            current_artifact = refined_artifact
 
-        result.success = all(a.status == "completed" for a in blueprint.actions)
-        completed_actions = sum(1 for action in blueprint.actions if action.status == "completed")
-        failed_actions = sum(1 for action in blueprint.actions if action.status == "failed")
-        self._notify_completion(
-            project_name=blueprint.project_name,
-            success=result.success,
-            completed_actions=completed_actions,
-            failed_actions=failed_actions,
-        )
-        return result
+        return current_artifact, verdicts, healed
 
     async def execute_plan(self, plan: ProjectPlan) -> List[str]:
         """Legacy action-level coder->tester loop for backward compatibility."""

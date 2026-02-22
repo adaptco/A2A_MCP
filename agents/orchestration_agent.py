@@ -10,6 +10,8 @@ from __future__ import annotations
 import uuid
 from typing import List
 
+from fastapi.concurrency import run_in_threadpool
+
 from schemas.agent_artifacts import MCPArtifact
 from schemas.project_plan import PlanAction, ProjectPlan
 from orchestrator.storage import DBManager
@@ -69,5 +71,5 @@ class OrchestrationAgent:
             content=plan.model_dump_json(),
             metadata={"agent": self.AGENT_NAME},
         )
-        self.db.save_artifact(artifact)
+        await run_in_threadpool(self.db.save_artifact, artifact)
         return plan

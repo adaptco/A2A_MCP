@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="https://www.omg.org/spec/DMN/20191111/MODEL/" xmlns:dmndi="https://www.omg.org/spec/DMN/20191111/DMNDI/" xmlns:dc="http://www.omg.org/spec/DMN/20180521/DC/" id="definitions" name="WHAMGameEngineDecisions" namespace="http://camunda.org/schema/1.0/dmn">
+  <decision id="decision_wham_engine_action" name="WHAM Engine Action">
+    <decisionTable id="decisionTable_wham_engine_action">
+      <input id="input_action" label="Action">
+        <inputExpression id="inputExpression_action" typeRef="string">
+          <text>action</text>
+        </inputExpression>
+      </input>
+      <input id="input_multiplier" label="Multiplier">
+        <inputExpression id="inputExpression_multiplier" typeRef="double">
+          <text>multiplier</text>
+        </inputExpression>
+      </input>
+      <output id="output_delta_x" label="Delta X" typeRef="double" />
+      <output id="output_delta_y" label="Delta Y" typeRef="double" />
+      <rule id="rule_1">
+        <inputEntry id="inputEntry_1_1">
+          <text>"D"</text>
+        </inputEntry>
+        <inputEntry id="inputEntry_1_2">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="outputEntry_1_1">
+          <text>1.0 * multiplier</text>
+        </outputEntry>
+        <outputEntry id="outputEntry_1_2">
+          <text>0.0</text>
+        </outputEntry>
+      </rule>
+      <rule id="rule_2">
+        <inputEntry id="inputEntry_2_1">
+          <text>"A"</text>
+        </inputEntry>
+        <inputEntry id="inputEntry_2_2">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="outputEntry_2_1">
+          <text>-1.0 * multiplier</text>
+        </outputEntry>
+        <outputEntry id="outputEntry_2_2">
+          <text>0.0</text>
+        </outputEntry>
+      </rule>
+      <rule id="rule_3">
+        <inputEntry id="inputEntry_3_1">
+          <text>"W"</text>
+        </inputEntry>
+        <inputEntry id="inputEntry_3_2">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="outputEntry_3_1">
+          <text>0.0</text>
+        </outputEntry>
+        <outputEntry id="outputEntry_3_2">
+          <text>1.0 * multiplier</text>
+        </outputEntry>
+      </rule>
+      <rule id="rule_4">
+        <inputEntry id="inputEntry_4_1">
+          <text>"S"</text>
+        </inputEntry>
+        <inputEntry id="inputEntry_4_2">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="outputEntry_4_1">
+          <text>0.0</text>
+        </outputEntry>
+        <outputEntry id="outputEntry_4_2">
+          <text>-1.0 * multiplier</text>
+        </outputEntry>
+      </rule>
+    </decisionTable>
+  </decision>
+</definitions>

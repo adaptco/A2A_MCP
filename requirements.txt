@@ -11,3 +11,5 @@ httpx
 fastmcp
 requests
 jsonschema
+torch
+numpy

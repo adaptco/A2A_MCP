@@ -105,9 +105,11 @@ class InMemoryAgentRegistry(AgentRegistry):
     def list_all(self) -> List[AgentRecord]:
         return list(self._store.values())
 
-    def deactivate(self, agent_id: str) -> None:
+    def deactivate(self, agent_id: str) -> bool:
         if agent_id in self._store:
             self._store[agent_id].active = False
+            return True
+        return False
 
     def count(self) -> int:
         return len(self._store)

@@ -1,0 +1,93 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "RAG Index Manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "manifest_id",
+    "version",
+    "created_at",
+    "source_snapshot_ref",
+    "chunk_set_ref",
+    "embedding",
+    "vector_index",
+    "retrieval",
+    "eval_profile"
+  ],
+  "properties": {
+    "manifest_id": { "type": "string" },
+    "version": { "type": "string" },
+    "created_at": { "type": "string", "format": "date-time" },
+    "source_snapshot_ref": { "type": "string" },
+    "chunk_set_ref": { "type": "string" },
+    "contract_hash": { "type": ["string", "null"] },
+    "corpus_id": { "type": "string" },
+    "project_id": { "type": "string" },
+    "vertical_id": { "type": "string" },
+    "embedding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["model", "dimension", "normalize"],
+      "properties": {
+        "model": { "type": "string" },
+        "dimension": { "type": "integer" },
+        "normalize": { "type": "boolean" }
+      }
+    },
+    "vector_index": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["provider", "collection", "distance"],
+      "properties": {
+        "provider": { "type": "string" },
+        "collection": { "type": "string" },
+        "distance": { "type": "string" }
+      }
+    },
+    "retrieval": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["top_k", "metric"],
+      "properties": {
+        "top_k": { "type": "integer" },
+        "min_score": { "type": "number" },
+        "metric": { "type": "string" }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "source_hashes": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "build_id": { "type": "string" }
+      }
+    },
+    "chunk_set": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "count": { "type": "integer" },
+        "thread_ids_sample": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "eval_profile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "passed_gates"],
+      "properties": {
+        "name": { "type": "string" },
+        "passed_gates": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": []
+        }
+      }
+    }
+  }
+}

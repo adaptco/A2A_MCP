@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vehicle-mcp
+  labels:
+    app: vehicle-mcp
+    version: 3.0.0
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: vehicle-mcp
+  template:
+    metadata:
+      labels:
+        app: vehicle-mcp
+        version: 3.0.0
+    spec:
+      containers:
+      - name: vehicle-mcp
+        image: ghcr.io/adaptco/vehicle-mcp:3.0.0
+        ports:
+        - containerPort: 8000
+        livenessProbe:
+          httpGet:
+            path: /health_check
+            port: 8000
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        readinessProbe:
+          httpGet:
+            path: /health_check
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        securityContext:
+          runAsUser: 1000
+          runAsGroup: 1000
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vehicle-mcp
+spec:
+  selector:
+    app: vehicle-mcp
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8000
+  type: LoadBalancer

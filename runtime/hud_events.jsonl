@@ -1,0 +1,3 @@
+{"timestamp":"2025-09-25T05:03:12Z","event":"hud.broadcast","capsule":"capsule.kobe.cipher.v1","payload":{"type":"glyph.pulse","digest":"sha256:ab66c0535ff7f5d8a5b9861d871c42a4fe6aa6b133b76cd3a247cf121ab98586"}}
+{"timestamp": "2025-09-25T07:41:37Z", "event": "hud.motion.ledger.finalized", "capsule": "capsule.motion.ledger.v2", "overlays": ["glyph.pulse", "aura.gold", "qlock.tick"], "emotion_arc": ["curiosity", "intimacy", "clarity", "wisdom"]}
+{"timestamp":"2025-09-25T08:12:05Z","event":"hud.feedback.loop.open","capsule":"capsule.selfie.dualroot.q.cici.v1.feedback.v1","overlays":["glyph_ping","posture_trace","spark_meter"],"status":"OPEN"}

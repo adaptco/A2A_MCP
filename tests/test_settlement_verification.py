@@ -114,5 +114,5 @@ async def test_advisory_lock_uses_tenant_and_execution_pair_keys() -> None:
     await advisory_lock_execution(conn, "tenant-a", "exec-1")
 
     assert conn.calls == [
-        ("SELECT pg_advisory_xact_lock($1, $2)", (hash32("tenant-a"), hash32("exec-1")))
+        ("SELECT pg_advisory_xact_lock(, )", (hash32("tenant-a"), hash32("exec-1")))
     ]

@@ -1,0 +1,51 @@
+{
+  "attestation": {
+    "content_hash": "sha256:bbd4d04d172b4867c390304f044213b2c581ec18b3a2130635e78db61c3f7e89",
+    "sealed_at": "2025-09-25T07:41:37Z",
+    "sealed_by": "Council",
+    "status": "FOSSILIZED"
+  },
+  "author": "Council Relay",
+  "capsule_id": "capsule.replay.token.v2",
+  "description": "Replay passport granting audit-grade replays of the sovereign vessel invocation with HUD fidelity and ledger verification.",
+  "governance": {
+    "quorum": "2-of-3",
+    "required_signers": [
+      "Queen Boo",
+      "Queen CiCi",
+      "Celine"
+    ],
+    "signatures": [
+      "sig:queen_boo",
+      "sig:cici"
+    ]
+  },
+  "issued_at": "2025-09-26T02:10:30Z",
+  "ledger_ref": {
+    "capsule_id": "capsule.motion.ledger.v2",
+    "digest": "sha256:5a4e3b9051bcf97d16e80429ee73ea64fd8bc177492237ab4549d1d4e41df9ef"
+  },
+  "permissions": {
+    "allowed": [
+      "replay",
+      "hud_stream",
+      "audit_trace"
+    ],
+    "denied": [
+      "remix_without_quorum"
+    ],
+    "expiry": null
+  },
+  "status": "SEALED",
+  "telemetry": {
+    "emotion_trace": true,
+    "hud": [
+      "glyph.pulse",
+      "aura.gold",
+      "qlock.tick"
+    ],
+    "pose_lock": "3q-window-stance"
+  },
+  "type": "ReplayToken",
+  "version": "2.0.0"
+}

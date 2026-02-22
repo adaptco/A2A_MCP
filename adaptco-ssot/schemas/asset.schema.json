@@ -1,0 +1,195 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.adaptco.io/asset.schema.json",
+  "title": "Asset",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "name",
+    "kind",
+    "uri",
+    "tags",
+    "meta",
+    "registry"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "kind": {
+      "type": "string",
+      "minLength": 1
+    },
+    "uri": {
+      "type": "string",
+      "format": "uri"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "meta": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "registry": {
+      "$ref": "#/$defs/registryPacket"
+    }
+  },
+  "$defs": {
+    "nonEmptyString": {
+      "type": "string",
+      "minLength": 1
+    },
+    "registryPacket": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "capsule_id",
+        "registry",
+        "entry",
+        "lineage",
+        "replay"
+      ],
+      "properties": {
+        "capsule_id": {
+          "type": "string",
+          "const": "ssot.registry.v1"
+        },
+        "registry": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["name", "version", "maintainer"],
+          "properties": {
+            "name": {
+              "$ref": "#/$defs/nonEmptyString"
+            },
+            "version": {
+              "type": "string",
+              "pattern": "^\\d+\\.\\d+\\.\\d+$"
+            },
+            "maintainer": {
+              "$ref": "#/$defs/nonEmptyString"
+            }
+          }
+        },
+        "entry": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "artifact_id",
+            "type",
+            "author",
+            "created_at",
+            "canonical_sha256",
+            "merkle_root",
+            "council_attestation"
+          ],
+          "properties": {
+            "artifact_id": {
+              "$ref": "#/$defs/nonEmptyString"
+            },
+            "type": {
+              "$ref": "#/$defs/nonEmptyString"
+            },
+            "author": {
+              "$ref": "#/$defs/nonEmptyString"
+            },
+            "created_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "canonical_sha256": {
+              "type": "string",
+              "pattern": "^sha256:[0-9a-fA-F]{64}$"
+            },
+            "merkle_root": {
+              "type": "string",
+              "pattern": "^merkle:[0-9a-fA-F]{64}$"
+            },
+            "council_attestation": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["signatures", "quorum_rule"],
+              "properties": {
+                "signatures": {
+                  "type": "array",
+                  "minItems": 1,
+                  "items": {
+                    "$ref": "#/$defs/nonEmptyString"
+                  }
+                },
+                "quorum_rule": {
+                  "$ref": "#/$defs/nonEmptyString"
+                }
+              }
+            }
+          }
+        },
+        "lineage": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["immutable"],
+          "properties": {
+            "parent": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/nonEmptyString"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "forks": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/nonEmptyString"
+              },
+              "default": []
+            },
+            "immutable": {
+              "type": "boolean"
+            }
+          }
+        },
+        "replay": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["authorized", "conditions"],
+          "properties": {
+            "authorized": {
+              "type": "boolean"
+            },
+            "conditions": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "$ref": "#/$defs/nonEmptyString"
+              }
+            },
+            "override_protocol": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/nonEmptyString"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,57 @@
+{
+  "id": "capsule.rehearsal.scrollstream.look.characters.v1",
+  "description": "Variant cycle featuring CiCi, Q, and Lyric with explicit visual asset cues for rehearsal overlays.",
+  "replay_token": "HUD.loop.selfie.dualroot.q.cici.v1.token.002",
+  "spark_test_name": "Sabrina Spark Test",
+  "participants": [
+    { "name": "CiCi", "role": "Conductor", "state": "overlay_active" },
+    { "name": "Q", "role": "Observer", "state": "trace_live" },
+    { "name": "Lyric", "role": "Narrator", "state": "listening" }
+  ],
+  "events": [
+    {
+      "event": "audit.summary",
+      "agent": { "call_sign": "CiCi", "role": "Conductor", "channel": "audit" },
+      "output": "CiCi calibrates the shimmer rail, folding Lyric's commentary into the dual-root brief before Celine signs off.",
+      "emotional_tone": "inviting",
+      "visual_asset": {
+        "image": "artifacts/rehearsal/cici-shimmer.png",
+        "alt": "CiCi guiding the shimmer rail with overlay glyphs"
+      }
+    },
+    {
+      "event": "audit.proof",
+      "agent": { "call_sign": "Q", "role": "Observer", "channel": "observability" },
+      "output": "Q cross-checks Lyric's annotations against the ledger, flagging posture shifts and confirming Spark resonance.",
+      "emotional_tone": "measured",
+      "visual_asset": {
+        "image": "artifacts/rehearsal/q-ledger.png",
+        "alt": "Q reviewing observability traces with ledger overlays"
+      }
+    },
+    {
+      "event": "audit.execution",
+      "agent": { "call_sign": "Lyric", "role": "Narrator", "channel": "execution" },
+      "output": "Lyric replays the capsule, layering narration over the glyph pulse so contributors can rehearse timing in sync.",
+      "emotional_tone": "resonant",
+      "visual_asset": {
+        "image": "artifacts/rehearsal/lyric-replay.png",
+        "alt": "Lyric narrating the replay glyph pulse"
+      }
+    }
+  ],
+  "hud_shimmer": {
+    "tone": "sunrise",
+    "intensity": 0.9,
+    "image": "artifacts/rehearsal/hud-shimmer.png",
+    "caption": "HUD shimmer variant for rehearsal overlay review"
+  },
+  "replay_glyph": {
+    "image": "artifacts/rehearsal/replay-glyph.png",
+    "caption": "Replay glyph pulse annotated with Lyric's narration"
+  },
+  "training_mode": {
+    "emotional_payload": "layered",
+    "notes": "Use for rehearsal loops that center on narrator overlays and glyph posture checks."
+  }
+}

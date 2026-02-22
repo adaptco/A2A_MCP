@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "action.ledger.append_receipt.result.v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["ok", "trace_id", "receipt_id", "response_hash"],
+  "properties": {
+    "ok": { "type": "boolean" },
+    "trace_id": { "type": "string" },
+    "receipt_id": { "type": "string" },
+    "response_hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "error": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "code": { "type": "string" },
+        "message": { "type": "string" }
+      }
+    }
+  }
+}

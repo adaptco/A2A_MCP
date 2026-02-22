@@ -1,0 +1,18 @@
+service: selector.preview.bundle.v1
+version: 2024-06-01
+modules:
+  - name: hud_walkthrough
+    status: active
+    last_updated: 2024-05-28
+    notes: "Guided overlay describing preview surfaces"
+  - name: rehearsal_prompts
+    status: active
+    last_updated: 2024-05-29
+    prompts:
+      - rupture.flare
+      - restoration.loop
+      - mesh.response
+  - name: compliance_overlay
+    status: passive
+    last_updated: 2024-05-15
+    owner: compliance@adapt.co

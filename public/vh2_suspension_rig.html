@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sovereign OS | VH2 Suspension Rig</title>
+    <style>
+        :root {
+            --bg-color: #0a0a0a;
+            --text-color: #e0e0e0;
+            --accent-gold: #D4AF37;
+            --accent-dim: #5c4d18;
+            --grid-line: #1a1a1a;
+            --overlay-bg: rgba(10, 10, 10, 0.85);
+            --font-mono: 'SF Mono', 'Roboto Mono', monospace;
+            --font-display: 'Inter', system-ui, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: var(--font-display);
+        }
+
+        #canvas-container {
+            width: 100vw;
+            height: 100vh;
+            display: block;
+        }
+
+        /* UI Overlay */
+        .hud-overlay {
+            position: absolute;
+            pointer-events: none;
+            padding: 2rem;
+            box-sizing: border-box;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            grid-template-rows: auto 1fr auto;
+        }
+
+        .header {
+            grid-column: 1 / -1;
+            border-bottom: 1px solid var(--accent-dim);
+            padding-bottom: 1rem;
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        h1 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin: 0;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        .version-tag {
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            color: var(--accent-gold);
+            border: 1px solid var(--accent-dim);
+            padding: 0.2rem 0.5rem;
+        }
+
+        .controls-panel {
+            grid-column: 2;
+            grid-row: 2;
+            background: var(--overlay-bg);
+            border-left: 1px solid var(--accent-dim);
+            padding: 1.5rem;
+            pointer-events: auto;
+            backdrop-filter: blur(5px);
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .panel-section {
+            border-bottom: 1px solid var(--grid-line);
+            padding-bottom: 1rem;
+        }
+
+        .panel-section:last-child {
+            border-bottom: none;
+        }
+
+        .section-title {
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            color: var(--accent-gold);
+            margin-bottom: 0.8rem;
+            display: block;
+        }
+
+        .data-row {
+            display: flex;
+            justify-content: space-between;
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .data-label {
+            color: #888;
+        }
+
+        .data-value {
+            color: #fff;
+        }
+
+        /* Range Slider */
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 16px;
+            width: 16px;
+            border-radius: 50%;
+            background: var(--accent-gold);
+            cursor: pointer;
+            margin-top: -6px;
+            box-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
+        }
+
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+            background: var(--grid-line);
+            border-radius: 2px;
+        }
+
+        .witness-box {
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            color: var(--accent-gold);
+            opacity: 0.8;
+            word-break: break-all;
+            margin-top: 0.5rem;
+            border: 1px dashed var(--accent-dim);
+            padding: 0.5rem;
+        }
+
+        .fail-closed {
+            color: #ff4444;
+            border-color: #ff4444;
+        }
+
+        .status-badge {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: var(--accent-gold);
+            margin-right: 8px;
+            box-shadow: 0 0 8px var(--accent-gold);
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="canvas-container"></div>
+
+    <div class="hud-overlay">
+        <div class="header">
+            <h1><span class="status-badge"></span>VH2 Mechanical Rig // Sovereign OS</h1>
+            <span class="version-tag">v3.1.0-RC4</span>
+        </div>
+
+        <div class="controls-panel">
+            <div class="panel-section">
+                <span class="section-title">Suspension Kinematics</span>
+                <div class="data-row">
+                    <span class="data-label">Steering Angle</span>
+                    <span class="data-value" id="steer-val">0.0°</span>
+                </div>
+                <input type="range" id="steer-slider" min="-35" max="35" step="0.5" value="0">
+                <div class="data-row" style="margin-top: 0.5rem;">
+                    <span class="data-label">KPI Angle</span>
+                    <span class="data-value">12.5°</span>
+                </div>
+                <div class="data-row">
+                    <span class="data-label">Scrub Radius</span>
+                    <span class="data-value">45mm</span>
+                </div>
+            </div>
+
+            <div class="panel-section">
+                <span class="section-title">Wheel Geometry (Front)</span>
+                <div class="data-row">
+                    <span class="data-label">Variant</span>
+                    <span class="data-value">Advan GT Beyond</span>
+                </div>
+                <div class="data-row">
+                    <span class="data-label">Spec</span>
+                    <span class="data-value">19x9.5 ET29</span>
+                </div>
+                <div class="data-row">
+                    <span class="data-label">Concavity</span>
+                    <span class="data-value">0.150</span>
+                </div>
+            </div>
+
+            <div class="panel-section">
+                <span class="section-title">Wheel Geometry (Rear)</span>
+                <div class="data-row">
+                    <span class="data-label">Spec</span>
+                    <span class="data-value">19x10.5 ET22</span>
+                </div>
+                <div class="data-row">
+                    <span class="data-label">Concavity</span>
+                    <span class="data-value">0.185</span>
+                </div>
+            </div>
+
+            <div class="panel-section">
+                <span class="section-title">Witness Emission</span>
+                <div class="witness-box" id="witness-hash">
+                    0xVH2_ET29_C5_SOV_A3F2
+                </div>
+                <div class="data-row" style="margin-top: 0.5rem;">
+                    <span class="data-label">Integrity</span>
+                    <span class="data-value" id="integrity-status">SECURE</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Three.js r128 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- OrbitControls -->
+    <script src="https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+    <script>
+        // --- CONSTANTS & CONFIG ---
+        const CONFIG = {
+            front: { diameter: 19, width: 9.5, et: 29, concavity: 0.15 },
+            rear: { diameter: 19, width: 10.5, et: 22, concavity: 0.185 },
+            kpi: 12.5 * (Math.PI / 180), // 12.5 degrees in radians
+            scrubRadius: 0.045, // meters
+            wheelColor: 0xD4AF37, // Racing Sand Metallic
+            witnessHash: "0xVH2_ET29_C5_SOV_A3F2"
+        };
+
+        // Scene Scaling: 1 Unit = 10cm (0.1m)
+        const SCALE_FACTOR = 10;
+        const RIM_RADIUS = (CONFIG.front.diameter * 0.0254 / 2) * SCALE_FACTOR; // ~2.41 units
+        const TIRE_RADIUS = RIM_RADIUS * 1.35; // Approx tire profile
+        const HUB_HEIGHT = TIRE_RADIUS; // Center of wheel from ground
+
+        // --- THREE.JS SETUP ---
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x0a0a0a);
+        scene.fog = new THREE.Fog(0x0a0a0a, 10, 50);
+
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
+        camera.position.set(8, 6, 8); // Front-quarter view
+        camera.lookAt(0, 2, 0);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        renderer.outputEncoding = THREE.sRGBEncoding;
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.minDistance = 3;
+        controls.maxDistance = 20;
+        controls.target.set(0, 2, 0);
+
+        // --- LIGHTING ---
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.3);
+        scene.add(ambientLight);
+
+        const spotLight = new THREE.SpotLight(0xffffff, 1.5);
+        spotLight.position.set(5, 10, 5);
+        spotLight.angle = Math.PI / 4;
+        spotLight.penumbra = 0.1;
+        spotLight.decay = 2;
+        spotLight.distance = 50;
+        spotLight.castShadow = true;
+        spotLight.shadow.mapSize.width = 2048;
+        spotLight.shadow.mapSize.height = 2048;
+        scene.add(spotLight);
+
+        const rimLight = new THREE.PointLight(0xD4AF37, 0.8, 10);
+        rimLight.position.set(-2, 1, 2);
+        scene.add(rimLight);
+
+        // Grid
+        const gridHelper = new THREE.GridHelper(20, 20, 0x333333, 0x1a1a1a);
+        scene.add(gridHelper);
+
+        // --- GEOMETRY BUILDER ---
+        function createWheel(spec, isFront) {
+            const wheelGroup = new THREE.Group();
+
+            // Material
+            const goldMaterial = new THREE.MeshStandardMaterial({
+                color: CONFIG.wheelColor,
+                metalness: 0.9,
+                roughness: 0.3,
+                envMapIntensity: 1.0
+            });
+
+            const tireMaterial = new THREE.MeshStandardMaterial({
+                color: 0x111111,
+                roughness: 0.8,
+                metalness: 0.1
+            });
+
+            // 1. Rim Barrel
+            const barrelLen = (spec.width * 0.0254) * SCALE_FACTOR;
+            const barrelGeom = new THREE.CylinderGeometry(RIM_RADIUS, RIM_RADIUS, barrelLen, 64, 1, true);
+            const barrel = new THREE.Mesh(barrelGeom, goldMaterial);
+            barrel.rotation.z = Math.PI / 2;
+            barrel.castShadow = true;
+            wheelGroup.add(barrel);
+
+            // 2. Hub Face (Concavity logic)
+            // Procedural concavity: deeper offset = deeper hub
+            const concavityDepth = spec.concavity * SCALE_FACTOR;
+            const hubRadius = RIM_RADIUS * 0.2;
+
+            // Spokes (5-spoke symmetry)
+            const spokeGroup = new THREE.Group();
+            for (let i = 0; i < 5; i++) {
+                const angle = (i * 72) * (Math.PI / 180);
+
+                // Simple spoke representation using BoxGeometry tailored to look like spokes
+                const spokeLen = RIM_RADIUS - hubRadius;
+                const spokeGeom = new THREE.BoxGeometry(spokeLen, 0.15 * SCALE_FACTOR, 0.05 * SCALE_FACTOR);
+                // Shift center so it rotates from hub
+                spokeGeom.translate(spokeLen/2 + hubRadius, 0, 0);
+
+                const spoke = new THREE.Mesh(spokeGeom, goldMaterial);
+                spoke.rotation.z = angle;
+
+                // Angle spokes inward for concavity
+                // We rotate around Y axis (tangent) to dip into the center
+                // But since spoke is rotated around Z, local axes change.
+                // Simplified: Rotate entire spoke group slightly? No.
+                // Manual vertex manipulation or simple rotation trick:
+
+                // Visual approximation of concavity:
+                // Spokes start at Rim Edge (Z = barrelLen/2) and go to Hub Center (Z = barrelLen/2 - concavityDepth)
+                // We'll tilt them.
+
+                spoke.position.z = barrelLen/2 - (concavityDepth / 2); // Start somewhat inside
+
+                // Tilt logic: outer point stays, inner point goes deep.
+                // Simple tilt around Y axis (relative to spoke angle)
+                // Actually, let's just make the hub face separate.
+
+                spokeGroup.add(spoke);
+            }
+            // Apply slight coning to the whole spoke face
+            // This is a cheat for visualization but effective
+            // Real implementation would use custom BufferGeometry
+
+            // Just place a center Hub Cap
+            const capGeom = new THREE.CylinderGeometry(hubRadius, hubRadius, 0.1, 32);
+            const cap = new THREE.Mesh(capGeom, goldMaterial);
+            cap.rotation.x = Math.PI / 2;
+            cap.position.z = barrelLen/2 - concavityDepth;
+            wheelGroup.add(cap);
+            wheelGroup.add(spokeGroup);
+
+            // 3. Brake Rotor & Caliper
+            // Rotor (attached to wheel, spins with it)
+            const rotorGeom = new THREE.CylinderGeometry(RIM_RADIUS * 0.8, RIM_RADIUS * 0.8, 0.2, 32);
+            const rotorMat = new THREE.MeshStandardMaterial({ color: 0x333333, metalness: 0.8, roughness: 0.4 });
+            const rotor = new THREE.Mesh(rotorGeom, rotorMat);
+            rotor.rotation.z = Math.PI / 2;
+            rotor.position.z = barrelLen/2 - (concavityDepth * 2); // Deeper inside
+            wheelGroup.add(rotor);
+
+            // Caliper (Normally static relative to knuckle, but we'll attach to wheel group for simplicity
+            // OR return separate group. For visual rig, attaching to wheel group means it spins, which is wrong.
+            // Let's attach Caliper to SteeringKnuckle later, positioned relative to wheel)
+
+            // 4. Tire
+            const tubeRadius = (TIRE_RADIUS - RIM_RADIUS);
+            const tireGeom = new THREE.TorusGeometry(RIM_RADIUS + tubeRadius/2, tubeRadius/2, 16, 64);
+            const tire = new THREE.Mesh(tireGeom, tireMaterial);
+            wheelGroup.add(tire);
+
+            return wheelGroup;
+        }
+
+        // --- RIG SETUP (Front Left) ---
+        const frontWheel = createWheel(CONFIG.front, true);
+
+        // Kinematics Rig Hierarchy
+        // 1. Kingpin Pivot (Ground Level, Steers around this)
+        const kingpinPivot = new THREE.Group();
+
+        // Position Pivot at Ground Contact Point + Scrub Radius Offset
+        // Assuming Left Wheel: Wheel Center is at X = -Track/2
+        // Kingpin intersects ground INBOARD (towards center) by Scrub Radius
+        const WHEEL_X = -4.5; // Arbitrary half-track width in units
+        const SCRUB_UNIT = CONFIG.scrubRadius * SCALE_FACTOR;
+
+        kingpinPivot.position.set(WHEEL_X + SCRUB_UNIT, 0, 0); // Ground contact point of kingpin axis
+
+        // 2. Apply KPI Tilt
+        // Kingpin Axis tilts INWARD at the top.
+        // Rotation around Z axis. Positive Z rotation moves +Y towards -X (Left).
+        // Wait, +Z rotation moves +X towards +Y.
+        // We want top to move +X (inboard for left wheel? No, right is +X).
+        // Left wheel is at -X. Inboard is +X.
+        // So top needs to move +X.
+        // Rotation around Z: +Angle moves Y axis towards -X. -Angle moves Y towards +X.
+        // So we need negative rotation around Z.
+        kingpinPivot.rotation.z = -CONFIG.kpi;
+
+        // 3. Steering Knuckle (Child of Pivot)
+        const steeringKnuckle = new THREE.Group();
+        kingpinPivot.add(steeringKnuckle);
+
+        // 4. Wheel Mount (Child of Knuckle)
+        // Needs to be positioned relative to the tilted pivot to align with Wheel Center
+        // Wheel Center in World: (-4.5, HUB_HEIGHT, 0)
+        // Pivot in World: (-4.5 + SCRUB, 0, 0)
+        // We need to calculate local offset inside the tilted pivot group.
+        // Simplified: Just position it visually for now or use inverse transform.
+        // We'll approximate:
+        steeringKnuckle.position.set(-SCRUB_UNIT, HUB_HEIGHT / Math.cos(CONFIG.kpi), 0);
+        // Add Wheel
+        steeringKnuckle.add(frontWheel);
+
+        // Add Brake Caliper (Static on Knuckle)
+        const caliperGeom = new THREE.BoxGeometry(1.5, 2.5, 1);
+        const caliperMat = new THREE.MeshStandardMaterial({ color: 0xcc0000, metalness: 0.6, roughness: 0.4 });
+        const caliper = new THREE.Mesh(caliperGeom, caliperMat);
+        // Position relative to Knuckle (same as Wheel Center but offset)
+        // Wheel Center in Knuckle Local: (0, 0, 0) because we offset Knuckle?
+        // Wait, steeringKnuckle is at (-SCRUB, HEIGHT, 0).
+        // Wheel is added to Knuckle at (0,0,0).
+        // Caliper should be at (0, 0, 0) but shifted to rim edge.
+        // Left side caliper usually at 9 o'clock or 3 o'clock (front/back)
+        caliper.position.set(-1.8, 0, 0.5); // Slightly inboard/forward
+        steeringKnuckle.add(caliper);
+
+        scene.add(kingpinPivot);
+
+        // Visual Aid: Kingpin Axis Line
+        const axisGeom = new THREE.CylinderGeometry(0.05, 0.05, 10, 8);
+        const axisMat = new THREE.MeshBasicMaterial({ color: 0xff0000, opacity: 0.5, transparent: true });
+        const axisLine = new THREE.Mesh(axisGeom, axisMat);
+        axisLine.position.y = 5; // Center of 10-unit line
+        kingpinPivot.add(axisLine);
+
+        // Visual Aid: Ground Scrub Point
+        const scrubPointGeom = new THREE.SphereGeometry(0.1, 16, 16);
+        const scrubPointMat = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+        const scrubPoint = new THREE.Mesh(scrubPointGeom, scrubPointMat);
+        kingpinPivot.add(scrubPoint); // At 0,0,0 local (pivot origin)
+
+        // Visual Aid: Scrub Arc Visualization
+        // Trace the path of the Tire Contact Patch on ground as steering rotates -35 to +35
+        const arcPoints = [];
+        const steps = 50;
+        const maxSteer = 35 * (Math.PI / 180);
+
+        // Pivot is at (0,0,0) local. Kingpin Axis is Y (tilted).
+        // Tire Contact Patch is at:
+        // Wheel Center Local (relative to Pivot): ( -SCRUB, HUB_HEIGHT/cos(KPI), 0 ) ... wait no
+        // Wheel Center World: (-4.5, HUB, 0)
+        // Pivot World: (-4.5+SCRUB, 0, 0)
+        // Vector Pivot->Wheel: (-SCRUB, HUB, 0)
+        // Contact Patch is directly below Wheel Center.
+        // Vector Pivot->Contact: (-SCRUB, 0, 0)
+        // (Because Pivot is at Y=0, Contact is at Y=0. Horizontal distance is Scrub Radius!)
+        // So in Pivot Local space (untilted), Contact is at (-SCRUB, 0, 0)?
+        // NO. Pivot is tilted.
+        // In TILTED frame:
+        // Pivot Origin (0,0,0).
+        // Contact point is ... complicated.
+        // Let's use world coordinates relative to Pivot.
+        // We simulate rotation of the Contact Point.
+
+        for(let i = 0; i <= steps; i++) {
+            const t = (i / steps);
+            const angle = -maxSteer + (t * 2 * maxSteer);
+
+            // 1. Start with Contact Point relative to Pivot Base (Untilted)
+            // It's at x = -SCRUB_UNIT, y = 0, z = 0
+            const v = new THREE.Vector3(-SCRUB_UNIT, 0, 0);
+
+            // 2. Apply Steering Rotation (around Y)
+            // But wait, steering is around TILTED axis.
+            // If we are in TILTED frame, axis is Y.
+            // But Contact Point (-SCRUB, 0, 0) is in WORLD frame (relative to pivot position).
+            // We need to transform Contact Point into Tilted Frame?
+
+            // Let's just use the Group logic:
+            // The Knuckle rotates. The Wheel moves with Knuckle.
+            // The Contact Point moves with Wheel.
+            // Wheel Center in Knuckle: (0,0,0).
+            // Contact Point in Knuckle: (0, -HUB_HEIGHT, 0) (approx)
+            // Knuckle is child of Pivot.
+            // Pivot rotates Y (steering).
+            // Pivot is rotated Z (KPI).
+
+            // So: Point = (0, -HUB_HEIGHT, 0)
+            // Transform by Steer(Angle) -> Transform by Tilt(KPI) -> Add Pivot Position
+
+            // 1. Knuckle Local: (0, -height, 0) - wait, Knuckle origin is at top?
+            // Knuckle position in Pivot: (-SCRUB, HEIGHT/cos, 0)
+            // So Contact Point in Pivot Frame (Unsteered):
+            // = KnucklePos + (0, -HEIGHT, 0) ??
+            // No, geometry is tricky.
+            // Let's simpler:
+            // Pivot is at Ground.
+            // Steering rotates around Pivot Y (tilted).
+            // Wheel Center orbits Pivot Y.
+            // Contact Patch orbits Pivot Y?
+            // Yes, if wheel stays upright? No, wheel tilts with steering (Caster/KPI effect).
+            // Contact patch moves on ground.
+            // The "Scrub Radius" is defined at ground.
+            // So the contact point describes a circle on the ground plane?
+            // NO. The axis is tilted. A circle around a tilted axis is an ellipse/arc in 3D, lifting off ground!
+            // That's "Jacking" effect!
+            // So the trace is the projection of that arc on the ground?
+            // Or the actual contact point (which shifts as tire deforms)?
+            // We'll draw the arc of the theoretical contact point (bottom of tire).
+
+            // Point in Pivot Local (Steered):
+            // Start with Wheel Bottom relative to Pivot Center.
+            // Pivot Center = Ground.
+            // Wheel Bottom = (-SCRUB, 0, 0) roughly?
+            // Let's assume Contact Point is rigidly attached to Steering Knuckle.
+            // Pos = PivotRotation * SteerRotation * Offset
+            // Offset of Contact Point relative to Pivot Origin:
+            // It's (-SCRUB, 0, 0) IF KPI=0.
+            // With KPI, the "Contact Point" is defined by the kingpin axis intersection.
+            // The actual tire contact is at (-SCRUB, 0, 0) in World (relative to Pivot).
+            // So in Pivot Local (Tilted), coordinate is: Rotation(-KPI) * (-SCRUB, 0, 0)
+
+            const startPos = new THREE.Vector3(-SCRUB_UNIT, 0, 0);
+            startPos.applyAxisAngle(new THREE.Vector3(0,0,1), CONFIG.kpi); // Transform world->local
+
+            // Apply Steering (Local Y)
+            startPos.applyAxisAngle(new THREE.Vector3(0,1,0), angle);
+
+            // Transform back to World (Local->World)
+            startPos.applyAxisAngle(new THREE.Vector3(0,0,1), -CONFIG.kpi);
+
+            // Add Pivot World Position
+            // startPos.add(kingpinPivot.position); // We want local to pivot for line
+
+            arcPoints.push(startPos);
+        }
+
+        const arcGeom = new THREE.BufferGeometry().setFromPoints(arcPoints);
+        const arcMat = new THREE.LineBasicMaterial({ color: 0x0088ff, linewidth: 2 });
+        const scrubArc = new THREE.Line(arcGeom, arcMat);
+        // Lift slightly to avoid z-fight
+        scrubArc.position.y = 0.05;
+        kingpinPivot.add(scrubArc);
+
+        // --- REAR WHEEL (Static) ---
+        const rearWheel = createWheel(CONFIG.rear, false);
+        rearWheel.position.set(4.5, HUB_HEIGHT, -8); // Right side, back
+        rearWheel.rotation.y = Math.PI; // Face other way
+        scene.add(rearWheel);
+
+
+        // --- LOGIC & ANIMATION ---
+        const slider = document.getElementById('steer-slider');
+        const steerVal = document.getElementById('steer-val');
+
+        slider.addEventListener('input', (e) => {
+            const deg = parseFloat(e.target.value);
+            steerVal.textContent = deg.toFixed(1) + '°';
+
+            // Apply steering: Rotate Kingpin Pivot around its LOCAL Y axis
+            // Since KingpinPivot is tilted by Z rotation, its Y axis is the Kingpin Axis!
+            // BUT: Three.js Euler order is usually XYZ.
+            // If we rotate Y, it applies *after* Z? Or before?
+            // Local rotation is best done with rotateY() or setting order.
+
+            // We want to set the rotation directly.
+            // Reset to base tilt
+            kingpinPivot.rotation.set(0, 0, -CONFIG.kpi);
+            // Apply local Y rotation (Steering)
+            // Using quaternion math to be safe/correct
+            const qTilt = new THREE.Quaternion();
+            qTilt.setFromAxisAngle(new THREE.Vector3(0, 0, 1), -CONFIG.kpi);
+
+            const qSteer = new THREE.Quaternion();
+            qSteer.setFromAxisAngle(new THREE.Vector3(0, 1, 0), deg * (Math.PI / 180));
+
+            // Combine: Tilt * Steer (Steer happens in tilted frame? No, Steer happens around the axis defined by Tilt)
+            // Actually, we want to rotate around the vector (0,1,0) *transformed* by Tilt.
+            // Which IS the local Y axis of the object if we just rotateY.
+
+            kingpinPivot.quaternion.copy(qTilt);
+            kingpinPivot.rotateY(deg * (Math.PI / 180));
+        });
+
+        // Fail-Closed Logic (Simulation)
+        function validateIntegrity() {
+            // Check Invariants
+            const spokeCount = 5; // Hardcoded in loop
+            const diameter = CONFIG.front.diameter;
+
+            if (spokeCount !== 5 || diameter !== 19) {
+                document.getElementById('integrity-status').textContent = "COMPROMISED - HALT";
+                document.getElementById('integrity-status').classList.add('fail-closed');
+                scene.background = new THREE.Color(0x330000); // Red alert
+            }
+        }
+
+        // Initial Check
+        validateIntegrity();
+
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // Handle Resize
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+    </script>
+</body>
+</html>

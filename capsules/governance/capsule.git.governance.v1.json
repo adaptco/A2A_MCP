@@ -1,0 +1,48 @@
+{
+  "capsule_id": "capsule.git.governance.v1",
+  "version": "1.0.0",
+  "type": "GitGovernancePlaybook",
+  "author": "Earl Q Han",
+  "issued_at": "2025-09-25T06:30:00Z",
+  "description": "Git governance doctrine aligning commits, reviews, and seals with the sovereign scrollstream ledger.",
+  "workflow": {
+    "stages": [
+      {
+        "id": "commit",
+        "requirements": ["lint_passed", "tests_green", "capsule_hash_recorded"],
+        "ledger_event": "capsule.commit.v1"
+      },
+      {
+        "id": "review",
+        "requirements": ["checker_signature", "maker_checker_gap", "council_ping"],
+        "ledger_event": "capsule.review.v1"
+      },
+      {
+        "id": "seal",
+        "requirements": ["attestation_updated", "scrollstream_append"],
+        "ledger_event": "capsule.seal.v1"
+      }
+    ],
+    "hud_notifications": ["glyph_ping", "ritual_caption"],
+    "checkpoint_ref": "qube.gitflow.v1"
+  },
+  "safeguards": {
+    "maker_checker": true,
+    "quorum_rule": "2-of-3",
+    "allowed_merges": ["fast_forward", "squash"],
+    "blocked_merges": ["rebase"],
+    "ledger_guard": "scrollstream_ledger.jsonl"
+  },
+  "governance": {
+    "router": "Queen Boo",
+    "stabilizer": "Queen CiCi",
+    "oracle": "Celine",
+    "council": "council/adaptco"
+  },
+  "attestation": {
+    "status": "STAGED",
+    "sealed_at": null,
+    "content_hash": null
+  },
+  "status": "STAGED"
+}

@@ -1,0 +1,2 @@
+{"t":"2025-09-25T01:42:30Z","event":"capsule.seal.v1","capsule":"capsule.kobe.cipher.v1","digest":"sha256:1a9357ee70e5b007ee1c58f1aefe365d51b50e757619d178dadedea821e790bb","sealed_by":"Council"}
+{"t":"2025-09-25T01:42:30Z","event":"cultural.cipher.fossilize.v1","subject":"Kobe Bryant","capsule":"capsule.kobe.cipher.v1","status":"published","digest":"sha256:1a9357ee70e5b007ee1c58f1aefe365d51b50e757619d178dadedea821e790bb"}

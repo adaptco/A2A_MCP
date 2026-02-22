@@ -1,0 +1,52 @@
+name: Cockpit Dispatch Handler
+
+on:
+  repository_dispatch:
+    types: [freeze_artifact, request_override, flag_for_review]
+
+jobs:
+  handle-dispatch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Dependencies
+        run: pip install -r scripts/requirements.txt
+
+      - name: Handle Freeze Artifact
+        if: github.event.action == 'freeze_artifact'
+        run: |
+          python scripts/freeze.py \
+            --artifact-id "${{ github.event.client_payload.artifact_id }}" \
+            --ledger ledger/ledger.json \
+            --ssot manifests/workflow_manifest.yaml
+
+      - name: Handle Request Override
+        if: github.event.action == 'request_override'
+        run: |
+          python scripts/request_override.py \
+            --artifact-id "${{ github.event.client_payload.artifact_id }}" \
+            --reason "${{ github.event.client_payload.reason }}" \
+            --ledger ledger/ledger.json
+
+      - name: Handle Flag for Review
+        if: github.event.action == 'flag_for_review'
+        run: |
+          python scripts/flag_for_review.py \
+            --artifact-id "${{ github.event.client_payload.artifact_id }}" \
+            --note "${{ github.event.client_payload.note }}" \
+            --ledger ledger/ledger.json
+
+      - name: Commit & Push Ledger Updates
+        run: |
+          git config user.name "Cockpit Bot"
+          git config user.email "bot@yourdomain.com"
+          git add ledger/ledger.json
+          git commit -m "Ledger update from ${{ github.event.action }}"
+          git push

@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Inference Receipt v1",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "call_id",
+    "post_state_hash",
+    "output_hash",
+    "merkle_root",
+    "verdict"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "InferenceReceipt.v1"
+    },
+    "call_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "post_state_hash": {
+      "type": "string"
+    },
+    "output_hash": {
+      "type": "string"
+    },
+    "merkle_root": {
+      "type": "string"
+    },
+    "verdict": {
+      "type": "string",
+      "enum": ["complete", "aborted", "timeout"]
+    }
+  }
+}

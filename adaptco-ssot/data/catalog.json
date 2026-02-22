@@ -1,0 +1,133 @@
+[
+  {
+    "id": "asset-001",
+    "name": "Hero Render",
+    "kind": "image",
+    "uri": "https://cdn.adaptco.io/assets/hero.png",
+    "tags": ["marketing", "hero"],
+    "meta": {
+      "owner": "creative@adaptco.io",
+      "revision": 3
+    },
+    "registry": {
+      "capsule_id": "ssot.registry.v1",
+      "registry": {
+        "name": "Qube Sovereign Archive",
+        "version": "1.0.0",
+        "maintainer": "Q.Enterprise Council"
+      },
+      "entry": {
+        "artifact_id": "asset-001",
+        "type": "image",
+        "author": "creative@adaptco.io",
+        "created_at": "2024-09-01T12:00:00Z",
+        "canonical_sha256": "sha256:4a2c2c18d8d0b1d2c1d4bd266e4a8f40e6a4dc453823fd0dc97e3f879f5fb840",
+        "merkle_root": "merkle:7c8f0c7c2aa3b5d1676fd39a8d973522fbb45a5bb062b0d54cd2bc4fd3d1c6a9",
+        "council_attestation": {
+          "signatures": ["sig:queen_boo", "sig:cici"],
+          "quorum_rule": "2-of-3"
+        }
+      },
+      "lineage": {
+        "parent": null,
+        "forks": [],
+        "immutable": true
+      },
+      "replay": {
+        "authorized": true,
+        "conditions": [
+          "capsule.integrity == valid",
+          "council.attestation == quorum"
+        ],
+        "override_protocol": "maker_checker"
+      }
+    }
+  },
+  {
+    "id": "asset-002",
+    "name": "Storyboard Deck",
+    "kind": "document",
+    "uri": "https://cdn.adaptco.io/assets/storyboard.pdf",
+    "tags": ["storyboard"],
+    "meta": {
+      "owner": "producer@adaptco.io"
+    },
+    "registry": {
+      "capsule_id": "ssot.registry.v1",
+      "registry": {
+        "name": "Qube Sovereign Archive",
+        "version": "1.0.0",
+        "maintainer": "Q.Enterprise Council"
+      },
+      "entry": {
+        "artifact_id": "asset-002",
+        "type": "document",
+        "author": "producer@adaptco.io",
+        "created_at": "2024-09-02T08:30:00Z",
+        "canonical_sha256": "sha256:5b9d0b92df6fb6e1c72e7d3871cf4e7ac3e2f8fe4088c7b0d1f4a6b76a2440da",
+        "merkle_root": "merkle:2d3e9f3d8a7f9ecf5f51e30c4d0f829c9c87d0a9af1e6cce6f5e620b82f02f11",
+        "council_attestation": {
+          "signatures": ["sig:queen_boo", "sig:cici"],
+          "quorum_rule": "2-of-3"
+        }
+      },
+      "lineage": {
+        "parent": "asset-002-alpha",
+        "forks": ["asset-002-alt"],
+        "immutable": true
+      },
+      "replay": {
+        "authorized": true,
+        "conditions": [
+          "capsule.integrity == valid",
+          "council.attestation == quorum"
+        ],
+        "override_protocol": "maker_checker"
+      }
+    }
+  },
+  {
+    "id": "asset-003",
+    "name": "Previz Sequence",
+    "kind": "video",
+    "uri": "https://cdn.adaptco.io/assets/previz.mp4",
+    "tags": ["previz", "sequence"],
+    "meta": {
+      "owner": "pipeline@adaptco.io",
+      "duration": 85
+    },
+    "registry": {
+      "capsule_id": "ssot.registry.v1",
+      "registry": {
+        "name": "Qube Sovereign Archive",
+        "version": "1.0.0",
+        "maintainer": "Q.Enterprise Council"
+      },
+      "entry": {
+        "artifact_id": "asset-003",
+        "type": "video",
+        "author": "pipeline@adaptco.io",
+        "created_at": "2024-09-03T15:45:00Z",
+        "canonical_sha256": "sha256:9c0ad2e8ef5fd6c62dfe667f2b73a8b090618cbd8b4f24a4db2b4aa7a3d265dd",
+        "merkle_root": "merkle:4f5b7a9e5d5f2a3a90cf1d5ef4c61253ab7a4467d90dbbca45d9d9f0b8cd1234",
+        "council_attestation": {
+          "signatures": ["sig:queen_boo", "sig:cici"],
+          "quorum_rule": "2-of-3"
+        }
+      },
+      "lineage": {
+        "parent": "asset-003-beta",
+        "forks": [],
+        "immutable": true
+      },
+      "replay": {
+        "authorized": true,
+        "conditions": [
+          "capsule.integrity == valid",
+          "council.attestation == quorum"
+        ],
+        "override_protocol": "maker_checker"
+      }
+    }
+  }
+]

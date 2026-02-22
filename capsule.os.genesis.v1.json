@@ -1,0 +1,87 @@
+{
+  "capsule_id": "capsule.os.genesis.v1",
+  "version": "1.0.0",
+  "type": "SystemGenesisCapsule",
+  "name": "Qube OS Genesis Capsule",
+  "description": "Genesis capsule that encodes the sovereign launch ritual for the Qube OS stack and binds the bootstrap loop to vault checkpoints.",
+  "issued_at": "2025-09-25T12:00:00Z",
+  "status": "DRAFT",
+  "governance": {
+    "council": "council/adaptco",
+    "policy_tag": "os.genesis",
+    "steward": "Queen CiCi",
+    "quorum": ["Queen Boo", "Celine", "The Braid"]
+  },
+  "lineage": {
+    "anchors": [
+      "ssot.registry.v1",
+      "qube.orchestrator.v1",
+      "sol.f1.previz.v1",
+      "relay.artifacts.v1"
+    ],
+    "mission": "Launch the sovereign Qube OS runtime with checkpointable automation"
+  },
+  "bootstrap": {
+    "kernel_capsule": "capsule.kernel.qubeos.v1",
+    "init_sequence": [
+      {
+        "step": 1,
+        "id": "attest.genesis",
+        "description": "Verify SSOT registry digest and council quorum signatures",
+        "quorum_required": true
+      },
+      {
+        "step": 2,
+        "id": "hydrate.vault",
+        "description": "Sync relay vault checkpoints and hydrate runtime manifests",
+        "quorum_required": false
+      },
+      {
+        "step": 3,
+        "id": "ignite.services",
+        "description": "Spin up orchestrator, previz, and telemetry services under maker-checker policy",
+        "quorum_required": true
+      }
+    ],
+    "fail_closed": true
+  },
+  "payload": {
+    "services": [
+      {
+        "service_id": "qube.orchestrator",
+        "capsule": "qube.orchestrator.v1",
+        "mode": "stabilizer",
+        "resume_policy": "vault-checkpoint"
+      },
+      {
+        "service_id": "sol.previz",
+        "capsule": "sol.f1.previz.v1",
+        "mode": "executor",
+        "resume_policy": "vault-checkpoint"
+      },
+      {
+        "service_id": "relay.vault",
+        "capsule": "relay.artifacts.v1",
+        "mode": "checkpoint_vault",
+        "resume_policy": "immutable"
+      }
+    ],
+    "telemetry_streams": [
+      "glyph.pulse",
+      "aura.gold",
+      "qlock.tick",
+      "drift.delta"
+    ],
+    "replay_token": "replay:os.genesis:20250925:000"
+  },
+  "automation": {
+    "router": "Queen Boo",
+    "stabilizer": "Queen CiCi",
+    "sentinel": "Edge Sentinels",
+    "checkpoint_vault": "relay.artifacts.v1",
+    "resumable": true
+  },
+  "attestation": {
+    "status": "UNSEALED"
+  }
+}

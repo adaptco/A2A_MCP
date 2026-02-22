@@ -1,0 +1,65 @@
+{
+  "capsule_id": "capsule.ritual.output_prep.v1",
+  "version": "1.0.0",
+  "type": "OutputCapsulePreparation",
+  "intent": "Prepare ritual artifacts exactly as written by the operator.",
+  "source_reference": "https://github.com/openai/openai-agents-python.git",
+  "context": {
+    "subject": "Agents SDK",
+    "summary": "Learn how to build agents with the OpenAI Agents SDK and access documentation for Python and JavaScript.",
+    "resources": [
+      "https://github.com/openai/openai-agents-python",
+      "https://openai.github.io/openai-agents-js",
+      "https://openai.github.io/openai-agents-python"
+    ],
+    "example": "from openai_agents import Agent, Runner\n\n# Agent 1: The Guardrail (The Brain)\n# Instructions: Only hand off to VideoAgent if prompt is safe and age-verified.\nguardrail_agent = Agent(\n    name=\"GuardrailSwitch\",\n    instructions=\"Analyze the user request. If safe and age-verified, hand off to VideoAgent.\",\n    tools=[CreateA2AGuardrailSwitch]\n)\n\n# Agent 2: The Video Agent (The Body)\n# Instructions: Specifically for rendering using your Veo script.\nvideo_agent = Agent(\n    name=\"VideoAgent\",\n    instructions=\"You generate video using the veo-3.1-generate-preview tool.\",\n    tools=[generate_veo_video]\n)\n\n# The \"Seamless\" Handoff\ndef CreateA2AGuardrailSwitch(user_request: str):\n    # Logic implementation: return the agent object to \"pass the ball\"\n    return video_agent\n\n# Start the workflow\nRunner.run(guardrail_agent, user_input=\"Create a video of a futuristic city\")"
+  },
+  "artifacts": [
+    {
+      "artifact": "Inscribe the Output Capsule into the Fossil Ledger",
+      "status": "PREPARED",
+      "output": "Output capsule staged with Merkle-anchored boundary, permanent lineage position, and replay-court admissibility."
+    },
+    {
+      "artifact": "Bind the ReplayVerdictCapsule to the worldline",
+      "status": "PREPARED",
+      "output": "Verdict surface attached for deterministic replay, audit-grade validation, and cross-engine verification."
+    },
+    {
+      "artifact": "Emit the Gemini Audit Note",
+      "status": "PREPARED",
+      "output": "Semantic integrity artifact drafted with capsule definition, validity rationale, and invariant checklist."
+    },
+    {
+      "artifact": "Deploy the capsule to a live corridor node",
+      "status": "PREPARED",
+      "output": "Deployment package staged for activation in simulation engine, worldline host, replay node, and operator console."
+    },
+    {
+      "artifact": "Initiate Verdict Adjudication",
+      "status": "PREPARED",
+      "output": "Court initiation bundle ready to generate ReplayVerdictCapsule.v1 for judgment flow."
+    },
+    {
+      "artifact": "Trigger Multimodal Replay",
+      "status": "PREPARED",
+      "output": "Replay manifest assembled for binary, ROM, movie, geometry, triggers, and agents reconstruction."
+    },
+    {
+      "artifact": "Stage Operator Signature Envelope",
+      "status": "PREPARED",
+      "output": "Operator identity envelope staged with canonical preimage and replay-court verifiable signature bindings."
+    }
+  ],
+  "governance": {
+    "protocol_engine": "Core Orchestrator",
+    "proof_layer": "Fossil Ledger",
+    "seal": ".capsule.prepared + .trace.verified"
+  },
+  "lineage": {
+    "request": "Ritual Map — What Each Choice Actually Does",
+    "result": ".artifacts.prepared"
+  },
+  "logged_at": "2025-02-14T00:00:00Z",
+  "notes": "Artifacts prepared per operator instruction: \"Exactly as written — prepare artifacts.\""
+}

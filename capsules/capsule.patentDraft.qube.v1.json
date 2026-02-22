@@ -1,0 +1,150 @@
+{
+  "capsule_id": "capsule.patentDraft.qube.v1",
+  "version": "1.0.0",
+  "type": "PatentDraftCapsule",
+  "name": "QUBE Patent Draft",
+  "description": "Stages the QUBE patent draft package for council review ahead of DAO export.",
+  "status": "STAGED",
+  "qube": {
+    "p3l_ref": "urn:p3l:phase1:prototype",
+    "q_lock": {
+      "layer": "qLock/LiD",
+      "notes": "Ensure nonce binding and replay window configured per LiD policy."
+    },
+    "sr_gate": "v1",
+    "moe_topology": "experts:8, router:SR",
+    "malintent": "BLQB9X/MIT.01",
+    "artifact": {
+      "type": "R0P3",
+      "format": "iRQLxTR33",
+      "hash_algorithm": "sha256",
+      "dual_run_seed": "qube-phase1"
+    }
+  },
+  "lineage": {
+    "qonledge_ref": "urn:qon:phase1:qube",
+    "scrollstream": true,
+    "receipts_channel": "receipts.qube"
+  },
+  "packaging_map": {
+    "input_chain": [
+      "P3L",
+      "qLock/LiD",
+      "QBits",
+      "SR Gate",
+      "MoE",
+      "BLQB9X",
+      "R0P3"
+    ],
+    "gates": [
+      {
+        "id": "G01",
+        "name": "ticket hash",
+        "requirement": "Capture inbound P3L ticket hash and bind to deploymentId."
+      },
+      {
+        "id": "G02",
+        "name": "fitment",
+        "requirement": "Confirm topology fitment against SR router version and lock routing tables."
+      },
+      {
+        "id": "G03",
+        "name": "artifact hashes",
+        "requirement": "Emit R0P3 byte hash plus A/B twin instance hashes."
+      },
+      {
+        "id": "G04",
+        "name": "expected verify",
+        "requirement": "Assert expected artifacts present and merkle proof ready prior to seal."
+      }
+    ],
+    "seal_gate": "SEAL",
+    "dual_run": {
+      "mode": "A/B deterministic",
+      "seed": "qube-phase1",
+      "delta_emit": true,
+      "delta_channel": "qube.dual_run.delta"
+    }
+  },
+  "integrity": {
+    "sha256_p3l": "sha256:pending",
+    "merkle_root": "pending",
+    "attestation_quorum": "2-of-3",
+    "dual_run_match": "pending"
+  },
+  "orchestrator_alignment": {
+    "api": {
+      "post_runs": {
+        "method": "POST",
+        "path": "/runs",
+        "payload_notes": "Attach QUBE metadata, set expected artifacts acsa.trace.jsonl and acsa.metrics.json."
+      },
+      "post_artifacts": {
+        "method": "POST",
+        "path": "/runs/{id}/artifacts",
+        "payload_notes": "Include R0P3 hash, populate G03 and G04 verifications."
+      },
+      "post_seal": {
+        "method": "POST",
+        "path": "/runs/{id}/seal",
+        "payload_notes": "finalsealHash becomes DAO proof_binding and should equal sha256 of export request."
+      },
+      "post_dao_export": {
+        "method": "POST",
+        "path": "/runs/{id}/dao-export",
+        "payload_notes": "Invoke with protocol capsule.export.qubePatent.v1 after seal confirmed."
+      }
+    }
+  },
+  "acceptance_checklist": [
+    "Proof-binding equals sha256 of export request payload.",
+    "Merkle proof validated and quorum ≥ 2/3.",
+    "Dual-instance A/B hashes match for R0P3 artifact.",
+    "BLQB9X audit trail recorded and attached to receipt.",
+    "QONLEDGE append confirmed and listed in capsule receipt."
+  ],
+  "threat_surface": {
+    "risks": [
+      {
+        "vector": "SR Gate routing",
+        "mitigation": "Pin router version and sign routing tables; monitor for route-poison attempts."
+      },
+      {
+        "vector": "MoE drift",
+        "mitigation": "Log per-expert logits, temperature, and deterministic seed per run."
+      },
+      {
+        "vector": "LiD replay",
+        "mitigation": "Enforce nonce binding to deploymentId with replay window checks."
+      },
+      {
+        "vector": "Ledger fork",
+        "mitigation": "Notarize ledger append with council signature quorum."
+      }
+    ]
+  },
+  "ledger_binding": {
+    "append_target": "ledger/federation.jsonl",
+    "proof_binding": "sha256:REQUEST",
+    "notarization": "council-signature-set"
+  },
+  "training_mode": {
+    "deterministic": true,
+    "seed": "qube-phase1",
+    "notes": "Use for CI smoke validation prior to council seal."
+  },
+  "export_protocol": {
+    "capsule": "capsule.export.qubePatent.v1",
+    "archive_ref": "s3://qube/bundles/qube.v1.tar.zst",
+    "trigger_event": "SEAL"
+  },
+  "meta": {
+    "epoch": "phase.1.x",
+    "issuer": "Council",
+    "policy": "P3L.vX"
+  },
+  "attestation": {
+    "status": "UNSEALED",
+    "next_step": "Seal capsule then emit DAO export request."
+  }
+}

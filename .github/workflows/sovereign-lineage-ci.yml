@@ -1,0 +1,59 @@
+name: Sovereign Lineage CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  validate-corridor:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # 1. Setup pnpm (as required by your latest environment logs)
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9 # Matches current alpha/beta standards for 2026
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      # 2. Setup Hardened Python Environment (Fixes the 3.7 Cache Error)
+      - name: Setup Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10' # Anchored to pyproject.toml requirements
+          cache: 'pip'
+
+      # 3. Structural Integrity Check
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest pydantic
+          # Ensure local validation package is installable
+          pip install -e .
+
+      # 4. Replay Court Adjudication (The Verification Ritual)
+      - name: Run Sovereignty Tests
+        run: |
+          # Verify the 'validation' module is discoverable
+          python -c "import validation; print('Validation Suite: Structural Integrity Verified')"
+          # Run Merkle and Corridor State invariants
+          pytest tests/test_merkle_sovereignty.py tests/test_corridor_state_merkle.py
+
+      # 5. Genesis Receipt Verification
+      - name: Verify Genesis Receipt
+        run: |
+          python training/generate_genesis_receipt.py
+          if [ ! -f artifacts/genesis_receipt.json ]; then
+            echo "FATAL: Genesis receipt failure."
+            exit 1
+          fi

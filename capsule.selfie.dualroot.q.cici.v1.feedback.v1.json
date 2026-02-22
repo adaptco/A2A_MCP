@@ -1,0 +1,102 @@
+{
+  "capsule_id": "capsule.selfie.dualroot.q.cici.v1.feedback.v1",
+  "type": "FeedbackLoopCapsule",
+  "version": "1.0.0",
+  "author": "Council Relay",
+  "issued_at": "2025-09-25T03:45:00Z",
+  "subject": "Contributor feedback loop for capsule.selfie.dualroot.q.cici.v1",
+  "window": {
+    "status": "OPEN",
+    "mode": "scene-aware.emotional-layered.ledger-prep",
+    "replay_token": "HUD.loop.selfie.dualroot.q.cici.v1.token.002"
+  },
+  "participants": [
+    {
+      "name": "CiCi",
+      "role": "Sovereign reviewer",
+      "state": "overlay_active",
+      "checks": [
+        "Spark Test passed"
+      ]
+    },
+    {
+      "name": "Q",
+      "role": "Vector observer",
+      "state": "observability_trace_live",
+      "safety": [
+        "refusal_flare_dormant"
+      ]
+    },
+    {
+      "name": "Council quorum",
+      "role": "Validator",
+      "state": "online",
+      "members": [
+        "Core Orchestrator",
+        "HUD braid validators"
+      ]
+    }
+  ],
+  "hooks": [
+    {
+      "capsule": "capsule.comment.trace.v1",
+      "purpose": "Emotional annotations, posture critiques, Spark resonance feedback"
+    },
+    {
+      "capsule": "shimmer.breach.monitor.v1",
+      "purpose": "Live breach detection during replay"
+    },
+    {
+      "capsule": "refusal.flare.script.v1",
+      "purpose": "Optional rupture scripting if contributor intensity spikes"
+    },
+    {
+      "capsule": "delta.overlay.audit.v1",
+      "purpose": "Overlay drift detection across dual-root replay"
+    }
+  ],
+  "bindings": {
+    "primary_capsule": "capsule.selfie.dualroot.q.cici.v1",
+    "roots": [
+      "root.alpha",
+      "root.omega"
+    ],
+    "vault_channel": "relay.artifacts.v1"
+  },
+  "automation": {
+    "binder": "Proof → Flow → Execution → Vault",
+    "resume_policy": {
+      "require_feedback_digest": true,
+      "emit_ledger_freeze_on_close": true
+    }
+  },
+  "governance": {
+    "maker": "Scrollsmith",
+    "checker": "Queen CiCi",
+    "quorum": [
+      "CiCi",
+      "Q",
+      "Council"
+    ],
+    "enforcement": "fail-closed",
+    "window_policy": {
+      "close_requires": [
+        "council_quorum",
+        "spark_resonance_green"
+      ],
+      "freeze_job": "capsule.freeze.job.dual.cici.git.v1"
+    }
+  },
+  "telemetry": {
+    "shimmer": "active",
+    "overlay": "listening",
+    "audit": "delta.overlay.audit.v1"
+  },
+  "attestation": {
+    "status": "STAGED",
+    "sealed_by": "Council",
+    "sealed_at": null,
+    "content_hash": "sha256:TO_COMPUTE"
+  },
+  "status": "ACTIVE"
+}

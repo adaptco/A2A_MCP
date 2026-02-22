@@ -1,0 +1,40 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Inference Call v1",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "call_id",
+    "timestamp_utc",
+    "model",
+    "request_hash",
+    "reducer",
+    "pre_state_hash"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "InferenceCall.v1"
+    },
+    "call_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "timestamp_utc": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "model": {
+      "type": "string"
+    },
+    "request_hash": {
+      "type": "string"
+    },
+    "reducer": {
+      "type": "string"
+    },
+    "pre_state_hash": {
+      "type": "string"
+    }
+  }
+}

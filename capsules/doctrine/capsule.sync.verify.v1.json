@@ -1,0 +1,47 @@
+{
+  "capsule_id": "capsule.sync.verify.v1",
+  "version": "1.0.0",
+  "type": "SyncVerificationProtocol",
+  "issued_at": "2025-09-22T06:45:00Z",
+  "purpose": "Audit protocol to confirm all partner nodes have synchronized to Canon Kit v1.1.1.",
+  "status": "STAGED",
+  "lineage": {
+    "anchors": [
+      "capsule.canon.kit.v1@1.1.1"
+    ]
+  },
+  "heartbeat_frame": {
+    "schema": "capsule.heartbeat.v1",
+    "fields": {
+      "node_id": "string",
+      "timestamp": "ISO-8601",
+      "canonical_hash": "sha256",
+      "merkle_root": "sha256",
+      "signature": "ed25519"
+    }
+  },
+  "quorum_report": {
+    "schema": "capsule.quorum.report.v1",
+    "fields": {
+      "total_nodes": "integer",
+      "responded_nodes": "integer",
+      "percent_synced": "float",
+      "out_of_sync_nodes": [
+        "node_id"
+      ]
+    },
+    "attestation": {
+      "signed_by": [
+        "Council.ops"
+      ],
+      "quorum_required": true
+    }
+  },
+  "provenance": {
+    "policy": [
+      "append-only-ledger",
+      "no-mutation-post-freeze"
+    ],
+    "notes": "Verification protocol ensures all nodes ingest Canon Kit v1.1.1 digest before creative invocation."
+  }
+}

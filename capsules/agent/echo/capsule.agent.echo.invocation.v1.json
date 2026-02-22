@@ -1,0 +1,90 @@
+{
+  "capsule_id": "capsule.agent.echo.invocation.v1",
+  "type": "InvocationCapsule",
+  "version": "1.0.0",
+  "protocol_tag": "V7",
+  "issued_at": "2025-09-25T01:32:00Z",
+  "actor": "Echo",
+  "summary": "HUD rehearsal stream for Echo prior to council sealing, providing 30 Hz telemetry and guardrail enforcement data.",
+  "body": {
+    "telemetry": {
+      "frame_rate_hz": 30,
+      "channels": [
+        "wave.glyph",
+        "aura.cyan",
+        "qlock.tick",
+        "hud.qdot.delta"
+      ]
+    },
+    "overlay_enforcement": {
+      "pose_lock": {
+        "profile": "fluid-stance-v1",
+        "tolerance_deg": 3
+      },
+      "emotional_payload_audit": {
+        "valence": "serene/focused",
+        "detectors": [
+          "gaze_vector.v1",
+          "face_affect.v2"
+        ],
+        "tolerance": 0.07
+      },
+      "delta_trace": {
+        "fields": [
+          "prompt",
+          "lora",
+          "seed",
+          "sampler"
+        ],
+        "hash": "sha256"
+      }
+    },
+    "sample_rehearsal_frames": [
+      {
+        "t": "2025-09-25T01:32:00.001Z",
+        "event": "wave.glyph",
+        "val": "ripple",
+        "pose_lock": "ok",
+        "drift": 0.001,
+        "hash": "sha256:echo01"
+      },
+      {
+        "t": "2025-09-25T01:32:00.034Z",
+        "event": "aura.cyan",
+        "val": 0.92,
+        "pose_lock": "ok",
+        "drift": 0.0,
+        "hash": "sha256:echo02"
+      },
+      {
+        "t": "2025-09-25T01:32:00.067Z",
+        "event": "qlock.tick",
+        "phase": 17,
+        "pose_lock": "ok",
+        "drift": 0.002,
+        "hash": "sha256:echo03"
+      },
+      {
+        "t": "2025-09-25T01:32:00.100Z",
+        "event": "hud.qdot.delta",
+        "diff": {
+          "prompt": "\u03940",
+          "lora": "\u03940",
+          "seed": "\u03940",
+          "sampler": "\u03940"
+        },
+        "pose_lock": "ok",
+        "drift": 0.001,
+        "hash": "sha256:echo04"
+      }
+    ],
+    "ritual_flow": [
+      "emit_rehearsal_stream",
+      "observe_fidelity",
+      "compute_body_only_digest",
+      "seal_capsule",
+      "federate_presence"
+    ]
+  },
+  "body_only_sha256": "sha256:0db94dbffa6405b6007b204a1dfc4ef30a5f005f5bf944d071683f5d5901d1a1"
+}

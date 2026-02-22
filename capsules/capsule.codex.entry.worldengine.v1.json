@@ -1,0 +1,13 @@
+{
+  "capsule_id": "capsule.codex.entry.worldengine.v1",
+  "version": "1.0.0",
+  "type": "CodexEntry",
+  "governance": { "version": "v6.0", "quorum": "two_person" },
+  "binds_to": { "fossil": "capsule.fossilize.worldengine.v1" },
+  "metadata": {
+    "title": "World Engine • Fossilized Update",
+    "summary": "Runtime topology, HUD overlays, emotional payloads sealed; Merkle + CI verified.",
+    "scene_root": "sha256:sentinel.scene.root.<final_digest>"
+  },
+  "attestation": { "required": ["sig:queen_boo_router","sig:cici_stabilizer"], "status": "STAGED" }
+}

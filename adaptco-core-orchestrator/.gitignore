@@ -1,0 +1,9 @@
+# adaptco-core-orchestrator/.gitignore
+node_modules
+coverage
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.DS_Store
+.env
+storage/ledger.jsonl

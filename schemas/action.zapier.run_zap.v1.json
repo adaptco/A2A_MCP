@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "action.zapier.run_zap.v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["trace_id", "zap_id", "payload", "idempotency_key", "privacy_policy_url"],
+  "properties": {
+    "trace_id": { "type": "string", "minLength": 8 },
+    "zap_id": { "type": "string", "minLength": 1 },
+    "idempotency_key": { "type": "string", "minLength": 8 },
+    "privacy_policy_url": { "type": "string", "format": "uri" },
+    "payload": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Business payload. Must be JCS-canonicalized before hashing."
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "lineage_root": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "index_version": { "type": "string" }
+      }
+    }
+  }
+}

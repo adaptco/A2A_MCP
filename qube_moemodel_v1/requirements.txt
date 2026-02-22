@@ -1,0 +1,4 @@
+torch>=2.2.0
+jax>=0.4.25
+shimmer-core>=1.0.0
+capsule-utils>=0.3.0

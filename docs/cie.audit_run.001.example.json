@@ -1,0 +1,137 @@
+{
+  "schema": "cie.audit_run.v1",
+  "run_id": "CIE-V1-AUDIT-RUN-001",
+  "created_utc": "2026-01-20T14:30:00Z",
+  "operator": {
+    "mode": "local",
+    "principal": "Q"
+  },
+  "code_seal": {
+    "repo": "core-orchestrator",
+    "git_commit": "GIT_SHA_PLACEHOLDER",
+    "dirty": false,
+    "manifest_file": "manifest.json",
+    "manifest_sha256": "sha256:MANIFEST_SHA256_PLACEHOLDER",
+    "tool_surface_export_file": "artifacts/mcp_tools.export.json",
+    "tool_surface_export_sha256": "sha256:TOOLS_SHA256_PLACEHOLDER"
+  },
+  "environment": {
+    "os": "OS_PLACEHOLDER",
+    "python": "3.11.7",
+    "dependencies_lock": {
+      "file": "pyproject.toml",
+      "sha256": "sha256:PYPROJECT_SHA256_PLACEHOLDER"
+    }
+  },
+  "inputs": {
+    "embedding_mode": {
+      "mode": "local_model",
+      "model_id": "MODEL_ID_PLACEHOLDER",
+      "dimension": 768,
+      "normalization": "l2",
+      "embedding_cache": {
+        "enabled": true,
+        "directory": "embedding_cache/",
+        "root_sha256": "sha256:EMBED_CACHE_ROOT_PLACEHOLDER"
+      }
+    },
+    "corpus": {
+      "index_file": "audit_corpus_pack/corpus.index.v1.json",
+      "index_sha256": "sha256:CORPUS_INDEX_SHA256_PLACEHOLDER",
+      "root_sha256": "sha256:CORPUS_ROOT_SHA256_PLACEHOLDER",
+      "doc_count": 8
+    },
+    "queries": {
+      "file": "audit_corpus_pack/audit_queries.json",
+      "sha256": "sha256:AUDIT_QUERIES_SHA256_PLACEHOLDER",
+      "count": 12
+    },
+    "determinism_controls": {
+      "stable_json": true,
+      "chunking": {
+        "strategy": "qdv.chunking.v1",
+        "params": {
+          "chunk_chars": 1200,
+          "overlap_chars": 120,
+          "min_chunk_chars": 200
+        }
+      },
+      "sorting": {
+        "ranking": ["score_desc", "doc_id_asc", "chunk_id_asc"]
+      },
+      "float_hygiene": {
+        "reject_nonfinite_vectors": true
+      }
+    }
+  },
+  "execution": {
+    "steps": [
+      {
+        "name": "preflight.clean_pycache",
+        "status": "pass",
+        "details": { "removed_paths": ["src/qdv/__pycache__", "tests/__pycache__"] }
+      },
+      {
+        "name": "seal.inputs",
+        "status": "pass",
+        "details": { "sealed": ["corpus.index.v1.json", "audit_queries.json", "manifest.json", "mcp_tools.export.json"] }
+      },
+      {
+        "name": "ingest.corpus",
+        "status": "pass",
+        "details": {
+          "docs_ingested": 8,
+          "chunks_written": 214,
+          "store_file": "artifacts/store.sqlite"
+        }
+      },
+      {
+        "name": "query.audit_set",
+        "status": "pass",
+        "details": {
+          "queries": 12,
+          "results_file": "artifacts/audit_report.json"
+        }
+      },
+      {
+        "name": "seal.outputs",
+        "status": "pass",
+        "details": {
+          "artifacts": ["store.sqlite", "capsules.jsonl", "audit_report.json", "cie.audit_run.001.json"]
+        }
+      },
+      {
+        "name": "replay.identity_check",
+        "status": "pass",
+        "details": {
+          "replay_runs": 2,
+          "identity": "bitwise_hash_match"
+        }
+      }
+    ]
+  },
+  "outputs": {
+    "store_sqlite": { "file": "artifacts/store.sqlite", "sha256": "sha256:STORE_SHA256_PLACEHOLDER" },
+    "capsules": { "file": "artifacts/capsules.jsonl", "sha256": "sha256:CAPSULES_SHA256_PLACEHOLDER" },
+    "audit_report": { "file": "artifacts/audit_report.json", "sha256": "sha256:REPORT_SHA256_PLACEHOLDER" }
+  },
+  "assertions": {
+    "reingest_determinism": {
+      "status": "pass",
+      "checks": [
+        "same_corpus_root_sha256",
+        "same_doc_ids",
+        "same_chunk_ids",
+        "same_chunk_text_sha256"
+      ]
+    },
+    "query_determinism": {
+      "status": "pass",
+      "checks": ["same_query_embeddings_sha256", "same_rankings", "same_scores"]
+    },
+    "capsule_hash_stability": {
+      "status": "pass",
+      "checks": ["same_inputs_hash", "same_outputs_hash"]
+    }
+  }
+}

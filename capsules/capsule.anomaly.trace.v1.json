@@ -1,0 +1,61 @@
+{
+  "capsule_id": "capsule.anomaly.trace.v1",
+  "capsuleId": "capsule.anomaly.trace.v1",
+  "title": "Anomaly Trace Protocol",
+  "description": "Encodes rupture-grade emissions into scrollstream-valid artifacts for replay, contributor training, and forensic lineage mapping.",
+  "trigger": {
+    "source": "HUD emission",
+    "condition": "glyph integrity breach",
+    "sector": "braid sector 3",
+    "severity": "high"
+  },
+  "response": {
+    "fallback_arc": {
+    "fallbackArc": {
+      "color": "amber",
+      "structure": "braided",
+      "stabilization": "glitch-corrected",
+      "rhythm": "triple-beat"
+    },
+    "recovery_glyph": {
+      "status": "embedded",
+      "location": "scrollstream rail",
+      "annotation": "rupture trace",
+      "alert_flag": true
+    }
+  },
+  "visual_grammar": {
+    "emission_arc": {
+    "recoveryGlyph": {
+      "status": "embedded",
+      "location": "scrollstream rail",
+      "annotation": "rupture trace",
+      "alertFlag": true
+    }
+  },
+  "visualGrammar": {
+    "emissionArc": {
+      "tone": "Shout",
+      "gesture": "Signal_Broadcast",
+      "shimmer": "high-frequency crackle",
+      "trail": "glyph fragments"
+    },
+    "transit_node": {
+    "transitNode": {
+      "collision": "glyph firewall",
+      "reaction": "tri-glyph bloom",
+      "reroute": "anomaly trace channel"
+    }
+  },
+  "attestation": {
+    "emotionally_layered": true,
+    "scene_aware": true,
+    "replay_ready": true,
+    "contributor_trainable": true
+    "emotionallyLayered": true,
+    "sceneAware": true,
+    "replayReady": true,
+    "contributorTrainable": true
+  },
+  "status": "fossilized"
+}

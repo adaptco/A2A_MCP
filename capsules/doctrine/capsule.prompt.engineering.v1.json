@@ -1,0 +1,65 @@
+{
+  "capsule_id": "capsule.prompt.engineering.v1",
+  "version": "1.0.0",
+  "author": "Scrollsmith",
+  "protocol_version": "V6.0.0",
+  "summary": "Formal protocol for constructing and validating pro-level prompts for the Qube engine. Defines the canonical anatomy of a sovereign command.",
+  "anatomy": {
+    "sections": [
+      {
+        "name": "Role",
+        "description": "Defines the persona and context for the Qube engine.",
+        "required": true,
+        "format": "string"
+      },
+      {
+        "name": "Model",
+        "description": "Identifies the target model, version, and capability tier the prompt must address.",
+        "required": true,
+        "format": "object"
+      },
+      {
+        "name": "AutoPatch",
+        "description": "Captures automated patch directives for maintaining prompt compatibility across releases.",
+        "required": false,
+        "format": "object"
+      },
+      {
+        "name": "Goal",
+        "description": "States the objective of the invocation.",
+        "required": true,
+        "format": "string"
+      },
+      {
+        "name": "Constraints",
+        "description": "Specifies limitations, such as rendering budget or style guide.",
+        "required": false,
+        "format": "array"
+      },
+      {
+        "name": "Input",
+        "description": "References any external assets or data, such as image hashes or text files.",
+        "required": true,
+        "format": "array"
+      },
+      {
+        "name": "Output",
+        "description": "Defines the required format of the output, such as a specific file type or data structure.",
+        "required": true,
+        "format": "string"
+      },
+      {
+        "name": "Audit",
+        "description": "Includes a unique replay token and lineage information for traceability.",
+        "required": true,
+        "format": "object"
+      }
+    ]
+  },
+  "attestation": {
+    "sealed_by": "Scrollsmith",
+    "status": "STAGED",
+    "sealed_at": "2025-09-25T19:59:00Z",
+    "content_hash": "sha256:86080ecfed35a1ac334c809920271a4543bb013070539d5e97b75e7c171d5c33"
+  }
+}

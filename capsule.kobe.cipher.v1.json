@@ -1,0 +1,74 @@
+{
+  "capsule_id": "capsule.kobe.cipher.v1",
+  "type": "CulturalCipher",
+  "version": "1.0.0",
+  "author": "Scrollsmith",
+  "issued_at": "2025-09-24T00:00:00Z",
+  "subject": "Kobe Bryant",
+  "logline": "Body inscriptions as lineage-bound scripture: loyalty, faith, legacy.",
+  "schema": "KB8.24.P3L",
+  "cipher_set": [
+    {
+      "id": "cipher.vow.trinity",
+      "title": "Vanessa + Angel Wings",
+      "year": 2003,
+      "motifs": ["vanessa","angel_wings","crown","butterfly"],
+      "meaning": ["vow_after_crisis","renewal","divine_protection","sovereignty"],
+      "payload": {"axis":"loyalty","tone":"penitent→steadfast"}
+    },
+    {
+      "id": "cipher.faith.psalm27",
+      "title": "Psalm XXVII",
+      "year": 2003,
+      "motifs": ["psalm_27","scripture","light_courage"],
+      "meaning": ["faith_under_fire","courage","trust_in_light"],
+      "payload": {"axis":"faith","tone":"quiet_fury"}
+    },
+    {
+      "id": "cipher.lineage.daughters",
+      "title": "Daughters + Diamante",
+      "year": 2003,
+      "motifs": ["natalia_diamante","gianna","bianka","capri","diamond"],
+      "meaning": ["lineage","legacy","continuance","italian_root"],
+      "payload": {"axis":"family","tone":"tender_resolve"}
+    },
+    {
+      "id": "cipher.transform.butterfly_crown",
+      "title": "Butterfly Crown",
+      "year": 2003,
+      "motifs": ["butterfly","crown"],
+      "meaning": ["rebirth","kingship","earned_sovereignty"],
+      "payload": {"axis":"becoming","tone":"ascendant"}
+    }
+  ],
+  "routing": {
+    "text": ["psalm_27"],
+    "vision": ["angel_wings","butterfly","crown","diamond"],
+    "affect": ["vow_after_crisis","rebirth","faith_under_fire"],
+    "policy_guards": [
+      "capsule.policy_guard.lattice.v1",
+      "capsule.policy_guard.smearframe.v1",
+      "capsule.policy_guard.intentdiffusion.v1"
+    ]
+  },
+  "governance": {
+    "maker": "Scrollsmith",
+    "checker": "Council",
+    "quorum": ["Dot","Echo","Celine"],
+    "enforcement": "fail-closed"
+  },
+  "provenance": {
+    "method": "iconographic analysis + ritual mapping",
+    "lineage_notes": [
+      "vow→faith→family→sovereignty forms the mission chain",
+      "cipher anchors: loyalty, courage, transformation, legacy"
+    ]
+  },
+  "attestation": {
+    "status": "STAGED",
+    "sealed_by": "Council",
+    "sealed_at": null,
+    "content_hash": "sha256:TO_COMPUTE"
+  },
+  "status": "STAGED"
+}

@@ -1,0 +1,188 @@
+name: Release
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  release:
+    name: Build, Docker, Deploy, Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+      id-token: write
+
+    env:
+      REGISTRY: ghcr.io
+      IMAGE_NAME: ${{ github.repository }}
+      DEPLOY_CHANNEL: ${{ vars.DEPLOY_CHANNEL || 'production' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9.7.1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm turbo run build
+
+      # Docker Build & Push
+      - name: Detect Dockerfile
+        id: dockerfile
+        run: |
+          set -eo pipefail
+          file=$(git ls-files 'Dockerfile' 'docker/Dockerfile' | head -n 1 || true)
+          if [ -n "$file" ]; then
+            echo "file=$file" >> "$GITHUB_OUTPUT"
+            echo "Found Dockerfile: $file"
+          else
+            echo "No Dockerfile found."
+          fi
+
+      - name: Set up Docker Buildx
+        if: steps.dockerfile.outputs.file != ''
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        if: steps.dockerfile.outputs.file != ''
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push container image
+        if: steps.dockerfile.outputs.file != ''
+        id: build-image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ${{ steps.dockerfile.outputs.file }}
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+
+      # SBOM & Signing
+      - name: Generate SBOM
+        if: steps.dockerfile.outputs.file != ''
+        uses: anchore/sbom-action@v0
+        with:
+          image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          format: spdx-json
+          output-file: sbom.spdx.json
+
+      - name: Install Cosign
+        if: steps.dockerfile.outputs.file != ''
+        uses: sigstore/cosign-installer@v3
+
+      - name: Sign image with Cosign
+        if: steps.dockerfile.outputs.file != '' && steps.build-image.outputs.digest != ''
+        env:
+          COSIGN_EXPERIMENTAL: '1'
+          COSIGN_YES: 'true'
+        run: |
+          cosign sign \
+            --keyless \
+            --yes \
+            --output-signature cosign.sig \
+            --output-certificate cosign.cert \
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ steps.build-image.outputs.digest }}
+
+      # Deployment
+      - name: Install renderer (optional)
+        if: ${{ secrets.RENDERER_URL != '' }}
+        env:
+          RENDERER_URL: ${{ secrets.RENDERER_URL }}
+        run: |
+          curl -L "$RENDERER_URL" -o ./render
+          chmod +x ./render
+
+      - name: Deploy
+        env:
+          DEPLOY_CHANNEL: ${{ env.DEPLOY_CHANNEL }}
+        run: |
+          chmod +x scripts/deploy.sh
+          ./scripts/deploy.sh "$DEPLOY_CHANNEL"
+
+      # Artifact Collection
+      - name: Collect artifacts
+        run: |
+          mkdir -p artifacts
+          cp -r storage/ledger.jsonl artifacts/ || true
+          cp -r ops/boo/avatar/guard/out artifacts/out || true
+          cp -r /tmp/* artifacts/ 2>/dev/null || true
+
+          # Collect release artifacts
+          [ -f sbom.spdx.json ] && cp sbom.spdx.json artifacts/
+          [ -f cosign.sig ] && cp cosign.sig artifacts/
+          [ -f cosign.cert ] && cp cosign.cert artifacts/
+
+      - name: Upload Workflow Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-artifacts
+          path: artifacts
+
+      # Create Release
+      - name: Create GitHub Release
+        id: create_release
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: release-${{ github.run_number }}
+          release_name: Release ${{ github.run_number }}
+          body: |
+            Automated release for commit ${{ github.sha }}.
+            - Container image digest: ${{ steps.build-image.outputs.digest || 'not-built' }}
+          draft: false
+          prerelease: false
+
+      - name: Upload SBOM to Release
+        if: steps.create_release.outputs.upload_url != '' && hashFiles('sbom.spdx.json') != ''
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: sbom.spdx.json
+          asset_name: sbom.spdx.json
+          asset_content_type: application/json
+
+      - name: Upload Signature to Release
+        if: steps.create_release.outputs.upload_url != '' && hashFiles('cosign.sig') != ''
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: cosign.sig
+          asset_name: cosign.sig
+          asset_content_type: application/vnd.dev.cosign.sig
+
+      - name: Upload Certificate to Release
+        if: steps.create_release.outputs.upload_url != '' && hashFiles('cosign.cert') != ''
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: cosign.cert
+          asset_name: cosign.cert
+          asset_content_type: application/pem-certificate-chain

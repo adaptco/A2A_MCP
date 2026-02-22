@@ -1,0 +1,19 @@
+{
+  "adapter_id": "adapter.plan.release.candidate.v1",
+  "plan_id": "plan.release.candidate.alpha",
+  "candidate_id": "rc-2025-001",
+  "payload": {
+    "release_window": "2025-02-10T00:00:00Z",
+    "artifact_bundle": "ssot://registry/plan-release/rc-2025-001",
+    "checks": [
+      "schema_validation",
+      "gate_determinism",
+      "capsule_freeze"
+    ]
+  },
+  "created_at": "2025-02-01T12:00:00Z",
+  "metadata": {
+    "author": "corridor_ops",
+    "priority": "p1"
+  }
+}

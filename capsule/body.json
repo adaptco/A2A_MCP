@@ -1,0 +1,104 @@
+{
+  "capsule_id": "capsule.prompt.designStudio.dual.v1",
+  "schema": "p3l://capsule.emission@1",
+  "version": "1.0.0",
+  "status": "FROZEN",
+  "metadata": {
+    "name": "Sol.F1 Design Studio Dual Capsule",
+    "description": "Lineage-valid fossil bundling the Sol.F1 CAD ignition and cinematic scene prompts for Scrollstream deployment.",
+    "environment": "scrollstream",
+    "interfaces": [
+      "cockpit_hud",
+      "storyforge"
+    ],
+    "constraints": [
+      "deterministic",
+      "license_gate",
+      "refusal_guard"
+    ],
+    "tags": [
+      "branch-s",
+      "sentinel",
+      "qlock"
+    ],
+    "issued_at": "2025-10-19T00:23:12Z"
+  },
+  "payload": {
+    "asset_location": "capsule.ops.branch_s.v1/.out/2025-10-19T002312Z_apply/capsule.prompt.designStudio.dual.v1.qcap",
+    "description": "Scrollstream capsule bundle attachment produced by the Branch-S toolkit.",
+    "content_type": "application/zip",
+    "bytes": 5410,
+    "sha256": "sha256:ea722d95db47e678b7445a29f154903df3d0f73cadb1c9c15634f546bdef3fcc",
+    "manifest_sha256": "sha256:f1f89e4a77180f3638966a8c19b1b54ec447905f65ebc138b20823cf9f1f5893",
+    "generated_at": "2025-10-19T00:23:13Z",
+    "attachments": [
+      {
+        "path": "capsules/capsule.metaagent.solf1.oneshot.v1.json",
+        "bytes": 2731,
+        "sha256": "sha256:d51bf4e4bc53a4a63b9466c1fd68848b02c96aa6bc5eeb998e40e14db0020d47"
+      },
+      {
+        "path": "capsules/capsule.scene.designStudio.v1.json",
+        "bytes": 1963,
+        "sha256": "sha256:0c37ac57500c6af3f1ea4f220bf8c8af6ef3fd791d17fbe17d5f2c18e33bf484"
+      },
+      {
+        "path": "templates/solf1_oneshot.tpl",
+        "bytes": 589,
+        "sha256": "sha256:6c3b2d46d00dc0126200d81dc89a319c4148d4f7a666190fff34b97c1007c5f6"
+      },
+      {
+        "path": "templates/design_studio_cinematic.tpl",
+        "bytes": 1122,
+        "sha256": "sha256:ec61949f19502dfe1a7d76dc149fa3ac16d977617fa4f160a5b736b570cc11f5"
+      }
+    ]
+  },
+  "asset_snapshot": {
+    "origin": "git",
+    "repository": "https://github.com/Q-Enterprises/core-orchestrator",
+    "branch": "work",
+    "commit_hash": "d73dfa7e0aa3d33643720248db8b825fbef85766",
+    "tooling": {
+      "builder": "capsule.ops.branch_s.v1",
+      "build_script": "scripts/build_scrollstream_capsule_b.py",
+      "build_arguments": [
+        "--manifest",
+        "capsules/capsule.prompt.designStudio.dual.v1.json",
+        "--attachment",
+        "capsules/capsule.metaagent.solf1.oneshot.v1.json:capsules/capsule.metaagent.solf1.oneshot.v1.json",
+        "--attachment",
+        "capsules/capsule.scene.designStudio.v1.json:capsules/capsule.scene.designStudio.v1.json",
+        "--attachment",
+        "capsules/runtime/templates/solf1_oneshot.tpl:templates/solf1_oneshot.tpl",
+        "--attachment",
+        "capsules/runtime/templates/design_studio_cinematic.tpl:templates/design_studio_cinematic.tpl",
+        "--output",
+        "capsule.ops.branch_s.v1/.out/2025-10-19T002312Z_apply/capsule.prompt.designStudio.dual.v1.qcap"
+      ]
+    }
+  },
+  "attestation": {
+    "maker": "Earl Q Han",
+    "checker": "Council",
+    "attestation_status": "SEALED",
+    "council_attested_fingerprint": "sha256:f1f89e4a77180f3638966a8c19b1b54ec447905f65ebc138b20823cf9f1f5893",
+    "sealed_at": "2025-10-19T00:23:12Z",
+    "ledger_ref": "capsule.ops.branch_s.v1/ledger.branch_s.jsonl#2025-10-19T002312Z_apply",
+    "signature": {
+      "algorithm": "ed25519",
+      "public_key": "REPLACE_WITH_BASE58_ED25519_PUBLIC_KEY",
+      "signature": "REPLACE_WITH_BASE64_ED25519_SIGNATURE",
+      "signed_at": "REPLACE_WITH_ISO8601_UTC_TIMESTAMP"
+    }
+  },
+  "lineage": {
+    "parent_capsule": "capsule.prompt.designStudio.dual.v1",
+    "derivation": "Scrollstream Capsule B bundle containing Sol.F1 CAD and cinematic fossils",
+    "dependencies": [
+      "capsule.metaagent.solf1.oneshot.v1",
+      "capsule.scene.designStudio.v1"
+    ],
+    "run_directory": ".out/2025-10-19T002312Z_apply"
+  }
+}

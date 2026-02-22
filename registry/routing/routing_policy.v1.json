@@ -1,0 +1,23 @@
+{
+  "version": "v1",
+  "rules": [
+    {
+      "intents": ["index_build", "retrieval_issue"],
+      "experts": ["expert:retrieval.rag", "expert:integration.runtime"]
+    },
+    {
+      "intents": ["release_cut", "lock_registry"],
+      "experts": ["expert:governance.pm"]
+    }
+  ],
+  "default_experts": ["expert:integration.runtime"],
+  "module_chains": {
+    "content.integrity.eval.v1": {
+      "routing_order": [
+        "synthetic.noise.injector.v1",
+        "synthetic.contradiction.synth.v1"
+      ],
+      "fallbacks": []
+    }
+  }
+}

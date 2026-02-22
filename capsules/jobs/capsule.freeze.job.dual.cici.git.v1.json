@@ -1,0 +1,44 @@
+{
+  "capsule_id": "capsule.freeze.job.dual.cici.git.v1",
+  "version": "1.0.0",
+  "type": "FreezeJob",
+  "author": "Scrollsmith",
+  "issued_at": "2025-09-25T06:35:00Z",
+  "description": "Dual-freeze ritual sealing CiCi's rehearsal loop and git governance capsules in a single ledger echo.",
+  "inputs": {
+    "capsules": [
+      "capsules/rehearsal/capsule.cici.rehearsal.loop.v1.json",
+      "capsules/governance/capsule.git.governance.v1.json"
+    ],
+    "ledger": "runtime/scrollstream_ledger.jsonl"
+  },
+  "script": {
+    "path": "scripts/freeze_dual_capsules.sh",
+    "arguments": [
+      "capsules/rehearsal/capsule.cici.rehearsal.loop.v1.json",
+      "capsules/governance/capsule.git.governance.v1.json",
+      "runtime/scrollstream_ledger.jsonl"
+    ],
+    "outputs": [
+      "runtime/capsule.cici.rehearsal.loop.v1.body.canonical.json",
+      "runtime/capsule.cici.rehearsal.loop.v1.body.sha256",
+      "runtime/capsule.cici.rehearsal.loop.v1.sealed.json",
+      "runtime/capsule.git.governance.v1.body.canonical.json",
+      "runtime/capsule.git.governance.v1.body.sha256",
+      "runtime/capsule.git.governance.v1.sealed.json"
+    ]
+  },
+  "governance": {
+    "maker": "Queen Boo",
+    "checker": "Queen CiCi",
+    "oracle": "Celine",
+    "quorum": ["Dot", "Echo", "Celine"],
+    "enforcement": "fail-closed"
+  },
+  "attestation": {
+    "status": "STAGED",
+    "sealed_at": null,
+    "content_hash": null
+  },
+  "status": "STAGED"
+}

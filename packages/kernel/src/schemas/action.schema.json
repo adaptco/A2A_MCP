@@ -1,0 +1,99 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "WorldOSAction",
+  "type": "object",
+  "properties": {
+    "type": {
+      "type": "string",
+      "enum": ["Move", "PlayCard", "Build", "SyncData", "SystemSpawn", "ForgeRequest", "ChronoSyncClaim"]
+    },
+    "actor": {"type": "string"},
+    "payload": {
+      "type": "object",
+      "oneOf": [
+        {
+          "properties": {
+            "entityId": {"type": "string"},
+            "q": {"type": "integer"},
+            "r": {"type": "integer"}
+          },
+          "required": ["entityId", "q", "r"],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "cardId": {"type": "string"},
+            "targetId": {"type": "string"},
+            "time": {"type": "integer"}
+          },
+          "required": ["cardId", "targetId", "time"],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "structure": {"type": "string", "enum": ["Node", "Conduit"]},
+            "q": {"type": "integer"},
+            "r": {"type": "integer"},
+            "cost": {
+              "type": "object",
+              "properties": {
+                "compute": {"type": "integer"},
+                "bandwidth": {"type": "integer"},
+                "data": {"type": "integer"}
+              },
+              "required": ["compute", "bandwidth", "data"],
+              "additionalProperties": false
+            }
+          },
+          "required": ["structure", "q", "r", "cost"],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "nodeId": {"type": "string"},
+            "data": {"type": "integer"},
+            "time": {"type": "integer"}
+          },
+          "required": ["nodeId", "data", "time"],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "spawnKind": {"type": "string", "enum": ["Anomaly", "Drone"]},
+            "q": {"type": "integer"},
+            "r": {"type": "integer"},
+            "power": {"type": "integer"},
+            "hp": {"type": "integer"},
+            "time": {"type": "integer"}
+          },
+          "required": ["spawnKind", "q", "r", "power", "hp", "time"],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "tokenSeed": {"type": "string"},
+            "baseAssetId": {"type": "string"},
+            "styleClamp": {"type": "number"},
+            "time": {"type": "integer"}
+          },
+          "required": ["tokenSeed", "baseAssetId", "styleClamp", "time"],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "pid": {"type": "string"},
+            "pidHash": {"type": "string"},
+            "rarityTier": {"type": "integer", "minimum": 0, "maximum": 2},
+            "wallet": {"type": "string"},
+            "nonce": {"type": "string"},
+            "expiresAt": {"type": "integer"}
+          },
+          "required": ["pid", "pidHash", "rarityTier", "wallet", "nonce", "expiresAt"],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  "required": ["type", "actor", "payload"],
+  "additionalProperties": false
+}

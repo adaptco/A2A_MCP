@@ -1,0 +1,28 @@
+{
+  "version": "v1",
+  "locked_at": "2024-01-01T00:00:00Z",
+  "locked_by": "placeholder:moa.release",
+  "agents": [
+    {
+      "agent_id": "agent:qube_core.simulation",
+      "project_id": "axq:project:qube_core",
+      "vertical_id": "axq:vertical:simulation",
+      "index_manifest_ref": "manifests/rag/qube_core/simulation/CURRENT.json",
+      "routing_policy_ref": "registry/routing/routing_policy.v1.json",
+      "expert_catalog_ref": "registry/experts/expert_catalog.v1.json",
+      "allowed_experts": [
+        "expert:retrieval.rag",
+        "expert:integration.runtime",
+        "expert:governance.pm"
+      ],
+      "prompt_contract": {
+        "system_preamble_ref": "docs/prompt/system_preamble.md",
+        "context_policy": {
+          "max_chunks": 12,
+          "max_tokens": 6000
+        },
+        "output_contract": "capsule:run:moa.run.v1"
+      }
+    }
+  ]
+}

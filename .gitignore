@@ -1,49 +1,14 @@
-# Byte-compiled / optimized / DLL files
+packages/
+tools/
+inputs/
+capsules/
+schemas/
+apps/
+runtime/
+adaptco-previz/
+node_modules/
+*.pyc
 __pycache__/
-*.py[cod]
-*$py.class
+target/
+coverage/
 
-# Environments
-.env
-.venv
-env/
-venv/
-ENV/
-
-# Docker
-.docker/
-
-# IDEs
-.vscode/
-.idea/
-
-# OS generated files
-.DS_Store
-Thumbs.db
-
-<<<<<<< HEAD
-# Local transient orchestration sandboxes
-=======
-# Runtime artifacts
-*.db
-*.sqlite
-
-# Agent temp files
-tmpclaude-*
->>>>>>> cde431b91765a0efa58a544c6bbce7e87c940fbe
-tmpclaude-*-cwd/
-tmpclaude-*-cwd
-specs/tmpclaude-*-cwd
-
-<<<<<<< HEAD
-# Local runtime artifacts
-*.sqlite
-=======
-# Test output dumps
-test_output*.txt
-test_results*.txt
-test_full_output*.txt
-
-# Pytest
-.pytest_cache/
->>>>>>> cde431b91765a0efa58a544c6bbce7e87c940fbe

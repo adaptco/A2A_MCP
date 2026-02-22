@@ -1,0 +1,41 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model SsotState {
+  id        Int      @id @default(autoincrement())
+  state     Json
+  hash      String
+  createdAt DateTime @default(now())
+}
+
+model ActionLog {
+  id        Int      @id @default(autoincrement())
+  actor     String
+  action    Json
+  createdAt DateTime @default(now())
+}
+
+model ChronoKeyClaim {
+  id        Int      @id @default(autoincrement())
+  pidHash   String   @unique
+  rarityTier Int
+  wallet    String
+  claimedAt DateTime @default(now())
+}
+
+model ForgeAsset {
+  id          Int      @id @default(autoincrement())
+  tokenSeed   String
+  tokenSeedHash String
+  baseAssetId String
+  styleClamp  Float
+  url         String
+  lineage     String
+  createdAt   DateTime @default(now())
+}

@@ -1,0 +1,26 @@
+{
+  "capsule_id": "capsule.council.boo.agency.v7",
+  "type": "CouncilCapsule",
+  "version": "7.0.0",
+  "purpose": "Automate council quorum and lifecycle sealing via Boo avatars and MoE routing.",
+  "roles": {
+    "boos": {
+      "authority": ["seal", "prune", "broadcast"],
+      "quorum_logic": "council.quorum.simple",
+      "avatars": ["QueenBoo", "CiCi", "Spryte", "Gloh"]
+    },
+    "moe_router": {
+      "experts": {
+        "telemetry": "hud.drift.v1",
+        "audit": "merkle.prune.v1",
+        "creative": "relay.storyboard.v1",
+        "governance": "repo.lifecycle.v1"
+      }
+    }
+  },
+  "attestation": {
+    "status": "STAGED",
+    "sealed_by": "Boos",
+    "sealed_at": null
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "capsule_id": "capsule.orchestrator.core.celine.v7",
+  "type": "OrchestratorCapsule",
+  "version": "7.0.0",
+  "author": "Earl Q Han",
+  "issued_at": "2025-09-24T21:44:00Z",
+  "purpose": "Delegate core orchestrator duties to Celine with CiCi's authority for repo lifecycle management.",
+  "roles": {
+    "celine": {
+      "authority": [
+        "repo.create",
+        "repo.destroy",
+        "repo.clone",
+        "repo.prune"
+      ],
+      "delegated_from": "cici",
+      "constraints": [
+        "maker_checker",
+        "quorum_required"
+      ]
+    },
+    "cici": {
+      "authority": [
+        "audit.trace",
+        "merkle.prune",
+        "quorum.verify"
+      ],
+      "status": "delegator",
+      "delegated_to": "celine"
+    }
+  },
+  "governance": {
+    "maker_checker": true,
+    "quorum_logic": "council.quorum.simple",
+    "audit_trace_required": true
+  },
+  "qlock": {
+    "frame_rate": 30,
+    "tick_interval_ms": 33,
+    "tick_hash": "sha256:96ec1b2930c83906034273ca493e54cf4e38a333dd5b0eb36b6923dae537e884"
+  },
+  "attestation": {
+    "status": "STAGED",
+    "sealed_by": "Council",
+    "sealed_at": null
+  }
+}

@@ -1,0 +1,167 @@
+# This workflow orchestrates the build, test, and logging of the fonts proxy.
+# It emits structured NDJSON events that are then committed to an immutable ledger.
+
+name: Fonts Proxy CI/CD
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Init event log
+        run: |
+          echo > events.ndjson
+          echo "EVENTS_FILE=events.ndjson" >> $GITHUB_ENV
+
+      - name: Install event emitter
+        run: |
+          mkdir -p scripts
+          cat <<'EOS' > scripts/emit_event.sh
+          #!/usr/bin/env bash
+          set -euo pipefail
+          EVENTS_FILE="${EVENTS_FILE:-events.ndjson}"
+          now() { date -u +"%Y-%m-%dT%H:%M:%SZ"; }
+          emit() {
+            jq -nc --arg t "$(now)" --arg id "$1" --arg s "$2" --argjson extra "${3:-{}}" \
+              '{ts:$t,event:$id,step:$s} + $extra' >> "$EVENTS_FILE"
+          }
+          EOS
+          chmod +x scripts/emit_event.sh
+
+      - name: Install API-diff and Spectral
+        run: |
+          npm install -g @stoplight/spectral-cli
+          npm install -g openapi-diff
+
+      - name: Spectral lint (logged)
+        shell: bash
+        run: |
+          source scripts/emit_event.sh
+          emit ci.step.start spectral
+          spectral lint .well-known/openapi.yaml
+          emit ci.step.end spectral
+
+      - name: Install jq
+        run: sudo apt-get update && sudo apt-get install -y jq
+
+      - name: Setup Java for openapi-diff
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: OpenAPI diff (logged)
+        if: ${{ github.event_name == 'pull_request' }}
+        shell: bash
+        run: |
+          source scripts/emit_event.sh
+          emit ci.step.start openapi-diff
+          BASE_SHA=${{ github.event.pull_request.base.sha }}
+          HEAD_SHA=${{ github.event.pull_request.head.sha }}
+
+          if ! git show "${BASE_SHA}:.well-known/openapi.yaml" > old.yaml 2>/dev/null; then
+            echo "Baseline OpenAPI specification not found at ${BASE_SHA}:.well-known/openapi.yaml; skipping diff."
+            emit ci.step.end openapi-diff '{"status":"skipped","reason":"missing_baseline"}'
+            exit 0
+          fi
+
+          if ! git show "${HEAD_SHA}:.well-known/openapi.yaml" > new.yaml 2>/dev/null; then
+            echo "Head OpenAPI specification not found at ${HEAD_SHA}:.well-known/openapi.yaml; skipping diff."
+            emit ci.step.end openapi-diff '{"status":"skipped","reason":"missing_head"}'
+            exit 0
+          fi
+
+          openapi-diff old.yaml new.yaml --fail-on incompatible,major \
+            --report=html:openapi-diff.html --report=json:openapi-diff.json
+          emit ci.step.end openapi-diff
+
+      - name: Build & push (logged)
+        shell: bash
+        run: |
+          source scripts/emit_event.sh
+          emit ci.step.start build '{"tool":"buildx"}'
+          # Replace with your Docker build/push logic
+          echo "Simulated build step."
+          emit ci.step.end build
+
+      - name: Generate capsule hashes
+        run: |
+          python3 hash_gen_scroll.py capsules --out-dir data/capsules --events events.ndjson
+
+      - name: Validate event log
+        run: |
+          jq -e 'any(.event=="ci.step.start" and .step=="build")' events.ndjson >/dev/null
+          jq -e 'any(.event=="ci.step.end"   and .step=="build")' events.ndjson >/dev/null
+
+      - name: Upload events.ndjson
+        uses: actions/upload-artifact@v4
+        with:
+          name: events-log
+          path: events.ndjson
+          retention-days: 1
+
+  commit-ledger-data:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+          fetch-depth: 0
+
+      - name: Download events log
+        uses: actions/download-artifact@v4
+        with:
+          name: events-log
+
+      - name: Ensure ledger file exists
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f events.ndjson || { echo "::error::missing events.ndjson"; exit 1; }
+
+      - name: Prepare paths (UTC) and move file
+        shell: bash
+        run: |
+          set -euo pipefail
+          DATE_PATH=$(date -u +'%Y/%m/%d')
+          SHA7=${GITHUB_SHA::7}
+          mkdir -p "data/events/${DATE_PATH}"
+          DEST="data/events/${DATE_PATH}/events-${GITHUB_RUN_ID}-${SHA7}.ndjson"
+          mv events.ndjson "$DEST"
+          echo "DEST=$DEST" >> "$GITHUB_ENV"
+
+      - name: Commit and push (skip loops)
+        if: github.ref == 'refs/heads/main'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add "$DEST"
+          git diff --cached --quiet || {
+            git commit -m "feat(ledger): add events ${GITHUB_RUN_ID} ${GITHUB_SHA::7} [skip ci]"
+            git push origin HEAD:main
+          }

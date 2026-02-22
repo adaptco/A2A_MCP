@@ -1,0 +1,575 @@
+version: 1
+updated: 2025-09-20
+tasks:
+  - id: phase0.authority_map_cutover
+    phase: "Phase 0 — Governance Spine"
+    title: Authority Map Cutover
+    description: >-
+      Create the next canonical authority_map payload, freeze it, append the
+      update to the ledger, and retire legacy key IDs without leaving active
+      bindings that reference them.
+    owner: null
+    inputs:
+      - current authority_map source
+      - maker private key (Sol.F1)
+      - checker private key (BR9ID)
+      - ledger write API
+    outputs:
+      - authority_map.vN.canonical.json
+      - authority_map.vN.hash
+      - authority_map.vN.sig
+      - ledger entry capturing the new authority_map
+      - revocation records for legacy KIDs
+    acceptance:
+      - /qbit/proof.latest.v1 shows the new HEAD with duo_match=true and hash_match=true
+      - registry replay yields hash_equality=true
+    estimate: M
+    depends_on: []
+
+  - id: phase0.capsule_remap_freeze
+    phase: "Phase 0 — Governance Spine"
+    title: Capsule Remap Freeze
+    description: >-
+      Author and freeze the capsule remap manifest, publish it to the ledger,
+      and reconcile any orphaned bindings produced by the remap.
+    owner: null
+    inputs:
+      - capsule remap spec
+      - sample binding registry snapshot
+    outputs:
+      - capsule_remap.v1.canonical.json
+      - capsule_remap.v1.hash
+      - capsule_remap.v1.sig
+      - replay report cataloging orphaned or migrated bindings
+    acceptance:
+      - registry replay reports no orphaned bindings or documents remediation actions for each orphan
+      - latest proof reflects the remap manifest
+    estimate: M
+    depends_on:
+      - phase0.authority_map_cutover
+
+  - id: phase0.qbus_gate_guard
+    phase: "Phase 0 — Governance Spine"
+    title: Gate Enforcement on QBus (G1/G2/G3)
+    description: >-
+      Implement qbusGateGuard middleware that enforces scope, duo signature, and
+      effective_after constraints for ingress traffic, then deploy and test it.
+    owner: null
+    inputs:
+      - authority_map manifest
+      - capsule_remap manifest
+      - valid and invalid sample requests
+      - ed25519 verifier
+    outputs:
+      - qbusGateGuard middleware on the ingress path
+      - unit and integration test coverage for G1/G2/G3
+    acceptance:
+      - requests violating scope return G1_SCOPE_VIOLATION
+      - duo signature mismatches return G2_DUO_SIG_MISMATCH
+      - authority maps not yet effective return G3_AUTH_MAP_NOT_YET_EFFECTIVE
+      - valid requests succeed
+    estimate: M
+    depends_on:
+      - phase0.authority_map_cutover
+      - phase0.capsule_remap_freeze
+
+  - id: phase0.hud_badges_parity
+    phase: "Phase 0 — Governance Spine"
+    title: HUD Badges Parity
+    description: >-
+      Update the HUD client to consume the latest proof endpoint, render the
+      hash/duo/policy badges, support client-side rehashing, and provide
+      single-warn logging.
+    owner: null
+    inputs:
+      - /qbit/proof.latest.v1 endpoint
+      - canonical manifest endpoint
+    outputs:
+      - updated public HUD assets
+      - integration test simulating API availability and outages
+    acceptance:
+      - HUD displays ✅ Hash MATCH and ✅ Duo MATCH when proof data matches
+      - HUD shows an Offline state when endpoints are unreachable
+      - only one warning logs per distinct network error
+    estimate: S
+    depends_on:
+      - phase0.qbus_gate_guard
+
+  - id: phase1.deploy_qbit_endpoints
+    phase: "Phase 1 — QBot ⇄ Qube Plumbing"
+    title: Deploy QBit endpoints
+    description: >-
+      Expose the qbit endpoints on a test host with schema validation and rate
+      limiting.
+    owner: null
+    inputs:
+      - endpoint schemas
+      - sample payloads
+      - rate-limit policy
+    outputs:
+      - running endpoints
+      - OpenAPI or route documentation
+    acceptance:
+      - endpoints validate input payloads
+      - rate limits are enforced
+      - deterministic schemas returned under test
+    estimate: M
+    depends_on:
+      - phase0.qbus_gate_guard
+
+  - id: phase1.update_qbot_registry
+    phase: "Phase 1 — QBot ⇄ Qube Plumbing"
+    title: Update QBot registry to use capsule IDs
+    description: >-
+      Update service discovery so QBot references capsule IDs and Qube/QBus
+      resolves to the current capsule host via registry and remap data.
+    owner: null
+    inputs:
+      - registry model
+      - capsule remap manifest
+    outputs:
+      - updated registry configuration
+      - integration test showing capsule ID-based routing
+    acceptance:
+      - QBot request routed by capsule_id reaches the expected capsule in tests
+    estimate: M
+    depends_on:
+      - phase1.deploy_qbit_endpoints
+      - phase0.capsule_remap_freeze
+
+  - id: phase1.key_handling_hsm_plan
+    phase: "Phase 1 — QBot ⇄ Qube Plumbing"
+    title: Key handling and HSM plan
+    description: >-
+      Design the HSM/KMS integration plan or signer service stub for Ed25519
+      keys and replace local PEM usage in CI with signer interactions or
+      documented stubs.
+    owner: null
+    inputs:
+      - analysis of current key usage patterns
+      - vendor or signer service options
+    outputs:
+      - signer service stub and integration documentation
+    acceptance:
+      - freeze scripts and runtime call a signer API or fail with clear guidance
+    estimate: L
+    depends_on:
+      - phase0.authority_map_cutover
+
+  - id: phase2.drift_detector_boo
+    phase: "Phase 2 — Boos as Agents"
+    title: Drift Detector Boo
+    description: >-
+      Create a capsule that compiles artifacts daily, runs QC checks, and emits
+      attestations into the ledger, including negative tamper tests in CI.
+    owner: null
+    inputs:
+      - compile scripts
+      - QC rules
+      - test vectors
+    outputs:
+      - scheduled capsule implementation
+      - CI job exercising tamper checks
+      - attestation artifacts
+    acceptance:
+      - CI fails when artifacts are tampered
+      - daily run emits proof artifacts
+    estimate: L
+    depends_on:
+      - phase1.key_handling_hsm_plan
+
+  - id: phase2.argon2id_executor_boos
+    phase: "Phase 2 — Boos as Agents"
+    title: Argon2id Boo and Executor Boo
+    description: >-
+      Implement deterministic argon2 verification and executor capsules with
+      retry bounds and CPU guards, backed by determinism tests.
+    owner: null
+    inputs:
+      - golden test vectors
+      - CPU guardrails and retry requirements
+    outputs:
+      - argon2 verification capsule
+      - executor capsule with bounded retries
+      - CI determinism tests
+    acceptance:
+      - golden vectors locked with measured p95 CPU constraints
+      - executor replays produce deterministic outcomes under bounded retries
+    estimate: L
+    depends_on:
+      - phase2.drift_detector_boo
+
+  - id: phase3.publish_agent_solf1
+    phase: "Phase 3 — Sol.F1 Capsule"
+    title: Publish agent.solf1.v1 manifest and HUD hash
+    description: >-
+      Freeze the agent manifest and HUD state, duo-sign them, push to the
+      ledger, and ensure the HUD reflects the Sol.F1 baseline.
+    owner: null
+    inputs:
+      - agent manifest
+      - HUD state
+      - maker and checker keys
+    outputs:
+      - ledger entry for agent.solf1.v1
+      - HUD baseline updates
+    acceptance:
+      - manifest present in ledger and surfaced in HUD
+      - baseline tests pass
+    estimate: M
+    depends_on:
+      - phase0.hud_badges_parity
+      - phase1.key_handling_hsm_plan
+
+  - id: phase3.freeze_governance_baseline
+    phase: "Phase 3 — Sol.F1 Capsule"
+    title: Freeze governance.baseline.v1
+    description: >-
+      Combine authority_map, schemas, and router policy digests into a single
+      baseline freeze, then sign and publish it.
+    owner: null
+    inputs:
+      - authority_map manifest
+      - schema digests
+      - router policy digests
+    outputs:
+      - governance.baseline.v1 canonical artifacts
+    acceptance:
+      - baseline proof shows duo_match and includes schema digests
+    estimate: M
+    depends_on:
+      - phase3.publish_agent_solf1
+
+  - id: phase4.adaptco_spa
+    phase: "Phase 4 — ADAPTCO SPA"
+    title: Scaffold SPA and integrate QBot SDK
+    description: >-
+      Build a minimal SPA with auth stub, tasks pane, lineage viewer, and proof
+      console connected to qbit endpoints and latest-proof badges.
+    owner: null
+    inputs:
+      - qbit endpoints
+      - QBot SDK
+    outputs:
+      - SPA implementation with HUD and badge display
+      - Playwright smoke test
+    acceptance:
+      - smoke test renders HUD and badge statuses
+      - rehash button recomputes and compares hashes
+    estimate: M
+    depends_on:
+      - phase1.deploy_qbit_endpoints
+      - phase0.hud_badges_parity
+
+  - id: phase5.shopify_backend_freeze
+    phase: "Phase 5 — Macchina Shopify"
+    title: Backend freeze and QC for theme and CSV
+    description: >-
+      Build the Shopify Admin app skeleton, freeze theme and product CSV
+      artifacts with canonical hashes and signatures, and add a validator.
+    owner: null
+    inputs:
+      - theme tarball
+      - product CSV data
+      - validator requirements
+    outputs:
+      - canonical hashes and signatures for theme and CSV
+      - pipeline QC validator
+      - ledger attestation
+    acceptance:
+      - theme ingest shows provenance banner
+      - pipeline QC passes and ledger attestation recorded
+    estimate: L
+    depends_on:
+      - phase1.key_handling_hsm_plan
+
+  - id: phase5.shopify_frontend_provenance
+    phase: "Phase 5 — Macchina Shopify"
+    title: Frontend provenance banner and checkout tests
+    description: >-
+      Display provenance information on the storefront and run checkout tests in
+      a dev store to assert QC success.
+    owner: null
+    inputs:
+      - provenance data
+      - dev store access
+    outputs:
+      - storefront provenance banner implementation
+      - automated checkout test suite
+    acceptance:
+      - checkout completes in tests
+      - HUD shows a compliant green state
+    estimate: L
+    depends_on:
+      - phase5.shopify_backend_freeze
+
+  - id: phase6.ci_workflow_hardening
+    phase: "Phase 6 — CI/CD + Ops"
+    title: CI workflow hardening
+    description: >-
+      Add jobs covering freeze, canonicalization, signing, replay guards, duo
+      signature verification, and concurrency protections for pushes to main.
+    owner: null
+    inputs:
+      - freeze scripts
+      - replay guard requirements
+      - protected branch policy
+    outputs:
+      - hardened CI workflow configuration
+    acceptance:
+      - pushes to main require passing freeze/replay job and protected branch rules
+    estimate: L
+    depends_on:
+      - phase0.authority_map_cutover
+      - phase0.capsule_remap_freeze
+
+  - id: phase6.runbooks_observability
+    phase: "Phase 6 — CI/CD + Ops"
+    title: Runbooks and observability
+    description: >-
+      Author runbooks for key rotation, rollback, and outages while labeling
+      traces and exporting p95 per-capsule metrics, including an alert drill for key rotation.
+    owner: null
+    inputs:
+      - operational processes
+      - observability tooling
+    outputs:
+      - runbook documentation
+      - metrics exports and alert simulation
+    acceptance:
+      - runbooks committed to the repo
+      - CI alert simulation fires for key rotation
+    estimate: M
+    depends_on:
+      - phase6.ci_workflow_hardening
+
+  - id: cross.normalization_library
+    phase: "Cross-cutting"
+    title: Normalization library
+    description: >-
+      Implement a shared normalize(tuple) helper that trims and normalizes
+      capsule and vessel identifiers while uppercasing gate tokens for reuse in
+      middleware and adapters.
+    owner: null
+    inputs:
+      - normalization rules
+    outputs:
+      - shared normalization helper
+      - updated middleware and adapter usage
+    acceptance:
+      - helper reused across middleware and adapters with tests covering normalization rules
+    estimate: S
+    depends_on: []
+
+  - id: cross.canonicalization_helper
+    phase: "Cross-cutting"
+    title: Canonicalization helper
+    description: >-
+      Provide a jq -S . wrapper with streaming support suitable for large
+      manifests and integrate it with freeze scripts and the Node loader.
+    owner: null
+    inputs:
+      - canonicalization requirements
+      - sample large manifests
+    outputs:
+      - canonicalization helper script or module
+      - integrations with freeze scripts and Node loader
+    acceptance:
+      - helper handles large manifests in streaming mode
+      - freeze scripts and loader consume the helper
+    estimate: M
+    depends_on: []
+
+  - id: cross.duo_signature_verifier
+    phase: "Cross-cutting"
+    title: Duo signature verifier
+    description: >-
+      Implement verifyDuoSig that validates maker and checker ed25519 signatures
+      on payloads and returns explicit failure reasons.
+    owner: null
+    inputs:
+      - ed25519 public keys
+      - payload samples
+    outputs:
+      - verifyDuoSig implementation
+      - test coverage for failure modes
+    acceptance:
+      - verifier returns explicit reasons for failures and passes valid signature tests
+    estimate: S
+    depends_on: []
+
+  - id: cross.caching_ttl
+    phase: "Cross-cutting"
+    title: Caching and TTL controls
+    description: >-
+      Implement a cache with a 7-second default TTL for manifests and HUD state
+      plus a ?force=true bust option.
+    owner: null
+    inputs:
+      - caching requirements
+    outputs:
+      - cache implementation with TTL and force-bust support
+    acceptance:
+      - manifests and HUD state respect the TTL
+      - force=true bypasses the cache
+    estimate: S
+    depends_on:
+      - cross.normalization_library
+
+  - id: cross.single_warn_logging
+    phase: "Cross-cutting"
+    title: Single-warn logging
+    description: >-
+      Maintain a runtime set of emitted warnings to avoid repeating identical
+      log messages.
+    owner: null
+    inputs:
+      - logging requirements
+    outputs:
+      - single-warn logging utility
+      - integrations in runtime components
+    acceptance:
+      - repeated identical warnings are suppressed after the first emission
+    estimate: S
+    depends_on: []
+
+  - id: fastpath.freeze_scripts
+    phase: "Fast-path (first 7 days)"
+    title: Implement freeze scripts and governance fixtures
+    description: >-
+      Deliver freeze scripts, governance fixtures, and tests covering Phase 0
+      tasks 1 and 2.
+    owner: null
+    inputs:
+      - freeze script requirements
+      - governance fixtures
+    outputs:
+      - freeze_authority_map.sh and related artifacts
+      - test_freeze_scripts.sh and fixtures
+    acceptance:
+      - script produces canonical json, hash, and signature files
+      - script exits non-zero when cosign is unavailable
+    estimate: M
+    depends_on:
+      - phase0.authority_map_cutover
+      - phase0.capsule_remap_freeze
+
+  - id: fastpath.qbus_gates
+    phase: "Fast-path (first 7 days)"
+    title: Implement qbus gates and bindings adapter
+    description: >-
+      Build qbusGateGuard with unit tests for G1/G2/G3 and provide a bindings
+      adapter.
+    owner: null
+    inputs:
+      - qbus gate requirements
+      - sample keys and fixtures
+    outputs:
+      - lib/qbusGates.js implementation
+      - tests validating G1/G2/G3 behavior
+    acceptance:
+      - test_qbus_gates.sh passes
+    estimate: M
+    depends_on:
+      - phase0.qbus_gate_guard
+
+  - id: fastpath.pilot_workflow
+    phase: "Fast-path (first 7 days)"
+    title: Basic server endpoints and HUD badge client
+    description: >-
+      Provide /qbit/proof.latest.v1, /hud/state.json, and /capsule/execute
+      endpoints along with HUD badges and a pilot workflow script.
+    owner: null
+    inputs:
+      - endpoint specifications
+      - HUD client requirements
+    outputs:
+      - server endpoints
+      - public HUD badge client
+      - run_pilot_workflow.sh
+      - integration smoke tests
+    acceptance:
+      - integration test covers freeze→proof→HUD path
+    estimate: M
+    depends_on:
+      - fastpath.qbus_gates
+      - phase0.hud_badges_parity
+
+  - id: tickets.freeze_authority
+    phase: "Suggested deliverables"
+    title: Freeze authority ticket package
+    description: >-
+      Provide freeze_authority_map.sh, fixtures, and tests ensuring cosign is
+      required for success.
+    owner: null
+    inputs:
+      - authority freeze requirements
+    outputs:
+      - freeze_authority_map.sh
+      - supporting fixtures
+      - test_freeze_scripts.sh
+    acceptance:
+      - script produces canonical json, hash, and signature files
+      - execution fails when cosign is missing
+    estimate: M
+    depends_on:
+      - fastpath.freeze_scripts
+
+  - id: tickets.qbus_gates
+    phase: "Suggested deliverables"
+    title: QBus gates ticket package
+    description: >-
+      Deliver lib/qbusGates.js, supporting tests, and fixtures for G1/G2/G3.
+    owner: null
+    inputs:
+      - qbus gate design
+    outputs:
+      - lib/qbusGates.js
+      - test_qbus_gates.sh
+      - sample keys and fixtures
+    acceptance:
+      - test suite passes verifying G1/G2/G3 enforcement
+    estimate: M
+    depends_on:
+      - fastpath.qbus_gates
+
+  - id: tickets.bindings_adapter
+    phase: "Suggested deliverables"
+    title: Bindings adapter ticket package
+    description: >-
+      Provide lib/bindings.js with caching and loadManifest tests plus health
+      manifest hash exposure.
+    owner: null
+    inputs:
+      - bindings adapter requirements
+    outputs:
+      - lib/bindings.js implementation
+      - caching support and tests
+      - /health manifest hash exposure
+    acceptance:
+      - loadManifest tests pass
+    estimate: M
+    depends_on:
+      - fastpath.qbus_gates
+      - cross.caching_ttl
+
+  - id: tickets.server_hud
+    phase: "Suggested deliverables"
+    title: Server HUD ticket package
+    description: >-
+      Deliver server/index.js, public HUD badges client, run_pilot_workflow.sh,
+      and integration smoke tests.
+    owner: null
+    inputs:
+      - server endpoint requirements
+      - HUD badge requirements
+    outputs:
+      - server/index.js
+      - public/hud/badges.js
+      - run_pilot_workflow.sh
+      - integration smoke tests
+    acceptance:
+      - smoke tests pass covering the pilot workflow
+    estimate: M
+    depends_on:
+      - fastpath.pilot_workflow

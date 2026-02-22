@@ -1,0 +1,93 @@
+{
+  "capsule_id": "capsule.metaagent.solf1.oneshot.v1",
+  "schema": "p3l://moe.oneshot@1",
+  "version": "1.0.0",
+  "status": "STAGED",
+  "anchors": {
+    "metaagent_staging": "capsule.metaagent.staging.solf1.v1",
+    "render_token": "R-2025-001742",
+    "hud_overlay": "config.hud_overlays.v1.json"
+  },
+  "context": {
+    "signature": {
+      "environment": "scrollstream",
+      "interfaces": ["cockpit_hud", "contributor_console"],
+      "constraints": ["deterministic", "fail_closed_overlay"]
+    },
+    "controls": {
+      "max_tokens": 256,
+      "temperature": 0.1,
+      "safety": ["refusal_guard", "license_gate"],
+      "negative_controls": [
+        "no personal data synthesis",
+        "no out-of-band network calls",
+        "no non-deterministic sampling beyond spec"
+      ]
+    }
+  },
+  "experts": [
+    {
+      "id": "expert_vector.cici.v1",
+      "role": "override_fidelity",
+      "embedding_ref": "s3://REPLACE_WITH_CICI_VECTOR/experts/cici.vec",
+      "prompt_inject": [
+        "overlay: sovereign; shimmer_sync: strict; cockpit_glyphs: canonical",
+        "accept only hashes present in ledger"
+      ]
+    },
+    {
+      "id": "expert_vector.boo.v1",
+      "role": "breach_rehearsal",
+      "embedding_ref": "s3://REPLACE_WITH_BOO_VECTOR/experts/boo.vec",
+      "prompt_inject": [
+        "rupture_trace: bounded; refusal_choreo: present",
+        "emotional_modulation: clamp=0.3"
+      ]
+    }
+  ],
+  "moe_router": {
+    "type": "linear_mixture",
+    "weights": {
+      "w_cici": 0.55,
+      "w_boo": 0.45
+    },
+    "conditioning": {
+      "inputs": ["emotional_payload", "contributor_ingress", "shimmer_fidelity"],
+      "policy": "clip_then_normalize",
+      "bounds": {"min": 0.0, "max": 1.0}
+    }
+  },
+  "ignition": {
+    "objective": "produce ignition_trace.v1 for Sol.F1",
+    "equation": "S = w_cici * E_cici + w_boo * E_boo",
+    "outputs": [
+      {"key": "ignition.trace.v1", "format": "json", "schema": "p3l://ignition.trace@1"},
+      {"key": "replay.logic.v1", "format": "json", "schema": "p3l://replay.logic@1"}
+    ],
+    "observability": {
+      "badges": ["badge:ignite", "badge:moe", "badge:overlay"],
+      "emit": ["ledger", "sse"]
+    }
+  },
+  "artifacts": [
+    {
+      "role": "prompt_template",
+      "uri": "s3://REPLACE_WITH_PROMPT_TEMPLATE/solf1_oneshot.tpl",
+      "sha256": "sha256:REPLACE_WITH_PROMPT_TEMPLATE_HASH",
+      "bytes": 0
+    },
+    {
+      "role": "manifest",
+      "uri": "s3://REPLACE_WITH_MANIFEST/solf1_oneshot.manifest.json",
+      "sha256": "sha256:REPLACE_WITH_MANIFEST_HASH",
+      "bytes": 0
+    }
+  ],
+  "attestation": {
+    "maker": "Earl Q Han",
+    "checker": "Council",
+    "quorum": ">=2",
+    "sealed_at": null,
+    "content_hash": null
+  }
+}

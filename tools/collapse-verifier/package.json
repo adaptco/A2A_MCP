@@ -1,0 +1,17 @@
+{
+  "name": "collapse-verifier",
+  "version": "1.0.0",
+  "description": "Deterministic canonicalizer + Merkle verifier + signature checks for CollapseReceipt batches",
+  "engines": {
+    "node": ">=18"
+  },
+  "bin": {
+    "collapse-verify": "src/index.js"
+  },
+  "dependencies": {
+    "minimist": "^1.2.8"
+  },
+  "scripts": {
+    "test": "node src/index.js --batch test/fixtures/batch.json --expect test/expected/receipt.json"
+  }
+}

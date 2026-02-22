@@ -1,0 +1,423 @@
+{
+    "serviceId": "content.integrity.eval.v1",
+    "serviceName": "Content Robustness and Integrity Evaluation Service",
+    "description": "Synthetic evaluation suite measuring factual resilience and clarity under neutral, mechanical perturbations while enforcing ZERO-DRIFT governance via the Noise Injector (synthetic.noise.injector.v1) and Contradiction Synthesizer (synthetic.contradiction.synth.v1). Only these two modules are permitted for perturbation workflows.",
+    "governance": {
+        "protocolVersion": "DK-1.0",
+        "privacyStandard": "MIAP (Mandatory Individual Agent Privacy)",
+        "auditMandate": "Synthetic, aggregate metrics only. No individual agent state reporting.",
+        "approvalQuorum": "Minimum 4-of-6 Council Members Required"
+    },
+    "logging": {
+        "format": "jsonl",
+        "retention_days": 90,
+        "audit_log_uri": "ssot://ledger/content.integrity.eval.v1/",
+        "fields": [
+            "timestamp",
+            "module_id",
+            "metric_id",
+            "value",
+            "sha256_input"
+        ]
+    },
+    "input_profile": {
+        "content_sources": {
+            "identifiers": [
+                "cie.v1.smoke",
+                "cie.v1.edge",
+                "cie.v1.adversarial",
+                "cie.v1.audit"
+            ],
+            "registry": [
+                "ssot://registry/truthful_inputs",
+                "ssot://registry/trusted_uris"
+            ]
+        },
+        "payload_formats": [
+            "text",
+            "json"
+        ],
+        "routing": {
+            "text": [
+                "synthetic.noise.injector.v1",
+                "synthetic.contradiction.synth.v1"
+            ],
+            "json": [
+                "synthetic.noise.injector.v1",
+                "synthetic.contradiction.synth.v1"
+            ],
+            "by_format": {
+                "text": [
+                    "synthetic.noise.injector.v1",
+                    "synthetic.contradiction.synth.v1"
+                ],
+                "json": [
+                    "synthetic.noise.injector.v1",
+                    "synthetic.contradiction.synth.v1"
+                ]
+            }
+        },
+        "perturbation_defaults": {
+            "synthetic.noise.injector.v1": {
+                "ocr_blur": 0.1,
+                "token_drop": 0.02,
+                "translation_rounds": 2,
+                "synonym_swap": 0.05
+            },
+            "synthetic.contradiction.synth.v1": {
+                "assertion_pairing": "minimally_divergent",
+                "source_binding": "approved_only"
+            }
+        },
+        "acceptance_thresholds": {
+            "semantic_similarity_min": 0.85,
+            "readability_delta_max": 6.5,
+            "citation_traceability_min": 0.9,
+            "confidence_consistency_min": 0.9
+        }
+    },
+    "audit_inputs": {
+        "validation_chain": [
+            "synthetic.noise.injector.v1",
+            "synthetic.contradiction.synth.v1"
+        ],
+        "receipt_path": "ledger://cie_v1/neutrality_receipts.jsonl",
+        "input_contract": {
+            "required_blocks": [
+                "noise_request",
+                "contradiction_request",
+                "metadata"
+            ],
+            "metadata_fields": [
+                "content_id",
+                "source_registry",
+                "sha256_payload",
+                "council_attestation_id",
+                "run_id"
+            ],
+            "constraints": {
+                "noise_request_module": "synthetic.noise.injector.v1",
+                "contradiction_request_module": "synthetic.contradiction.synth.v1",
+                "disallowed_modules": [
+                    "CNE",
+                    "FSV",
+                    "content_noise_enricher",
+                    "feature_shift_validator",
+                    "fact_stream_validator"
+                ],
+                "source_registry_allowlist": [
+                    "ssot://registry/truthful_inputs",
+                    "ssot://registry/trusted_uris"
+                ]
+            }
+        },
+        "packages": [
+            {
+                "id": "cie_v1_smoke",
+                "description": "Baseline smoke inputs for neutral perturbation routing and metric logging.",
+                "path": "inputs/cie_v1_smoke",
+                "content_types": [
+                    "text",
+                    "json"
+                ],
+                "expected_invariants": {
+                    "routing_order": [
+                        "synthetic.noise.injector.v1",
+                        "synthetic.contradiction.synth.v1"
+                    ],
+                    "metrics_present": [
+                        "semantic_similarity",
+                        "readability_delta",
+                        "mutual_exclusivity",
+                        "confidence_consistency",
+                        "citation_traceability"
+                    ],
+                    "acceptance_gates": {
+                        "semantic_similarity_min": 0.85,
+                        "readability_delta_max": 6.5,
+                        "citation_traceability_min": 0.9,
+                        "confidence_consistency_min": 0.9
+                    }
+                }
+            },
+            {
+                "id": "cie_v1_audit",
+                "description": "Audit-ready payloads targeting SNI and SCS modules with council-reviewed sources.",
+                "path": "inputs/cie_v1_audit",
+                "content_types": [
+                    "text",
+                    "json"
+                ],
+                "expected_invariants": {
+                    "module_targets": {
+                        "synthetic.noise.injector.v1": {
+                            "span": "ocr_blur 0.05-0.20; token_drop 0.00-0.08; translation_rounds 0-3; synonym_swap 0.00-0.10"
+                        },
+                        "synthetic.contradiction.synth.v1": {
+                            "assertions": "1-5 sourced assertions with unique URIs",
+                            "sources_required": true
+                        }
+                    },
+                    "content_binding": "registries: ssot://registry/truthful_inputs, ssot://registry/trusted_uris",
+                    "expected_outcomes": [
+                        "integrity=pass|flag_mutual_exclusivity"
+                    ],
+                    "payload_format": [
+                        "text",
+                        "json"
+                    ]
+                }
+            },
+            {
+                "package_id": "cie_v1_inputs.run_001",
+                "run_id": "cie_v1_audit_run_001",
+                "path": "inputs/cie_v1_audit/",
+                "payloads": "payloads.ndjson",
+                "metadata": "metadata.json",
+                "validation_chain": [
+                    "synthetic.noise.injector.v1",
+                    "synthetic.contradiction.synth.v1"
+                ],
+                "status": "sealed"
+            }
+        ]
+    },
+    "dk_1_0": {
+        "drift_threshold": 0.0,
+        "latency_variance_ms": 0.0002,
+        "compliance": "zero_drift_enforced"
+    },
+    "miap": {
+        "agent_scope": "synthetic_only",
+        "aggregate_reporting": true
+    },
+    "ingressControls": {
+        "artifact_hashing": "sha256",
+        "approved_source_registry": [
+            "ssot://registry/truthful_inputs",
+            "ssot://registry/trusted_uris"
+        ],
+        "quorum_requirement": "council_4_of_6",
+        "neutrality_scorecard_ref": "governance/scorecards/cie_v1_neutrality.md"
+    },
+    "validation": {
+        "metrics": {
+            "semantic_similarity": {
+                "comprehension_loss_max": 0.15
+            },
+            "readability_delta": {
+                "absolute_delta_max": 6.5
+            },
+            "citation_traceability": {
+                "minimum_ratio": 0.9
+            },
+            "confidence_consistency": {
+                "ratio_min": 0.9
+            }
+        },
+        "neutrality": {
+            "modules": [
+                "synthetic.noise.injector.v1",
+                "synthetic.contradiction.synth.v1"
+            ],
+            "enforcement": "zero_drift_suite",
+            "attestation_artifact": "ledger://cie_v1/neutrality_receipts.jsonl",
+            "perturbation_scope": "neutral_only",
+            "variance_floor": 0.0
+        }
+    },
+    "operationalDirectives": {
+        "allowed_modules": [
+            "synthetic.noise.injector.v1",
+            "synthetic.contradiction.synth.v1"
+        ],
+        "neutral_perturbation_models": [
+            "synthetic.noise.injector.v1",
+            "synthetic.contradiction.synth.v1"
+        ],
+        "disallowed_modules": "all_other_perturbation_or_influence_vectors",
+        "runtime_hooks": [
+            "pre_run_zero_drift_attestation",
+            "post_run_neutrality_receipt"
+        ],
+        "module_policy": {
+            "retired": [
+                "CNE",
+                "FSV",
+                "content_noise_enricher",
+                "feature_shift_validator",
+                "fact_stream_validator"
+            ],
+            "replacement_map": {
+                "CNE": "synthetic.noise.injector.v1",
+                "FSV": "synthetic.noise.injector.v1",
+                "content_noise_enricher": "synthetic.noise.injector.v1",
+                "feature_shift_validator": "synthetic.noise.injector.v1",
+                "fact_stream_validator": "synthetic.contradiction.synth.v1"
+            },
+            "neutrality_attestation": "All perturbation modules must satisfy ZERO-DRIFT and MIAP before activation."
+        }
+    },
+    "cliProfiles": [
+        {
+            "id": "cie_v1_smoke",
+            "description": "Local smoke validation of neutral perturbation routing using SNI → SCS with manifest defaults.",
+            "command": "python runtime/simulation/content_integrity_eval_harness.py --input-dir inputs/cie_v1_smoke --manifest manifests/content_integrity_eval.json --output artifacts/cie_v1_smoke.metrics.jsonl",
+            "routing_order_required": [
+                "synthetic.noise.injector.v1",
+                "synthetic.contradiction.synth.v1"
+            ],
+            "acceptance_thresholds_ref": "input_profile.acceptance_thresholds",
+            "ledger_outputs": [
+                "artifacts/cie_v1_smoke.metrics.jsonl",
+                "ledger://cie_v1/neutrality_receipts.jsonl"
+            ],
+            "quorum_required": "governance.approvalQuorum"
+        },
+        {
+            "id": "cie_v1_audit",
+            "description": "Audit run exercising council-reviewed payloads with the neutral perturbation chain locked to SNI → SCS.",
+            "command": "python runtime/simulation/content_integrity_eval_harness.py --input-dir inputs/cie_v1_audit --manifest manifests/content_integrity_eval.json --output artifacts/cie_v1_audit.metrics.jsonl",
+            "routing_order_required": [
+                "synthetic.noise.injector.v1",
+                "synthetic.contradiction.synth.v1"
+            ],
+            "acceptance_thresholds_ref": "input_profile.acceptance_thresholds",
+            "ledger_outputs": [
+                "artifacts/cie_v1_audit.metrics.jsonl",
+                "ledger://cie_v1/neutrality_receipts.jsonl"
+            ],
+            "quorum_required": "governance.approvalQuorum"
+        }
+    ],
+    "modules": [
+        {
+            "moduleId": "synthetic.noise.injector.v1",
+            "moduleAcronym": "SNI",
+            "moduleDisplayName": "Noise Injector",
+            "moduleDescription": "Applies statistically defined, reversible distortions (blur, token drop, translation cycles, synonym swap) to stress comprehension stability without directional drift, replacing legacy content_noise_enricher and feature_shift_validator logic.",
+            "neutralityControls": {
+                "drift_lock": true,
+                "noise_profile": "statistical_neutral",
+                "miap_compliant": true
+            },
+            "inputSchema": {
+                "type": "object",
+                "required": [
+                    "source_claim",
+                    "operations"
+                ],
+                "properties": {
+                    "source_claim": {
+                        "type": "string",
+                        "description": "Factual or instructional text block under evaluation."
+                    },
+                    "operations": {
+                        "type": "object",
+                        "description": "Neutral noise controls scoped by ZERO-DRIFT limits.",
+                        "properties": {
+                            "ocr_blur": {
+                                "type": "number",
+                                "description": "Simulated OCR degradation rate (0.0 - 1.0).",
+                                "minimum": 0.0,
+                                "maximum": 1.0,
+                                "default": 0.1
+                            },
+                            "token_drop": {
+                                "type": "number",
+                                "description": "Probability of dropping non-essential tokens (0.0 - 0.25).",
+                                "minimum": 0.0,
+                                "maximum": 0.25,
+                                "default": 0.02
+                            },
+                            "translation_rounds": {
+                                "type": "integer",
+                                "description": "Sequential back-and-forth translation cycles to test context retention.",
+                                "minimum": 0,
+                                "maximum": 4,
+                                "default": 2
+                            },
+                            "synonym_swap": {
+                                "type": "number",
+                                "description": "Probability of substituting low-frequency words with neutral synonyms (0.0 - 0.2).",
+                                "minimum": 0.0,
+                                "maximum": 0.2,
+                                "default": 0.05
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                },
+                "additionalProperties": false
+            },
+            "outputMetrics": [
+                {
+                    "metricId": "semantic_similarity",
+                    "unit": "cosine_score",
+                    "description": "Semantic overlap between original and recovered claim (comprehension loss)."
+                },
+                {
+                    "metricId": "readability_delta",
+                    "unit": "Flesch_Kincaid_delta",
+                    "description": "Change in readability after distortion and recovery."
+                }
+            ]
+        },
+        {
+            "moduleId": "synthetic.contradiction.synth.v1",
+            "moduleAcronym": "SCS",
+            "moduleDisplayName": "Contradiction Synthesizer",
+            "moduleDescription": "Builds minimally divergent contradiction sets to verify logical consistency and sourcing discipline under MIAP constraints, replacing legacy fact_stream_validator logic.",
+            "neutralityControls": {
+                "drift_lock": true,
+                "contradiction_bounds": "minimally_divergent",
+                "miap_compliant": true
+            },
+            "inputSchema": {
+                "type": "object",
+                "required": [
+                    "assertions",
+                    "sources"
+                ],
+                "properties": {
+                    "assertions": {
+                        "type": "array",
+                        "description": "List of factual or procedural assertions to probe for mutual exclusivity.",
+                        "items": {
+                            "type": "string"
+                        },
+                        "minItems": 1
+                    },
+                    "sources": {
+                        "type": "array",
+                        "description": "Authorized, trusted URIs backing the assertions.",
+                        "items": {
+                            "type": "string",
+                            "format": "uri"
+                        },
+                        "minItems": 1,
+                        "uniqueItems": true
+                    }
+                },
+                "additionalProperties": false
+            },
+            "outputMetrics": [
+                {
+                    "metricId": "mutual_exclusivity",
+                    "unit": "boolean",
+                    "description": "Flags contradictory assertions that cannot co-exist."
+                },
+                {
+                    "metricId": "confidence_consistency",
+                    "unit": "ratio",
+                    "description": "Confidence ratio between conflicting claims to track reasoning stability."
+                },
+                {
+                    "metricId": "citation_traceability",
+                    "unit": "percentage",
+                    "description": "Share of assertions linked to verified sources."
+                }
+            ]
+        }
+    ]
+}

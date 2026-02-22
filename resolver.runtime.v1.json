@@ -1,0 +1,30 @@
+{
+  "resolver_id": "resolver.runtime.v1",
+  "version": "1.0.0",
+  "priority_stack": [
+    "capsule.map.qube.endtoend.v1",
+    "ssot.registry.v7",
+    "relay.artifacts.v1",
+    "capsule.registry.runtime.v1",
+    "capsule.motion.ledger.v1"
+  ],
+  "policies": {
+    "graph_aware": {
+      "env_bound": true,
+      "fail_closed_on_mismatch": true
+    },
+    "motion_binding": {
+      "require_sealed": true,
+      "enforce_fps": true,
+      "attach_qlock_ticks": true
+    },
+    "duplicate_guard": {
+      "idempotency_key": [
+        "event",
+        "capsule",
+        "digest"
+      ],
+      "prefer": "earliest"
+    }
+  }
+}

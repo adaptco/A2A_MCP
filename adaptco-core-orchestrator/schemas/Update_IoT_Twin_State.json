@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Update_IoT_Twin_State",
+  "description": "Sovereign IoT Twin Petition for CoffeeAgent_Prime",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["world_id", "nonce", "proposed_state"],
+  "properties": {
+    "world_id": { "type": "string", "description": "Unique ID for the vehicle worldline" },
+    "nonce": { "type": "string", "description": "ISO8601 + counter for replay protection" },
+    "proposed_state": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "cabin_comfort": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "target_temp_f": {
+              "type": "integer",
+              "minimum": 60,
+              "maximum": 82
+            },
+            "fan_speed": { "type": "integer", "minimum": 0, "maximum": 10 }
+          }
+        },
+        "media_profile": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "volume_level": { "type": "integer", "minimum": 0, "maximum": 100 }
+          }
+        }
+      }
+    },
+    "meta": { "type": "object" }
+  }
+}

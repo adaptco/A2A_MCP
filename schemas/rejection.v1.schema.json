@@ -1,0 +1,44 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Rejection Capsule v1",
+  "type": "object",
+  "required": ["type", "timestamp", "error", "action"],
+  "additionalProperties": false,
+  "properties": {
+    "type": {
+      "type": "string",
+      "const": "rejection.v1"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "error": {
+      "type": "string",
+      "minLength": 1
+    },
+    "action": {
+      "type": "string",
+      "enum": ["HALT", "REJECT", "ESCALATE"]
+    },
+    "message": {
+      "type": "string"
+    },
+    "target": {
+      "type": "string",
+      "description": "Optional field path or subsystem reference that triggered the rejection."
+    },
+    "details": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "traceId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "idempotencyKey": {
+      "type": "string",
+      "format": "uuid"
+    }
+  }
+}

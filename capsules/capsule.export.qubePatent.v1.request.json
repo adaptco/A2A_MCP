@@ -1,0 +1,36 @@
+{
+  "deploymentId": "phase.1.qube",
+  "capsuleId": "capsule.patentDraft.qube.v1",
+  "replayPacketId": "replay:cdpy71:pathA",
+  "archiveRef": "s3://qube/bundles/qube.v1.tar.zst",
+  "dao": {
+    "protocol": "capsule.export.qubePatent.v1",
+    "format": "artifactBundle",
+    "integrity": {
+      "sha256_verification": true,
+      "merkle_proof": true,
+      "attestation_quorum": "2-of-3"
+    },
+    "ledger_binding": {
+      "append_target": "ledger/federation.jsonl",
+      "proof_binding": "sha256:REQUEST"
+    }
+  },
+  "expected_artifacts": [
+    "acsa.trace.jsonl",
+    "acsa.metrics.json",
+    "artifact/R0P3.bin"
+  ],
+  "dual_run": {
+    "mode": "A/B",
+    "seed": "qube-phase1",
+    "delta_emit": true
+  },
+  "meta": {
+    "issued_at": "ISO-UTC",
+    "issuer": "Council",
+    "epoch": "phase.1.x",
+    "trigger_event": "SEAL",
+    "export_policy_ref": "policy:QUBE"
+  }
+}

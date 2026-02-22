@@ -1,0 +1,10 @@
+{
+  "id": "asset-demo",
+  "name": "Demo Asset",
+  "type": "image",
+  "sourcePath": "assets/demo/scene.gltf",
+  "params": {
+    "camera": "main",
+    "resolution": "1920x1080"
+  }
+}

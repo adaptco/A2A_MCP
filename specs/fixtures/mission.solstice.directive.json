@@ -1,0 +1,636 @@
+{
+  "schema": "mission.meta.directive.v1",
+  "version": "1.0.0",
+  "mission": {
+    "mission_id": "mission-solstice-dawn",
+    "codename": "Solstice Dawn",
+    "cohort": "cohort-aurora",
+    "objective": "Verify the inaugural choreo.bundle deployment against live ledger telemetry.",
+    "timeline": {
+      "window": {
+        "start": "2025-09-21T16:45:00Z",
+        "end": "2025-09-21T20:00:00Z"
+      },
+      "phases": [
+        {
+          "name": "Staging",
+          "entry_criteria": [
+            {
+              "description": "Ops on-call acknowledges briefing",
+              "source": "ledger.event.ops_ack"
+            }
+          ],
+          "exit_criteria": [
+            {
+              "description": "All preflight checks green",
+              "source": "telemetry.preflight.summary"
+            }
+          ],
+          "duration_minutes": 30
+        },
+        {
+          "name": "Launch",
+          "entry_criteria": [
+            {
+              "description": "Council issues go command",
+              "source": "mission.command.go"
+            }
+          ],
+          "exit_criteria": [
+            {
+              "description": "choreo.bundle sync offset < 250ms",
+              "source": "telemetry.sync.offset"
+            }
+          ],
+          "duration_minutes": 45
+        },
+        {
+          "name": "Execution",
+          "entry_criteria": [
+            {
+              "description": "Launch ledger event recorded",
+              "source": "ledger.event.launch"
+            }
+          ],
+          "exit_criteria": [
+            {
+              "description": "Objectives SC-1 and SC-2 satisfied",
+              "source": "mission.success.metrics"
+            }
+          ],
+          "duration_minutes": 60
+        },
+        {
+          "name": "Review",
+          "entry_criteria": [
+            {
+              "description": "Ops lead files preliminary report",
+              "source": "ledger.event.ops_report"
+            }
+          ],
+          "exit_criteria": [
+            {
+              "description": "Council ratifies findings",
+              "source": "council.vote.record"
+            }
+          ],
+          "duration_minutes": 40
+        }
+      ],
+      "current_phase": "Staging"
+    },
+    "bundle": {
+      "name": "choreo.bundle",
+      "version": "2025.09.21.1",
+      "hash": "sha256:7d1c1a2a6f0cecb75c2b5fbbdf5d0d362c1ef37eec2a4bf72c5cc89c3bcd1234",
+      "artifact": "s3://orchestrator-bundles/choreo/2025.09.21.1/bundle.tgz",
+      "source_repo": "https://git.example.com/core/choreo.bundle"
+    },
+    "communications": [
+      {
+        "channel": "mission-ops",
+        "medium": "matrix",
+        "address": "#mission-ops:adaptco.dev",
+        "purpose": "Live coordination"
+      },
+      {
+        "channel": "council-brief",
+        "medium": "email",
+        "address": "council@adaptco.dev",
+        "purpose": "Checkpoint summaries"
+      }
+    ],
+    "success_criteria": [
+      {
+        "id": "sc-ledger-sync",
+        "description": "Ledger drift remains below 1 entry per 15 minutes",
+        "metric": "ledger.drift.rate",
+        "target": "<= 1"
+      },
+      {
+        "id": "sc-bundle-health",
+        "description": "choreo.bundle uptime above 99.9%",
+        "metric": "bundle.uptime",
+        "target": ">= 0.999"
+      }
+    ],
+    "dependencies": [
+      {
+        "id": "ssot-replica",
+        "status": "ready",
+        "notes": "Snapshot 2025-09-21T15:00Z"
+      }
+    ]
+  },
+  "state_machine": {
+    "initial_state": "staging",
+    "state": "staging",
+    "previous_state": null,
+    "transition_cause": "Initialized",
+    "states": [
+      {
+        "name": "staging",
+        "description": "Mission brief, validation, and last-minute adjustments.",
+        "entry_checks": [
+          {
+            "description": "All dependencies green",
+            "source": "dependency.report"
+          }
+        ],
+        "exit_conditions": [
+          {
+            "description": "Council go command recorded",
+            "source": "mission.command.go"
+          }
+        ],
+        "fail_closed_actions": [
+          {
+            "type": "raise_alert",
+            "parameters": {
+              "level": "critical",
+              "code": "STAGING-BLOCK",
+              "escalate_to": ["council.primary", "ops.oncall"]
+            }
+          }
+        ],
+        "allowed_transitions": ["launch", "abort"]
+      },
+      {
+        "name": "launch",
+        "description": "Bundle promotion and synchronization checks.",
+        "entry_checks": [
+          {
+            "description": "Staging exit conditions satisfied",
+            "source": "state.verification"
+          }
+        ],
+        "exit_conditions": [
+          {
+            "description": "Sync offset sustained <250ms for 5 minutes",
+            "source": "telemetry.sync.offset"
+          }
+        ],
+        "fail_closed_actions": [
+          {
+            "type": "freeze_mission",
+            "parameters": {
+              "reason": "SYNC_DRIFT",
+              "notify": ["ops.oncall"]
+            }
+          }
+        ],
+        "allowed_transitions": ["execution", "rollback", "abort"]
+      },
+      {
+        "name": "execution",
+        "description": "Monitor live objectives and ledger parity.",
+        "entry_checks": [
+          {
+            "description": "Launch exit conditions satisfied",
+            "source": "state.verification"
+          }
+        ],
+        "exit_conditions": [
+          {
+            "description": "Success criteria marked complete",
+            "source": "mission.success.metrics"
+          }
+        ],
+        "fail_closed_actions": [
+          {
+            "type": "raise_alert",
+            "parameters": {
+              "level": "critical",
+              "code": "EXECUTION-FAULT",
+              "escalate_to": ["council.primary", "council.secondary"]
+            }
+          }
+        ],
+        "allowed_transitions": ["review", "retarget", "rollback", "abort"]
+      },
+      {
+        "name": "review",
+        "description": "Post-mission verification and council ratification.",
+        "entry_checks": [
+          {
+            "description": "Execution exit conditions satisfied",
+            "source": "state.verification"
+          }
+        ],
+        "exit_conditions": [
+          {
+            "description": "Council ratification complete",
+            "source": "council.vote.record"
+          }
+        ],
+        "fail_closed_actions": [
+          {
+            "type": "raise_alert",
+            "parameters": {
+              "level": "warning",
+              "code": "REVIEW-DELAY",
+              "escalate_to": ["ops.lead"]
+            }
+          }
+        ],
+        "allowed_transitions": ["complete", "rollback"]
+      },
+      {
+        "name": "retarget",
+        "description": "Shift mission to alternate target or window.",
+        "entry_checks": [
+          {
+            "description": "Council approval for retarget",
+            "source": "council.vote.record"
+          }
+        ],
+        "exit_conditions": [
+          {
+            "description": "New target validated",
+            "source": "mission.retarget.plan"
+          }
+        ],
+        "fail_closed_actions": [
+          {
+            "type": "raise_alert",
+            "parameters": {
+              "level": "critical",
+              "code": "RETARGET-FAILED",
+              "escalate_to": ["council.escalation"]
+            }
+          }
+        ],
+        "allowed_transitions": ["launch", "staging", "abort"]
+      },
+      {
+        "name": "rollback",
+        "description": "Return systems to pre-launch known good state.",
+        "entry_checks": [
+          {
+            "description": "Rollback trigger conditions met",
+            "source": "mission.rollback.trigger"
+          }
+        ],
+        "exit_conditions": [
+          {
+            "description": "Rollback verification suite green",
+            "source": "mission.rollback.verify"
+          }
+        ],
+        "fail_closed_actions": [
+          {
+            "type": "raise_alert",
+            "parameters": {
+              "level": "critical",
+              "code": "ROLLBACK-FAILED",
+              "escalate_to": ["ops.oncall", "council.primary"]
+            }
+          }
+        ],
+        "allowed_transitions": ["staging", "abort"]
+      },
+      {
+        "name": "complete",
+        "description": "Mission closed and archived.",
+        "entry_checks": [
+          {
+            "description": "Review exit conditions satisfied",
+            "source": "state.verification"
+          }
+        ],
+        "exit_conditions": [
+          {
+            "description": "Ledger archive confirmed",
+            "source": "ledger.archive"
+          }
+        ],
+        "fail_closed_actions": [],
+        "allowed_transitions": []
+      },
+      {
+        "name": "abort",
+        "description": "Mission terminated with alerts and postmortem.",
+        "entry_checks": [
+          {
+            "description": "Abort command authenticated",
+            "source": "mission.command.abort"
+          }
+        ],
+        "exit_conditions": [
+          {
+            "description": "Abort review complete",
+            "source": "council.review"
+          }
+        ],
+        "fail_closed_actions": [
+          {
+            "type": "raise_alert",
+            "parameters": {
+              "level": "critical",
+              "code": "MISSION-ABORT",
+              "escalate_to": ["council.primary", "ops.oncall"]
+            }
+          }
+        ],
+        "allowed_transitions": ["review"]
+      }
+    ],
+    "transitions": [
+      {
+        "from": "staging",
+        "to": "launch",
+        "trigger": "mission.command.go",
+        "conditions": [
+          {
+            "description": "All staging exit conditions met",
+            "source": "state.verification"
+          }
+        ],
+        "on_success": [
+          {
+            "type": "log_event",
+            "parameters": {
+              "event": "MISSION_LAUNCH"
+            }
+          }
+        ],
+        "on_failure": [
+          {
+            "type": "raise_alert",
+            "parameters": {
+              "level": "warning",
+              "code": "GO-BLOCKED"
+            }
+          }
+        ]
+      },
+      {
+        "from": "launch",
+        "to": "execution",
+        "trigger": "telemetry.sync.nominal",
+        "conditions": [
+          {
+            "description": "Sync offset stable <250ms",
+            "source": "telemetry.sync.offset"
+          }
+        ],
+        "on_success": [
+          {
+            "type": "log_event",
+            "parameters": {
+              "event": "MISSION_EXECUTION"
+            }
+          }
+        ],
+        "on_failure": [
+          {
+            "type": "invoke_action",
+            "parameters": {
+              "action": "mission.freeze"
+            }
+          }
+        ],
+        "guard": "sync_guard"
+      },
+      {
+        "from": "execution",
+        "to": "review",
+        "trigger": "mission.success.complete",
+        "conditions": [
+          {
+            "description": "Success criteria satisfied",
+            "source": "mission.success.metrics"
+          }
+        ],
+        "on_success": [
+          {
+            "type": "log_event",
+            "parameters": {
+              "event": "MISSION_REVIEW"
+            }
+          }
+        ],
+        "on_failure": [
+          {
+            "type": "raise_alert",
+            "parameters": {
+              "level": "warning",
+              "code": "SUCCESS-PENDING"
+            }
+          }
+        ]
+      },
+      {
+        "from": "execution",
+        "to": "retarget",
+        "trigger": "council.retarget",
+        "conditions": [
+          {
+            "description": "Retarget policy constraints satisfied",
+            "source": "mission.retarget.policy"
+          }
+        ],
+        "on_success": [
+          {
+            "type": "log_event",
+            "parameters": {
+              "event": "MISSION_RETARGET"
+            }
+          }
+        ],
+        "on_failure": [
+          {
+            "type": "raise_alert",
+            "parameters": {
+              "level": "critical",
+              "code": "RETARGET-DENIED"
+            }
+          }
+        ]
+      },
+      {
+        "from": "execution",
+        "to": "rollback",
+        "trigger": "mission.rollback.triggered",
+        "conditions": [
+          {
+            "description": "Rollback trigger conditions satisfied",
+            "source": "mission.rollback.trigger"
+          }
+        ],
+        "on_success": [
+          {
+            "type": "log_event",
+            "parameters": {
+              "event": "MISSION_ROLLBACK"
+            }
+          }
+        ],
+        "on_failure": [
+          {
+            "type": "raise_alert",
+            "parameters": {
+              "level": "critical",
+              "code": "ROLLBACK-BLOCKED"
+            }
+          }
+        ]
+      },
+      {
+        "from": "retarget",
+        "to": "launch",
+        "trigger": "mission.retarget.ready",
+        "conditions": [
+          {
+            "description": "Retarget validation complete",
+            "source": "mission.retarget.plan"
+          }
+        ],
+        "on_success": [
+          {
+            "type": "log_event",
+            "parameters": {
+              "event": "MISSION_RELAUNCH"
+            }
+          }
+        ],
+        "on_failure": [
+          {
+            "type": "raise_alert",
+            "parameters": {
+              "level": "critical",
+              "code": "RETARGET-PLAN-BLOCKED"
+            }
+          }
+        ]
+      },
+      {
+        "from": "rollback",
+        "to": "staging",
+        "trigger": "mission.rollback.complete",
+        "conditions": [
+          {
+            "description": "Rollback verification passed",
+            "source": "mission.rollback.verify"
+          }
+        ],
+        "on_success": [
+          {
+            "type": "log_event",
+            "parameters": {
+              "event": "MISSION_RESET"
+            }
+          }
+        ],
+        "on_failure": [
+          {
+            "type": "raise_alert",
+            "parameters": {
+              "level": "critical",
+              "code": "ROLLBACK-VERIFY-FAILED"
+            }
+          }
+        ]
+      },
+      {
+        "from": "review",
+        "to": "complete",
+        "trigger": "council.ratify",
+        "conditions": [
+          {
+            "description": "Council vote complete",
+            "source": "council.vote.record"
+          }
+        ],
+        "on_success": [
+          {
+            "type": "log_event",
+            "parameters": {
+              "event": "MISSION_COMPLETE"
+            }
+          }
+        ],
+        "on_failure": [
+          {
+            "type": "raise_alert",
+            "parameters": {
+              "level": "warning",
+              "code": "RATIFY-DELAY"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "protocol": {
+    "retargeting": {
+      "allowed": true,
+      "constraints": [
+        "New target must share choreo.bundle compatibility",
+        "Retarget must remain within mission timeline window"
+      ],
+      "required_signoffs": ["council.primary", "ops.lead"],
+      "fallback_state": "staging"
+    },
+    "rollback": {
+      "trigger_conditions": [
+        {
+          "description": "Sync offset exceeds 500ms for 3 consecutive samples",
+          "source": "telemetry.sync.offset"
+        },
+        {
+          "description": "Ledger drift exceeds 5 entries",
+          "source": "ledger.drift.monitor"
+        }
+      ],
+      "actions": [
+        {
+          "type": "invoke_action",
+          "parameters": {
+            "action": "mission.freeze"
+          }
+        },
+        {
+          "type": "invoke_action",
+          "parameters": {
+            "action": "mission.rollback"
+          }
+        }
+      ],
+      "verification": [
+        {
+          "description": "Baseline snapshot revalidated",
+          "source": "mission.rollback.verify"
+        }
+      ]
+    },
+    "reporting": {
+      "cadence": "every 15 minutes",
+      "channels": [
+        "matrix:#mission-ops:adaptco.dev",
+        "email:council@adaptco.dev"
+      ]
+    }
+  },
+  "integrity": {
+    "hash_algorithm": "sha256",
+    "content_hash": "b3e2f906c0f00d62b9238d8fb1a3b4c5d6e7f809a1b2c3d4e5f60718293a4b5c",
+    "signed_at": "2025-09-21T16:00:00Z",
+    "signed_by": [
+      {
+        "name": "Ari Vega",
+        "role": "Council Primary",
+        "signature": "ari-vega-signature"
+      },
+      {
+        "name": "Mina Holt",
+        "role": "Ops Lead",
+        "signature": "mina-holt-signature"
+      }
+    ]
+  },
+  "notes": [
+    "Fail-closed alerts must latch until council acknowledgement.",
+    "Retarget operations must re-run preflight checks."
+  ]
+}

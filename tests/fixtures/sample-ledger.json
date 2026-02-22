@@ -1,0 +1,41 @@
+[
+  {
+    "index": 0,
+    "timestamp": "2024-04-01T12:00:00Z",
+    "prevHash": null,
+    "event": {
+      "type": "capsule.registered",
+      "capsuleId": "caps-001",
+      "version": "1.0.0",
+      "author": "alice@example.com"
+    },
+    "hash": "28d8f712f5bd55bf61f99a7a8ccb3a9320d75683160a71d185b04a59bd8da4d8",
+    "signature": "kRjG0atiR+zLnIbDGjZim0i1ManPGIN27UdrncxEiqTht4qgvF0dARSGUsiIND5g1lbtKNlTjskCmgEzmb3Cqce1zhv+tjuUODkYG8bwCTctHQh8/BJPM3QpvjuXoZh76Gmk8fl55yDW8qIOF55YCY5NR6p9cwZ5d9na4pTkbZlYsZo6+5UArrpcC/OK2bXqO6r71P5I5+6ciW3ucAuDdYb6+ocr2tdLXqL1Us8HS6A/dfD9rMlLHYQvMxI3rVS9LqjTxPftqStpY0/1hZZ/LVe+vOucQoMML9HaTL2DW0B8TCazlnYpY2beNDsV5gfIws8KYYbO7baGc2IKG74rnA=="
+  },
+  {
+    "index": 1,
+    "timestamp": "2024-04-01T12:05:00Z",
+    "prevHash": "28d8f712f5bd55bf61f99a7a8ccb3a9320d75683160a71d185b04a59bd8da4d8",
+    "event": {
+      "type": "capsule.approved",
+      "capsuleId": "caps-001",
+      "version": "1.0.0",
+      "approver": "ops@example.com"
+    },
+    "hash": "b1c914c5a126833ff2da68c6dc9f3ad4a62ed61401f0bc6867194b4d7a31a4dc",
+    "signature": "rOobyzbhhZRfPo7eEhLrInLtY/ILrloBg28RnL5deTt+o847oagCbJJ762mKyxi4bhtkz+C4tgmV6lIA00LSuZOiEoNJ1lbBvvDbHBY6mg7nuJbhxY2Rrz8fSb36h0Ob+v6J4Z7F3SmW06H4pcsXYS9jhtDQC9RfEmQ9xoSQEHjfRbdbDKH3pXC7NoELC+FQsRTHiTG6YW7tmMilyZ2cIggvPfUS+czEsPnMwYSntWZEmPCr4srB1jkM2ZyHXWof/3e5nmC+r4bwF4hledUY9v6BiqUnrGPrLwuSMZl7dC7gRxCp9v2XojIIpVkStpAEDxEBPLLnRDms8sFGvy03qA=="
+  },
+  {
+    "index": 2,
+    "timestamp": "2024-04-01T12:10:00Z",
+    "prevHash": "b1c914c5a126833ff2da68c6dc9f3ad4a62ed61401f0bc6867194b4d7a31a4dc",
+    "event": {
+      "type": "capsule.registered",
+      "capsuleId": "caps-002",
+      "version": "1.0.0",
+      "author": "bob@example.com"
+    },
+    "hash": "af6e37e5cf60739d3c31f9f2baa02b8c40a8bec9b7bee68fd255fd85139bcbf8",
+    "signature": "v88FAFzCZXnqYRS5C63dQPhv+zW9jsntQirjRcTQF0PP0CWKyU9kPR79BmpcETf+f4IPPNxf0L35WZ/E0oWeHo+NcxtMEqW6yjuCJ9JQa+VXzIj/zvYJM97PRRnpLEH9kNx+mCQgn5/lYNxuydOOACgCAhFpJb67hpRDrZBWGYDjc0rvg6m7io5xLKXF+azYI36CXTR/t7Q2bji10SztDSggwtIx1dKqC8DQiOyaM0lI/E5NWcEbAv/hKND7bUwAQVSH6jkVAXpFCrHJBKm2AvWKuyFpVkCFaKavL+xnUf4e/PIhx4DBQWot+KiJ1/yf1YEPD9qyVXd65EVGjE5Rbw=="
+  }
+]

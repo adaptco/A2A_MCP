@@ -1,0 +1,91 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "WorldOSState",
+  "type": "object",
+  "properties": {
+    "world_id": { "type": "string", "minLength": 1 },
+    "turn": {"type": "integer", "minimum": 0},
+    "coreSync": {"type": "integer", "minimum": 0, "maximum": 100},
+    "corruption": {"type": "integer", "minimum": 0},
+    "safety": {"type": "integer", "minimum": 0},
+    "resources": {
+      "type": "object",
+      "properties": {
+        "compute": {"type": "integer", "minimum": 0},
+        "bandwidth": {"type": "integer", "minimum": 0},
+        "data": {"type": "integer", "minimum": 0}
+      },
+      "required": ["compute", "bandwidth", "data"],
+      "additionalProperties": false
+    },
+    "board": {
+      "type": "object",
+      "properties": {
+        "entities": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {"type": "string"},
+              "kind": {"type": "string", "enum": ["Architect", "Node", "Conduit", "Core", "Anomaly", "Drone"]},
+              "owner": {"type": ["string", "null"]},
+              "q": {"type": "integer"},
+              "r": {"type": "integer"},
+              "hp": {"type": "integer", "minimum": 0},
+              "power": {"type": "integer", "minimum": 0}
+            },
+            "required": ["id", "kind", "q", "r", "hp", "power"],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": ["entities"],
+      "additionalProperties": false
+    },
+    "inventories": {
+      "type": "object",
+      "properties": {
+        "players": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {"type": "string"},
+              "hand": {"type": "array", "items": {"type": "string"}},
+              "deck": {"type": "array", "items": {"type": "string"}},
+              "discard": {"type": "array", "items": {"type": "string"}}
+            },
+            "required": ["id", "hand", "deck", "discard"],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": ["players"],
+      "additionalProperties": false
+    },
+    "provenance": {
+      "type": "object",
+      "properties": {
+        "forgeAssets": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {"type": "string"},
+              "tokenSeedHash": {"type": "string"},
+              "baseAssetId": {"type": "string"},
+              "styleClamp": {"type": "number"},
+              "url": {"type": "string"}
+            },
+            "required": ["id", "tokenSeedHash", "baseAssetId", "styleClamp", "url"],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": ["forgeAssets"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["world_id", "turn", "coreSync", "corruption", "safety", "resources", "board", "inventories", "provenance"],
+  "additionalProperties": false
+}

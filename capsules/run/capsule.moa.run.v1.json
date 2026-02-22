@@ -1,0 +1,14 @@
+{
+  "schema": "capsule:run:moa.run.v1",
+  "description": "Runtime capsule for MoA orchestration output",
+  "fields": [
+    "run_id",
+    "registry_ref",
+    "agent_id",
+    "manifest_id",
+    "retrieved_thread_ids",
+    "experts",
+    "prompt_hash",
+    "created_at"
+  ]
+}

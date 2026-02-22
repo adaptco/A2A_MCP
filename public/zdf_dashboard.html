@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zero-Drift Fidelity Dashboard</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent: #38bdf8;
+            --accent-glow: rgba(56, 189, 248, 0.3);
+            --success: #4ade80;
+            --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            font-family: var(--font-family);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        header {
+            background-color: var(--card-bg);
+            padding: 1rem 2rem;
+            border-bottom: 1px solid #334155;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        h1 { margin: 0; font-size: 1.5rem; letter-spacing: 0.05em; }
+        h2 { border-bottom: 1px solid #334155; padding-bottom: 0.5rem; margin-top: 0; }
+        h3 { color: var(--accent); margin-bottom: 0.5rem; }
+
+        nav {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+            padding: 0 2rem;
+            border-bottom: 1px solid #334155;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            padding: 1rem;
+            cursor: pointer;
+            font-size: 1rem;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn:hover { color: var(--text-primary); }
+        .tab-btn.active {
+            color: var(--accent);
+            border-bottom-color: var(--accent);
+        }
+
+        main {
+            padding: 2rem;
+            flex-grow: 1;
+        }
+
+        .section-content { display: none; animation: fadeIn 0.4s ease; }
+        .section-content.active { display: block; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            border: 1px solid #334155;
+            transition: transform 0.2s;
+        }
+
+        .card:hover { transform: translateY(-2px); border-color: var(--accent); }
+
+        .metric-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .metric-card {
+            background-color: var(--card-bg);
+            padding: 2rem;
+            text-align: center;
+            border-radius: 12px;
+            border: 1px solid #334155;
+        }
+
+        .metric-value {
+            font-size: 3rem;
+            font-weight: bold;
+            color: var(--accent);
+            text-shadow: 0 0 10px var(--accent-glow);
+            margin: 0.5rem 0;
+        }
+
+        .metric-label { color: var(--text-secondary); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.05em; }
+        .metric-target { font-size: 0.8rem; color: var(--success); margin-top: 0.5rem; }
+
+        ul { padding-left: 1.2rem; }
+        li { margin-bottom: 0.5rem; color: var(--text-secondary); }
+
+        .definition-box {
+            background: linear-gradient(to right, rgba(56, 189, 248, 0.1), transparent);
+            border-left: 4px solid var(--accent);
+            padding: 1rem 1.5rem;
+            margin-bottom: 2rem;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            background-color: #334155;
+            color: #e2e8f0;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            margin-right: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Zero-Drift Fidelity Stewardship</h1>
+        <div style="font-size: 0.9rem; color: var(--accent);">Status: ONLINE</div>
+    </header>
+
+    <nav id="main-nav">
+        <!-- Tabs injected by JS -->
+    </nav>
+
+    <main id="content-area">
+        <div style="text-align: center; margin-top: 4rem; color: var(--text-secondary);">
+            Loading protocol data...
+        </div>
+    </main>
+
+    <script>
+        async function loadData() {
+            try {
+                const response = await fetch('zdf_report.json');
+                const data = await response.json();
+                renderApp(data);
+            } catch (error) {
+                console.error('Failed to load data:', error);
+                document.getElementById('content-area').innerHTML = '<div style="color: #ef4444; text-align: center;">System Malfunction: Unable to load protocol data.</div>';
+            }
+        }
+
+        function renderApp(data) {
+            const sections = Object.keys(data.sections);
+            const nav = document.getElementById('main-nav');
+            const main = document.getElementById('content-area');
+
+            nav.innerHTML = '';
+            main.innerHTML = '';
+
+            // Create Tabs and Content Sections
+            sections.forEach((key, index) => {
+                const sectionData = data.sections[key];
+
+                // Tab
+                const btn = document.createElement('button');
+                btn.className = `tab-btn ${index === 0 ? 'active' : ''}`;
+                btn.textContent = sectionData.title;
+                btn.onclick = () => switchTab(key);
+                nav.appendChild(btn);
+
+                // Section Content Wrapper
+                const sectionDiv = document.createElement('div');
+                sectionDiv.id = key;
+                sectionDiv.className = `section-content ${index === 0 ? 'active' : ''}`;
+
+                // Render specific layout based on section key
+                if (key === 'avatars') {
+                    renderAvatars(sectionData, sectionDiv);
+                } else {
+                    renderStandardSection(sectionData, sectionDiv);
+                }
+
+                main.appendChild(sectionDiv);
+            });
+        }
+
+        function switchTab(key) {
+            document.querySelectorAll('.tab-btn').forEach(b => {
+                b.classList.toggle('active', b.textContent === document.getElementById(key).querySelector('h2').textContent);
+            });
+            document.querySelectorAll('.section-content').forEach(d => {
+                d.classList.toggle('active', d.id === key);
+            });
+        }
+
+        function renderStandardSection(data, container) {
+            container.innerHTML = `<h2>${data.title}</h2>`;
+
+            if (data.definition) {
+                container.innerHTML += `
+                    <div class="definition-box">
+                        <strong>Definition:</strong> ${data.definition}
+                    </div>
+                `;
+            }
+
+            const grid = document.createElement('div');
+            grid.className = 'grid';
+
+            // Generalize rendering of lists/arrays in the data
+            if (data.principles) {
+                data.principles.forEach(p => {
+                    grid.innerHTML += `
+                        <div class="card">
+                            <h3>${p.name}</h3>
+                            <p>${p.description}</p>
+                            <span class="badge">Principle</span>
+                        </div>
+                    `;
+                });
+            }
+
+            if (data.structural_controls) {
+                data.structural_controls.forEach(c => {
+                    grid.innerHTML += `
+                        <div class="card">
+                            <h3>${c.name}</h3>
+                            <p>${c.description}</p>
+                            <span class="badge">Control Structure</span>
+                        </div>
+                    `;
+                });
+            }
+
+            if (data.epochs) {
+                data.epochs.forEach(e => {
+                    grid.innerHTML += `
+                        <div class="card">
+                            <h3>${e.name}</h3>
+                            <p>${e.description}</p>
+                            <span class="badge">Temporal Epoch</span>
+                        </div>
+                    `;
+                });
+            }
+
+            if (data.stabilizers) {
+                data.stabilizers.forEach(s => {
+                    grid.innerHTML += `
+                        <div class="card">
+                            <h3>${s.name}</h3>
+                            <p>${s.description}</p>
+                            <span class="badge">Stabilizer</span>
+                        </div>
+                    `;
+                });
+            }
+
+            // Render simple lists (controls, resilience, safeguards)
+            ['controls', 'resilience', 'safeguards'].forEach(listKey => {
+                if (data[listKey]) {
+                    const listCard = document.createElement('div');
+                    listCard.className = 'card';
+                    listCard.innerHTML = `<h3>${listKey.charAt(0).toUpperCase() + listKey.slice(1)}</h3><ul>`;
+                    data[listKey].forEach(item => {
+                        listCard.innerHTML += `<li>${item}</li>`;
+                    });
+                    listCard.innerHTML += `</ul>`;
+                    grid.appendChild(listCard);
+                }
+            });
+
+            container.appendChild(grid);
+        }
+
+        function renderAvatars(data, container) {
+            container.innerHTML = `<h2>${data.title}</h2>`;
+
+            // Metrics at the top
+            if (data.metrics) {
+                const metricsDiv = document.createElement('div');
+                metricsDiv.className = 'metric-container';
+
+                Object.values(data.metrics).forEach(m => {
+                    metricsDiv.innerHTML += `
+                        <div class="metric-card">
+                            <div class="metric-label">${m.name}</div>
+                            <div class="metric-value">${m.value}<span style="font-size: 1.5rem; color: var(--text-secondary)">${m.unit}</span></div>
+                            <div class="metric-target">Target: ${m.target}</div>
+                        </div>
+                    `;
+                });
+                container.appendChild(metricsDiv);
+            }
+
+            const grid = document.createElement('div');
+            grid.className = 'grid';
+
+            data.roles.forEach(role => {
+                grid.innerHTML += `
+                    <div class="card">
+                        <h3>${role.name}</h3>
+                        <p>${role.impact}</p>
+                    </div>
+                `;
+            });
+
+            if (data.synergy) {
+                const synergyCard = document.createElement('div');
+                synergyCard.className = 'card';
+                synergyCard.style.gridColumn = "1 / -1";
+                synergyCard.innerHTML = `<h3>Inter-Avatar Synergy</h3><ul>`;
+                data.synergy.forEach(item => {
+                    synergyCard.innerHTML += `<li>${item}</li>`;
+                });
+                synergyCard.innerHTML += `</ul>`;
+                grid.appendChild(synergyCard);
+            }
+
+            container.appendChild(grid);
+        }
+
+        // Initialize
+        loadData();
+    </script>
+</body>
+</html>

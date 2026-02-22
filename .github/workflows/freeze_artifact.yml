@@ -1,0 +1,24 @@
+name: Freeze Artifact
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to freeze'
+        required: true
+jobs:
+  freeze:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: python -m pip install --upgrade pip pyyaml
+      - name: Freeze manifest snapshot
+        run: python scripts/freeze.py --tag "${{ github.event.inputs.tag }}"
+      - name: Upload artifact snapshot
+        uses: actions/upload-artifact@v4
+        with:
+          name: manifest-${{ github.event.inputs.tag }}
+          path: manifests/artifacts

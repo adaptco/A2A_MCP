@@ -1,0 +1,2 @@
+8b3ad7f76ba29b478fffeead67475501a8f576afccbe7cf46117278413ef3909  canonical_preimage.json
+8b3ad7f76ba29b478fffeead67475501a8f576afccbe7cf46117278413ef3909  capsule_unsigned.json

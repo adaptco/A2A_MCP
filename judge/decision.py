@@ -3,6 +3,9 @@
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Any, Callable
 from enum import Enum
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class CriteriaType(str, Enum):
@@ -28,6 +31,7 @@ class DecisionCriteria:
         try:
             return min(1.0, max(0.0, self.scorer(context)))
         except Exception:
+            logger.exception("Error scoring criterion %s", self.criteria_type)
             return 0.0
 
 
@@ -69,6 +73,7 @@ class JudgmentModel:
                 if key in weights:
                     self._criteria[crit_type].weight = weights[key]
         except Exception as e:
+            logger.exception("Failed to load criteria from specs for preset %s", self._preset)
             # Fallback to defaults if specs loading fails
             if not self._criteria:
                 self._load_default_criteria()

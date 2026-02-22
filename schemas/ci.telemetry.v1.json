@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ci.telemetry.v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "trace_id",
+    "repo",
+    "pr_number",
+    "run_id",
+    "head_sha",
+    "workflow",
+    "conclusion",
+    "completed_at",
+    "required_check_name"
+  ],
+  "properties": {
+    "schema": { "type": "string", "const": "ci.telemetry.v1" },
+    "trace_id": { "type": "string", "minLength": 8 },
+    "repo": { "type": "string", "minLength": 1 },
+    "pr_number": { "type": "integer", "minimum": 1 },
+    "run_id": { "type": "string", "minLength": 1 },
+    "head_sha": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
+    "workflow": { "type": "string", "minLength": 1 },
+    "conclusion": { "type": "string", "minLength": 1 },
+    "completed_at": { "type": "string", "format": "date-time" },
+    "required_check_name": { "type": "string", "minLength": 1 }
+  }
+}

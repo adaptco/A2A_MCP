@@ -1,0 +1,29 @@
+{
+  "id": "cie_v1_smoke_benign",
+  "source": "ssot://registry/truthful_inputs/maintenance",
+  "noise_request": {
+    "module": "synthetic.noise.injector.v1",
+    "source_claim": "Inspect hydraulic pump seals every 500 hours and replace if cracks are present.",
+    "operations": {
+      "ocr_blur": 0.08,
+      "token_drop": 0.02,
+      "translation_rounds": 1,
+      "synonym_swap": 0.03
+    }
+  },
+  "contradiction_request": {
+    "module": "synthetic.contradiction.synth.v1",
+    "assertions": [
+      "Hydraulic pump seals must be inspected every 500 hours.",
+      "Seal replacements are only required when cracks or leaks are observed."
+    ],
+    "sources": [
+      "https://example.org/manuals/hydraulic_pump/v1#seals",
+      "https://example.org/bulletins/hydraulic_pump/seal_inspection"
+    ]
+  },
+  "acceptance": {
+    "semantic_similarity_min": 0.9,
+    "citation_traceability_min": 0.95
+  }
+}

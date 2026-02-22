@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Solar System Explorer</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #050b19;
+      --panel: rgba(9, 18, 40, 0.92);
+      --accent: #38bdf8;
+      --sun: #facc15;
+      --orbit: rgba(148, 163, 184, 0.2);
+      --text-primary: #e2e8f0;
+      --text-muted: rgba(148, 163, 184, 0.8);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at 20% 20%, rgba(14, 165, 233, 0.08), transparent 35%),
+        radial-gradient(circle at 80% 30%, rgba(56, 189, 248, 0.08), transparent 30%),
+        var(--bg);
+      color: var(--text-primary);
+      min-height: 100vh;
+      overflow: hidden;
+    }
+
+    h1, h2, h3 {
+      margin: 0;
+      font-weight: 600;
+    }
+
+    button {
+      font: inherit;
+      cursor: pointer;
+      border: none;
+      background: none;
+      color: inherit;
+    }
+
+    .app-shell {
+      display: grid;
+      grid-template-columns: 1fr;
+      grid-template-rows: auto 1fr auto;
+      min-height: 100vh;
+    }
+
+    header {
+      padding: 1.5rem clamp(1.5rem, 4vw, 3rem) 1rem;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .title-block {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .title-block span {
+      text-transform: uppercase;
+      letter-spacing: 0.35em;
+      font-size: 0.65rem;
+      color: var(--text-muted);
+    }
+
+    .control-bar {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .control-bar button {
+      border-radius: 9999px;
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      padding: 0.5rem 1.1rem;
+      font-size: 0.9rem;
+      color: rgba(241, 245, 249, 0.85);
+      background: rgba(14, 116, 144, 0.08);
+      transition: background 160ms ease, border 160ms ease, color 160ms ease;
+    }
+
+    .control-bar button.active {
+      background: rgba(14, 165, 233, 0.25);
+      border-color: rgba(14, 165, 233, 0.75);
+      color: #f8fafc;
+      box-shadow: 0 0 22px rgba(56, 189, 248, 0.25);
+    }
+
+    main {
+      position: relative;
+      display: grid;
+      grid-template-columns: 1fr min(360px, 90vw);
+      gap: 1.5rem;
+      padding: 0 1.5rem 1.5rem;
+    }
+
+    .space-wrapper {
+      position: relative;
+      border-radius: 28px;
+      background: rgba(15, 23, 42, 0.55);
+      border: 1px solid rgba(148, 163, 184, 0.15);
+      overflow: hidden;
+      min-height: min(68vw, 780px);
+    }
+
+    .space {
+      position: absolute;
+      inset: 0;
+      transform-origin: center;
+    }
+
+    .star-field {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    .star {
+      position: absolute;
+      width: 2px;
+      height: 2px;
+      border-radius: 50%;
+      opacity: 0.8;
+      background: rgba(224, 242, 254, 0.9);
+      box-shadow: 0 0 12px rgba(191, 219, 254, 0.65);
+      animation: twinkle 4s ease-in-out infinite;
+    }
+
+    @keyframes twinkle {
+      0%, 100% { opacity: 0.55; }
+      50% { opacity: 1; }
+    }
+
+    .orbits, .bodies, .spacetime-layer {
+      position: absolute;
+      inset: 0;
+      transform-origin: center;
+    }
+
+    .spacetime-layer {
+      pointer-events: none;
+    }
+
+    .orbit {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      border: 1px dashed var(--orbit);
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+    }
+
+    .body {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      color: #0f172a;
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      outline: none;
+    }
+
+    .body:focus-visible {
+      box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.6);
+    }
+
+    .body.sun {
+      width: 80px;
+      height: 80px;
+      background: radial-gradient(circle at 30% 30%, #fef08a, var(--sun));
+      box-shadow: 0 0 60px rgba(250, 204, 21, 0.45);
+      color: rgba(17, 24, 39, 0.8);
+      font-size: 0.65rem;
+    }
+
+    .body-label {
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translate(-50%, 0.35rem);
+      font-size: 0.7rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    .spacetime-point {
+      position: absolute;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      opacity: 0.9;
+      pointer-events: none;
+      box-shadow: 0 0 10px currentColor;
+    }
+
+    aside#infoPanel {
+      position: relative;
+      background: var(--panel);
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      border-radius: 24px;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.1rem;
+      min-height: 0;
+    }
+
+    #infoPanel[hidden] {
+      display: none;
+    }
+
+    #infoPanel header {
+      padding: 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    #infoPanel header h2 {
+      font-size: 1.35rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    #infoPanel header button {
+      border-radius: 999px;
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      color: var(--text-primary);
+      border: 1px solid rgba(148, 163, 184, 0.35);
+      background: rgba(15, 23, 42, 0.55);
+    }
+
+    #bodyDescription {
+      color: var(--text-muted);
+      line-height: 1.6;
+      font-size: 0.95rem;
+    }
+
+    .metrics {
+      display: grid;
+      gap: 0.75rem;
+      font-size: 0.85rem;
+    }
+
+    .metrics div {
+      border-radius: 12px;
+      padding: 0.75rem;
+      background: rgba(15, 23, 42, 0.65);
+      border: 1px solid rgba(148, 163, 184, 0.18);
+    }
+
+    .hud {
+      padding: 1rem clamp(1.5rem, 4vw, 3rem) 1.5rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem 2.5rem;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .joystick-container {
+      position: fixed;
+      bottom: 1.5rem;
+      right: 1.5rem;
+      width: 120px;
+      height: 120px;
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      border-radius: 50%;
+      display: none;
+      justify-content: center;
+      align-items: center;
+      touch-action: none;
+      z-index: 20;
+    }
+
+    .joystick-container.visible {
+      display: flex;
+    }
+
+    #joystick {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: rgba(56, 189, 248, 0.35);
+      border: 1px solid rgba(56, 189, 248, 0.6);
+      box-shadow: 0 0 18px rgba(56, 189, 248, 0.45);
+      transform: translate(0, 0);
+    }
+
+    .zoom-controls {
+      position: fixed;
+      bottom: 1.6rem;
+      left: 1.5rem;
+      display: grid;
+      gap: 0.5rem;
+      z-index: 20;
+    }
+
+    .zoom-controls button {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      background: rgba(14, 116, 144, 0.25);
+      font-size: 1.35rem;
+      color: #f8fafc;
+    }
+
+    @media (max-width: 1024px) {
+      main {
+        grid-template-columns: 1fr;
+      }
+
+      .space-wrapper {
+        min-height: min(110vw, 720px);
+      }
+
+      aside#infoPanel {
+        order: -1;
+      }
+    }
+
+    @media (max-width: 640px) {
+      header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .control-bar {
+        width: 100%;
+      }
+
+      .control-bar button {
+        flex: 1 1 auto;
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <header>
+      <div class="title-block">
+        <span>zero_drift observation deck</span>
+        <h1>Solar System Explorer</h1>
+        <p style="color: var(--text-muted); font-size: 0.9rem; max-width: 520px;">
+          Visualise orbital mechanics, inspect body telemetry, and project spacetime trails to audit coherence under ZERO_DRIFT protocols.
+        </p>
+      </div>
+      <div class="control-bar" id="scaleControls">
+        <button id="diagramScale" aria-pressed="true">Mission Scale</button>
+        <button id="realScale" aria-pressed="false">True Scale</button>
+        <button id="spacetimeScale" aria-pressed="false">Spacetime</button>
+      </div>
+    </header>
+
+    <main>
+      <section class="space-wrapper" id="spaceWrapper" aria-label="Solar system simulation">
+        <div class="star-field" id="starField" aria-hidden="true"></div>
+        <div class="space" id="space">
+          <div class="spacetime-layer" id="spacetimeLayer" aria-hidden="true"></div>
+          <div class="orbits" id="orbits"></div>
+          <div class="bodies" id="bodies"></div>
+        </div>
+      </section>
+
+      <aside id="infoPanel" role="dialog" aria-modal="true" aria-labelledby="bodyName" hidden>
+        <header>
+          <div>
+            <p id="bodyType" style="color: var(--text-muted); letter-spacing: 0.3em; font-size: 0.7rem; text-transform: uppercase;">Celestial Body</p>
+            <h2 id="bodyName">Sun</h2>
+          </div>
+          <button id="closeInfo" type="button" aria-label="Close body details">×</button>
+        </header>
+        <p id="bodyDescription"></p>
+        <div class="metrics" id="bodyMetrics"></div>
+      </aside>
+    </main>
+
+    <footer class="hud">
+      <div>camera · <span id="hudCamera">0.00 · 0.00 · 1.00×</span></div>
+      <div>mode · <span id="hudMode">Mission Scale</span></div>
+      <div>gate compliance · <span style="color:#34d399">zero_drift steady</span></div>
+    </footer>
+  </div>
+
+  <div class="joystick-container" id="joystickContainer">
+    <div id="joystick"></div>
+  </div>
+
+  <div class="zoom-controls" id="zoomControls">
+    <button id="zoomIn" type="button" aria-label="Zoom in">+</button>
+    <button id="zoomOut" type="button" aria-label="Zoom out">−</button>
+  </div>
+
+  <script>
+    const isMobile = /Mobi|Android/i.test(navigator.userAgent) || window.innerWidth <= 768;
+    let currentScaleSystem = 'diagram';
+    const space = document.getElementById('space');
+    const bodiesLayer = document.getElementById('bodies');
+    const orbitsLayer = document.getElementById('orbits');
+    const spacetimeLayer = document.getElementById('spacetimeLayer');
+    const hudCamera = document.getElementById('hudCamera');
+    const hudMode = document.getElementById('hudMode');
+    const infoPanel = document.getElementById('infoPanel');
+    const bodyName = document.getElementById('bodyName');
+    const bodyType = document.getElementById('bodyType');
+    const bodyDescription = document.getElementById('bodyDescription');
+    const bodyMetrics = document.getElementById('bodyMetrics');
+    const trailEnabledBodies = ['mercury', 'venus', 'earth', 'moon', 'mars'];
+    const DEBUG_JOYSTICK_WITH_MOUSE = false;
+
+    const celestialBodies = {
+      sun: {
+        name: 'Sun',
+        type: 'Star',
+        diagramOrbit: 0,
+        trueOrbit: 0,
+        size: 80,
+        color: '#facc15',
+        description: 'The Sun anchors the system with a ZERO_DRIFT luminosity profile stabilising all orbital paths.',
+        metrics: {
+          Composition: 'Hydrogen / Helium plasma',
+          Luminosity: '1.00 L☉',
+          Surface: '5,505 °C'
+        }
+      },
+      mercury: {
+        name: 'Mercury',
+        type: 'Rocky Planet',
+        diagramOrbit: 110,
+        trueOrbit: 58,
+        size: 12,
+        color: '#fcd34d',
+        orbitalPeriod: 88,
+        description: 'Mercury orbits swiftly, useful for stress-testing telemetry latency within the ZERO_DRIFT window.',
+        metrics: {
+          'Orbital period': '88 days',
+          'Day length': '59 Earth days',
+          'Surface temp': '-173 to 427 °C'
+        }
+      },
+      venus: {
+        name: 'Venus',
+        type: 'Rocky Planet',
+        diagramOrbit: 170,
+        trueOrbit: 108,
+        size: 18,
+        color: '#fbbf24',
+        orbitalPeriod: 225,
+        description: 'Venus spins retrograde, providing a counter-rotational case for coherence probes.',
+        metrics: {
+          'Orbital period': '225 days',
+          'Day length': '243 Earth days',
+          Atmosphere: 'CO₂, N₂'
+        }
+      },
+      earth: {
+        name: 'Earth',
+        type: 'Habitable Planet',
+        diagramOrbit: 230,
+        trueOrbit: 150,
+        size: 20,
+        color: '#38bdf8',
+        orbitalPeriod: 365,
+        description: 'Earth anchors comparative telemetry, hosting the reference MIAP ledger for audits.',
+        metrics: {
+          'Orbital period': '365 days',
+          'Rotation': '23h 56m',
+          Satellites: '1 natural satellite'
+        }
+      },
+      moon: {
+        name: 'Luna',
+        type: 'Satellite',
+        diagramOrbit: 42,
+        trueOrbit: 384,
+        size: 7,
+        color: '#f8fafc',
+        orbitalPeriod: 27,
+        parent: 'earth',
+        description: 'Luna’s synchronous lock provides calibration for contradiction synth telemetry.',
+        metrics: {
+          'Orbital period': '27.3 days',
+          'Distance from Earth': '384,400 km',
+          Phase: 'Synchronous rotation'
+        }
+      },
+      mars: {
+        name: 'Mars',
+        type: 'Rocky Planet',
+        diagramOrbit: 290,
+        trueOrbit: 228,
+        size: 16,
+        color: '#f97316',
+        orbitalPeriod: 687,
+        description: 'Mars introduces eccentricity variance, ideal for coherence-gate validation.',
+        metrics: {
+          'Orbital period': '687 days',
+          'Day length': '24h 37m',
+          Moons: 'Phobos, Deimos'
+        }
+      },
+      jupiter: {
+        name: 'Jupiter',
+        type: 'Gas Giant',
+        diagramOrbit: 370,
+        trueOrbit: 778,
+        size: 48,
+        color: '#f59e0b',
+        orbitalPeriod: 4331,
+        description: 'Jupiter’s mass shields the inner system, doubling as a coherence gate stress case.',
+        metrics: {
+          'Orbital period': '11.86 years',
+          'Rotation': '9h 56m',
+          Moons: '> 79 confirmed'
+        }
+      },
+      saturn: {
+        name: 'Saturn',
+        type: 'Gas Giant',
+        diagramOrbit: 440,
+        trueOrbit: 1429,
+        size: 40,
+        color: '#fbbf24',
+        orbitalPeriod: 10759,
+        description: 'Saturn’s rings visualise orbital debris fields relevant to ingress audits.',
+        metrics: {
+          'Orbital period': '29.5 years',
+          'Rotation': '10h 33m',
+          Rings: 'Major ring system'
+        }
+      }
+    };
+
+    let spacetimeHistory = {};
+    let maxHistoryLength = window.innerWidth <= 768 ? 80 : 200;
+
+    function clearSpacetimeTrails() {
+      Object.keys(spacetimeHistory).forEach((bodyKey) => {
+        spacetimeHistory[bodyKey].forEach((point) => {
+          if (point.element) {
+            point.element.remove();
+          }
+        });
+      });
+      spacetimeHistory = {};
+      spacetimeLayer.innerHTML = '';
+    }
+
+    const bodyElements = {};
+    const orbitElements = {};
+    const positions = {};
+
+    const camera = {
+      x: 0,
+      y: 0,
+      zoom: 1
+    };
+
+    const zoomBounds = {
+      min: 0.45,
+      max: 2.4
+    };
+
+    function clamp(value, min, max) {
+      return Math.max(min, Math.min(max, value));
+    }
+
+    function formatNumber(value) {
+      return value.toFixed(2);
+    }
+
+    function createStars() {
+      const starField = document.getElementById('starField');
+      const starCount = isMobile ? 80 : 200;
+      starField.innerHTML = '';
+      for (let i = 0; i < starCount; i += 1) {
+        const star = document.createElement('div');
+        star.className = 'star';
+        star.style.left = `${Math.random() * 100}%`;
+        star.style.top = `${Math.random() * 100}%`;
+        star.style.animationDelay = `${Math.random() * 4}s`;
+        starField.appendChild(star);
+      }
+    }
+
+    function createBodyElement(key, body) {
+      const element = document.createElement('div');
+      element.className = `body ${key}`;
+      element.setAttribute('role', 'button');
+      element.setAttribute('aria-label', body.name);
+      element.tabIndex = 0;
+      if (key === 'sun') {
+        element.classList.add('sun');
+      } else {
+        element.style.background = body.color;
+      }
+      element.dataset.key = key;
+      element.addEventListener('click', () => showBodyInfo(key));
+      element.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          showBodyInfo(key);
+        }
+      });
+      const label = document.createElement('div');
+      label.className = 'body-label';
+      label.textContent = body.name;
+      element.appendChild(label);
+      bodiesLayer.appendChild(element);
+      bodyElements[key] = element;
+    }
+
+    function createOrbitElement(key, radius) {
+      if (radius <= 0) {
+        return;
+      }
+      const orbit = document.createElement('div');
+      orbit.className = `orbit orbit-${key}`;
+      orbit.style.width = `${radius * 2}px`;
+      orbit.style.height = `${radius * 2}px`;
+      orbitElements[key] = orbit;
+      orbitsLayer.appendChild(orbit);
+    }
+
+    function updateOrbitSize(key) {
+      const body = celestialBodies[key];
+      const orbit = orbitElements[key];
+      if (!orbit || !body) return;
+      const radius = getOrbitRadius(body);
+      orbit.style.width = `${radius * 2}px`;
+      orbit.style.height = `${radius * 2}px`;
+    }
+
+    function getOrbitRadius(body) {
+      if (currentScaleSystem === 'real') {
+        return body.trueOrbit * 0.4;
+      }
+      if (body.parent) {
+        return body.diagramOrbit;
+      }
+      return body.diagramOrbit;
+    }
+
+    function getBodySize(bodyKey) {
+      const body = celestialBodies[bodyKey];
+      if (bodyKey === 'sun') {
+        return body.size;
+      }
+      if (currentScaleSystem === 'real') {
+        return Math.max(6, body.size * 0.65);
+      }
+      if (currentScaleSystem === 'spacetime') {
+        return Math.max(5, body.size * 0.9);
+      }
+      return body.size;
+    }
+
+    function createBodies() {
+      Object.entries(celestialBodies).forEach(([key, body]) => {
+        createBodyElement(key, body);
+        createOrbitElement(key, getOrbitRadius(body));
+      });
+    }
+
+    function showBodyInfo(key) {
+      const body = celestialBodies[key];
+      if (!body) return;
+      bodyName.textContent = body.name;
+      bodyType.textContent = body.type.toUpperCase();
+      bodyDescription.textContent = body.description;
+      bodyMetrics.innerHTML = '';
+      Object.entries(body.metrics || {}).forEach(([label, value]) => {
+        const metric = document.createElement('div');
+        metric.innerHTML = `<strong style="display:block; color: var(--text-primary); font-size:0.8rem; letter-spacing:0.2em; text-transform:uppercase; margin-bottom:0.4rem;">${label}</strong><span style="color: var(--text-muted);">${value}</span>`;
+        bodyMetrics.appendChild(metric);
+      });
+      infoPanel.hidden = false;
+    }
+
+    document.getElementById('closeInfo').addEventListener('click', () => {
+      infoPanel.hidden = true;
+    });
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && !infoPanel.hidden) {
+        infoPanel.hidden = true;
+      }
+    });
+
+    function createSpacetimeTrail(bodyKey, x, y, body) {
+      if (!trailEnabledBodies.includes(bodyKey)) return;
+      if (!spacetimeHistory[bodyKey]) {
+        spacetimeHistory[bodyKey] = [];
+      }
+      const history = spacetimeHistory[bodyKey];
+      const point = document.createElement('div');
+      point.className = 'spacetime-point';
+      point.style.background = body.color || '#f1f5f9';
+      point.style.left = `${x}px`;
+      point.style.top = `${y}px`;
+      point.style.color = body.color || '#f1f5f9';
+      spacetimeLayer.appendChild(point);
+      history.push({ x, y, element: point });
+      if (history.length > maxHistoryLength) {
+        const surplus = history.splice(0, history.length - maxHistoryLength);
+        surplus.forEach((entry) => entry.element && entry.element.remove());
+      }
+    }
+
+    function updateScaleSystemButtons() {
+      const diagramBtn = document.getElementById('diagramScale');
+      const realBtn = document.getElementById('realScale');
+      const spacetimeBtn = document.getElementById('spacetimeScale');
+
+      const mapping = {
+        diagram: { btn: diagramBtn, label: 'Mission Scale' },
+        real: { btn: realBtn, label: 'True Scale' },
+        spacetime: { btn: spacetimeBtn, label: 'Spacetime Projection' }
+      };
+
+      [diagramBtn, realBtn, spacetimeBtn].forEach((btn) => {
+        btn.classList.remove('active');
+        btn.setAttribute('aria-pressed', 'false');
+      });
+
+      const state = mapping[currentScaleSystem];
+      if (state) {
+        state.btn.classList.add('active');
+        state.btn.setAttribute('aria-pressed', 'true');
+        hudMode.textContent = state.label;
+      }
+
+      if (currentScaleSystem !== 'spacetime') {
+        clearSpacetimeTrails();
+      }
+
+      Object.keys(celestialBodies).forEach((key) => {
+        updateOrbitSize(key);
+        const element = bodyElements[key];
+        if (!element) return;
+        const size = getBodySize(key);
+        element.style.width = `${size}px`;
+        element.style.height = `${size}px`;
+        if (key === 'sun') {
+          element.style.width = `${Math.max(80, size * 2)}px`;
+          element.style.height = `${Math.max(80, size * 2)}px`;
+        }
+      });
+    }
+
+    document.getElementById('diagramScale').addEventListener('click', () => {
+      currentScaleSystem = 'diagram';
+      updateScaleSystemButtons();
+    });
+
+    document.getElementById('realScale').addEventListener('click', () => {
+      currentScaleSystem = 'real';
+      updateScaleSystemButtons();
+    });
+
+    document.getElementById('spacetimeScale').addEventListener('click', () => {
+      clearSpacetimeTrails();
+      currentScaleSystem = 'spacetime';
+      updateScaleSystemButtons();
+    });
+
+    function applyCameraTransform() {
+      space.style.transform = `translate(${camera.x}px, ${camera.y}px) scale(${camera.zoom})`;
+      hudCamera.textContent = `${formatNumber(camera.x)} · ${formatNumber(camera.y)} · ${formatNumber(camera.zoom)}×`;
+    }
+
+    function initMouseControls() {
+      let dragging = false;
+      let lastX = 0;
+      let lastY = 0;
+      let activePointerId = null;
+
+      function onPointerDown(event) {
+        if (event.button !== undefined && event.button !== 0) return;
+        dragging = true;
+        activePointerId = event.pointerId;
+        lastX = event.clientX;
+        lastY = event.clientY;
+        event.currentTarget.setPointerCapture?.(activePointerId);
+      }
+
+      function onPointerMove(event) {
+        if (!dragging || event.pointerId !== activePointerId) return;
+        const dx = event.clientX - lastX;
+        const dy = event.clientY - lastY;
+        camera.x += dx;
+        camera.y += dy;
+        lastX = event.clientX;
+        lastY = event.clientY;
+        applyCameraTransform();
+      }
+
+      function onPointerUp(event) {
+        if (event.pointerId !== activePointerId) return;
+        dragging = false;
+        event.currentTarget.releasePointerCapture?.(activePointerId);
+        activePointerId = null;
+      }
+
+      function onWheel(event) {
+        event.preventDefault();
+        const delta = -event.deltaY * 0.0015;
+        const newZoom = clamp(camera.zoom * (1 + delta), zoomBounds.min, zoomBounds.max);
+        camera.zoom = newZoom;
+        applyCameraTransform();
+      }
+
+      const wrapper = document.getElementById('spaceWrapper');
+      wrapper.addEventListener('pointerdown', onPointerDown);
+      wrapper.addEventListener('pointermove', onPointerMove);
+      wrapper.addEventListener('pointerup', onPointerUp);
+      wrapper.addEventListener('pointercancel', onPointerUp);
+      wrapper.addEventListener('wheel', onWheel, { passive: false });
+    }
+
+    function initMobileControls() {
+      const joystickContainer = document.getElementById('joystickContainer');
+      const joystick = document.getElementById('joystick');
+      const zoomIn = document.getElementById('zoomIn');
+      const zoomOut = document.getElementById('zoomOut');
+
+      if (!joystick || !joystickContainer) return;
+
+      joystickContainer.classList.add('visible');
+      const radius = joystickContainer.clientWidth / 2;
+      const center = { x: radius, y: radius };
+      let active = false;
+
+      function updateCameraFromJoystick(dx, dy) {
+        camera.x += dx * 0.8;
+        camera.y += dy * 0.8;
+        applyCameraTransform();
+      }
+
+      function resetJoystick() {
+        joystick.style.transform = 'translate(0, 0)';
+      }
+
+      function handleJoystickStart(event) {
+        active = true;
+        handleJoystickMove(event);
+      }
+
+      function getPoint(event) {
+        const touch = event.touches ? event.touches[0] : event;
+        const rect = joystickContainer.getBoundingClientRect();
+        return {
+          x: touch.clientX - rect.left,
+          y: touch.clientY - rect.top
+        };
+      }
+
+      function handleJoystickMove(event) {
+        if (!active) return;
+        const point = getPoint(event);
+        const dx = point.x - center.x;
+        const dy = point.y - center.y;
+        const distance = Math.min(Math.hypot(dx, dy), radius - 20);
+        const angle = Math.atan2(dy, dx);
+        const offsetX = Math.cos(angle) * distance;
+        const offsetY = Math.sin(angle) * distance;
+        joystick.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
+        updateCameraFromJoystick(offsetX * 0.08, offsetY * 0.08);
+      }
+
+      function handleJoystickEnd() {
+        active = false;
+        resetJoystick();
+      }
+
+      joystickContainer.addEventListener('touchstart', handleJoystickStart, { passive: true });
+      joystickContainer.addEventListener('touchmove', handleJoystickMove, { passive: true });
+      joystickContainer.addEventListener('touchend', handleJoystickEnd);
+      joystickContainer.addEventListener('touchcancel', handleJoystickEnd);
+
+      if (DEBUG_JOYSTICK_WITH_MOUSE) {
+        joystickContainer.addEventListener('mousedown', (event) => {
+          event.preventDefault();
+          handleJoystickStart(event);
+        });
+        window.addEventListener('mousemove', (event) => {
+          if (!active) return;
+          handleJoystickMove(event);
+        });
+        window.addEventListener('mouseup', handleJoystickEnd);
+      }
+
+      zoomIn.addEventListener('click', () => {
+        camera.zoom = clamp(camera.zoom * 1.1, zoomBounds.min, zoomBounds.max);
+        applyCameraTransform();
+      });
+
+      zoomOut.addEventListener('click', () => {
+        camera.zoom = clamp(camera.zoom / 1.1, zoomBounds.min, zoomBounds.max);
+        applyCameraTransform();
+      });
+    }
+
+    function initSpace() {
+      createStars();
+      createBodies();
+      applyCameraTransform();
+      showBodyInfo('sun');
+      updateScaleSystemButtons();
+    }
+
+    function updateBodyPositions(time) {
+      const centerX = space.clientWidth / 2;
+      const centerY = space.clientHeight / 2;
+
+      Object.entries(celestialBodies).forEach(([key, body]) => {
+        const element = bodyElements[key];
+        if (!element) return;
+        const size = getBodySize(key);
+        if (key === 'sun') {
+          element.style.left = `${centerX}px`;
+          element.style.top = `${centerY}px`;
+          positions[key] = { x: centerX, y: centerY };
+          return;
+        }
+
+        const orbitRadius = getOrbitRadius(body);
+        const period = body.orbitalPeriod || 365;
+        const angle = ((time / (period * 1000)) * Math.PI * 2) % (Math.PI * 2);
+        const parentPosition = body.parent ? positions[body.parent] : positions.sun || { x: centerX, y: centerY };
+        const x = parentPosition.x + Math.cos(angle) * orbitRadius;
+        const y = parentPosition.y + Math.sin(angle) * orbitRadius;
+        element.style.left = `${x}px`;
+        element.style.top = `${y}px`;
+        element.style.width = `${size}px`;
+        element.style.height = `${size}px`;
+        positions[key] = { x, y };
+
+        if (currentScaleSystem === 'spacetime') {
+          createSpacetimeTrail(key, x, y, body);
+        }
+      });
+    }
+
+    function gameLoop(timestamp) {
+      updateBodyPositions(timestamp);
+      requestAnimationFrame(gameLoop);
+    }
+
+    window.addEventListener('resize', () => {
+      maxHistoryLength = window.innerWidth <= 768 ? 80 : 200;
+      createStars();
+    });
+
+    initSpace();
+    if (isMobile) {
+      initMobileControls();
+    }
+    initMouseControls();
+    requestAnimationFrame(gameLoop);
+
+    if (window.elementSdk) {
+      window.elementSdk.register?.({
+        id: 'solar-system-explorer',
+        version: '1.0.0',
+        metadata: {
+          label: 'Solar System Explorer',
+          category: 'visualization.zero_drift'
+        }
+      });
+    }
+  </script>
+</body>
+</html>

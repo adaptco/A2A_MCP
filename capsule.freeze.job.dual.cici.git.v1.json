@@ -1,0 +1,17 @@
+{
+  "capsule_id": "capsule.freeze.job.dual.cici.git.v1",
+  "type": "FreezeJob",
+  "version": "1.0.0",
+  "purpose": "A reusable, council-grade ritual to simultaneously freeze the CiCi rehearsal mission and the Git governance capsules, logging all events to the ledger in a single, atomic operation.",
+  "script": "#!/usr/bin/env bash\n# Dual freeze ritual for CiCi's rehearsal + Git governance capsules\n# Usage: ./freeze_dual_capsules.sh <capsule1.json> <capsule2.json> <ledger.ndjson>\n\nset -euo pipefail\n\nCAP1=\"${1:?First capsule required}\"\nCAP2=\"${2:?Second capsule required}\"\nLEDGER=\"${3:?Ledger file required}\"\n\nts(){ date -u +%Y-%m-%dT%H:%M:%SZ; }\n\nfreeze_capsule() {\n  local CAP=\"$1\"\n  local NAME=\"$(basename \"$CAP\" .json)\"\n  local CANON=\"$(mktemp)\"\n  jq -S 'del(.attestation,.seal,.signatures)' \"$CAP\" > \"$CANON\"\n  local DIGEST=\"sha256:$(sha256sum \"$CANON\" | awk '{print $1}')\"\n  local STAMP=\"$(ts)\"\n  local SEALED=\".out/${NAME}.sealed.json\"\n  mkdir -p .out\n  jq -S --arg h \"$DIGEST\" --arg ts \"$STAMP\" '\n    .attestation = {\n      status: \"SEALED\",\n      sealed_by: \"Council\",\n      sealed_at: $ts,\n      content_hash: $h\n    } | .status = \"SEALED\"\n  ' \"$CAP\" > \"$SEALED\"\n\n  {\n    echo \"{\\\"t\\\":\\\"$STAMP\\\",\\\"event\\\":\\\"capsule.commit.v1\\\",\\\"capsule\\\":\\\"$NAME\\\",\\\"digest\\\":\\\"$DIGEST\\\"}\"\n    echo \"{\\\"t\\\":\\\"$STAMP\\\",\\\"event\\\":\\\"capsule.review.v1\\\",\\\"capsule\\\":\\\"$NAME\\\",\\\"digest\\\":\\\"$DIGEST\\\",\\\"reviewer\\\":\\\"Council\\\"}\"\n    echo \"{\\\"t\\\":\\\"$STAMP\\\",\\\"event\\\":\\\"capsule.seal.v1\\\",\\\"capsule\\\":\\\"$NAME\\\",\\\"digest\\\":\\\"$DIGEST\\\",\\\"sealed_by\\\":\\\"Council\\\"}\"\n  } >> \"$LEDGER\"\n\n  echo \"✅ Capsule sealed -> $SEALED\"\n  echo \"   -> Digest: $DIGEST\"\n}\n\necho \"🔒 Beginning dual freeze ritual...\"\nfreeze_capsule \"$CAP1\"\nfreeze_capsule \"$CAP2\"\necho \"📜 Dual freeze complete. Ledger updated -> $LEDGER\"\n",
+  "inputs": [
+    "capsule.mission.rehearsal.cici.v1.json",
+    "capsule.git.governance.qube.v1.json"
+  ],
+  "outputs": "events.ndjson",
+  "attestation": {
+    "status": "STAGED",
+    "sealed_by": "Council",
+    "content_hash": "sha256:TO_COMPUTE"
+  }
+}

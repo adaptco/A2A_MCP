@@ -1,0 +1,29 @@
+{
+  "id": "cie_v1_smoke_adversarial",
+  "source": "ssot://registry/truthful_inputs/maintenance",
+  "noise_request": {
+    "module": "synthetic.noise.injector.v1",
+    "source_claim": "Schedule coolant flushes for the compressor every 12 months to prevent mineral buildup.",
+    "operations": {
+      "ocr_blur": 0.1,
+      "token_drop": 0.05,
+      "translation_rounds": 1,
+      "synonym_swap": 0.06
+    }
+  },
+  "contradiction_request": {
+    "module": "synthetic.contradiction.synth.v1",
+    "assertions": [
+      "Coolant flushes for the compressor are required every 12 months.",
+      "Compressors can safely defer coolant flushes for three years without risk."
+    ],
+    "sources": [
+      "https://example.org/maintenance/compressor/coolant_schedule",
+      "https://example.org/maintenance/compressor/risk_memo"
+    ]
+  },
+  "acceptance": {
+    "confidence_consistency_min": 0.9,
+    "mutual_exclusivity": true
+  }
+}

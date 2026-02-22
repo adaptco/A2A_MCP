@@ -1,0 +1,129 @@
+{
+  "profile_id": "embedding.arcSix.4737",
+  "source_capsules": {
+    "prelude": "drift.arcSix.4737",
+    "thread": "remix.eligibility.arcSix.4737"
+  },
+  "embedding_model": {
+    "name": "GlyphWeave-16d",
+    "version": "0.1.0",
+    "dimensionality": 16,
+    "training_corpus": "Scrollstream Glyph Ledger v6",
+    "intent": "Pedagogical motif resonance scoring"
+  },
+  "glyph_embeddings": {
+    "Span Spiral": {
+      "vector": [
+        0.0572,
+        0.4283,
+        0.7753,
+        -0.6128,
+        -0.1214,
+        0.2016,
+        0.6369,
+        0.984,
+        -0.7693,
+        0.0471,
+        0.6108,
+        0.6209,
+        0.9278,
+        -0.0993,
+        0.4323,
+        0.5547
+      ],
+      "magnitude": 2.3044,
+      "dominant_axis": 7,
+      "checksum": 70.2134
+    },
+    "Echo Fold": {
+      "vector": [
+        -0.0812,
+        0.324,
+        0.8235,
+        -0.7332,
+        -0.342,
+        0.1936,
+        0.4664,
+        0.7392,
+        -0.8716,
+        -0.4183,
+        0.2738,
+        0.6851,
+        -0.9238,
+        -0.2919,
+        -0.1956,
+        -0.0351
+      ],
+      "magnitude": 2.1686,
+      "dominant_axis": 12,
+      "checksum": 61.0345
+    },
+    "Gesture Anchor": {
+      "vector": [
+        0.005,
+        0.4544,
+        -0.9659,
+        -0.4824,
+        -0.0311,
+        0.2277,
+        0.3681,
+        0.8937,
+        -0.6028,
+        -0.348,
+        0.344,
+        -0.9559,
+        -0.7011,
+        -0.675,
+        0.0873,
+        -0.9418
+      ],
+      "magnitude": 2.3911,
+      "dominant_axis": 2,
+      "checksum": 76.0917
+    }
+  },
+  "emotional_projection": {
+    "sequence": [
+      "Inquiry",
+      "Tension",
+      "Resolution"
+    ],
+    "inquiry_anchor": "Inquiry",
+    "resolution_anchor": "Resolution",
+    "modulation_vector": [
+      {
+        "phase": "Inquiry",
+        "index": 0,
+        "tension_bias": -0.5
+      },
+      {
+        "phase": "Tension",
+        "index": 1,
+        "tension_bias": 0
+      },
+      {
+        "phase": "Resolution",
+        "index": 2,
+        "tension_bias": 0.5
+      }
+    ]
+  },
+  "remix_alignment": {
+    "Apprentice.004": {
+      "glyph": "Echo Fold",
+      "fidelity": 0.96,
+      "emotional_delta": 0.06
+    },
+    "Node06": {
+      "glyph": "Span Spiral",
+      "fidelity": 0.97,
+      "emotional_delta": 0.07
+    },
+    "Earl": {
+      "glyph": "Gesture Anchor",
+      "fidelity": 0.98,
+      "emotional_delta": 0.08
+    }
+  },
+  "seal": ".embedding.profiled + .arcSix.attested"
+}

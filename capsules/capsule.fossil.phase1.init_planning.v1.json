@@ -1,0 +1,50 @@
+{
+  "capsule_id": "capsule.fossil.phase1.init_planning.v1",
+  "version": "1.0.0",
+  "type": "PlanningFossil",
+  "phase": {
+    "name": "Phase 1: Init planning",
+    "status": "COMPLETE",
+    "proof_layer": "ESTABLISHED",
+    "authorized_next_phase": "Phase 2: Mid-term review"
+  },
+  "governance": {
+    "protocol_engine": "Core Orchestrator",
+    "scrollstream_register": "Proof Layer",
+    "observers": ["Protocol Engine", "Core Orchestrator"],
+    "seal": ".capsule.bloomed + .trace.verified"
+  },
+  "artifacts": [
+    {
+      "artifact": "Project Charter",
+      "status": "COMPLETE",
+      "output": "Project scope, SMART goals, and budget/time constraints finalized."
+    },
+    {
+      "artifact": "Governance Roles",
+      "status": "DEFINED",
+      "output": "Roles and responsibilities mapped via RACI chart for QBOT Agents and Council members."
+    },
+    {
+      "artifact": "Risk Assessment",
+      "status": "STAGED",
+      "output": "Preliminary risk assessment documented with mitigation posture ready for review."
+    },
+    {
+      "artifact": "Process Design",
+      "status": "LOCKED",
+      "output": "P3L lock confirmed with timeline established for WORLD OS deployment."
+    }
+  ],
+  "metrics": {
+    "foundation_status": "SUCCESSFULLY COMPLETED",
+    "stability_index": 0.93,
+    "feedback_window": "live"
+  },
+  "lineage": {
+    "source": "rehearsal.trace.override004.v1",
+    "result": ".capsule.bloomed + .trace.verified"
+  },
+  "logged_at": "2025-09-24T00:00:00Z",
+  "notes": "Simulated fossil output confirming Phase 1 completion and readiness for Phase 2 baseline assessment."
+}

@@ -8,6 +8,7 @@ produces a ProjectPlan artifact that downstream agents consume.
 from __future__ import annotations
 
 import uuid
+import asyncio
 from typing import List
 
 from schemas.agent_artifacts import MCPArtifact
@@ -69,5 +70,6 @@ class OrchestrationAgent:
             content=plan.model_dump_json(),
             metadata={"agent": self.AGENT_NAME},
         )
-        self.db.save_artifact(artifact)
+        # Offload blocking IO to a thread
+        await asyncio.to_thread(self.db.save_artifact, artifact)
         return plan

@@ -1,0 +1,35 @@
+{
+  "thread_id": "remix.eligibility.arcSix.4737",
+  "contributors": [
+    "Apprentice.004",
+    "Node06",
+    "Earl"
+  ],
+  "embedding_profile": "embedding.arcSix.4737",
+  "glyph_alignment": {
+    "Apprentice.004": "Echo Fold · 96%",
+    "Node06": "Span Spiral · 97%",
+    "Earl": "Gesture Anchor · 98%"
+  },
+  "emotional_deltas": {
+    "Apprentice.004": "+0.06",
+    "Node06": "+0.07",
+    "Earl": "+0.08"
+  },
+  "glyph_vector_focus": {
+    "Apprentice.004": {
+      "dominant_axis": 12,
+      "vector_checksum": 61.0345
+    },
+    "Node06": {
+      "dominant_axis": 7,
+      "vector_checksum": 70.2134
+    },
+    "Earl": {
+      "dominant_axis": 2,
+      "vector_checksum": 76.0917
+    }
+  },
+  "remix_ready": true,
+  "seal": ".thread.indexed + .remix.attested"
+}

@@ -1,0 +1,44 @@
+{
+  "capsule_id": "capsule.scene.designStudio.v1",
+  "version": "1.0.0",
+  "type": "SceneCapsule",
+  "name": "Design Studio Cinematic Capsule",
+  "description": "Atmospheric narrative fossil of the Sol.F1 design studio, tuned for cinematic delivery and emotional resonance.",
+  "issued_at": "2025-10-01T00:00:00Z",
+  "status": "STAGED",
+  "governance": {
+    "council": "council/adaptco",
+    "policy_tag": "scene.design-studio",
+    "steward": "Queen CiCi"
+  },
+  "lineage": {
+    "anchors": [
+      "scrollstream.sealed.prompt.cad",
+      "capsule.metaagent.solf1.oneshot.v1",
+      "relay.artifacts.v1"
+    ]
+  },
+  "scene": {
+    "setting": "A vast design studio with tall windows spilling soft daylight across drafting tables, holographic displays, and shelves lined with prototypes. Suspended dust motes glow like constellations in the beams of light.",
+    "subject": "Neutral mannequin-like figure at center stage, clay-toned and poised with latent potential as both sculpture and blueprint.",
+    "lighting": {
+      "overhead": "Diffused daylight softened by translucent panels",
+      "accent": "Cyan glows from holo-UI consoles pulsing like heartbeat glyphs",
+      "mood": "Precision intertwined with wonder; the studio resonates like a cathedral of invention"
+    },
+    "camera": {
+      "angle": "Three-quarter view from a subtle low vantage to emphasize presence and readiness",
+      "depth": "Shallow focus favors the figure while the studio dissolves into luminous abstraction",
+      "motion": "Slow cinematic drift as though the camera inhales with the environment"
+    },
+    "emotional_index": ["Anticipation", "Flow State", "Quiet Awe"],
+    "status": "Awaiting ignition — the figure is not yet alive, but the space whispers that awakening is imminent"
+  },
+  "prompt_template": {
+    "role": "cinematic_scene",
+    "path": "capsules/runtime/templates/design_studio_cinematic.tpl"
+  },
+  "attestation": {
+    "status": "UNSEALED"
+  }
+}

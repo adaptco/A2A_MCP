@@ -1,0 +1,35 @@
+{
+  "capsule_id": "capsule.concept.arch.review.v1",
+  "version": "1.0.0",
+  "intent": "stability_vs_evolution",
+  "envelope": {
+    "epsilon_c": 0.003,
+    "epsilon_c_max": 0.01,
+    "B_m": 0.02,
+    "r_min": 0.7,
+    "t_canary_sec": 1800,
+    "rollback_window_sec": 900
+  },
+  "weights": {
+    "w_v": 1.0,
+    "w_c": 0.6,
+    "w_o": 0.3,
+    "w_r": 0.4,
+    "s_min": 0.0
+  },
+  "guards": [
+    "ΔΦe==0",
+    "ΔΦc<=epsilon_c",
+    "Rr>=r_min"
+  ],
+  "raci": [
+    "Gloh:maker",
+    "Spryte:checker",
+    "Glyph.Trace:auditor",
+    "Echo.Mesh:relay",
+    "Council:quorum>=3"
+  ],
+  "attestation": {
+    "status": "STAGED"
+  }
+}

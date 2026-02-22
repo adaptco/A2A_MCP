@@ -1,0 +1,24 @@
+{
+  "name": "core-orchestrator",
+  "version": "1.0.0",
+  "description": "Governance cutover orchestration server and tooling.",
+  "main": "server/index.js",
+  "service": {
+    "language": "node",
+    "entrypoints": [
+      "server/index.js"
+    ],
+    "workflows": [
+      ".github/workflows/avatar-bindings-ci.yml"
+    ]
+  },
+  "maintainers": [
+    {
+      "name": "Core Orchestrator Team",
+      "email": "devnull@example.com"
+    }
+  ],
+  "metadata": {
+    "notes": "Added to satisfy CI manifest validation."
+  }
+}

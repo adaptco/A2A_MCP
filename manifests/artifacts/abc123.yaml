@@ -1,0 +1,6 @@
+snapshot: abc123
+source_version: 2024-05-20
+modules:
+  hud_walkthrough: active
+  rehearsal_prompts: rehearsal-only
+  compliance_overlay: pending

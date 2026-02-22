@@ -1,0 +1,434 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Q.Trust v3.9.8 Protocol — Energetic &amp; Playful Infographic</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #111c38;
+      --panel-2: #0b1224;
+      --accent: #4ade80;
+      --accent-2: #60a5fa;
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --glow: 0 0 0 1px rgba(255,255,255,0.04), 0 10px 30px rgba(17,24,39,0.45);
+      --radius: 14px;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: radial-gradient(circle at 20% 20%, rgba(96,165,250,0.08), transparent 30%),
+                  radial-gradient(circle at 80% 10%, rgba(74,222,128,0.08), transparent 30%),
+                  var(--bg);
+      color: var(--text);
+      font-family: 'Manrope', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      line-height: 1.6;
+      padding: 24px;
+    }
+
+    .page {
+      max-width: 1180px;
+      margin: 0 auto 56px auto;
+      display: grid;
+      gap: 24px;
+    }
+
+    header.hero {
+      background: linear-gradient(120deg, rgba(74,222,128,0.12), rgba(96,165,250,0.12));
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 18px;
+      padding: 22px 26px;
+      box-shadow: var(--glow);
+      display: grid;
+      gap: 6px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    header.hero::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 82% 10%, rgba(255,255,255,0.14), transparent 36%);
+      pointer-events: none;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.06);
+      color: var(--muted);
+      width: fit-content;
+      font-size: 13px;
+      letter-spacing: 0.2px;
+    }
+
+    h1 { margin: 6px 0 0 0; font-size: 28px; letter-spacing: 0.3px; }
+    .lede { margin: 0; color: #cbd5e1; max-width: 820px; }
+
+    .grid { display: grid; gap: 18px; }
+    .two { grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
+    .three { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid rgba(255,255,255,0.05);
+      border-radius: var(--radius);
+      padding: 16px;
+      box-shadow: var(--glow);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .panel .title { margin: 0 0 10px 0; font-size: 18px; }
+    .panel .muted { color: var(--muted); font-size: 14px; margin-top: 4px; }
+
+    .pill-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+    .pill {
+      background: rgba(255,255,255,0.06);
+      color: var(--text);
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 12px;
+      letter-spacing: 0.3px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .badge { padding: 2px 8px; border-radius: 999px; background: rgba(96,165,250,0.12); color: var(--accent-2); font-weight: 700; }
+
+    .workbench { display: grid; gap: 12px; background: var(--panel-2); border-radius: var(--radius); padding: 14px; border: 1px solid rgba(255,255,255,0.05); }
+    textarea, input, select {
+      background: rgba(255,255,255,0.06);
+      color: var(--text);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-family: 'Manrope', monospace;
+      font-size: 14px;
+      width: 100%;
+      outline: none;
+    }
+
+    button {
+      background: linear-gradient(120deg, #4ade80, #60a5fa);
+      border: none;
+      color: #0b1220;
+      font-weight: 800;
+      padding: 10px 14px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: transform 120ms ease, filter 120ms ease;
+    }
+
+    button:hover { transform: translateY(-1px); filter: brightness(1.05); }
+
+    .row { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+
+    .output {
+      background: rgba(255,255,255,0.04);
+      padding: 10px 12px;
+      border-radius: 10px;
+      min-height: 110px;
+      font-family: 'Manrope', monospace;
+      color: #e2e8f0;
+      border: 1px dashed rgba(255,255,255,0.08);
+      white-space: pre-wrap;
+    }
+
+    .legend { display: flex; align-items: center; gap: 8px; }
+    .dot { width: 12px; height: 12px; border-radius: 999px; }
+    .chart-wrap { background: rgba(255,255,255,0.03); border-radius: 12px; padding: 12px; }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="hero">
+      <span class="eyebrow">Q.Trust v3.9.8 Protocol • Energetic &amp; Playful</span>
+      <h1>Interactive Infographic &amp; Canonicalization Workbench</h1>
+      <p class="lede">Chart the lifecycle, schema rigor, finalization criteria, and risk posture of Q.Trust v3.9.8. Explore the workflow visually, then simulate canonicalization with live, in-browser tooling.</p>
+      <div class="pill-row">
+        <span class="pill"><span class="dot" style="background:#4ade80"></span> ZERO-DRIFT neutral perturbations</span>
+        <span class="pill"><span class="dot" style="background:#60a5fa"></span> Audit-ready telemetry</span>
+        <span class="pill"><span class="dot" style="background:#f472b6"></span> Finalization guardrails</span>
+      </div>
+    </header>
+
+    <section class="grid two">
+      <article class="panel">
+        <h2 class="title">Lifecycle Overview</h2>
+        <p class="muted">Module choreography for ingestion, neutralization, contradiction synthesis, verification, and seal issuance.</p>
+        <div class="chart-wrap"><canvas id="lifecycleChart" height="210"></canvas></div>
+      </article>
+      <article class="panel">
+        <h2 class="title">Schema Digest</h2>
+        <p class="muted">Field rigor for capsule payloads and council receipts, emphasizing stability during canonicalization.</p>
+        <div class="chart-wrap"><canvas id="schemaChart" height="210"></canvas></div>
+      </article>
+    </section>
+
+    <section class="grid two">
+      <article class="panel">
+        <h2 class="title">Finalization Criteria</h2>
+        <p class="muted">Thresholds that must be met before a Q.Trust artifact can be sealed and circulated.</p>
+        <div class="chart-wrap"><canvas id="finalizationChart" height="210"></canvas></div>
+      </article>
+      <article class="panel">
+        <h2 class="title">Risk Analysis</h2>
+        <p class="muted">Likelihood vs. impact across critical vectors with mitigation overlays.</p>
+        <div class="chart-wrap"><canvas id="riskChart" height="210"></canvas></div>
+      </article>
+    </section>
+
+    <section class="panel">
+      <h2 class="title">Canonicalization Workbench</h2>
+      <p class="muted">Normalize payloads inline: trim noise, enforce case strategy, collapse whitespace, and preview the digestable form that downstream validators will consume.</p>
+      <div class="workbench">
+        <div class="row">
+          <label>
+            Input payload
+            <textarea id="inputText" rows="5" placeholder="Paste payload or raw text...">{\n  "capsuleId": "Capsule.QTrust.Core",\n  "version": "v3.9.8",\n  "notes": "   Multi-source   integrity    check    "\n}</textarea>
+          </label>
+          <label>
+            Canonicalization profile
+            <select id="caseMode">
+              <option value="lower">Lowercase fields</option>
+              <option value="upper">Uppercase fields</option>
+              <option value="preserve">Preserve case</option>
+            </select>
+          </label>
+        </div>
+        <div class="row">
+          <label>
+            Whitespace policy
+            <select id="whitespaceMode">
+              <option value="compact">Compact (collapse internal whitespace)</option>
+              <option value="strict">Strict (preserve spacing)</option>
+              <option value="minimal">Minimal (trim and strip newlines)</option>
+            </select>
+          </label>
+          <label>
+            Numeric precision
+            <input id="precision" type="number" min="0" max="6" value="2" />
+          </label>
+        </div>
+        <button id="runButton">Simulate Canonicalization</button>
+        <div>
+          <strong>Canonical payload</strong>
+          <div id="output" class="output"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    function normalizeWhitespace(text, mode) {
+      if (mode === 'strict') return text;
+      if (mode === 'minimal') return text.replace(/\s+/g, ' ').trim();
+      return text.replace(/\s+/g, ' ').trim();
+    }
+
+    function normalizeCase(json, mode) {
+      if (mode === 'preserve') return json;
+      const mapper = mode === 'upper'
+        ? (key) => key.toUpperCase()
+        : (key) => key.toLowerCase();
+      const walker = (node) => {
+        if (Array.isArray(node)) return node.map(walker);
+        if (node && typeof node === 'object') {
+          return Object.fromEntries(Object.entries(node).map(([k, v]) => [mapper(k), walker(v)]));
+        }
+        return node;
+      };
+      return walker(json);
+    }
+
+    function normalizeNumbers(json, precision) {
+      if (Number.isNaN(precision)) return json;
+      const scale = Math.pow(10, precision);
+      const walker = (node) => {
+        if (Array.isArray(node)) return node.map(walker);
+        if (node && typeof node === 'object') {
+          return Object.fromEntries(Object.entries(node).map(([k, v]) => [k, walker(v)]));
+        }
+        if (typeof node === 'number') {
+          return Math.round(node * scale) / scale;
+        }
+        return node;
+      };
+      return walker(json);
+    }
+
+    function canonicalize() {
+      const input = document.getElementById('inputText');
+      const caseSelect = document.getElementById('caseMode');
+      const whitespaceSelect = document.getElementById('whitespaceMode');
+      const precisionInput = document.getElementById('precision');
+      const outputEl = document.getElementById('output');
+
+      if (!input || !caseSelect || !whitespaceSelect || !precisionInput || !outputEl) {
+        return;
+      }
+
+      const raw = input.value;
+      const caseMode = caseSelect.value;
+      const whitespaceMode = whitespaceSelect.value;
+      const precision = parseInt(precisionInput.value, 10);
+      let result = raw;
+      try {
+        const collapsed = normalizeWhitespace(raw, whitespaceMode);
+        const parsed = JSON.parse(collapsed);
+        const cased = normalizeCase(parsed, caseMode);
+        const numeric = normalizeNumbers(cased, precision);
+        result = JSON.stringify(numeric, null, 2);
+      } catch (error) {
+        result = normalizeWhitespace(raw, whitespaceMode);
+      }
+      outputEl.textContent = result;
+    }
+
+    function makeChart(ctx, config) {
+      if (!ctx) return null;
+      return new Chart(ctx, config);
+    }
+
+    function hydrateCharts() {
+      const lifecycleCtx = document.getElementById('lifecycleChart');
+      makeChart(lifecycleCtx, {
+        type: 'bar',
+        data: {
+          labels: ['Ingest', 'Noise Inject', 'Contradiction Synth', 'Validation', 'Seal'],
+          datasets: [{
+            label: 'Confidence (%)',
+            data: [62, 78, 84, 92, 97],
+            backgroundColor: [
+              'rgba(96,165,250,0.6)',
+              'rgba(74,222,128,0.6)',
+              'rgba(244,114,182,0.6)',
+              'rgba(129,140,248,0.6)',
+              'rgba(34,211,238,0.7)'
+            ],
+            borderColor: 'rgba(255,255,255,0.22)',
+            borderWidth: 1.2,
+            borderRadius: 8,
+          }]
+        },
+        options: {
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { beginAtZero: true, ticks: { color: '#cbd5e1' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+            x: { ticks: { color: '#cbd5e1' }, grid: { display: false } }
+          }
+        }
+      });
+
+      const schemaCtx = document.getElementById('schemaChart');
+      makeChart(schemaCtx, {
+        type: 'radar',
+        data: {
+          labels: ['Capsule ID', 'Version', 'Author', 'Payload Hash', 'Routing', 'Perturbation Tags'],
+          datasets: [{
+            label: 'Schema Strictness',
+            data: [95, 92, 82, 97, 88, 86],
+            backgroundColor: 'rgba(96,165,250,0.25)',
+            borderColor: 'rgba(96,165,250,0.9)',
+            pointBackgroundColor: 'rgba(74,222,128,0.9)',
+            pointRadius: 4,
+            borderWidth: 2,
+          }]
+        },
+        options: {
+          plugins: { legend: { display: false } },
+          scales: {
+            r: {
+              beginAtZero: true,
+              max: 100,
+              ticks: { display: false },
+              grid: { color: 'rgba(255,255,255,0.08)' },
+              angleLines: { color: 'rgba(255,255,255,0.08)' },
+              pointLabels: { color: '#cbd5e1', font: { size: 12 } }
+            }
+          }
+        }
+      });
+
+      const finalizationCtx = document.getElementById('finalizationChart');
+      makeChart(finalizationCtx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Telemetry Coverage', 'Reviewer Quorum', 'Neutrality Bounds', 'Anti-Drift'],
+          datasets: [{
+            data: [30, 24, 28, 18],
+            backgroundColor: [
+              'rgba(34,211,238,0.78)',
+              'rgba(74,222,128,0.78)',
+              'rgba(244,114,182,0.78)',
+              'rgba(249,115,22,0.78)'
+            ],
+            borderColor: 'rgba(15,23,42,0.8)',
+            borderWidth: 2,
+          }]
+        },
+        options: {
+          plugins: { legend: { labels: { color: '#cbd5e1' } } }
+        }
+      });
+
+      const riskCtx = document.getElementById('riskChart');
+      makeChart(riskCtx, {
+        type: 'line',
+        data: {
+          labels: ['Capture', 'Noise Drift', 'Contradiction Overshoot', 'Routing', 'Seal'],
+          datasets: [
+            {
+              label: 'Likelihood',
+              data: [0.32, 0.21, 0.17, 0.12, 0.08],
+              borderColor: 'rgba(244,114,182,0.9)',
+              backgroundColor: 'rgba(244,114,182,0.25)',
+              fill: true,
+              tension: 0.35,
+              pointRadius: 4,
+            },
+            {
+              label: 'Impact',
+              data: [0.44, 0.38, 0.31, 0.24, 0.16],
+              borderColor: 'rgba(96,165,250,0.9)',
+              backgroundColor: 'rgba(96,165,250,0.20)',
+              fill: true,
+              tension: 0.35,
+              pointRadius: 4,
+            }
+          ]
+        },
+        options: {
+          plugins: { legend: { labels: { color: '#cbd5e1' } } },
+          scales: {
+            y: { beginAtZero: true, max: 0.6, ticks: { color: '#cbd5e1' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+            x: { ticks: { color: '#cbd5e1' }, grid: { display: false } }
+          }
+        }
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      hydrateCharts();
+      const runButton = document.getElementById('runButton');
+      if (runButton) {
+        runButton.addEventListener('click', canonicalize);
+      }
+      canonicalize();
+    });
+  </script>
+</body>
+</html>

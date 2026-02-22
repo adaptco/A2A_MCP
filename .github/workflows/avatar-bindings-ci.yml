@@ -1,0 +1,120 @@
+name: Avatar Bindings CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    types: [opened, synchronize]
+  workflow_dispatch:
+
+jobs:
+  validate-and-seal:
+    name: "Validate & Seal"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js (with npm cache)
+        if: ${{ hashFiles('**/package-lock.json') != '' }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
+
+      - name: Setup Node.js (without cache)
+        if: ${{ hashFiles('**/package-lock.json') == '' }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install AJV CLI
+        run: npm install -g ajv-cli
+
+      - name: Install Python 3
+        uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f # v4.7.0
+        with:
+          python-version: '3.x'
+
+      - name: Install Python dependencies
+        run: pip install pynacl
+
+      - name: Schema-validate manifest
+        run: ajv validate -s schemas/avatar_bindings.v1.schema.json -d avatar_bindings.v1.json --strict=true
+
+      - name: Canonicalize manifest
+        run: python3 scripts/canonicalize_manifest.py < avatar_bindings.v1.json > avatar_bindings.v1.canonical.json
+
+      - name: Check signing key availability
+        id: signing_key
+        run: |
+          if [[ -n "${{ secrets.MAKER_ED25519_SEED }}" ]]; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "available=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Compute & Sign the hash
+        if: ${{ steps.signing_key.outputs.available == 'true' }}
+        env:
+          MAKER_KEY: ${{ secrets.MAKER_ED25519_SEED }}
+        run: ./scripts/sign_bindings.sh
+
+      - name: Ledger-ACK Event
+        if: ${{ steps.signing_key.outputs.available == 'true' }}
+        run: |
+          TS=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          HASH=$(cat avatar_bindings.v1.hash)
+          MAKER_SIG=$(cat avatar_bindings.v1.maker.sig)
+          jq -nc --arg ts "$TS" --arg hash "$HASH" --arg sig "$MAKER_SIG" '{ts:$ts, type:"avatar_bindings.sealed", hash:$hash, maker_sig:$sig}' >> events.ndjson
+
+      - name: Upload sealed artifacts
+        if: ${{ steps.signing_key.outputs.available == 'true' }}
+        uses: actions/upload-artifact@0b2256b8c012f0828dc542b3febcab082c67f72b # v4.3.4
+        with:
+          name: sealed-artifacts
+          path: |
+            avatar_bindings.v1.canonical.json
+            avatar_bindings.v1.hash
+            avatar_bindings.v1.maker.sig
+            events.ndjson
+          retention-days: 1
+
+  commit-ledger-data:
+    name: "Commit to Ledger"
+    needs: validate-and-seal
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a085614d3f # v4.1.7
+        with:
+          persist-credentials: true
+          fetch-depth: 0
+
+      - name: Download sealed artifacts
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
+        with:
+          name: sealed-artifacts
+
+      - name: Prepare and move files
+        run: |
+          DATE_PATH=$(date -u +'%Y/%m/%d')
+          mkdir -p "data/events/${DATE_PATH}"
+          mv events.ndjson "data/events/${DATE_PATH}/events-${GITHUB_RUN_ID}.ndjson"
+          mkdir -p "data/capsules"
+          mv avatar_bindings.v1.canonical.json data/capsules/
+          mv avatar_bindings.v1.hash data/capsules/
+          mv avatar_bindings.v1.maker.sig data/capsules/
+
+      - name: Commit sealed artifacts
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/
+          git commit -m "feat(ledger): seal and log avatar bindings ${GITHUB_RUN_ID} [skip ci]"
+          git push origin HEAD:main

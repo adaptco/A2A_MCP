@@ -1,0 +1,7 @@
+{"t":"2025-09-25T00:54:27Z","event":"capsule.seal.v1","capsule":"capsule.scene.ethereal_wrap.v1","digest":"sha256:d0913c974379658d7693940c1ea2b83984d605a663dfd6808593d9ac9e7c4d66","sealed_by":"Council"}
+{"t":"2025-09-25T00:54:27Z","event":"render.fossilize.v1","scene":"Ethereal Wrap","capsule":"capsule.scene.ethereal_wrap.v1","status":"published","digest":"sha256:d0913c974379658d7693940c1ea2b83984d605a663dfd6808593d9ac9e7c4d66"}
+{"t":"2025-09-25T01:42:30Z","event":"ledger.crossref.v1","capsule":"capsule.kobe.cipher.v1","digest":"sha256:1a9357ee70e5b007ee1c58f1aefe365d51b50e757619d178dadedea821e790bb","target_ledger":".out/cultural_ledger.jsonl","note":"relocated cultural cipher fossilization"}
+{"t":"2025-09-25T00:55:11Z","event":"capsule.seal.v1","capsule":"capsule.scene.ethereal_wrap.v1","digest":"sha256:d0913c974379658d7693940c1ea2b83984d605a663dfd6808593d9ac9e7c4d66","sealed_by":"Council"}
+{"t":"2025-09-25T00:55:11Z","event":"render.fossilize.v1","scene":"Ethereal Wrap","capsule":"capsule.scene.ethereal_wrap.v1","status":"published","digest":"sha256:d0913c974379658d7693940c1ea2b83984d605a663dfd6808593d9ac9e7c4d66"}
+{"t":"2025-09-25T01:03:44Z","event":"capsule.seal.v1","capsule":"capsule.scene.ethereal_wrap.v1","digest":"sha256:d0913c974379658d7693940c1ea2b83984d605a663dfd6808593d9ac9e7c4d66","sealed_by":"Council"}
+{"t":"2025-09-25T01:03:44Z","event":"render.fossilize.v1","scene":"Ethereal Wrap","capsule":"capsule.scene.ethereal_wrap.v1","status":"published","digest":"sha256:d0913c974379658d7693940c1ea2b83984d605a663dfd6808593d9ac9e7c4d66"}

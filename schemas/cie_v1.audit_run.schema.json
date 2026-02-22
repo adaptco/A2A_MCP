@@ -1,0 +1,76 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "CIE V1 Audit Run Ledger Entry",
+  "type": "object",
+  "required": [
+    "timestamp",
+    "service_id",
+    "bundle_id",
+    "run_id",
+    "gate_evaluation",
+    "artifact_refs",
+    "status"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "service_id": {
+      "type": "string",
+      "const": "content.integrity.eval.v1"
+    },
+    "bundle_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "validation_chain": {
+      "type": "array",
+      "items": {"type": "string"},
+      "minItems": 1
+    },
+    "gate_evaluation": {
+      "type": "object",
+      "required": ["status"],
+      "additionalProperties": false,
+      "properties": {
+        "semantic_similarity_min": {"type": "number"},
+        "readability_delta_max": {"type": "number"},
+        "citation_traceability_min": {"type": "number"},
+        "confidence_consistency_min": {"type": "number"},
+        "status": {"type": "string", "enum": ["pass", "fail"]},
+        "violations": {
+          "type": "array",
+          "items": {"type": "string"}
+        }
+      }
+    },
+    "aggregate_metrics": {
+      "type": "object",
+      "additionalProperties": {
+        "type": ["number", "integer", "string", "boolean"]
+      }
+    },
+    "artifact_refs": {
+      "type": "object",
+      "required": ["manifest_path", "metrics_path", "receipts_path"],
+      "additionalProperties": false,
+      "properties": {
+        "manifest_path": {"type": "string"},
+        "metrics_path": {"type": "string"},
+        "receipts_path": {"type": "string"},
+        "manifest_sha256": {"type": "string"},
+        "metrics_sha256": {"type": "string"}
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": ["stub", "final"]
+    }
+  }
+}

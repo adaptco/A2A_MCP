@@ -1,0 +1,188 @@
+{
+  "schema": "mission.oversight.hud.contract.v1",
+  "version": "1.0.0",
+  "description": "Canonical contract for the Core Orchestrator live mission oversight HUD.",
+  "data_streams": {
+    "mission_status": {
+      "topic": "mission.state",
+      "schema": "mission.meta.directive.v1",
+      "fields": [
+        "mission.codename",
+        "mission.timeline.current_phase",
+        "mission.timeline.window",
+        "state_machine.state",
+        "state_machine.previous_state",
+        "state_machine.transition_cause"
+      ],
+      "polling_interval_seconds": 5
+    },
+    "telemetry": {
+      "topic": "mission.telemetry.aggregate",
+      "schema": "mission.telemetry.snapshot.v1",
+      "fields": [
+        "uptime_seconds",
+        "bundle.hash",
+        "bundle.version",
+        "sync.offset_ms",
+        "errors.active",
+        "errors.last_error"
+      ],
+      "polling_interval_seconds": 15
+    },
+    "ledger_activity": {
+      "topic": "mission.ledger.entries",
+      "schema": "mission.ledger.event.v1",
+      "fields": [
+        "timestamp",
+        "actor",
+        "action",
+        "artifact",
+        "status"
+      ],
+      "window": {
+        "seconds": 600,
+        "max_entries": 50
+      }
+    },
+    "alert_feed": {
+      "topic": "mission.alerts",
+      "schema": "mission.alert.v1",
+      "fields": [
+        "level",
+        "code",
+        "message",
+        "remediation",
+        "acknowledged",
+        "escalation_chain"
+      ],
+      "fail_closed": true
+    }
+  },
+  "widgets": [
+    {
+      "id": "mission_phase",
+      "type": "state-pill",
+      "title": "Mission Phase",
+      "source_stream": "mission_status",
+      "primary_field": "state_machine.state",
+      "secondary_field": "state_machine.transition_cause",
+      "fail_closed_behavior": "lockout",
+      "annotations": [
+        {
+          "label": "Previous",
+          "field": "state_machine.previous_state"
+        },
+        {
+          "label": "Window",
+          "field": "mission.timeline.window"
+        }
+      ]
+    },
+    {
+      "id": "bundle_health",
+      "type": "status-summary",
+      "title": "choreo.bundle Health",
+      "source_stream": "telemetry",
+      "metrics": [
+        {
+          "label": "Version",
+          "field": "bundle.version"
+        },
+        {
+          "label": "Hash",
+          "field": "bundle.hash"
+        },
+        {
+          "label": "Sync Offset (ms)",
+          "field": "sync.offset_ms",
+          "thresholds": {
+            "warning": 250,
+            "critical": 500
+          }
+        }
+      ],
+      "fail_closed_behavior": "raise-alert"
+    },
+    {
+      "id": "live_ledger",
+      "type": "activity-feed",
+      "title": "Ledger Activity",
+      "source_stream": "ledger_activity",
+      "display_fields": ["timestamp", "actor", "action", "artifact", "status"],
+      "empty_state_copy": "No entries in the last 10 minutes.",
+      "fail_closed_behavior": "show-placeholder"
+    },
+    {
+      "id": "alerts",
+      "type": "alert-marquee",
+      "title": "Fail-Closed Alerts",
+      "source_stream": "alert_feed",
+      "acknowledgement_required": true,
+      "fail_closed_behavior": "escalate",
+      "escalation_targets": [
+        "council.primary",
+        "council.secondary"
+      ]
+    }
+  ],
+  "layout": {
+    "grid": {
+      "columns": 12,
+      "rows": 8
+    },
+    "placements": [
+      {"widget_id": "mission_phase", "column": 1, "row": 1, "colspan": 4, "rowspan": 2},
+      {"widget_id": "bundle_health", "column": 5, "row": 1, "colspan": 4, "rowspan": 2},
+      {"widget_id": "alerts", "column": 9, "row": 1, "colspan": 4, "rowspan": 4},
+      {"widget_id": "live_ledger", "column": 1, "row": 3, "colspan": 8, "rowspan": 4}
+    ],
+    "action_bar": {
+      "buttons": [
+        {
+          "id": "freeze_protocol",
+          "label": "Freeze Mission",
+          "action": "mission.freeze",
+          "confirmation_required": true,
+          "fail_closed_behavior": "disable"
+        },
+        {
+          "id": "retarget",
+          "label": "Retarget",
+          "action": "mission.retarget",
+          "fail_closed_behavior": "disable"
+        },
+        {
+          "id": "rollback",
+          "label": "Rollback",
+          "action": "mission.rollback",
+          "fail_closed_behavior": "disable"
+        }
+      ]
+    }
+  },
+  "alerting": {
+    "fail_closed": {
+      "latch_until": "council_ack",
+      "escalation_chain": [
+        "ops.oncall",
+        "council.primary",
+        "council.escalation"
+      ]
+    },
+    "thresholds": {
+      "sync.offset_ms": {
+        "warning": 250,
+        "critical": 500
+      },
+      "errors.active": {
+        "critical": 1
+      }
+    }
+  },
+  "telemetry_bindings": {
+    "uptime_seconds": {
+      "widget_id": "bundle_health",
+      "metric": "uptime_seconds"
+    }
+  }
+}

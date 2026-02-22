@@ -1,0 +1,14 @@
+{
+  "capsule_id": "capsule.broadcast.worldengine.v1",
+  "version": "1.0.0",
+  "type": "BroadcastCapsule",
+  "governance": { "version": "v6.0", "quorum": "two_person" },
+  "payload": {
+    "fossil_ref": "capsule.fossilize.worldengine.v1",
+    "codex_ref": "capsule.codex.entry.worldengine.v1",
+    "replay_token": "capsule.replay.token.v2",
+    "echo_ref": "capsule.echo.scrollstream.v2"
+  },
+  "routing": { "targets": ["federation:*"], "mode": "announce+replay", "integrity": "scene_root+chunk_proofs" },
+  "attestation": { "required": ["sig:queen_boo_router","sig:cici_stabilizer"], "status": "STAGED" }
+}

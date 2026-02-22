@@ -1,0 +1,90 @@
+{
+  "$id": "ssot://contracts/cie_v2_plug/cie_v2_plug.v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CIE-V2 Plug v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "world_id",
+    "capsule_digest",
+    "baseline_merkle_root",
+    "extractor_version",
+    "kernel_token",
+    "invariant_set",
+    "binding"
+  ],
+  "properties": {
+    "schema_version": { "const": "cie_v2_plug.v1" },
+    "world_id": { "type": "string", "minLength": 1 },
+    "capsule_digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "baseline_merkle_root": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "extractor_version": { "type": "string", "minLength": 1 },
+    "kernel_token": {
+      "$ref": "ssot://contracts/kernel_token/kernel_token.v1.schema.json"
+    },
+    "invariant_set": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "world_id",
+        "capsule_digest",
+        "merkle_root",
+        "tick_count",
+        "invariants",
+        "attestation"
+      ],
+      "properties": {
+        "schema_version": { "const": "invariant_set.v1" },
+        "world_id": { "type": "string", "minLength": 1 },
+        "capsule_digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+        "merkle_root": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+        "tick_count": { "type": "integer", "minimum": 0 },
+        "invariants": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "attestation": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["extractor_version", "timestamp_utc_ms"],
+          "properties": {
+            "extractor_version": { "type": "string", "minLength": 1 },
+            "timestamp_utc_ms": { "type": "integer", "minimum": 0 }
+          }
+        }
+      }
+    },
+    "binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "psp_alg",
+        "psp_leaf_order",
+        "psp_leaf_content",
+        "merkle_domain_tag",
+        "odd_leaf_rule"
+      ],
+      "properties": {
+        "psp_alg": {
+          "type": "string",
+          "enum": ["sha256(domain0_left_right)_odd_selfdup_leaves_tickhash32"]
+        },
+        "psp_leaf_order": { "const": "ascending_tick" },
+        "psp_leaf_content": { "const": "receipt.tick_hash_raw32" },
+        "merkle_domain_tag": { "const": "PSP.MerkleRoot.v1" },
+        "odd_leaf_rule": { "const": "self_duplicate_last_leaf" }
+      }
+    },
+    "capsule_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["storage", "locator"],
+      "properties": {
+        "storage": { "type": "string", "minLength": 1 },
+        "locator": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}

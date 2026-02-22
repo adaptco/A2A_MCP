@@ -1,0 +1,29 @@
+{
+  "id": "cie_v1_smoke_eth_block_token",
+  "source": "ssot://registry/truthful_inputs/eth_block_cid",
+  "noise_request": {
+    "module": "synthetic.noise.injector.v1",
+    "source_claim": "Treat an Ethereum block hash as a sandbox token by encoding it as a CIDv1 that uses the eth-block codec and a keccak-256 multihash.",
+    "operations": {
+      "ocr_blur": 0.06,
+      "token_drop": 0.01,
+      "translation_rounds": 1,
+      "synonym_swap": 0.03
+    }
+  },
+  "contradiction_request": {
+    "module": "synthetic.contradiction.synth.v1",
+    "assertions": [
+      "A sandbox token can represent an Ethereum block by referencing the block hash through a CIDv1 eth-block codec plus keccak-256 multihash.",
+      "The same sandbox token format still requires verification against a trusted registry entry for the block hash."
+    ],
+    "sources": [
+      "https://example.org/specs/eth-block-cid/overview",
+      "https://example.org/registries/eth-blocks/trusted"
+    ]
+  },
+  "acceptance": {
+    "semantic_similarity_min": 0.88,
+    "citation_traceability_min": 0.95
+  }
+}

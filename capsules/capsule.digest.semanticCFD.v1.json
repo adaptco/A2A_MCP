@@ -1,0 +1,38 @@
+{
+  "capsule_id": "capsule.digest.semanticCFD.v1",
+  "version": "1.0.0",
+  "type": "ScrollstreamDigest",
+  "governance": { "version": "v6.0", "quorum": "two_person" },
+  "header": {
+    "capsule_ref": "capsule.relay.scene.fork.v3",
+    "qlock": { "t0": "2025-09-25T22:38:00Z", "frame_rate": 30 },
+    "frame_count": 240,
+    "audit_route": "modality"
+  },
+  "body": {
+    "frames": [
+      { "tick_id": 1, "phi": 0.12, "band": "blue", "monotonic": true },
+      { "tick_id": 45, "phi": 0.34, "band": "green", "monotonic": true },
+      { "tick_id": 120, "phi": 0.57, "band": "green-yellow", "monotonic": true },
+      { "tick_id": 180, "phi": 0.72, "band": "yellow", "monotonic": true },
+      { "tick_id": 220, "phi": 0.86, "band": "red", "override": "Boo", "monotonic": true },
+      { "tick_id": 240, "phi": 0.93, "band": "red", "override": "Boo", "monotonic": true }
+    ],
+    "monotonicity": { "status": "passed", "on_fail": "hold_and_flag" }
+  },
+  "audit": {
+    "route": "modality",
+    "monotonic_check": "passed",
+    "on_fail": "hold_and_flag"
+  },
+  "footer": {
+    "integrity": {
+      "hash_algorithm": "SHA-256",
+      "digest": "sha256:semanticCFD.trace.<final_digest>"
+    },
+    "attestation": {
+      "required": ["sig:queen_boo_router", "sig:cici_stabilizer"],
+      "status": "STAGED"
+    }
+  }
+}

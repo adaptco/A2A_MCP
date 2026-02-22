@@ -1,0 +1,30 @@
+{
+  "$id": "ssot://contracts/kernel_token/kernel_token.v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "KernelToken.v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "world_id",
+    "capsule_digest",
+    "merkle_root",
+    "tick_count",
+    "psp_alg"
+  ],
+  "properties": {
+    "schema_version": { "const": "kernel_token.v1" },
+    "world_id": { "type": "string", "minLength": 1 },
+    "capsule_digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "merkle_root": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "tick_count": { "type": "integer", "minimum": 0 },
+    "psp_alg": {
+      "type": "string",
+      "enum": ["sha256(domain0_left_right)_odd_selfdup_leaves_tickhash32"]
+    },
+    "created_at_utc": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{1,6})?Z$"
+    }
+  }
+}

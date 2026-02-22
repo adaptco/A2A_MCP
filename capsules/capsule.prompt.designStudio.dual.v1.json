@@ -1,0 +1,41 @@
+{
+  "capsule_id": "capsule.prompt.designStudio.dual.v1",
+  "schema": "p3l://prompt.bundle@1",
+  "version": "1.0.0",
+  "status": "STAGED",
+  "name": "Sol.F1 Design Studio Dual Prompt Bundle",
+  "description": "Bundle exposing both the technical Sol.F1 CAD ignition prompt and the cinematic design studio scene fossil.",
+  "context": {
+    "environment": "scrollstream",
+    "interfaces": ["cockpit_hud", "storyforge"],
+    "switch_policy": "operator_select"
+  },
+  "prompts": {
+    "cad": {
+      "label": "Sol.F1 CAD ignition",
+      "capsule_ref": "capsule.metaagent.solf1.oneshot.v1",
+      "prompt_template": "capsules/runtime/templates/solf1_oneshot.tpl",
+      "intent": "Precise CAD-aligned orchestration for Sol.F1 ignition traces"
+    },
+    "cinematic": {
+      "label": "Design studio cinematic",
+      "capsule_ref": "capsule.scene.designStudio.v1",
+      "prompt_template": "capsules/runtime/templates/design_studio_cinematic.tpl",
+      "intent": "Narrative-rich atmospheric rendering of the Sol.F1 design studio"
+    }
+  },
+  "artifacts": [
+    {
+      "role": "bundle_manifest",
+      "uri": "s3://REPLACE_WITH_BUNDLE_URI/design_studio_dual.manifest.json",
+      "sha256": "sha256:REPLACE_WITH_BUNDLE_HASH",
+      "bytes": 0
+    }
+  ],
+  "attestation": {
+    "maker": "Earl Q Han",
+    "checker": "Council",
+    "sealed_at": null,
+    "content_hash": null
+  }
+}

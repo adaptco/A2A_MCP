@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Q-BATTLE Beyblade League – Runtime Monitor</title>
+  <style>
+    :root {
+      --bg: #0c1021;
+      --panel: #12172e;
+      --accent: #ff8c37;
+      --accent-2: #56e39f;
+      --text: #f5f7fb;
+      --muted: #9ea9c6;
+      --error: #ff5370;
+      --warn: #ffc857;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Inter", system-ui, -apple-system, sans-serif;
+      background: radial-gradient(circle at 20% 20%, rgba(255, 140, 55, 0.08), transparent 35%),
+        radial-gradient(circle at 80% 0%, rgba(86, 227, 159, 0.08), transparent 30%),
+        var(--bg);
+      color: var(--text);
+    }
+
+    header {
+      padding: 24px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 1.4rem;
+      letter-spacing: 0.02em;
+    }
+
+    .badge {
+      padding: 6px 10px;
+      border-radius: 6px;
+      background: rgba(255, 140, 55, 0.15);
+      color: var(--accent);
+      font-weight: 600;
+      border: 1px solid rgba(255, 140, 55, 0.3);
+    }
+
+    main {
+      padding: 0 24px 32px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 16px;
+    }
+
+    .card {
+      background: var(--panel);
+      border-radius: 12px;
+      padding: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+    }
+
+    .card h2 {
+      margin-top: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 1rem;
+      letter-spacing: 0.01em;
+    }
+
+    label {
+      display: block;
+      margin: 8px 0 4px;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    input, select, button, textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.02);
+      color: var(--text);
+      font-size: 0.95rem;
+    }
+
+    textarea {
+      min-height: 120px;
+      resize: vertical;
+    }
+
+    button {
+      cursor: pointer;
+      border: 1px solid rgba(255, 140, 55, 0.4);
+      background: linear-gradient(90deg, rgba(255, 140, 55, 0.9), rgba(86, 227, 159, 0.9));
+      color: #0c0f1c;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+      transition: transform 120ms ease, box-shadow 120ms ease;
+    }
+
+    button:active {
+      transform: translateY(1px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    }
+
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      color: var(--muted);
+      font-weight: 600;
+      min-height: 44px;
+    }
+
+    .status.success { color: var(--accent-2); border-color: rgba(86, 227, 159, 0.35); }
+    .status.error { color: var(--error); border-color: rgba(255, 83, 112, 0.35); }
+    .status.warn { color: var(--warn); border-color: rgba(255, 200, 87, 0.35); }
+
+    .log {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-height: 320px;
+      overflow: auto;
+    }
+
+    .log li {
+      padding: 10px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      font-family: "JetBrains Mono", "SFMono-Regular", Menlo, monospace;
+      font-size: 0.85rem;
+      color: var(--text);
+    }
+
+    .flex-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .pill {
+      padding: 4px 8px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>Q-BATTLE Beyblade League</h1>
+      <p style="margin: 4px 0 0; color: var(--muted);">Gemini-augmented runtime with deterministic fallbacks</p>
+    </div>
+    <span class="badge">Runtime Monitor</span>
+  </header>
+
+  <main>
+    <section class="card">
+      <h2>Run Inference</h2>
+      <div class="status" id="status-banner">Ready for launch.</div>
+
+      <label for="mode">Execution mode</label>
+      <select id="mode">
+        <option value="remote">Remote Gemini (production)</option>
+        <option value="fallback">Remote with fallback</option>
+        <option value="local">Deterministic local mode</option>
+      </select>
+
+      <label for="prompt">Prompt / battle script</label>
+      <textarea id="prompt" placeholder="Describe the Beyblade battle scenario..."></textarea>
+
+      <div class="flex-row" style="align-items: end; margin-top: 12px;">
+        <div>
+          <label for="timeout">Timeout (ms)</label>
+          <input type="number" id="timeout" min="500" value="5000" />
+        </div>
+        <div>
+          <label for="seed">Deterministic seed</label>
+          <input type="text" id="seed" placeholder="optional seed for local mode" />
+        </div>
+      </div>
+
+      <button id="run">Execute Battle Plan</button>
+    </section>
+
+    <section class="card">
+      <h2>Result</h2>
+      <div class="pill" id="mode-pill">Mode: remote</div>
+      <pre id="result" style="white-space: pre-wrap; margin-top: 10px;">No execution yet.</pre>
+    </section>
+
+    <section class="card">
+      <h2>Event Log</h2>
+      <ul class="log" id="log"></ul>
+    </section>
+  </main>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const els = {
+        status: document.getElementById('status-banner'),
+        prompt: document.getElementById('prompt'),
+        timeout: document.getElementById('timeout'),
+        seed: document.getElementById('seed'),
+        mode: document.getElementById('mode'),
+        run: document.getElementById('run'),
+        result: document.getElementById('result'),
+        log: document.getElementById('log'),
+        pill: document.getElementById('mode-pill')
+      };
+
+      if (!Object.values(els).every(Boolean)) {
+        console.warn('Q-BATTLE harness missing required elements; aborting init.');
+        return;
+      }
+
+      const logEvent = (entry) => {
+        const timestamp = new Date().toISOString();
+        const li = document.createElement('li');
+        li.textContent = `[${timestamp}] ${entry}`;
+        els.log.prepend(li);
+        while (els.log.children.length > 40) {
+          els.log.lastChild?.remove();
+        }
+      };
+
+      const setStatus = (variant, message) => {
+        els.status.classList.remove('success', 'error', 'warn');
+        if (variant) {
+          els.status.classList.add(variant);
+        }
+        els.status.textContent = message;
+      };
+
+      const serialize = (obj) => JSON.stringify(obj, null, 2);
+
+      const deterministicallyPick = (prompt, seed = '') => {
+        const key = `${prompt}|${seed}`;
+        let hash = 0;
+        for (let i = 0; i < key.length; i += 1) {
+          hash = (hash * 31 + key.charCodeAt(i)) >>> 0;
+        }
+        const outcomes = [
+          'Spiral Nova finishes with a decisive burst!',
+          'Phantom Wyvern forces a stamina draw.',
+          'Twin Nemesis counters with a late-game spin steal.',
+          'Garuda G3 wins by survivor finish after long endurance.',
+          'Luìnor accelerates for a surprise ring-out.'
+        ];
+        return outcomes[hash % outcomes.length];
+      };
+
+      const structuredError = (type, detail, payload) => ({ type, detail, payload });
+
+      const simulateGemini = async (prompt, timeoutMs, allowFallback) => {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), timeoutMs);
+        try {
+          const response = await fetch('/api/gemini', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt }),
+            signal: controller.signal
+          });
+          clearTimeout(timeout);
+          if (!response.ok) {
+            return structuredError('server-error', `Gemini returned ${response.status}`, null);
+          }
+          let data = null;
+          try {
+            data = await response.json();
+          } catch (parseError) {
+            return structuredError('invalid-json', 'Gemini response was not JSON', null);
+          }
+          if (!data || typeof data !== 'object') {
+            return structuredError('invalid-payload', 'Gemini payload missing body', data);
+          }
+          if (!data.text && !data.summary) {
+            return structuredError('partial-response', 'Gemini payload incomplete', data);
+          }
+          return { type: 'success', detail: 'Gemini ok', payload: data };
+        } catch (error) {
+          clearTimeout(timeout);
+          if (error.name === 'AbortError') {
+            return structuredError('timeout', `Exceeded ${timeoutMs}ms`, null);
+          }
+          if (allowFallback) {
+            return structuredError('fallback', error.message, null);
+          }
+          return structuredError('exception', error.message, null);
+        }
+      };
+
+      const runLocal = (prompt, seed) => ({
+        type: 'local',
+        detail: 'Deterministic local mode',
+        payload: {
+          summary: deterministicallyPick(prompt || 'default', seed || 'seed'),
+          mode: 'local'
+        }
+      });
+
+      const render = (result, prompt, mode) => {
+        const variant = result.type === 'success' || result.type === 'local' ? 'success'
+          : result.type === 'timeout' || result.type === 'fallback' ? 'warn'
+          : 'error';
+        const statusLine = `${result.type.toUpperCase()}: ${result.detail}`;
+        setStatus(variant, statusLine);
+        const body = result.payload || {};
+        els.result.textContent = serialize({ mode, prompt, status: result.type, detail: result.detail, body });
+        logEvent(statusLine);
+      };
+
+      els.mode.addEventListener('change', () => {
+        const mode = els.mode.value;
+        els.pill.textContent = `Mode: ${mode}`;
+      });
+
+      els.run.addEventListener('click', async () => {
+        const prompt = (els.prompt.value || '').trim();
+        const timeoutMs = Math.max(500, Number(els.timeout.value) || 5000);
+        const seed = (els.seed.value || '').trim();
+        const mode = els.mode.value;
+
+        setStatus('warn', 'Executing...');
+        logEvent(`Mode=${mode} promptLength=${prompt.length} timeout=${timeoutMs}`);
+
+        if (mode === 'local') {
+          render(runLocal(prompt, seed), prompt, mode);
+          return;
+        }
+
+        const allowFallback = mode === 'fallback';
+        const result = await simulateGemini(prompt, timeoutMs, allowFallback);
+
+        if (allowFallback && result.type !== 'success') {
+          const fallback = runLocal(prompt, seed);
+          fallback.detail = `Fallback after ${result.type}: ${result.detail}`;
+          render(fallback, prompt, `${mode}-fallback`);
+          return;
+        }
+
+        render(result, prompt, mode);
+      });
+
+      setStatus('success', 'Ready for launch. Deterministic init complete.');
+      logEvent('Runtime initialized.');
+    });
+  </script>
+</body>
+</html>

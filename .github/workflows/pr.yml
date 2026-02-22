@@ -1,0 +1,96 @@
+name: PR Checks
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint-test-build:
+    name: Lint, Test, and Build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9.7.1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint (Code)
+        run: pnpm turbo run lint
+
+      - name: Test
+        run: pnpm turbo run test
+
+      - name: Build
+        run: pnpm turbo run build
+
+      # OpenAPI Linting & Diffing
+      - name: Detect OpenAPI specification
+        id: spec
+        run: |
+          set -eo pipefail
+          spec=$(git ls-files '*openapi*.yml' '*openapi*.yaml' | head -n 1 || true)
+          if [ -n "$spec" ]; then
+            echo "spec=$spec" >> "$GITHUB_OUTPUT"
+            echo "Found OpenAPI spec: $spec"
+          else
+            echo "No OpenAPI spec found."
+          fi
+
+      - name: Install Spectral CLI
+        if: steps.spec.outputs.spec != ''
+        run: pnpm add -g @stoplight/spectral-cli
+
+      - name: Lint OpenAPI specification
+        if: steps.spec.outputs.spec != ''
+        run: spectral lint "${{ steps.spec.outputs.spec }}"
+
+      - name: Set up Java runtime for OpenAPI diffing
+        if: steps.spec.outputs.spec != ''
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Download OpenAPI Diff CLI
+        if: steps.spec.outputs.spec != ''
+        run: |
+          mkdir -p ~/.cache/openapi-diff
+          curl -sSL "https://repo1.maven.org/maven2/org/openapitools/openapidiff/openapi-diff-cli/2.1.3/openapi-diff-cli-2.1.3-all.jar" -o ~/.cache/openapi-diff/openapi-diff-cli.jar
+
+      - name: Compare OpenAPI specification changes
+        if: steps.spec.outputs.spec != ''
+        run: |
+          set -eo pipefail
+          base_file=""
+          # Fetch main to compare against
+          git fetch origin main --depth=1
+
+          if git cat-file -e origin/main:${{ steps.spec.outputs.spec }} 2>/dev/null; then
+            git show origin/main:${{ steps.spec.outputs.spec }} > /tmp/openapi-base.yaml
+            base_file=/tmp/openapi-base.yaml
+          fi
+
+          if [ -n "$base_file" ]; then
+            echo "Comparing against baseline..."
+            java -jar ~/.cache/openapi-diff/openapi-diff-cli.jar --fail-on-incompatible "$base_file" "${{ steps.spec.outputs.spec }}" > openapi-diff.txt
+            cat openapi-diff.txt
+          else
+            echo "No baseline specification available on main; skipping diff."
+          fi

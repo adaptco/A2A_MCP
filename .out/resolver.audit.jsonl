@@ -1,0 +1,7 @@
+{"t":"2025-09-25T01:42:30Z","event":"cultural.cipher.fossilize.v1","subject":"Kobe Bryant","digest":"sha256:1a9357ee70e5b007ee1c58f1aefe365d51b50e757619d178dadedea821e790bb","status":"published"}
+{"ts":"2025-09-25T02:52:16Z","event":"ledger.normalize.v1","input":".out/scrollstream_ledger.jsonl","output":".out/scrollstream_ledger.normalized.jsonl"}
+{"ts":"2025-09-25T02:55:00Z","event":"ledger.crossref.v1","capsule":"capsule.kobe.cipher.v1","source":".out/scrollstream_ledger.jsonl","target":".out/cultural_ledger.jsonl"}
+{"ts":"2025-09-25T02:52:43Z","event":"resolver.patch.v1","resolver_id":"resolver.runtime.v1","cockpit":"capsule.map.qube.endtoend.v1"}
+{"ts":"2025-09-25T02:52:54Z","event":"resolver.patch.v1","resolver_id":"resolver.runtime.v1","cockpit":"capsule.map.qube.endtoend.v1"}
+{"ts":"2025-09-25T02:53:13Z","event":"ledger.normalize.v1","input":".out/scrollstream_ledger.jsonl","output":".out/scrollstream_ledger.normalized.jsonl"}
+{"ts":"2025-09-25T10:33:39Z","event":"ledger.normalize.v1","input":".out/scrollstream_ledger.jsonl","output":".out/scrollstream_ledger.normalized.jsonl"}

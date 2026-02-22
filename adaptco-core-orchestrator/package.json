@@ -1,0 +1,50 @@
+{
+  "name": "adaptco-core-orchestrator",
+  "version": "0.1.0",
+  "description": "Adaptco Core Orchestrator service",
+  "main": "src/index.js",
+  "scripts": {
+    "dev": "nodemon src/server.js",
+    "build": "echo \"no build step\"",
+    "test": "jest --runInBand",
+    "test:accelerated": "node src/bin/rehearsal.js --duration=30m --mode=epoch_generation",
+    "lint": "eslint .",
+    "format": "prettier -w .",
+    "start": "node src/server.js",
+    "audit": "node src/bin/audit.js",
+    "rehearsal": "node src/bin/rehearsal.js",
+    "agent:ignite": "pnpm run rehearsal --mode=world_synthesis && pnpm run audit"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js",
+    "build": "echo \"No build step configured\"",
+    "test": "jest --runInBand",
+    "lint": "eslint \"src/**/*.js\" \"__tests__/**/*.js\"",
+    "format": "prettier --write \"src/**/*.js\" \"__tests__/**/*.js\"",
+    "audit": "node src/bin/audit.js",
+    "rehearsal": "node src/bin/rehearsal.js"
+  },
+  "dependencies": {
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1",
+    "commander": "11.1.0",
+    "crypto-js": "4.2.0",
+    "express": "^5.1.0",
+    "pino": "9.11.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.36.0",
+    "eslint": "^9.36.0",
+    "eslint-config-prettier": "^10.1.8",
+    "globals": "^16.4.0",
+    "jest": "^30.1.3",
+    "nodemon": "^3.1.10",
+    "prettier": "^3.6.2",
+    "supertest": "^7.1.4"
+  },
+  "license": "MIT"
+}

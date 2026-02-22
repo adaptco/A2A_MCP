@@ -1,0 +1,90 @@
+{
+  "id": "looks.cyberpunk_highlight.v1",
+  "version": "1.0.0",
+  "name": "Cyberpunk Neon + Character Highlight Pass",
+  "description": "Combined grade and subject lift that merges the Cyberpunk Neon (B) and Character Highlight (E) passes for the master frame.",
+  "created": "2025-12-10T00:00:00Z",
+  "governance": {
+    "author": "adaptco",
+    "council": "council/adaptco",
+    "policy_tag": "visual-lookdev"
+  },
+  "capsule": {
+    "category": "lookdev",
+    "application_surfaces": [
+      "Panoramic key art (21:9)",
+      "Cinematic hero frames",
+      "Press kit stills"
+    ],
+    "source_frame": {
+      "notes": "Assumes the uploaded master frame with wet asphalt reflections and cockpit subject.",
+      "tasks": [
+        "Expand canvas to 21:9 without cropping primary subject.",
+        "Remove the duplicate car on the left edge via inpainting/clean plate.",
+        "Recentre the vehicle and pilot to balance the widened frame."
+      ]
+    },
+    "passes": [
+      {
+        "id": "cyberpunk_neon",
+        "title": "Option B — Cyberpunk Neon Pass",
+        "goals": [
+          "Boost neon signage bloom and wet asphalt reflections for a moodier atmosphere.",
+          "Shift grade toward magenta/teal while preserving skin-neutral mids."
+        ],
+        "controls": {
+          "exposure": "+0.20 stops (ceiling +0.35)",
+          "contrast_curve": "S-curve with lifted blacks",
+          "saturation": "+12% overall; +18% on neon ranges",
+          "bloom": "0.35–0.50 radius on emissive regions"
+        }
+      },
+      {
+        "id": "character_highlight",
+        "title": "Option E — Character Highlight Pass",
+        "goals": [
+          "Pull focus to the pilot inside the cockpit.",
+          "Lift facial exposure and hair glow without flattening the environment."
+        ],
+        "controls": {
+          "subject_mask": "Feathered mask around pilot and cockpit interior",
+          "exposure": "+0.35 stops (local)",
+          "gamma": "+0.10 on mids only",
+          "specular_glow": "Targeted lift on interior reflections and visor",
+          "color_balance": "Preserve natural skin tone; bias highlights slightly warm"
+        }
+      }
+    ],
+    "workflow": {
+      "sequence": [
+        "prep.aspect_ratio_21_9",
+        "cleanup.remove_left_car",
+        "layout.recenter_subject",
+        "grade.cyberpunk_neon",
+        "grade.character_highlight"
+      ],
+      "checks": [
+        "No clipping above 95% after neon bloom.",
+        "Subject face stays within ±5% of neutral skin reference.",
+        "Center of mass of vehicle+pilot aligned within 2% of horizontal midpoint."
+      ],
+      "deliverables": [
+        "PNG/TIFF master at 21:9",
+        "Side-by-side A/B of base vs. B+E combo",
+        "Short note listing tweaks applied and masks used"
+      ]
+    },
+    "handoff": {
+      "designer_notes": [
+        "Apply the neon grade globally first, then layer the character highlight with a tracked mask.",
+        "Use a soft light blend for the highlight layer if working in Photoshop; for Resolve/Nuke keep it additive with a limiter.",
+        "Lock horizon and vanishing lines when widening to 21:9 to avoid perspective drift."
+      ],
+      "qa": [
+        "Verify the duplicate car is fully removed with no ghosting in reflections.",
+        "Check that neon sign saturation does not posterize after export.",
+        "Ensure the cockpit highlight does not overpower exterior reflections."
+      ]
+    }
+  }
+}

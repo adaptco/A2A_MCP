@@ -1,14 +1,14 @@
 import unittest
 from unittest.mock import patch, MagicMock
-import os
 
 # We try to import, but it might fail in the current environment
 try:
-    import jwt
+    import jwt  # noqa: F401
     from app.oidc_token import verify_github_oidc_token
     HAS_DEPENDENCIES = True
 except ImportError:
     HAS_DEPENDENCIES = False
+
 
 @unittest.skipUnless(HAS_DEPENDENCIES, "PyJWT not installed")
 class TestOIDCVerification(unittest.TestCase):
@@ -52,6 +52,7 @@ class TestOIDCVerification(unittest.TestCase):
         with self.assertRaises(ValueError) as cm:
             verify_github_oidc_token("some.token")
         self.assertIn("Unexpected error during OIDC verification", str(cm.exception))
+
 
 if __name__ == "__main__":
     unittest.main()

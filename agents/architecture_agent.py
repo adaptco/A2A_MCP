@@ -7,13 +7,14 @@ dependency graphs) and registers them in the PINN WorldModel as VectorTokens.
 """
 from __future__ import annotations
 
+import asyncio
 import uuid
 from typing import List
 
 from agents.pinn_agent import PINNAgent
 from orchestrator.storage import DBManager
 from schemas.agent_artifacts import MCPArtifact
-from schemas.project_plan import ProjectPlan
+from schemas.project_plan import ProjectPlan, PlanAction
 from schemas.world_model import VectorToken
 
 
@@ -34,9 +35,8 @@ class ArchitectureAgent:
 
         Returns the list of architecture artifacts that were created.
         """
-        artifacts: List[MCPArtifact] = []
 
-        for action in plan.actions:
+        async def _process_action(action: PlanAction) -> MCPArtifact:
             arch_content = (
                 f"## Architecture Decision: {action.title}\n\n"
                 f"Instruction: {action.instruction}\n"
@@ -55,15 +55,22 @@ class ArchitectureAgent:
                     "action_id": action.action_id,
                 },
             )
-            self.db.save_artifact(artifact)
+
+            # Offload blocking DB and PINN/LLM calls to threads for concurrency
+            await asyncio.to_thread(self.db.save_artifact, artifact)
 
             # Register in WorldModel via PINN
-            self.pinn.ingest_artifact(
+            await asyncio.to_thread(
+                self.pinn.ingest_artifact,
                 artifact_id=artifact.artifact_id,
                 content=arch_content,
                 parent_id=plan.plan_id,
             )
 
-            artifacts.append(artifact)
+            return artifact
 
-        return artifacts
+        # Execute all action processing concurrently
+        tasks = [_process_action(action) for action in plan.actions]
+        artifacts = await asyncio.gather(*tasks)
+
+        return list(artifacts)

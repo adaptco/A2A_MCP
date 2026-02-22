@@ -1,5 +1,4 @@
 ---
-<<<<<<< HEAD
 metadata:
   model: "Toyota GR Supra A90"
   year: 2024
@@ -12,18 +11,10 @@ metadata:
     - "0-60: 3.9 EPA seconds (was 3.8)"
     - "Removed unverified fields: fuel_consumption_rate, response_time_ms, battery_soc_min"
     - "Fixed YAML structure (duplicate performance keys)"
-=======
-# Supra A90 (2020+) Domain Specification Contract
-# This spec locks vehicle physics, performance, and constraints.
-# All agents, judges, and simulators must respect these parameters.
-# Version: 1.0.0
-# Last Updated: 2026-02-12
->>>>>>> cde431b91765a0efa58a544c6bbce7e87c940fbe
 
 supra:
   model: "Toyota GR Supra A90"
   year: 2024
-<<<<<<< HEAD
   generation: "Gen3 (A90)"
   trim: "All trims (3.0T)"
   notes:
@@ -147,109 +138,6 @@ constraints:
   speed_limiter_mph: 155
 
 telemetry:
-=======
-  trim: "GT500"
-
-powertrain:
-  engine:
-    type: "Twin-Turbo Inline-6 (3.0L)"
-    hp: 335
-    torque_lb_ft: 365
-    # Engine parameters for physics simulation
-    redline_rpm: 7000
-    idle_rpm: 650
-
-  transmission:
-    type: "8-Speed Automatic"
-    # Acceleration profile (0-60 mph times)
-    acceleration:
-      seconds_0_60: 3.8
-      seconds_0_100: 9.1
-      seconds_60_100: 4.8
-
-  drivetrain: "RWD (Rear-Wheel Drive)"
-
-dimensions:
-  length_in: 172.3
-  width_in: 76.4
-  height_in: 51.6
-  wheelbase_in: 97.2
-  weight_lbs: 3397
-  # Bounding box for collision detection (meters, scaled)
-  collision_box:
-    length_m: 4.38
-    width_m: 1.94
-    height_m: 1.31
-
-performance:
-  # Top-speed constraints
-  vmax_mph: 155  # Electronic limiter
-  vmax_kmh: 249
-
-  # Acceleration limits (for physics cap)
-  max_acceleration_g: 1.1  # Lateral grip in turns
-  max_deceleration_g: 1.2  # Braking deceleration
-
-  # Turning radius and response
-  steering:
-    turning_radius_ft: 37.4
-    steering_ratio: 12.0  # Degrees steering wheel per degree wheel turn
-    response_time_ms: 50  # Steering command latency (simulated)
-
-  # Efficiency and fuel
-  fuel_capacity_gal: 13.2
-  mpg_city: 20
-  mpg_highway: 27
-  tank_range_miles: 355
-
-handling_characteristics:
-  # Stability and balance
-  braking_distance_60_ft: 122  # 60 mph to complete stop
-  skid_pad_g: 1.08  # Lateral grip capability
-
-  # Understeer/oversteer bias
-  balance: "neutral"  # Can be adjusted per trim/mode
-
-  # Ride height and ground clearance
-  ground_clearance_in: 4.8
-  approach_angle_deg: 13.0
-  departure_angle_deg: 20.0
-
-  # AWD simulation (not actual Supra, but for future variants)
-  traction_control_modes:
-    - "Full"
-    - "Sport"
-    - "Off"
-
-safety_systems:
-  # Autonomous emergency braking
-  aeb_enabled: true
-  aeb_min_distance_m: 5.0
-
-  # Stability control
-  esc_enabled: true
-
-  # Collision avoidance constraints
-  min_obstacle_distance_m: 0.5  # Hard minimum
-  min_safe_distance_m: 2.0     # Recommended safe margin
-
-constraints:
-  # Operational boundaries (agents must respect these)
-  max_speed_in_zone: null  # Null = use vmax; can be overridden per Base44 cell
-  max_acceleration_gs: 1.1
-  max_deceleration_gs: 1.2
-
-  # Fuel and energy
-  fuel_consumption_rate: 0.05  # gal/min at full throttle
-  battery_soc_min: 0.05  # 5% minimum (if hybrid mode used)
-
-  # Maintenance windows
-  service_interval_miles: 5000
-  tire_wear_rate: 0.01  # % per hour of driving
-
-telemetry:
-  # Parameters sent to judge and world state
->>>>>>> cde431b91765a0efa58a544c6bbce7e87c940fbe
   recorded_metrics:
     - speed_mph
     - rpm
@@ -258,45 +146,11 @@ telemetry:
     - gear
     - steering_angle_deg
     - fuel_remaining_gal
-<<<<<<< HEAD
     - engine_temperature_c
     - lateral_g_force
     - longitudinal_g_force
     - distance_traveled_m
     - collision_count
-
-notes:
-  - "VERIFICATION: See SPECS_AUDIT.md for complete source attribution"
-  - "All speeds in mph unless otherwise noted"
-  - "RWD handling requires careful throttle management"
-  - "Single-turbo (NOT twin-turbo) BMW B58B30M1 engine configuration"
-  - "ESC active safety threshold is 1.08g (skid pad limit)"
-  - "EPA testing uses 8-speed automatic transmission variant"
-  - "Unverified fields marked with UNVERIFIED and confidence level"
-  - "Three fields removed: fuel_consumption_rate, response_time_ms, battery_soc_min (no verified source)"
-
-removed_fields:
-  fuel_consumption_rate:
-    reason: "Completely generated with no source verification"
-    was_value: "0.05 gal/min at full throttle"
-
-  response_time_ms:
-    reason: "Generic estimate not specific to Supra"
-    was_value: "50 ms"
-
-  battery_soc_min:
-    reason: "Not applicable - 2024 Supra is internal combustion engine only, no hybrid"
-    was_value: "0.05"
-
-  aeb_min_distance_m:
-    reason: "Generic setting, not Supra-specific"
-    was_value: "5.0 m"
-=======
-    - temperature_c  # Engine, transmission
-    - lateral_g
-    - longitudinal_g
-    - distance_traveled_m
-    - collisions_count
 
 ui_config:
   # Visual representation
@@ -335,9 +189,28 @@ behaviors:
       braking_sensitivity: 1.0
 
 notes:
+  - "VERIFICATION: See SPECS_AUDIT.md for complete source attribution"
   - "All speeds in mph unless otherwise noted"
   - "RWD handling requires careful throttle management"
-  - "Twin-turbo response time ~200ms from 0% to full boost"
-  - "ESC intervention threshold at 1.08g lateral (skid pad limit)"
-  - "Future: support AWD variants with locked/unlocked differentials"
->>>>>>> cde431b91765a0efa58a544c6bbce7e87c940fbe
+  - "Single-turbo (NOT twin-turbo) BMW B58B30M1 engine configuration"
+  - "ESC active safety threshold is 1.08g (skid pad limit)"
+  - "EPA testing uses 8-speed automatic transmission variant"
+  - "Unverified fields marked with UNVERIFIED and confidence level"
+  - "Three fields removed: fuel_consumption_rate, response_time_ms, battery_soc_min (no verified source)"
+
+removed_fields:
+  fuel_consumption_rate:
+    reason: "Completely generated with no source verification"
+    was_value: "0.05 gal/min at full throttle"
+
+  response_time_ms:
+    reason: "Generic estimate not specific to Supra"
+    was_value: "50 ms"
+
+  battery_soc_min:
+    reason: "Not applicable - 2024 Supra is internal combustion engine only, no hybrid"
+    was_value: "0.05"
+
+  aeb_min_distance_m:
+    reason: "Generic setting, not Supra-specific"
+    was_value: "5.0 m"

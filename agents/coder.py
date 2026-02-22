@@ -18,7 +18,6 @@ class CoderAgent:
         # Retrieve context from persistence layer
         parent_context = self.db.get_artifact(parent_id)
         
-        # --- FIX: Handle Empty Database (NoneType) ---
         if parent_context:
             context_content = parent_context.content
         else:

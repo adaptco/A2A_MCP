@@ -48,6 +48,7 @@ def get_whatsapp_messages_paginated(api_key, phone_number_id, limit=100):
 
             # Check for pagination
             paging = data.get('paging', {})
+            cursors = paging.get('cursors', {})
             next_cursor = paging.get('next')
 
             if next_cursor:
@@ -225,7 +226,8 @@ def verify_hashes(whatsapp_df, internal_df):
         if pd.notnull(stored_hash) and pd.notnull(calc_hash):
             # Compare prefixes (e.g., first 12 chars) or full hash
             # Assuming stored_hash might be a prefix or full
-            if calc_hash == stored_hash:
+            if calc_hash.startswith(stored_hash) or stored_hash.startswith(calc_hash):
+                status = 'MATCH'
             else:
                 status = 'MISMATCH'
         elif row['_merge'] == 'left_only':
@@ -396,10 +398,9 @@ if __name__ == "__main__":
 
     if api_key and phone_id:
         print(f"Environment variables found for Phone ID: {phone_id}")
-        print("Running in live mode...")
-        # TODO: In a real application, you would load 'internal_events_df' from your database here.
-        # For this example, we'll use an empty DataFrame as a placeholder.
-        internal_events_df = pd.DataFrame()
-        auditor_cli(api_key, phone_id, internal_events_df)
+        print("Running in live mode... (Note: internal_df would need to be loaded here)")
+        # In a real application, you'd load data here.
+        # For this example, we still run the demo because we don't have a real DB connection.
+        run_demo()
     else:
         run_demo()

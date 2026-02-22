@@ -12,6 +12,11 @@ on:
       - "requirements.txt"
       - "pyproject.toml"
       - ".github/workflows/agents-ci-cd.yml"
+<<<<<<< HEAD
+      - ".github/actions/agents-unit-tests/action.yml"
+=======
+      - ".github/workflows/agents-unit-tests.yml"
+>>>>>>> 7fd4cb3e8ac9be988eb8f44d14c3f512ddb03d6e
   pull_request:
     branches: [main]
     paths:
@@ -23,17 +28,33 @@ on:
       - "requirements.txt"
       - "pyproject.toml"
       - ".github/workflows/agents-ci-cd.yml"
+<<<<<<< HEAD
+      - ".github/actions/agents-unit-tests/action.yml"
+=======
+      - ".github/workflows/agents-unit-tests.yml"
+>>>>>>> 7fd4cb3e8ac9be988eb8f44d14c3f512ddb03d6e
   workflow_dispatch:
   release:
     types: [published]
 
+permissions:
+  contents: read
+
 jobs:
-  validate:
+  unit-tests:
+<<<<<<< HEAD
+=======
+    name: Unit tests
+>>>>>>> 7fd4cb3e8ac9be988eb8f44d14c3f512ddb03d6e
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
+<<<<<<< HEAD
+      - name: Run unit test action
+        uses: ./.github/actions/agents-unit-tests
+=======
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
@@ -50,15 +71,16 @@ jobs:
           PYTHONDONTWRITEBYTECODE: "1"
         run: python -m compileall -q .
 
-      - name: Run agent/game tests
+      - name: Run unit tests
         env:
           PYTHONDONTWRITEBYTECODE: "1"
         run: |
           pytest -q tests/test_full_pipeline.py tests/test_intent_engine.py tests/test_avatar_integration.py tests/test_game_model.py tests/test_webgl_integration.py tests/test_cicd_pipeline.py
+>>>>>>> 7fd4cb3e8ac9be988eb8f44d14c3f512ddb03d6e
 
   contract-artifacts:
     runs-on: ubuntu-latest
-    needs: validate
+    needs: unit-tests
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -99,6 +121,8 @@ jobs:
     if: github.event_name == 'release'
     runs-on: ubuntu-latest
     needs: contract-artifacts
+    permissions:
+      contents: write
     steps:
       - name: Download contract artifacts
         uses: actions/download-artifact@v4

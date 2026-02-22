@@ -1,9 +1,10 @@
 from fastapi import APIRouter, Body, FastAPI, HTTPException
 from orchestrator.stateflow import StateMachine
 from orchestrator.utils import extract_plan_id_from_path
+from orchestrator.verify_api import router as verify_router
 
 app = FastAPI(title="A2A MCP Webhook")
-ingress_router = APIRouter()
+app.include_router(verify_router)
 
 # in-memory map (replace with DB-backed persistence or plan state store in prod)
 PLAN_STATE_MACHINES = {}
@@ -36,6 +37,9 @@ async def _plan_ingress_impl(path_plan_id: str | None, payload: dict):
     if not sm:
         sm = StateMachine(max_retries=3)
         sm.plan_id = plan_id
+
+        # restored machines still need the EXECUTING callback to launch processing
+        _register_executing_callback(sm, sm)
         PLAN_STATE_MACHINES[plan_id] = sm
 
     rec = sm.trigger("OBJECTIVE_INGRESS")

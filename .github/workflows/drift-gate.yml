@@ -1,0 +1,67 @@
+name: Drift Gate
+
+on:
+  workflow_dispatch:
+
+jobs:
+  drift-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
+          pip install numpy pytest
+
+      - name: Run KS drift gate
+        run: |
+          python <<'EOF'
+          import json
+          from pathlib import Path
+
+          import numpy as np
+
+          from drift_suite import gate_drift
+
+          baseline_path = Path("baselines/rev_pred_embeddings.npy")
+          candidate_path = Path("candidate_embeddings.npy")
+
+          if not baseline_path.exists() or not candidate_path.exists():
+              raise SystemExit(
+                  "Missing baseline/candidate artifacts. Expected "
+                  "baselines/rev_pred_embeddings.npy and candidate_embeddings.npy"
+              )
+
+          baseline = np.load(baseline_path)
+          candidate = np.load(candidate_path)
+
+          result = gate_drift(baseline, candidate, pvalue_threshold=0.10)
+
+          print(
+              json.dumps(
+                  {
+                      "passed": result.passed,
+                      "reason": result.reason,
+                      "audit": {
+                          "statistic": result.ks.statistic,
+                          "pvalue": result.ks.pvalue,
+                          "n1": result.ks.n1,
+                          "n2": result.ks.n2,
+                          "threshold": result.threshold,
+                          "metric": result.metric,
+                      },
+                  },
+                  indent=2,
+              )
+          )
+
+          if not result.passed:
+              raise SystemExit(1)
+          EOF

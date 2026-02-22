@@ -1,0 +1,3 @@
+[submodule "PhysicalAI-Autonomous-Vehicles"]
+    path = PhysicalAI-Autonomous-Vehicles
+    url = https://github.com/adaptco-main/PhysicalAI-Autonomous-Vehicles.git

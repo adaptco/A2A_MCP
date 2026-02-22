@@ -81,6 +81,9 @@ class StateMachine:
         self._lock = threading.RLock()
         self._persistence_callback = persistence_callback
         self.plan_id: Optional[str] = None
+        self._transition_seq: int = 0
+        self._last_persisted_seq: int = 0
+        self._persist_cond = threading.Condition(self._lock)
 
     _TRANSITIONS: Dict[str, Any] = {
         "OBJECTIVE_INGRESS": ([State.IDLE], State.SCHEDULED),
@@ -126,8 +129,17 @@ class StateMachine:
             except Exception:
                 pass
 
-    def _run_post_transition(self, rec: TransitionRecord, callbacks: List[Callable[[TransitionRecord], None]], snapshot: Dict[str, Any], plan_id: Optional[str]) -> None:
+    def _run_post_transition(self, rec: TransitionRecord, callbacks: List[Callable[[TransitionRecord], None]], snapshot: Dict[str, Any], plan_id: Optional[str], seq: int) -> None:
+        with self._persist_cond:
+            while seq != self._last_persisted_seq + 1:
+                self._persist_cond.wait()
+
         self._persist_snapshot(snapshot, plan_id)
+
+        with self._persist_cond:
+            self._last_persisted_seq = seq
+            self._persist_cond.notify_all()
+
         for cb in callbacks:
             try:
                 cb(rec)
@@ -150,20 +162,27 @@ class StateMachine:
                     callbacks = self._enter_state(rec)
                     snapshot = self.to_dict()
                     plan_id = self.plan_id
+                    self._transition_seq += 1
+                    seq = self._transition_seq
                 else:
                     rec = self._record(self.state, to_state, event, meta)
                     callbacks = self._enter_state(rec)
                     snapshot = self.to_dict()
                     plan_id = self.plan_id
+                    self._transition_seq += 1
+                    seq = self._transition_seq
             else:
+                # Do not reset attempts on RETRY_DISPATCHED; only reset after PASS.
                 if event == "VERDICT_PASS":
                     self.attempts = 0
                 rec = self._record(self.state, to_state, event, meta)
                 callbacks = self._enter_state(rec)
                 snapshot = self.to_dict()
                 plan_id = self.plan_id
+                self._transition_seq += 1
+                seq = self._transition_seq
 
-        self._run_post_transition(rec, callbacks, snapshot, plan_id)
+        self._run_post_transition(rec, callbacks, snapshot, plan_id, seq)
         return rec
 
     def evaluate_apply_policy(self, policy_fn: Callable[[], bool], **meta) -> TransitionRecord:
@@ -191,8 +210,10 @@ class StateMachine:
             callbacks = self._enter_state(rec)
             snapshot = self.to_dict()
             plan_id = self.plan_id
+            self._transition_seq += 1
+            seq = self._transition_seq
 
-        self._run_post_transition(rec, callbacks, snapshot, plan_id)
+        self._run_post_transition(rec, callbacks, snapshot, plan_id, seq)
         return rec
 
     def to_dict(self) -> Dict[str, Any]:
@@ -212,6 +233,8 @@ class StateMachine:
         sm.state = State(d["state"])
         sm.attempts = int(d.get("attempts", 0))
         sm.history = [TransitionRecord.from_dict(h) for h in d.get("history", [])]
+        sm._transition_seq = len(sm.history)
+        sm._last_persisted_seq = len(sm.history)
         return sm
 
     def current_state(self) -> State:

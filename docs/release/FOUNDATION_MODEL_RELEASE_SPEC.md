@@ -78,3 +78,18 @@ Routing:
 2. Skills marketplace lookup computes capability match.
 3. Manager emits `OBJECTIVE_INGRESS` to move `IDLE -> SCHEDULED`.
 
+
+## PR Validation Requirement (CI/CD Artifact Gate)
+For every pull request targeting `main`, CI must validate each non-merge commit in the PR range and publish a testing artifact bundle.
+
+Requirement:
+1. Determine commit range from PR `base.sha..head.sha`.
+2. Execute the designated validation suite for each commit independently.
+3. Persist a commit-level report artifact containing commit SHA, pass/fail result, exit code, and runtime.
+4. Fail the workflow if any commit-level validation fails.
+
+Artifact contract:
+- `artifacts/commit-validation/commit_validation_report.json`
+- `artifacts/commit-validation/commit_validation_report.md`
+
+This requirement is additive to milestone bundle/draft monitor artifacts and is used as a release-readiness signal for PR generation workflows.

@@ -1,0 +1,3 @@
+assumptions:
+  wacc: 0.1
+  baseline_growth: 0.05

@@ -1,0 +1,1 @@
+{ "type": "object", "properties": { "events": { "type": "array" } }, "required": ["events"] }

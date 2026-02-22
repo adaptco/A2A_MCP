@@ -1,0 +1,136 @@
+name: PR Commit Validation
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, reopened, synchronize, ready_for_review]
+  workflow_dispatch:
+
+jobs:
+  validate-each-commit:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout full history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install test dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest
+          pip install -e .
+
+      - name: Validate commits with smoke tests
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          import subprocess
+          import time
+          from pathlib import Path
+
+          event_name = os.getenv('GITHUB_EVENT_NAME', '')
+          head = os.getenv('HEAD_SHA') or subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip()
+          base = os.getenv('BASE_SHA')
+
+          if event_name == 'pull_request' and base:
+              rev_range = f"{base}..{head}"
+              commit_list = subprocess.check_output(
+                  ['git', 'rev-list', '--reverse', '--no-merges', rev_range],
+                  text=True,
+              ).splitlines()
+          else:
+              commit_list = [head]
+
+          if not commit_list:
+              commit_list = [head]
+
+          report = {
+              'event': event_name,
+              'base_sha': base,
+              'head_sha': head,
+              'test_command': 'PYTHONPATH=scripts:src pytest -q tests/test_mcp_agents.py',
+              'commit_results': [],
+          }
+
+          original_head = subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip()
+
+          for sha in commit_list:
+              subprocess.check_call(['git', 'checkout', '--quiet', sha])
+              start = time.time()
+              env = dict(os.environ)
+              env['PYTHONPATH'] = 'scripts:src'
+              proc = subprocess.run(
+                  ['pytest', '-q', 'tests/test_mcp_agents.py'],
+                  text=True,
+                  capture_output=True,
+                  env=env,
+              )
+              duration = round(time.time() - start, 2)
+              report['commit_results'].append(
+                  {
+                      'commit': sha,
+                      'status': 'passed' if proc.returncode == 0 else 'failed',
+                      'exit_code': proc.returncode,
+                      'duration_seconds': duration,
+                      'stdout_tail': proc.stdout[-3000:],
+                      'stderr_tail': proc.stderr[-3000:],
+                  }
+              )
+
+          subprocess.check_call(['git', 'checkout', '--quiet', original_head])
+
+          failures = [r for r in report['commit_results'] if r['status'] != 'passed']
+          report['summary'] = {
+              'total_commits_validated': len(report['commit_results']),
+              'failed_commits': [f['commit'] for f in failures],
+              'overall_status': 'failed' if failures else 'passed',
+          }
+
+          out_dir = Path('artifacts/commit-validation')
+          out_dir.mkdir(parents=True, exist_ok=True)
+          (out_dir / 'commit_validation_report.json').write_text(
+              json.dumps(report, indent=2),
+              encoding='utf-8',
+          )
+
+          lines = [
+              '# Commit Validation Report',
+              '',
+              f"- Event: `{report['event']}`",
+              f"- Base SHA: `{report['base_sha']}`",
+              f"- Head SHA: `{report['head_sha']}`",
+              f"- Test command: `{report['test_command']}`",
+              f"- Commits validated: `{report['summary']['total_commits_validated']}`",
+              f"- Overall status: `{report['summary']['overall_status']}`",
+              '',
+          ]
+          for item in report['commit_results']:
+              lines.append(
+                  f"- `{item['commit'][:12]}`: {item['status']} (exit={item['exit_code']}, {item['duration_seconds']}s)"
+              )
+
+          (out_dir / 'commit_validation_report.md').write_text('\n'.join(lines), encoding='utf-8')
+
+          if failures:
+              raise SystemExit(1)
+          PY
+
+      - name: Upload commit validation artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: commit-validation-${{ github.run_number }}
+          path: artifacts/commit-validation/
+          if-no-files-found: error

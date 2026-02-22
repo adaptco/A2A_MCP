@@ -1,3 +1,5 @@
+[![Pylint](https://github.com/adaptco-main/A2A_MCP/actions/workflows/pylint.yml/badge.svg)](https://github.com/adaptco-main/A2A_MCP/actions/workflows/pylint.yml)
+
 # A2A MCP - Autonomous Agent Architecture with Model Context Protocol
 
 ## Overview

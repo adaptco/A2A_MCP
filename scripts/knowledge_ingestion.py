@@ -1,40 +1,48 @@
 from __future__ import annotations
-
+import os
 from typing import Any
 
-try:
-    from fastmcp import FastMCP
-except ModuleNotFoundError:
-    from mcp.server.fastmcp import FastMCP
-
-from app.mcp_tooling import (
-    ingest_repository_data_impl,
-    ingest_worldline_block_impl,
-)
-from app.security.oidc import verify_github_oidc_token as _verify_github_oidc_token
+import jwt
+from fastmcp import FastMCP
 
 app_ingest = FastMCP("knowledge-ingestion")
 
 
 def verify_github_oidc_token(token: str) -> dict[str, Any]:
-    """Compatibility wrapper for tests that patch this symbol directly."""
-    return _verify_github_oidc_token(token)
+    if not token:
+        raise ValueError("Invalid OIDC token")
+
+    audience = os.getenv("GITHUB_OIDC_AUDIENCE")
+    if not audience:
+        raise ValueError("OIDC audience is not configured")
+
+    jwks_client = jwt.PyJWKClient("https://token.actions.githubusercontent.com/.well-known/jwks")
+    signing_key = jwks_client.get_signing_key_from_jwt(token).key
+    claims = jwt.decode(
+        token,
+        signing_key,
+        algorithms=["RS256"],
+        audience=audience,
+        issuer="https://token.actions.githubusercontent.com",
+    )
+
+    repository = str(claims.get("repository", "")).strip()
+    if not repository:
+        raise ValueError("OIDC token missing repository claim")
+
+    return claims
 
 
-@app_ingest.tool(name="ingest_repository_data")
+@app_ingest.tool()
 def ingest_repository_data(snapshot: dict[str, Any], authorization: str) -> str:
-    return ingest_repository_data_impl(
-        snapshot=snapshot,
-        authorization=authorization,
-        verifier=verify_github_oidc_token,
-    )
+    if not authorization.startswith("Bearer "):
+        return "error: missing bearer token"
+    token = authorization.split(" ", 1)[1].strip()
+    claims = verify_github_oidc_token(token)
+    repository = str(claims.get("repository", "")).strip()
 
+    snapshot_repository = str(snapshot.get("repository", "")).strip()
+    if snapshot_repository and snapshot_repository != repository:
+        return "error: repository claim mismatch"
 
-@app_ingest.tool(name="ingest_worldline_block")
-def ingest_worldline_block(worldline_block: dict[str, Any], authorization: str) -> str:
-    """Ingest a multimodal worldline block for MCP orchestration."""
-    return ingest_worldline_block_impl(
-        worldline_block=worldline_block,
-        authorization=authorization,
-        verifier=verify_github_oidc_token,
-    )
+    return f"success: ingested repository {repository}"

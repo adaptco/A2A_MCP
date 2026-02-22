@@ -97,6 +97,32 @@ class TestFullPipeline:
         assert len(result.test_verdicts) > 0
         assert all(v["status"] == "PASS" for v in result.test_verdicts)
 
+
+    @pytest.mark.asyncio
+    async def test_run_full_pipeline_does_not_double_persist_code_artifacts(self):
+        engine = self._make_engine()
+
+        coder_saved_ids = []
+
+        def record_coder_save(artifact):
+            coder_saved_ids.append(artifact.artifact_id)
+
+        engine.coder.db.save_artifact.side_effect = record_coder_save
+
+        duplicate_attempt_ids = []
+
+        def top_level_save(artifact):
+            if getattr(artifact, "type", None) == "code_solution":
+                duplicate_attempt_ids.append(artifact.artifact_id)
+
+        engine.db.save_artifact.side_effect = top_level_save
+
+        result = await engine.run_full_pipeline("Build a user service")
+
+        assert result.success is True
+        assert coder_saved_ids
+        assert duplicate_attempt_ids == []
+
     # -----------------------------------------------------------------
     # Self-healing: first test fails, second pass succeeds
     # -----------------------------------------------------------------

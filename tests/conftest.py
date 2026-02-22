@@ -1,5 +1,10 @@
-"""Pytest bootstrap for stable project imports."""
+import asyncio
+import inspect
 
-from bootstrap import bootstrap_paths
 
-bootstrap_paths()
+def pytest_pyfunc_call(pyfuncitem):
+    testfunction = pyfuncitem.obj
+    if inspect.iscoroutinefunction(testfunction):
+        asyncio.run(testfunction(**pyfuncitem.funcargs))
+        return True
+    return None

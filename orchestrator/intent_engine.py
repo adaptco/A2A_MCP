@@ -9,53 +9,72 @@ from typing import Any, Dict, List, Tuple
 
 from agents.architecture_agent import ArchitectureAgent
 from agents.coder import CoderAgent
-from agents.managing_agent import ManagingAgent
-from agents.orchestration_agent import OrchestrationAgent
 from agents.tester import TesterAgent
-from orchestrator.judge_orchestrator import get_judge_orchestrator
-from orchestrator.notifier import (
-    WhatsAppNotifier,
-    send_pipeline_completion_notification,
-)
-from orchestrator.storage import DBManager
+from agents.pinn_agent import PINNAgent
+from agents.managing_agent import ManagingAgent
+from orchestrator.storage import PlanStatePersistence
 from orchestrator.vector_gate import VectorGate, VectorGateDecision
 from schemas.agent_artifacts import MCPArtifact
 from schemas.project_plan import PlanAction, ProjectPlan
 
 logger = logging.getLogger(__name__)
 
+logger = logging.getLogger(__name__)
+
+@dataclass
+class ActionItem:
+    instruction: str
+    status: str = "pending"  # pending, in_progress, completed, failed
+    artifact_id: Optional[str] = None
+    title: str = "Untitled Action"
+
+@dataclass
+class ProjectPlan:
+    project_name: str
+    actions: List[ActionItem]
+    plan_id: str = "unknown-plan"
 
 @dataclass
 class PipelineResult:
-    """Typed output of a full 5-agent pipeline run."""
-
-    plan: ProjectPlan
-    blueprint: ProjectPlan
-    architecture_artifacts: List[MCPArtifact] = field(default_factory=list)
-    code_artifacts: List[MCPArtifact] = field(default_factory=list)
-    test_verdicts: List[Dict[str, str]] = field(default_factory=list)
     success: bool = False
-
+    architecture_artifacts: List[object] = field(default_factory=list)
+    code_artifacts: List[object] = field(default_factory=list)
+    test_verdicts: List[Dict[str, str]] = field(default_factory=list)
 
 class IntentEngine:
-    """Coordinates multi-agent execution across the full swarm."""
+    """
+    Coordination layer that manages the lifecycle of a task from high-level intent
+    to verified code execution.
 
-    def __init__(self) -> None:
-        self.manager = ManagingAgent()
-        self.orchestrator = OrchestrationAgent()
-        self.architect = ArchitectureAgent()
-        self.coder = CoderAgent()
-        self.tester = TesterAgent()
-        self.judge = get_judge_orchestrator()
-        self.whatsapp_notifier = WhatsAppNotifier.from_env()
-        self.vector_gate = VectorGate()
-        self.db = DBManager()
+    It integrates the ArchitectureAgent for system design, CoderAgent for implementation,
+    and TesterAgent for validation, while enforcing security and correctness
+    checks via the JudgeOrchestrator and VectorGate.
+    """
 
-    async def run_full_pipeline(
+    def __init__(
         self,
-        description: str,
-        requester: str = "system",
-        max_healing_retries: int = 3,
+        architect: ArchitectureAgent,
+        coder: CoderAgent,
+        tester: TesterAgent,
+        db: PlanStatePersistence,
+        pinn: PINNAgent,
+        manager: ManagingAgent,
+    ):
+        self.architect = architect
+        self.coder = coder
+        self.tester = tester
+        self.db = db
+        self.pinn = pinn
+        self.manager = manager
+        self.vector_gate = VectorGate()
+        self.judge = JudgeOrchestrator(judge_preset="simulation")
+        self.whatsapp_notifier = WhatsAppNotifier.from_env()
+
+    async def run_pipeline(
+        self,
+        user_intent: str,
+        project_name: str,
+        max_healing_retries: int = 2,
     ) -> PipelineResult:
         """Run the full Managing -> Orchestrator -> Architect -> Coder -> Tester flow."""
         result = self._initialize_pipeline_result(description, requester)

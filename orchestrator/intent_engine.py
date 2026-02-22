@@ -1,82 +1,96 @@
-"""Core pipeline coordinator for multi-agent orchestration."""
-
-from __future__ import annotations
-
+import logging
+from typing import List, Optional, Dict
 from dataclasses import dataclass, field
-from typing import Dict, List
 
 from agents.architecture_agent import ArchitectureAgent
 from agents.coder import CoderAgent
-from agents.managing_agent import ManagingAgent
-from agents.orchestration_agent import OrchestrationAgent
 from agents.tester import TesterAgent
-from orchestrator.judge_orchestrator import get_judge_orchestrator
-from orchestrator.notifier import (
-    WhatsAppNotifier,
-    send_pipeline_completion_notification,
-)
-from orchestrator.storage import DBManager
+from agents.pinn_agent import PINNAgent
+from agents.managing_agent import ManagingAgent
+from orchestrator.storage import PlanStatePersistence
 from orchestrator.vector_gate import VectorGate, VectorGateDecision
-from schemas.agent_artifacts import MCPArtifact
-from schemas.project_plan import ProjectPlan
+from orchestrator.judge_orchestrator import JudgeOrchestrator
+from orchestrator.notifier import send_pipeline_completion_notification, WhatsAppNotifier
 
+logger = logging.getLogger(__name__)
+
+@dataclass
+class ActionItem:
+    instruction: str
+    status: str = "pending"  # pending, in_progress, completed, failed
+    artifact_id: Optional[str] = None
+    title: str = "Untitled Action"
+
+@dataclass
+class ProjectPlan:
+    project_name: str
+    actions: List[ActionItem]
+    plan_id: str = "unknown-plan"
 
 @dataclass
 class PipelineResult:
-    """Typed output of a full 5-agent pipeline run."""
-
-    plan: ProjectPlan
-    blueprint: ProjectPlan
-    architecture_artifacts: List[MCPArtifact] = field(default_factory=list)
-    code_artifacts: List[MCPArtifact] = field(default_factory=list)
-    test_verdicts: List[Dict[str, str]] = field(default_factory=list)
     success: bool = False
-
+    architecture_artifacts: List[object] = field(default_factory=list)
+    code_artifacts: List[object] = field(default_factory=list)
+    test_verdicts: List[Dict[str, str]] = field(default_factory=list)
 
 class IntentEngine:
-    """Coordinates multi-agent execution across the full swarm."""
+    """
+    Coordination layer that manages the lifecycle of a task from high-level intent
+    to verified code execution.
 
-    def __init__(self) -> None:
-        self.manager = ManagingAgent()
-        self.orchestrator = OrchestrationAgent()
-        self.architect = ArchitectureAgent()
-        self.coder = CoderAgent()
-        self.tester = TesterAgent()
-        self.judge = get_judge_orchestrator()
-        self.whatsapp_notifier = WhatsAppNotifier.from_env()
-        self.vector_gate = VectorGate()
-        self.db = DBManager()
+    It integrates the ArchitectureAgent for system design, CoderAgent for implementation,
+    and TesterAgent for validation, while enforcing security and correctness
+    checks via the JudgeOrchestrator and VectorGate.
+    """
 
-    async def run_full_pipeline(
+    def __init__(
         self,
-        description: str,
-        requester: str = "system",
-        max_healing_retries: int = 3,
+        architect: ArchitectureAgent,
+        coder: CoderAgent,
+        tester: TesterAgent,
+        db: PlanStatePersistence,
+        pinn: PINNAgent,
+        manager: ManagingAgent,
+    ):
+        self.architect = architect
+        self.coder = coder
+        self.tester = tester
+        self.db = db
+        self.pinn = pinn
+        self.manager = manager
+        self.vector_gate = VectorGate()
+        self.judge = JudgeOrchestrator(judge_preset="simulation")
+        self.whatsapp_notifier = WhatsAppNotifier.from_env()
+
+    async def run_pipeline(
+        self,
+        user_intent: str,
+        project_name: str,
+        max_healing_retries: int = 2,
     ) -> PipelineResult:
-        """Run the full Managing -> Orchestrator -> Architect -> Coder -> Tester flow."""
-        result = PipelineResult(
-            plan=ProjectPlan(
-                plan_id="pending",
-                project_name=description[:80],
-                requester=requester,
-            ),
-            blueprint=ProjectPlan(
-                plan_id="pending",
-                project_name=description[:80],
-                requester=requester,
-            ),
-        )
+        """
+        Execute the full intent-to-code pipeline with integrated vector gating and judgment.
 
-        plan = await self.manager.categorize_project(description, requester)
-        result.plan = plan
+        1. Architect generates a blueprint from user intent.
+        2. VectorGate provides semantic context and security checks for each step.
+        3. Coder implements actions defined in the blueprint.
+        4. Tester validates artifacts, triggering a self-healing loop on failure.
+        5. JudgeOrchestrator evaluates the quality and safety of each step.
+        """
+        result = PipelineResult()
 
-        task_descriptions = [a.instruction for a in plan.actions]
-        blueprint = await self.orchestrator.build_blueprint(
-            project_name=plan.project_name,
-            task_descriptions=task_descriptions,
-            requester=requester,
+        plan_gate = self.vector_gate.evaluate(
+            node="architecture_input",
+            query=user_intent,
+            world_model=self.architect.pinn.world_model,
         )
-        result.blueprint = blueprint
+        plan_context = self.vector_gate.format_prompt_context(plan_gate)
+        blueprint = await self.architect.create_plan(
+            user_intent,
+            project_name,
+            supplemental_context=plan_context,
+        )
 
         arch_artifacts = await self.architect.map_system(blueprint)
         result.architecture_artifacts = arch_artifacts

@@ -225,8 +225,7 @@ def verify_hashes(whatsapp_df, internal_df):
         if pd.notnull(stored_hash) and pd.notnull(calc_hash):
             # Compare prefixes (e.g., first 12 chars) or full hash
             # Assuming stored_hash might be a prefix or full
-            if calc_hash.startswith(stored_hash) or stored_hash.startswith(calc_hash):
-                status = 'MATCH'
+            if calc_hash == stored_hash:
             else:
                 status = 'MISMATCH'
         elif row['_merge'] == 'left_only':

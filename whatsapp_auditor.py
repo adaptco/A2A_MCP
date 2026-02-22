@@ -396,9 +396,10 @@ if __name__ == "__main__":
 
     if api_key and phone_id:
         print(f"Environment variables found for Phone ID: {phone_id}")
-        print("Running in live mode... (Note: internal_df would need to be loaded here)")
-        # In a real application, you'd load data here.
-        # For this example, we still run the demo because we don't have a real DB connection.
-        run_demo()
+        print("Running in live mode...")
+        # TODO: In a real application, you would load 'internal_events_df' from your database here.
+        # For this example, we'll use an empty DataFrame as a placeholder.
+        internal_events_df = pd.DataFrame()
+        auditor_cli(api_key, phone_id, internal_events_df)
     else:
         run_demo()

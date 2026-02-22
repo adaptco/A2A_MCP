@@ -7,6 +7,7 @@ produces a ProjectPlan artifact that downstream agents consume.
 """
 from __future__ import annotations
 
+from fastapi.concurrency import run_in_threadpool
 import uuid
 from typing import List
 

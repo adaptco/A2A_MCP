@@ -1,59 +1,19 @@
 import os
-from dotenv import load_dotenv
 
-# This tells Python to look for your local .env file
-load_dotenv()
-
-class LLMService:
-    def __init__(self):
-        # These variables pull from your local .env
-        self.api_key = os.getenv("LLM_API_KEY")
-        self.endpoint = os.getenv("LLM_ENDPOINT")
-
-    def call_llm(self, prompt: str, system_prompt: str = "You are a helpful coding assistant."):
-        if not self.api_key or not self.endpoint:
-            raise ValueError("API Key or Endpoint missing from your local .env file!")
-
-        import requests
-        import httpx
-
-        headers = {
-            "Authorization": f"Bearer {self.api_key}",
-            "Content-Type": "application/json"
-        }
-
-        payload = {
-            "model": "codestral-latest",
-            "messages": [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": prompt}
-            ]
-        }
-
-        response = requests.post(self.endpoint, headers=headers, json=payload)
-        response.raise_for_status()
-        return response.json()["choices"][0]["message"]["content"]
-
-    async def call_llm_async(self, prompt: str, system_prompt: str = "You are a helpful coding assistant."):
-        if not self.api_key or not self.endpoint:
-            raise ValueError("API Key or Endpoint missing from your local .env file!")
-
-        import httpx
-
-        headers = {
-            "Authorization": f"Bearer {self.api_key}",
-            "Content-Type": "application/json"
-        }
-
-        payload = {
-            "model": "codestral-latest",
-            "messages": [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": prompt}
-            ]
-        }
-
-        async with httpx.AsyncClient() as client:
-            response = await client.post(self.endpoint, headers=headers, json=payload)
-            response.raise_for_status()
-            return response.json()["choices"][0]["message"]["content"]
+def get_vertex_ai_model_dir():
+    """
+    Retrieves the authoritative directory for model artifacts.
+    Vertex AI sets this to a gs:// path during custom training jobs.
+    """
+    # Fallback to local exports for debugging in Cloud Shell
+    model_dir = os.environ.get('AIP_MODEL_DIR', './exports/v10_alpha/')
+    
+    # Ensure the directory exists if it's a local path
+    if not model_dir.startswith('gs://'):
+        os.makedirs(model_dir, exist_ok=True)
+        
+    print(f"--- Model Persistence Layer Active ---")
+    print(f"Artifact Destination: {model_dir}")
+    print(f"--------------------------------------")
+    
+    return model_dir

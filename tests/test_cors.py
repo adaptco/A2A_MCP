@@ -1,10 +1,8 @@
 
 import os
-import sys
 import pytest
-
-# Add the current directory to sys.path so we can import rbac
-sys.path.append(os.getcwd())
+from fastapi.middleware.cors import CORSMiddleware
+from rbac.rbac_service import app
 
 def test_cors_config_is_not_wildcard():
     """

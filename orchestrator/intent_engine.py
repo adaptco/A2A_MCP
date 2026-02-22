@@ -6,34 +6,22 @@ import asyncio
 import logging
 
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Tuple, Optional
 
 from agents.architecture_agent import ArchitectureAgent
 from agents.coder import CoderAgent
 from agents.tester import TesterAgent
 from agents.pinn_agent import PINNAgent
 from agents.managing_agent import ManagingAgent
+from agents.orchestration_agent import OrchestrationAgent
 from orchestrator.storage import PlanStatePersistence
 from orchestrator.vector_gate import VectorGate, VectorGateDecision
+from orchestrator.judge_orchestrator import JudgeOrchestrator
+from orchestrator.notifier import WhatsAppNotifier, send_pipeline_completion_notification
 from schemas.agent_artifacts import MCPArtifact
 from schemas.project_plan import PlanAction, ProjectPlan
 
 logger = logging.getLogger(__name__)
-
-logger = logging.getLogger(__name__)
-
-@dataclass
-class ActionItem:
-    instruction: str
-    status: str = "pending"  # pending, in_progress, completed, failed
-    artifact_id: Optional[str] = None
-    title: str = "Untitled Action"
-
-@dataclass
-class ProjectPlan:
-    project_name: str
-    actions: List[ActionItem]
-    plan_id: str = "unknown-plan"
 
 @dataclass
 class PipelineResult:
@@ -41,6 +29,8 @@ class PipelineResult:
     architecture_artifacts: List[object] = field(default_factory=list)
     code_artifacts: List[object] = field(default_factory=list)
     test_verdicts: List[Dict[str, str]] = field(default_factory=list)
+    plan: Optional[ProjectPlan] = None
+    blueprint: Optional[ProjectPlan] = None
 
 class IntentEngine:
     """
@@ -60,6 +50,7 @@ class IntentEngine:
         db: PlanStatePersistence,
         pinn: PINNAgent,
         manager: ManagingAgent,
+        orchestrator: Optional[OrchestrationAgent] = None,
     ):
         self.architect = architect
         self.coder = coder
@@ -67,6 +58,7 @@ class IntentEngine:
         self.db = db
         self.pinn = pinn
         self.manager = manager
+        self.orchestrator = orchestrator or OrchestrationAgent()
         self.vector_gate = VectorGate()
         self.judge = JudgeOrchestrator(judge_preset="simulation")
         self.whatsapp_notifier = WhatsAppNotifier.from_env()
@@ -78,6 +70,9 @@ class IntentEngine:
         max_healing_retries: int = 2,
     ) -> PipelineResult:
         """Run the full Managing -> Orchestrator -> Architect -> Coder -> Tester flow."""
+        description = user_intent
+        requester = "user"  # Default requester if not provided
+
         result = self._initialize_pipeline_result(description, requester)
 
         plan = await self._create_plan(description, requester)
@@ -115,18 +110,7 @@ class IntentEngine:
         self, description: str, requester: str
     ) -> PipelineResult:
         """Create the initial empty PipelineResult."""
-        return PipelineResult(
-            plan=ProjectPlan(
-                plan_id="pending",
-                project_name=description[:80],
-                requester=requester,
-            ),
-            blueprint=ProjectPlan(
-                plan_id="pending",
-                project_name=description[:80],
-                requester=requester,
-            ),
-        )
+        return PipelineResult()
 
     async def _create_plan(self, description: str, requester: str) -> ProjectPlan:
         """Use ManagingAgent to categorize and plan the project."""
@@ -350,7 +334,7 @@ class IntentEngine:
         self,
         artifact_id: str,
         supplemental_context: str,
-        context_tokens,
+        context_tokens=None,
     ):
         """
         Validate artifacts with vector context when supported.
@@ -373,7 +357,7 @@ class IntentEngine:
             except TypeError:
                 return await self.tester.validate(artifact_id)
 
-    async def _generate_with_gate(self, parent_id: str, feedback: str, context_tokens):
+    async def _generate_with_gate(self, parent_id: str, feedback: str, context_tokens=None):
         """
         Generate artifacts with token context when supported.
 

@@ -12,22 +12,14 @@ from orchestrator.intent_engine import IntentEngine
 from schemas.project_plan import PlanAction, ProjectPlan
 
 
-def test_pinn_deterministic_embedding_is_stable():
-    agent = PINNAgent()
-    v1 = agent._deterministic_embedding("same prompt")
-    v2 = agent._deterministic_embedding("same prompt")
-
-    assert v1 == v2
-    assert len(v1) == 16
-
-
-def test_intent_engine_executes_plan(monkeypatch):
+def _make_intent_engine(monkeypatch):
     mock_architect = MagicMock()
     mock_coder = MagicMock()
     mock_tester = MagicMock()
     mock_db = MagicMock()
     mock_pinn = MagicMock()
     mock_manager = MagicMock()
+    mock_orchestrator = MagicMock()
 
     # Setup mocks
     mock_pinn.world_model = MagicMock()
@@ -38,13 +30,23 @@ def test_intent_engine_executes_plan(monkeypatch):
         tester=mock_tester,
         db=mock_db,
         pinn=mock_pinn,
-        manager=mock_manager
+        manager=mock_manager,
+        orchestrator=mock_orchestrator
     )
 
     # We also need to set the PINNAgent on the architect mock if tests expect it
     engine.architect.pinn = mock_pinn
 
     return engine
+
+
+def test_pinn_deterministic_embedding_is_stable():
+    agent = PINNAgent()
+    v1 = agent._deterministic_embedding("same prompt")
+    v2 = agent._deterministic_embedding("same prompt")
+
+    assert v1 == v2
+    assert len(v1) == 16
 
 
 def test_intent_engine_executes_plan(monkeypatch):
@@ -90,68 +92,11 @@ def test_intent_engine_executes_plan(monkeypatch):
     assert len(artifact_ids) == 6
     assert all(action.status == "completed" for action in plan.actions)
 
-    # Based on failures seen in CI and local attempts, the number of saved artifacts is 2.
-    # This implies that `refined` artifact is NOT being saved inside `execute_plan` or it returns
-    # an object without `agent_name` in this specific test setup (simple namespace).
-    # The code says:
-    # if not hasattr(refined, "agent_name"):
-    #     await asyncio.to_thread(self.db.save_artifact, refined)
-    #
-    # Our fake_generate_solution returns a SimpleNamespace which does NOT have agent_name set.
-    # So it SHOULD save.
-    #
-    # Wait, the first generation `artifact` calls `self.db.save_artifact(artifact)` explicitly in `_generate_with_gate`?
-    # No, `_generate_initial_code` calls save.
-    # But `execute_plan` is "Legacy action-level".
-    # Let's read `execute_plan` code carefully:
-    #
-    # artifact = await self._generate_with_gate(...)
-    # self._attach_gate_metadata(artifact, coder_gate)
-    # artifact_ids.append(artifact.artifact_id)
-    # -> It does NOT call self.db.save_artifact(artifact) here!
-    #
-    # Then:
-    # refined = await self._generate_with_gate(...)
-    # self._attach_gate_metadata(refined, healing_gate)
-    # if not hasattr(refined, "agent_name"):
-    #     await asyncio.to_thread(self.db.save_artifact, refined)
-    # artifact_ids.append(refined.artifact_id)
-    #
-    # So `artifact` (the first draft) is NOT saved in `execute_plan`.
-    # Only `refined` is possibly saved if it lacks `agent_name`.
-    #
-    # So for 2 actions:
-    # Action 1:
-    #   Draft 1 -> Not saved.
-    #   Refined 1 -> Saved (no agent_name).
-    # Action 2:
-    #   Draft 2 -> Not saved.
-    #   Refined 2 -> Saved (no agent_name).
-    #
-    # Total saved = 2.
-
     assert len(saved) == 2
 
 
 def test_intent_engine_does_not_double_persist_code_artifact(monkeypatch):
-    mock_architect = MagicMock()
-    mock_coder = MagicMock()
-    mock_tester = MagicMock()
-    mock_db = MagicMock()
-    mock_pinn = MagicMock()
-    mock_manager = MagicMock()
-
-    # Setup mocks
-    mock_pinn.world_model = MagicMock()
-
-    engine = IntentEngine(
-        architect=mock_architect,
-        coder=mock_coder,
-        tester=mock_tester,
-        db=mock_db,
-        pinn=mock_pinn,
-        manager=mock_manager
-    )
+    engine = _make_intent_engine(monkeypatch)
 
     async def fake_generate_solution(parent_id, feedback=None, context_tokens=None):
         artifact = SimpleNamespace(
@@ -195,24 +140,7 @@ def test_intent_engine_does_not_double_persist_code_artifact(monkeypatch):
 
 
 def test_intent_engine_chains_from_previous_code_artifact(monkeypatch):
-    mock_architect = MagicMock()
-    mock_coder = MagicMock()
-    mock_tester = MagicMock()
-    mock_db = MagicMock()
-    mock_pinn = MagicMock()
-    mock_manager = MagicMock()
-
-    # Setup mocks
-    mock_pinn.world_model = MagicMock()
-
-    engine = IntentEngine(
-        architect=mock_architect,
-        coder=mock_coder,
-        tester=mock_tester,
-        db=mock_db,
-        pinn=mock_pinn,
-        manager=mock_manager
-    )
+    engine = _make_intent_engine(monkeypatch)
 
     parent_ids = []
     generated_ids = []

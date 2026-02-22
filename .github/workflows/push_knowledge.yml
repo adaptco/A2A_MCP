@@ -2,14 +2,19 @@ name: "Agentic Ingestion & LoRA Synthesis"
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   workflow_dispatch:
+
+concurrency:
+  group: push-knowledge-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   ingest-and-embed:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     permissions:
-      id-token: write  # Required for OIDC handshake
+      id-token: write
       contents: read
       issues: write
 
@@ -17,19 +22,31 @@ jobs:
       - name: "Checkout Repository"
         uses: actions/checkout@v4
 
+      - name: "Validate Required Secrets"
+        env:
+          WIF_PROVIDER: ${{ secrets.WIF_PROVIDER }}
+          WIF_SERVICE_ACCOUNT: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+          MCP_SERVER_AUDIENCE: ${{ secrets.MCP_SERVER_AUDIENCE }}
+          MCP_INGEST_ENDPOINT: ${{ secrets.MCP_INGEST_ENDPOINT }}
+        run: |
+          set -euo pipefail
+          test -n "${WIF_PROVIDER}" || (echo "Missing secret: WIF_PROVIDER" && exit 1)
+          test -n "${WIF_SERVICE_ACCOUNT}" || (echo "Missing secret: WIF_SERVICE_ACCOUNT" && exit 1)
+          test -n "${MCP_SERVER_AUDIENCE}" || (echo "Missing secret: MCP_SERVER_AUDIENCE" && exit 1)
+          test -n "${MCP_INGEST_ENDPOINT}" || (echo "Missing secret: MCP_INGEST_ENDPOINT" && exit 1)
+
       - name: "Authenticate to Google Cloud (WIF Handshake)"
         id: auth
         uses: google-github-actions/auth@v2
         with:
-          # Defined in your Terraform/Setup script
           workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
           service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
-          token_format: 'id_token'
+          token_format: "id_token"
           id_token_audience: ${{ secrets.MCP_SERVER_AUDIENCE }}
 
       - name: "Generate Repository Snapshot"
         run: |
-          # Collect artifacts for tensor processing
+          set -euo pipefail
           python -c "
           import os, json
           snapshot = {
@@ -51,22 +68,25 @@ jobs:
           "
 
       - name: "Push to Knowledge-Store Agent (RAG Tooling)"
+        env:
+          MCP_INGEST_ENDPOINT: ${{ secrets.MCP_INGEST_ENDPOINT }}
         run: |
-          # The A2A handshake verification happens at this endpoint
-          curl -X POST "${{ secrets.MCP_INGEST_ENDPOINT }}/ingest" \
+          set -euo pipefail
+          curl --fail-with-body --retry 3 --retry-delay 5 --max-time 60 -X POST "${MCP_INGEST_ENDPOINT}/ingest" \
             -H "Authorization: Bearer ${{ steps.auth.outputs.id_token }}" \
             -H "Content-Type: application/json" \
             --data-binary @payload.json \
             -o response.json
-          
-          echo "INGESTION_STATUS=$(jq -r .status response.json)" >> $GITHUB_ENV
+
+          STATUS="$(jq -r '.status // "unknown"' response.json)"
+          echo "INGESTION_STATUS=${STATUS}" >> "$GITHUB_ENV"
 
       - name: "Post Ingestion Receipt"
         if: always()
         uses: actions/github-script@v7
         with:
           script: |
-            const status = process.env.INGESTION_STATUS === 'success' ? '✅' : '❌';
+            const status = process.env.INGESTION_STATUS === 'success' ? 'SUCCESS' : 'FAILED';
             const issue_number = context.payload.pull_request
               ? context.payload.pull_request.number
               : context.payload.issue
@@ -82,5 +102,5 @@ jobs:
               issue_number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `### 🛡️ A2A Ingestion Status: ${status}\nRepository knowledge has been indexed as multimodal tensors for the Avatar RAG.`
+              body: `### A2A Ingestion Status: ${status}\nRepository knowledge has been indexed as multimodal tensors for the Avatar RAG.`
             });

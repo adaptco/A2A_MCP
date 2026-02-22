@@ -11,5 +11,5 @@ httpx
 fastmcp
 requests
 jsonschema
-PyJWT
-cryptography
+torch
+numpy

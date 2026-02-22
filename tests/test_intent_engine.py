@@ -210,3 +210,4 @@ def test_notify_completion_logs_exception(monkeypatch, caplog):
     assert "Notification failed!" in caplog.text
     assert len(caplog.records) > 0
     assert caplog.records[0].levelname == "ERROR"
+# Verified no duplicate definitions

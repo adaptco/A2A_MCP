@@ -33,7 +33,13 @@ app = FastAPI(
     version="1.0.0",
 )
 
-ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,http://localhost:8000").split(",")
+ALLOWED_ORIGINS = [
+    origin.strip()
+    for origin in os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,http://localhost:8000").split(",")
+]
+
+if "*" in ALLOWED_ORIGINS:
+    raise ValueError("Wildcard origin '*' is not allowed with credentials enabled.")
 
 app.add_middleware(
     CORSMiddleware,

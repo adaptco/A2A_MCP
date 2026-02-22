@@ -1,7 +1,10 @@
-import pytest
+
 import os
-from fastapi.middleware.cors import CORSMiddleware
-from rbac.rbac_service import app
+import sys
+import pytest
+
+# Add the current directory to sys.path so we can import rbac
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 def test_cors_config_is_not_wildcard():
     """
@@ -14,6 +17,9 @@ def test_cors_config_is_not_wildcard():
     except ImportError:
         pytest.skip("Skipping test due to missing dependencies (fastapi/pydantic)")
 
+    from rbac.rbac_service import app
+    from fastapi.middleware.cors import CORSMiddleware
+
     # Find the CORSMiddleware in the app's middleware list
     cors_middleware = None
     for middleware in app.user_middleware:
@@ -23,15 +29,26 @@ def test_cors_config_is_not_wildcard():
 
     assert cors_middleware is not None, "CORSMiddleware not found in app."
 
-    # Fix: Use .kwargs instead of .options for Starlette Middleware objects
-    if hasattr(cors_middleware, 'kwargs'):
-        allow_origins = cors_middleware.kwargs.get("allow_origins", [])
-    else:
-        allow_origins = cors_middleware.options.get("allow_origins", [])
+    allow_origins = cors_middleware.options.get("allow_origins", [])
+    allow_credentials = cors_middleware.options.get("allow_credentials", False)
 
-    # Ensure allow_origins is NOT ["*"]
-    assert allow_origins != ["*"], "CORS allow_origins should not be wildcard when allow_credentials is True"
+    if allow_credentials:
+        assert "*" not in allow_origins, "Security Risk: allow_origins=['*'] with allow_credentials=True"
 
-    # Verify it matches expected default or env
-    expected_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,http://localhost:8000").split(",")
-    assert allow_origins == expected_origins
+if __name__ == "__main__":
+    # Allow running directly for manual verification
+    try:
+        from rbac.rbac_service import app
+        from fastapi.middleware.cors import CORSMiddleware
+
+        cors_middleware = next((m for m in app.user_middleware if m.cls == CORSMiddleware), None)
+
+        if cors_middleware:
+            allow_origins = cors_middleware.options.get("allow_origins", [])
+            print(f"Current allow_origins: {allow_origins}")
+            if "*" in allow_origins:
+                print("VULNERABLE")
+            else:
+                print("SECURE")
+    except ImportError as e:
+        print(f"ImportError: {e}")

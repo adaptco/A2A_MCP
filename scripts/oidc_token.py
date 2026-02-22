@@ -1,26 +1,9 @@
-"""Stub module for GitHub OIDC token verification.
+"""Script wrapper for GitHub OIDC token verification.
 
-TODO: Replace with real verification using PyJWT + GitHub's JWKS endpoint
-      (https://token.actions.githubusercontent.com/.well-known/jwks).
+This script imports the verification logic from the app package.
 """
 
+from app.oidc_token import verify_github_oidc_token
 
-def verify_github_oidc_token(token: str) -> dict:
-    """Verify a GitHub Actions OIDC token and return its claims.
-
-    Parameters
-    ----------
-    token : str
-        The raw JWT bearer token from the Authorization header.
-
-    Returns
-    -------
-    dict
-        Decoded claims including 'sub', 'repository', and 'jti'.
-    """
-    # Stub implementation – always returns synthetic claims.
-    return {
-        "sub": "repo:stub-org/stub-repo:ref:refs/heads/main",
-        "repository": "stub-org/stub-repo",
-        "jti": f"stub-jti-{hash(token) % 10000:04d}",
-    }
+# Export for use in other scripts
+__all__ = ["verify_github_oidc_token"]

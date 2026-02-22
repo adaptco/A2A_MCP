@@ -1,5 +1,4 @@
 from __future__ import annotations
-
 from typing import Any
 
 try:
@@ -7,17 +6,9 @@ try:
 except ModuleNotFoundError:
     from mcp.server.fastmcp import FastMCP
 
+from app.oidc_token import verify_github_oidc_token
+
 app_ingest = FastMCP("knowledge-ingestion")
-
-
-def verify_github_oidc_token(token: str) -> dict[str, Any]:
-    """
-    Minimal verifier placeholder for tests.
-    Real deployments should validate JWT signature/claims against GitHub OIDC.
-    """
-    if not token or token == "invalid":
-        raise ValueError("Invalid OIDC token")
-    return {"repository": "", "actor": "unknown"}
 
 
 @app_ingest.tool(name="ingest_repository_data")
@@ -26,7 +17,11 @@ def ingest_repository_data(snapshot: dict[str, Any], authorization: str) -> str:
         return "error: missing bearer token"
 
     token = authorization.split(" ", 1)[1].strip()
-    claims = verify_github_oidc_token(token)
+    try:
+        claims = verify_github_oidc_token(token)
+    except Exception as e:
+        return f"error: {str(e)}"
+
     repository = str(snapshot.get("repository", "")).strip()
 
     if repository and claims.get("repository") and claims["repository"] != repository:
@@ -42,7 +37,10 @@ def ingest_worldline_block(worldline_block: dict[str, Any], authorization: str) 
         return "error: missing bearer token"
 
     token = authorization.split(" ", 1)[1].strip()
-    claims = verify_github_oidc_token(token)
+    try:
+        claims = verify_github_oidc_token(token)
+    except Exception as e:
+        return f"error: {str(e)}"
 
     snapshot = worldline_block.get("snapshot", {})
     repository = str(snapshot.get("repository", "")).strip()

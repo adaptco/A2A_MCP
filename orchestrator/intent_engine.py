@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import asyncio
+
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Tuple
 
@@ -288,7 +290,7 @@ class IntentEngine:
             self._attach_gate_metadata(refined, healing_gate)
             # Compatibility path for tests/mocks that return unsaved ad-hoc artifacts.
             if not hasattr(refined, "agent_name"):
-                self.db.save_artifact(refined)
+                await asyncio.to_thread(self.db.save_artifact, refined)
             artifact_ids.append(refined.artifact_id)
 
             action.status = "completed"

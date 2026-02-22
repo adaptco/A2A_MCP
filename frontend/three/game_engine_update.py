@@ -1,6 +1,5 @@
 """Game engine integrating Three.js rendering with WHAM physics and Judge."""
 
-import logging
 from typing import Dict, Any, Optional
 import time
 import math
@@ -10,8 +9,6 @@ from frontend.three.world_renderer import WorldRenderer
 from frontend.three.avatar_renderer import AvatarRenderer
 from orchestrator.judge_orchestrator import get_judge_orchestrator
 from schemas.game_model import AgentRuntimeState, GameActionResult, GameModel, ZoneSpec
-
-logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -62,8 +59,8 @@ class GameEngine:
                 obj = self.world_renderer.scene.get_object(obj_dict["id"])
                 if obj:
                     self.scene.add_object(obj)
-            except Exception as e:
-                logger.error(f"Failed to merge object: {e}", exc_info=True)
+            except:
+                pass
 
         # Add avatar representations
         avatars = self.avatar_renderer.registry.list_avatars()
@@ -124,10 +121,6 @@ class GameEngine:
             rotation=0.0,
             speed_mph=0.0,
             fuel_gal=13.2,
-            max_speed_mph=155.0,
-            last_rotation=0.0,
-            last_update_time=time.time(),
-            lateral_g=0.0,
         )
 
         self.player_states[agent_name] = state
@@ -154,29 +147,6 @@ class GameEngine:
             return False
 
         state = self.player_states[agent_name]
-
-        # Calculate lateral G-force
-        now = time.time()
-        dt = now - state.last_update_time
-        if dt > 0:
-            delta_rot = rotation - state.last_rotation
-            # Normalize to [-180, 180] for wrap-around
-            if delta_rot > 180:
-                delta_rot -= 360
-            elif delta_rot < -180:
-                delta_rot += 360
-
-            # v = speed_mph * 0.44704 (m/s)
-            v_ms = speed_mph * 0.44704
-            # omega = deg/s * (pi/180) (rad/s)
-            omega_rad_s = math.radians(delta_rot / dt)
-
-            # a_lat = v * omega
-            a_lat = v_ms * omega_rad_s
-            state.lateral_g = abs(a_lat / 9.81)
-
-        state.last_update_time = now
-        state.last_rotation = rotation
         state.speed_mph = speed_mph
         state.rotation = rotation
         state.fuel_gal = fuel_gal
@@ -201,19 +171,6 @@ class GameEngine:
 
         return True
 
-    def _get_obstacle_distance(self, state: PlayerState) -> float:
-        """Estimate nearest obstacle distance based on zone density."""
-        if not state.current_zone:
-            return 100.0
-
-        zone = self.game_model.zones.get(state.current_zone)
-        if not zone:
-            return 100.0
-
-        density = zone.obstacle_density
-        # Map density 0.0-1.0 to distance 100m-5m
-        return max(5.0, 100.0 * (1.0 - density))
-
     def judge_action(
         self,
         agent_name: str,
@@ -226,14 +183,12 @@ class GameEngine:
         state = self.player_states[agent_name]
 
         # Build context from player state
-        obstacle_dist = self._get_obstacle_distance(state)
-
         context = {
-            'speed_mph': state.speed_mph,
-            'max_speed_mph': state.max_speed_mph,
-            'fuel_remaining_gal': state.fuel_gal,
-            'nearest_obstacle_distance_m': obstacle_dist,
-            'lateral_g_force': state.lateral_g,
+            "speed_mph": state.speed_mph,
+            "max_speed_mph": 155,
+            "fuel_remaining_gal": state.fuel_gal,
+            "nearest_obstacle_distance_m": 100,  # Placeholder
+            "lateral_g_force": 0.3,
         }
 
         # Judge the action

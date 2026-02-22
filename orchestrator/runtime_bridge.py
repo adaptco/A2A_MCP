@@ -195,6 +195,7 @@ def _onboard_agents_as_stateful_artifacts(
     specs: List[AgentOnboardingSpec],
 ) -> List[Dict[str, Any]]:
     onboarded: List[Dict[str, Any]] = []
+    artifacts_to_save = []
 
     for spec, worker in zip(specs, workers):
         fidelity = _resolve_fidelity(spec)
@@ -237,8 +238,8 @@ def _onboard_agents_as_stateful_artifacts(
         )
         embedding_artifact = init_artifact.transition(AgentLifecycleState.EMBEDDING)
 
-        db_manager.save_artifact(init_artifact)
-        db_manager.save_artifact(embedding_artifact)
+        artifacts_to_save.append(init_artifact)
+        artifacts_to_save.append(embedding_artifact)
 
         onboarded.append(
             {
@@ -250,6 +251,10 @@ def _onboard_agents_as_stateful_artifacts(
                 "fidelity": fidelity,
             }
         )
+
+
+    if artifacts_to_save:
+        db_manager.save_artifacts(artifacts_to_save)
 
     return onboarded
 

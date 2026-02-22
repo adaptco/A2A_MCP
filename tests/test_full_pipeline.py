@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import uuid
 from types import SimpleNamespace
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, AsyncMock
 
 import pytest
 
@@ -47,6 +47,7 @@ class TestFullPipeline:
         # ── Mock CoderAgent ─────────────────────────────────────────
         engine.coder.llm = MagicMock()
         engine.coder.llm.call_llm.return_value = llm_code
+        engine.coder.llm.call_llm_async = AsyncMock(return_value=llm_code)
         engine.coder.db = MagicMock()
         engine.coder.db.get_artifact.return_value = None  # no parent context
 

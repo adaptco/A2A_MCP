@@ -3,10 +3,10 @@ from __future__ import annotations
 import atexit
 import json
 import os
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import Session, sessionmaker
 
 from schemas.agent_artifacts import MCPArtifact
 from schemas.database import ArtifactModel, Base, PlanStateModel
@@ -34,9 +34,14 @@ class DBManager:
         self.engine = DBManager._shared_engine
         self.SessionLocal = DBManager._shared_session_local
 
-    def save_artifact(self, artifact: MCPArtifact) -> ArtifactModel:
-        """Save an MCPArtifact to the database."""
-        db = self.SessionLocal()
+    def save_artifact(self, artifact: MCPArtifact, session: Optional[Session] = None) -> ArtifactModel:
+        """Save an MCPArtifact to the database.
+
+        If an existing session is provided, it is used without closing.
+        Otherwise, a new session is created and closed after the operation.
+        """
+        db = session or self.SessionLocal()
+        should_close = session is None
         try:
             db_artifact = ArtifactModel(
                 id=artifact.artifact_id,
@@ -47,14 +52,44 @@ class DBManager:
                 content=artifact.content if isinstance(artifact.content, str) else json.dumps(artifact.content),
             )
             db.add(db_artifact)
-            db.commit()
+            if should_close:
+                db.commit()
+            else:
+                db.flush()
             return db_artifact
+        except Exception:
+            if should_close:
+                db.rollback()
+            raise
+        finally:
+            if should_close:
+                db.close()
+
+
+    def save_artifacts(self, artifacts: List[MCPArtifact]) -> List[ArtifactModel]:
+        """Save multiple MCPArtifacts to the database in a single transaction."""
+        db = self.SessionLocal()
+        saved_models = []
+        try:
+            for artifact in artifacts:
+                content_val = artifact.content if isinstance(artifact.content, str) else json.dumps(artifact.content)
+                db_artifact = ArtifactModel(
+                    id=artifact.artifact_id,
+                    parent_artifact_id=getattr(artifact, "parent_artifact_id", None),
+                    agent_name=getattr(artifact, "agent_name", "UnknownAgent"),
+                    version=getattr(artifact, "version", "1.0.0"),
+                    type=artifact.type,
+                    content=content_val,
+                )
+                db.add(db_artifact)
+                saved_models.append(db_artifact)
+            db.commit()
+            return saved_models
         except Exception:
             db.rollback()
             raise
         finally:
             db.close()
-
     def get_artifact(self, artifact_id: str) -> Optional[ArtifactModel]:
         """Retrieve an artifact by ID from the database."""
         db = self.SessionLocal()

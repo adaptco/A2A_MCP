@@ -27,7 +27,7 @@ class TesterAgent:
         
         # Phase 3 Logic: Using LLM to verify code logic vs. requirements
         prompt = f"Analyze this code for bugs or anti-patterns:\n{artifact.content}"
-        analysis = self.llm.call_llm(prompt)
+        analysis = await self.llm.call_llm_async(prompt)
 
         # Determine status (Heuristic for demo, LLM-guided for Production)
         status = "FAIL" if "error" in analysis.lower() or "bug" in analysis.lower() else "PASS"

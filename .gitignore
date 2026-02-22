@@ -1,1 +1,5 @@
+.env
+dist/
+firebase-debug.log
+node_modules/
 gh_2.44.1_linux_amd64/

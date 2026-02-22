@@ -28,7 +28,7 @@ class CoderAgent:
         prompt = f"Context: {context_content}\nFeedback: {feedback if feedback else 'Initial build'}"
         
         # Ensure we use the 'call_llm' method defined in your llm_util.py
-        code_solution = self.llm.call_llm(prompt)
+        code_solution = await self.llm.call_llm_async(prompt)
 
         # Create Contract-First Artifact
         artifact = MCPArtifact(

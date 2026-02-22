@@ -58,7 +58,7 @@ jobs:
             -H "Content-Type: application/json" \
             --data-binary @payload.json \
             -o response.json
-          
+
           echo "INGESTION_STATUS=$(jq -r .status response.json)" >> $GITHUB_ENV
 
       - name: "Post Ingestion Receipt"

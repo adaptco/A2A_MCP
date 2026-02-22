@@ -1,0 +1,16 @@
+{
+  "skills": {
+    "agent": {
+      "description": "A general-purpose agent that can answer questions and perform tasks.",
+      "http_endpoint": "https://us-central1-the-qube-5e031.cloudfunctions.net/agent"
+    },
+    "codeReview": {
+      "description": "Reviews code for potential issues after deployment.",
+      "http_endpoint": "https://us-central1-the-qube-5e031.cloudfunctions.net/codeReview"
+    },
+    "deploymentMonitor": {
+      "description": "Monitors the status of a deployment.",
+      "http_endpoint": "https://us-central1-the-qube-5e031.cloudfunctions.net/deploymentMonitor"
+    }
+  }
+}

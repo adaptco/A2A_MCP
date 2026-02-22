@@ -7,6 +7,7 @@ produces a ProjectPlan artifact that downstream agents consume.
 """
 from __future__ import annotations
 
+from fastapi.concurrency import run_in_threadpool
 import uuid
 from typing import List
 
@@ -69,5 +70,5 @@ class OrchestrationAgent:
             content=plan.model_dump_json(),
             metadata={"agent": self.AGENT_NAME},
         )
-        self.db.save_artifact(artifact)
+        await run_in_threadpool(self.db.save_artifact, artifact)
         return plan

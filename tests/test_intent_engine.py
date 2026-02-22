@@ -1,4 +1,5 @@
 import asyncio
+import logging
 import uuid
 from types import SimpleNamespace
 
@@ -139,3 +140,36 @@ def test_intent_engine_chains_from_previous_code_artifact(monkeypatch):
 
     assert parent_ids[0] == "plan-root"
     assert parent_ids[1] == generated_ids[0]
+
+def test_notify_completion_logs_exception(monkeypatch, caplog):
+    """
+    Test that _notify_completion logs an exception when notification fails,
+    instead of silently swallowing it.
+    """
+    engine = IntentEngine()
+
+    # Mock send_pipeline_completion_notification to raise an exception
+    def mock_send_notification(*args, **kwargs):
+        raise RuntimeError("Notification failed!")
+
+    monkeypatch.setattr(
+        "orchestrator.intent_engine.send_pipeline_completion_notification",
+        mock_send_notification
+    )
+
+    # Ensure we capture logs
+    caplog.set_level(logging.ERROR)
+
+    # Call the method
+    engine._notify_completion(
+        project_name="test_project",
+        success=True,
+        completed_actions=1,
+        failed_actions=0
+    )
+
+    # Assert that the error was logged
+    assert "Notification failed!" in caplog.text
+    # We expect at least one error log
+    assert len(caplog.records) > 0
+    assert caplog.records[0].levelname == "ERROR"

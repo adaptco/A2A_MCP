@@ -21,33 +21,25 @@ def test_pinn_deterministic_embedding_is_stable():
     assert len(v1) == 16
 
 
-def _make_intent_engine(monkeypatch):
-    # Mock classes that are instantiated inside __init__
-    mock_manager = MagicMock()
-    mock_orchestrator = MagicMock()
+def test_intent_engine_executes_plan(monkeypatch):
     mock_architect = MagicMock()
     mock_coder = MagicMock()
     mock_tester = MagicMock()
-    mock_judge = MagicMock()
-    mock_notifier = MagicMock()
-    mock_gate = MagicMock()
     mock_db = MagicMock()
     mock_pinn = MagicMock()
+    mock_manager = MagicMock()
+
+    # Setup mocks
     mock_pinn.world_model = MagicMock()
 
-    # Need to patch the classes/functions that IntentEngine uses to instantiate these
-    monkeypatch.setattr("orchestrator.intent_engine.ManagingAgent", lambda: mock_manager)
-    monkeypatch.setattr("orchestrator.intent_engine.OrchestrationAgent", lambda: mock_orchestrator)
-    monkeypatch.setattr("orchestrator.intent_engine.ArchitectureAgent", lambda: mock_architect)
-    monkeypatch.setattr("orchestrator.intent_engine.CoderAgent", lambda: mock_coder)
-    monkeypatch.setattr("orchestrator.intent_engine.TesterAgent", lambda: mock_tester)
-    monkeypatch.setattr("orchestrator.intent_engine.get_judge_orchestrator", lambda: mock_judge)
-    monkeypatch.setattr("orchestrator.intent_engine.WhatsAppNotifier.from_env", lambda: mock_notifier)
-    monkeypatch.setattr("orchestrator.intent_engine.VectorGate", lambda: mock_gate)
-    monkeypatch.setattr("orchestrator.intent_engine.DBManager", lambda: mock_db)
-
-    # IntentEngine.__init__ takes no arguments
-    engine = IntentEngine()
+    engine = IntentEngine(
+        architect=mock_architect,
+        coder=mock_coder,
+        tester=mock_tester,
+        db=mock_db,
+        pinn=mock_pinn,
+        manager=mock_manager
+    )
 
     # We also need to set the PINNAgent on the architect mock if tests expect it
     engine.architect.pinn = mock_pinn
@@ -142,7 +134,24 @@ def test_intent_engine_executes_plan(monkeypatch):
 
 
 def test_intent_engine_does_not_double_persist_code_artifact(monkeypatch):
-    engine = _make_intent_engine(monkeypatch)
+    mock_architect = MagicMock()
+    mock_coder = MagicMock()
+    mock_tester = MagicMock()
+    mock_db = MagicMock()
+    mock_pinn = MagicMock()
+    mock_manager = MagicMock()
+
+    # Setup mocks
+    mock_pinn.world_model = MagicMock()
+
+    engine = IntentEngine(
+        architect=mock_architect,
+        coder=mock_coder,
+        tester=mock_tester,
+        db=mock_db,
+        pinn=mock_pinn,
+        manager=mock_manager
+    )
 
     async def fake_generate_solution(parent_id, feedback=None, context_tokens=None):
         artifact = SimpleNamespace(
@@ -186,7 +195,24 @@ def test_intent_engine_does_not_double_persist_code_artifact(monkeypatch):
 
 
 def test_intent_engine_chains_from_previous_code_artifact(monkeypatch):
-    engine = _make_intent_engine(monkeypatch)
+    mock_architect = MagicMock()
+    mock_coder = MagicMock()
+    mock_tester = MagicMock()
+    mock_db = MagicMock()
+    mock_pinn = MagicMock()
+    mock_manager = MagicMock()
+
+    # Setup mocks
+    mock_pinn.world_model = MagicMock()
+
+    engine = IntentEngine(
+        architect=mock_architect,
+        coder=mock_coder,
+        tester=mock_tester,
+        db=mock_db,
+        pinn=mock_pinn,
+        manager=mock_manager
+    )
 
     parent_ids = []
     generated_ids = []

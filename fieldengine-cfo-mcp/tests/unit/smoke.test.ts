@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { projectCapitalValue } from '../../src/domain/capital_model/models';
+import { projectCapitalValue } from '../../src/domain/capital_model/models.js';
 
 describe('projectCapitalValue', () => {
   it('adds delta', () => {

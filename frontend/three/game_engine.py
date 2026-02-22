@@ -1,5 +1,6 @@
 """Game engine integrating Three.js rendering with WHAM physics and Judge."""
 
+import logging
 from typing import Dict, Any, Optional
 from dataclasses import dataclass
 from frontend.three.scene_manager import SceneManager, Vector3
@@ -7,6 +8,8 @@ from frontend.three.world_renderer import WorldRenderer
 from frontend.three.avatar_renderer import AvatarRenderer
 from orchestrator.judge_orchestrator import get_judge_orchestrator
 from schemas.game_model import AgentRuntimeState, GameActionResult, GameModel, ZoneSpec
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -53,8 +56,8 @@ class GameEngine:
                 obj = self.world_renderer.scene.get_object(obj_dict["id"])
                 if obj:
                     self.scene.add_object(obj)
-            except:
-                pass
+            except Exception as e:
+                logger.error(f"Failed to merge object: {e}", exc_info=True)
 
         # Add avatar representations
         avatars = self.avatar_renderer.registry.list_avatars()

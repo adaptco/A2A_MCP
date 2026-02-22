@@ -59,7 +59,7 @@ def test_evaluate_exact_match(vector_gate, empty_world_model):
     assert len(decision.matches) == 1
     match = decision.matches[0]
     assert match.token_id == "token-1"
-    assert match.score > 0.99  # Should be very close to 1.0
+    assert match.score == pytest.approx(1.0)
 
 def test_evaluate_filtering(vector_gate, empty_world_model):
     """Test that tokens below the similarity threshold result in a closed gate."""

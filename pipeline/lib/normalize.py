@@ -44,7 +44,7 @@ def normalize_text(text: str) -> str:
     return text
 
 
-def l2_normalize(tensor):
+def l2_normalize(tensor: "torch.Tensor") -> "torch.Tensor":
     """
     L2 normalization for embedding vectors.
     

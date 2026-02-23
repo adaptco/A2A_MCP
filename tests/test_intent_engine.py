@@ -210,28 +210,3 @@ def test_notify_completion_logs_exception(monkeypatch, caplog):
     assert "Notification failed!" in caplog.text
     assert len(caplog.records) > 0
     assert caplog.records[0].levelname == "ERROR"
-
-def _make_intent_engine(monkeypatch):
-    """
-    Helper to create an IntentEngine with mocks for testing.
-    Replicates the logic that seems to be missing or assumed in other tests.
-    """
-    engine = IntentEngine()
-
-    # Mock external dependencies
-    engine.manager = MagicMock()
-    engine.orchestrator = MagicMock()
-    engine.architect = MagicMock()
-    engine.coder = MagicMock()
-    engine.tester = MagicMock()
-    engine.db = MagicMock()
-    engine.pinn = MagicMock()
-
-    # Basic return values to prevent crashes
-    engine.manager.categorize_project.return_value = SimpleNamespace(
-        plan_id="plan-1",
-        project_name="test",
-        actions=[]
-    )
-
-    return engine

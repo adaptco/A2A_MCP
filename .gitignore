@@ -12,3 +12,10 @@ __pycache__/
 target/
 coverage/
 
+node_modules/
+__pycache__/
+*.pyc
+.pytest_cache/
+dist/
+build/
+.venv/

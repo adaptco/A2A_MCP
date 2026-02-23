@@ -7,11 +7,8 @@ produces a ProjectPlan artifact that downstream agents consume.
 """
 from __future__ import annotations
 
-from fastapi.concurrency import run_in_threadpool
 import uuid
 from typing import List
-
-from fastapi.concurrency import run_in_threadpool
 
 from schemas.agent_artifacts import MCPArtifact
 from schemas.project_plan import PlanAction, ProjectPlan
@@ -72,5 +69,5 @@ class OrchestrationAgent:
             content=plan.model_dump_json(),
             metadata={"agent": self.AGENT_NAME},
         )
-        await run_in_threadpool(self.db.save_artifact, artifact)
+        self.db.save_artifact(artifact)
         return plan

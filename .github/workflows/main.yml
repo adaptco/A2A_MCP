@@ -19,10 +19,6 @@ on:
       - ".github/workflows/main.yml"
   workflow_dispatch:
 
-permissions:
-  issues: write
-  contents: read
-
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -46,19 +42,31 @@ jobs:
       PYTHONPATH: .
 
     steps:
-      - uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v3
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install pytest pytest-asyncio
+    - name: Build and start container
+      run: |
+        if docker compose version >/dev/null 2>&1; then
+          docker compose up -d --build
+        else
+          docker-compose up -d --build
+        fi
+        # Wait for FastAPI to be ready
+        sleep 5
 
-      - name: Run persistence and verification tests
-        run: |
-          pytest -q tests/test_storage.py tests/test_mcp_agents.py tests/test_verify_api.py
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
+
+    - name: Run A2A Integration Test
+      run: |
+        python scripts/test_api.py

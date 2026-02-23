@@ -5,10 +5,9 @@ ManagingAgent → OrchestrationAgent → ArchitectureAgent → CoderAgent → Te
 """
 from __future__ import annotations
 
-import asyncio
 import uuid
 from types import SimpleNamespace
-from unittest.mock import MagicMock, AsyncMock
+from unittest.mock import MagicMock
 
 import pytest
 
@@ -32,56 +31,31 @@ class TestFullPipeline:
         - TesterAgent.llm → produces *test_verdicts* (default: all PASS)
         - All DB calls → no-op
         """
-        mock_architect = MagicMock()
-        mock_coder = MagicMock()
-        mock_tester = MagicMock()
-        mock_db = MagicMock()
-        mock_pinn = MagicMock()
-        mock_manager = MagicMock()
-        mock_orchestrator = MagicMock()
+        engine = IntentEngine()
 
-        # Setup mocks
-        mock_pinn.world_model = MagicMock()
+        # ── Mock ManagingAgent LLM ──────────────────────────────────
+        engine.manager.llm = MagicMock()
+        engine.manager.llm.call_llm.return_value = llm_categorisation
+        engine.manager.db = MagicMock()
 
-        engine = IntentEngine(
-            architect=mock_architect,
-            coder=mock_coder,
-            tester=mock_tester,
-            db=mock_db,
-            pinn=mock_pinn,
-            manager=mock_manager,
-            orchestrator=mock_orchestrator
-        )
+        # ── Mock OrchestrationAgent DB ──────────────────────────────
+        engine.orchestrator.db = MagicMock()
 
-        # ── Mock ManagingAgent ──────────────────────────────────────
-        engine.manager.categorize_project = AsyncMock()
-        # Ensure it returns a dummy plan so code doesn't crash before mocking return values in tests
-        dummy_plan_mock = MagicMock()
-        dummy_plan_mock.actions = []
-        engine.manager.categorize_project.return_value = dummy_plan_mock
-
-        # ── Mock OrchestrationAgent ─────────────────────────────────
-        engine.orchestrator.build_blueprint = AsyncMock()
-        # Return dummy blueprint
-        engine.orchestrator.build_blueprint.return_value = dummy_plan_mock
-
-        # ── Mock ArchitectureAgent ──────────────────────────────────
-        engine.architect.map_system = AsyncMock(return_value=[])
+        # ── Mock ArchitectureAgent DB (keep real PINN) ──────────────
+        engine.architect.db = MagicMock()
 
         # ── Mock CoderAgent ─────────────────────────────────────────
-        # Note: generate_solution is called by IntentEngine using await
-        engine.coder.generate_solution = AsyncMock()
-        engine.coder.generate_solution.return_value = SimpleNamespace(artifact_id="art-1", content="code")
+        engine.coder.llm = MagicMock()
+        engine.coder.llm.call_llm.return_value = llm_code
+        engine.coder.db = MagicMock()
+        engine.coder.db.get_artifact.return_value = None  # no parent context
 
         # ── Mock TesterAgent ────────────────────────────────────────
         if test_verdicts is None:
             test_verdicts = ["PASS"]
 
-        # We need a mutable list that persists across calls
-        verdicts_ref = list(test_verdicts)
-
-        async def fake_validate(_artifact_id, supplemental_context=None, context_tokens=None):
-            verdict = verdicts_ref.pop(0) if verdicts_ref else "PASS"
+        async def fake_validate(_artifact_id):
+            verdict = test_verdicts.pop(0) if test_verdicts else "PASS"
             return TestReport(
                 status=verdict,
                 critique="All clear" if verdict == "PASS" else "Bug found",
@@ -92,11 +66,6 @@ class TestFullPipeline:
         # ── Mock top-level DB ───────────────────────────────────────
         engine.db = MagicMock()
 
-        # ── Mock Vector Gate ────────────────────────────────────────
-        engine.vector_gate.evaluate = MagicMock()
-        engine.vector_gate.evaluate.return_value.matches = []
-        engine.vector_gate.format_prompt_context = MagicMock(return_value="")
-
         return engine
 
     # -----------------------------------------------------------------
@@ -106,31 +75,20 @@ class TestFullPipeline:
     @pytest.mark.asyncio
     async def test_happy_path_all_pass(self):
         engine = self._make_engine()
-
-        # Mock Plan (from Manager)
-        plan_mock = MagicMock()
-        plan_mock.actions = [MagicMock(instruction="do x")]
-        engine.manager.categorize_project.return_value = plan_mock
-
-        # Mock Blueprint (from Orchestrator)
-        blueprint_mock = MagicMock()
-        blueprint_mock.plan_id = "blueprint-123"
-        blueprint_mock.actions = [MagicMock(instruction="do x", title="Task A", status="pending")]
-        engine.orchestrator.build_blueprint.return_value = blueprint_mock
-
-        # Mock Architecture
-        engine.architect.map_system.return_value = [SimpleNamespace(type="architecture_doc")]
-
-        # Mock Coder
-        engine.coder.generate_solution.return_value = SimpleNamespace(artifact_id="art-1", content="code")
-
-        result = await engine.run_pipeline("Build a user service", "proj1")
+        result = await engine.run_full_pipeline("Build a user service")
 
         assert isinstance(result, PipelineResult)
         assert result.success is True
 
-        # Architect produced architecture artifacts
+        # ManagingAgent produced a plan with actions
+        assert len(result.plan.actions) > 0
+
+        # OrchestrationAgent produced a blueprint
+        assert result.blueprint.plan_id.startswith("blueprint-")
+
+        # ArchitectureAgent produced architecture artifacts
         assert len(result.architecture_artifacts) > 0
+        assert all(a.type == "architecture_doc" for a in result.architecture_artifacts)
 
         # CoderAgent produced code artifacts
         assert len(result.code_artifacts) > 0
@@ -150,19 +108,7 @@ class TestFullPipeline:
         verdicts = ["FAIL", "PASS"] + ["PASS"] * 20  # generous surplus
         engine = self._make_engine(test_verdicts=verdicts)
 
-        # Mock Plan
-        plan_mock = MagicMock()
-        plan_mock.actions = [MagicMock(instruction="do x")]
-        engine.manager.categorize_project.return_value = plan_mock
-
-        # Mock Blueprint
-        blueprint_mock = MagicMock()
-        blueprint_mock.plan_id = "blueprint-123"
-        # Only 1 action to test healing
-        blueprint_mock.actions = [MagicMock(instruction="do x", title="Task A", status="pending")]
-        engine.orchestrator.build_blueprint.return_value = blueprint_mock
-
-        result = await engine.run_pipeline("Build something", "proj1")
+        result = await engine.run_full_pipeline("Build something")
 
         assert result.success is True
         # At least one FAIL verdict should appear in the trace
@@ -179,26 +125,13 @@ class TestFullPipeline:
         verdicts = ["FAIL"] * 100  # every attempt fails
         engine = self._make_engine(test_verdicts=verdicts)
 
-        # Mock Plan
-        plan_mock = MagicMock()
-        plan_mock.actions = [MagicMock(instruction="do x")]
-        engine.manager.categorize_project.return_value = plan_mock
-
-        # Mock Blueprint
-        blueprint_mock = MagicMock()
-        blueprint_mock.project_name = "Doomed"
-        blueprint_mock.plan_id = "blueprint-123"
-        action = MagicMock(instruction="do x", title="Task A", status="pending")
-        blueprint_mock.actions = [action]
-        engine.orchestrator.build_blueprint.return_value = blueprint_mock
-
-        result = await engine.run_pipeline(
-            "Doomed project", "proj1", max_healing_retries=2
+        result = await engine.run_full_pipeline(
+            "Doomed project", max_healing_retries=2
         )
 
         assert result.success is False
         # All blueprint actions should be marked "failed"
-        assert action.status == "failed"
+        assert all(a.status == "failed" for a in result.blueprint.actions)
 
     # -----------------------------------------------------------------
     # Pipeline result contains correct artefact counts
@@ -209,28 +142,12 @@ class TestFullPipeline:
         engine = self._make_engine(
             llm_categorisation="1. Task A",  # 1 task → 4 pipeline stages
         )
+        result = await engine.run_full_pipeline("Single task project")
 
-        # Mock Plan
-        plan_mock = MagicMock()
-        plan_mock.actions = [MagicMock(instruction=f"do {i}") for i in range(4)]
-        engine.manager.categorize_project.return_value = plan_mock
+        # blueprint actions = 1 task × 4 pipeline stages
+        assert len(result.blueprint.actions) == 4
 
-        # Mock Blueprint
-        blueprint_mock = MagicMock()
-        blueprint_mock.plan_id = "blueprint-123"
-        # 4 actions
-        blueprint_mock.actions = [
-            MagicMock(instruction=f"do {i}", title=f"Task {i}", status="pending")
-            for i in range(4)
-        ]
-        engine.orchestrator.build_blueprint.return_value = blueprint_mock
-
-        # Mock Architecture
-        engine.architect.map_system.return_value = [SimpleNamespace(type="architecture_doc") for _ in range(4)]
-
-        result = await engine.run_pipeline("Single task project", "proj1")
-
-        # architecture artifacts = one per blueprint action (mocked)
+        # architecture artifacts = one per blueprint action
         assert len(result.architecture_artifacts) == 4
 
         # code artifacts = one final per blueprint action (happy path)
@@ -244,13 +161,13 @@ class TestFullPipeline:
     async def test_legacy_execute_plan_still_works(self):
         engine = self._make_engine()
 
-        async def fake_generate(parent_id, feedback=None, context_tokens=None):
+        async def fake_generate(parent_id, feedback=None):
             return SimpleNamespace(
                 artifact_id=str(uuid.uuid4()),
                 content="code",
             )
 
-        async def fake_validate(_aid, supplemental_context=None, context_tokens=None):
+        async def fake_validate(_aid):
             return TestReport(status="PASS", critique="ok")
 
         engine.coder.generate_solution = fake_generate  # type: ignore

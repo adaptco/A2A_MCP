@@ -4,7 +4,11 @@ Text and embedding normalization utilities.
 
 import unicodedata
 import re
-import torch
+
+try:
+    import torch
+except ImportError:
+    torch = None
 
 
 def normalize_text(text: str) -> str:
@@ -40,7 +44,7 @@ def normalize_text(text: str) -> str:
     return text
 
 
-def l2_normalize(tensor: torch.Tensor) -> torch.Tensor:
+def l2_normalize(tensor):
     """
     L2 normalization for embedding vectors.
     
@@ -49,5 +53,11 @@ def l2_normalize(tensor: torch.Tensor) -> torch.Tensor:
     
     Returns:
         L2-normalized tensor
+
+    Raises:
+        ImportError: If torch is not available.
     """
+    if torch is None:
+        raise ImportError("torch is required for l2_normalize but not installed.")
+
     return torch.nn.functional.normalize(tensor, p=2, dim=-1)

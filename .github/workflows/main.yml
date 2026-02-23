@@ -1,45 +1,63 @@
-name: A2A Pipeline CI
+name: A2A-MCP Integration Tests
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
+    paths:
+      - "orchestrator/**"
+      - "schemas/**"
+      - "tests/**"
+      - "requirements.txt"
+      - ".github/workflows/main.yml"
   pull_request:
-    branches: [ main ]
+    branches: [main]
+    paths:
+      - "orchestrator/**"
+      - "schemas/**"
+      - "tests/**"
+      - "requirements.txt"
+      - ".github/workflows/main.yml"
+  workflow_dispatch:
 
 permissions:
   contents: read
-  issues: write
 
 jobs:
-  test-pipeline:
+  test:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: pass
+          POSTGRES_DB: mcp_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgresql://postgres:pass@localhost:5432/mcp_db
+      PYTHONPATH: .
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v2
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
 
-    - name: Build and start container
-      run: |
-        if docker compose version >/dev/null 2>&1; then
-          docker compose up -d --build
-        else
-          docker-compose up -d --build
-        fi
-        # Wait for FastAPI to be ready
-        sleep 5
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-asyncio
 
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.11'
-
-    - name: Install dependencies
-      run: |
-        pip install -r requirements.txt
-
-    - name: Run A2A Integration Test
-      run: |
-        python -m pytest -q tests/test_cicd_pipeline.py
+      - name: Run persistence and verification tests
+        run: |
+          pytest -q tests/test_storage.py tests/test_mcp_agents.py tests/test_verify_api.py

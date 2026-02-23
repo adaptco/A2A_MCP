@@ -6,7 +6,7 @@ export interface McpTool {
   name: string;
   description?: string;
   inputSchema: Record<string, unknown>;
-  handler: (args: any) => Promise<any>;
+  handler: (args: Record<string, unknown>) => Promise<unknown>;
 }
 
 export interface McpResource {
@@ -14,7 +14,7 @@ export interface McpResource {
   name?: string;
   description?: string;
   mimeType?: string;
-  read: () => Promise<any>;
+  read: () => Promise<unknown>;
 }
 
 export interface McpPrompt {

@@ -1,6 +1,7 @@
 import hashlib
 import json
 import datetime
+import copy
 from typing import Any, Dict, List, Optional
 
 class PostgresEventStore:
@@ -71,4 +72,5 @@ class PostgresEventStore:
         return True
 
     def get_history(self) -> List[Dict]:
-        return self.events
+        # Return a deep copy to prevent mutation of internal state
+        return copy.deepcopy(self.events)

@@ -11,6 +11,7 @@ from agents.coder import CoderAgent
 from agents.tester import TesterAgent
 from agents.researcher import ResearcherAgent
 from agents.pinn_agent import PINNAgent
+from agents.notification_agent import NotificationAgent
 
 __all__ = [
     'ManagingAgent',
@@ -20,4 +21,5 @@ __all__ = [
     'TesterAgent',
     'ResearcherAgent',
     'PINNAgent',
+    'NotificationAgent',
 ]

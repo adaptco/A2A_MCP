@@ -8,7 +8,7 @@ pipeline and executing lifecycle transitions.
 from __future__ import annotations
 
 import os
-# Removed unused Dict import
+from typing import Dict
 
 from fastapi import FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
@@ -18,12 +18,11 @@ from rbac.models import (
     ROLE_PERMISSIONS,
     AgentRecord,
     AgentRegistration,
-    # AgentRole is used implicitly in models
+    AgentRole,
     OnboardingResult,
     PermissionCheckRequest,
     PermissionCheckResponse,
 )
-from rbac.storage import get_registry
 
 # ── App setup ────────────────────────────────────────────────────────────
 
@@ -33,18 +32,16 @@ app = FastAPI(
     version="1.0.0",
 )
 
-ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,http://localhost:8000").split(",")
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=ALLOWED_ORIGINS,
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Agent registry (supports both In-Memory and SQL via factory)
-registry = get_registry()
+# In-memory agent registry (MVP — swap for DB-backed store in production)
+_registry: Dict[str, AgentRecord] = {}
 
 RBAC_SECRET = os.getenv("RBAC_SECRET", "dev-secret-change-me")
 
@@ -56,7 +53,7 @@ async def health():
     return {
         "status": "healthy",
         "service": "rbac-gateway",
-        "registered_agents": registry.count(),
+        "registered_agents": len(_registry),
     }
 
 
@@ -70,7 +67,7 @@ async def onboard_agent(registration: AgentRegistration):
     The agent's role determines which lifecycle transitions and actions it
     may perform within the pipeline.
     """
-    if registry.get(registration.agent_id):
+    if registration.agent_id in _registry:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail=f"Agent '{registration.agent_id}' is already registered.",
@@ -83,7 +80,7 @@ async def onboard_agent(registration: AgentRegistration):
         embedding_config=registration.embedding_config,
         metadata=registration.metadata,
     )
-    registry.register(record)
+    _registry[registration.agent_id] = record
 
     # Build permission lists from role
     transitions = sorted(ROLE_PERMISSIONS.get(record.role, set()))
@@ -103,7 +100,7 @@ async def onboard_agent(registration: AgentRegistration):
 @app.get("/agents/{agent_id}/permissions")
 async def get_agent_permissions(agent_id: str):
     """Return the full permission scope for a registered agent."""
-    record = registry.get(agent_id)
+    record = _registry.get(agent_id)
     if not record:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -126,7 +123,7 @@ async def verify_permission(agent_id: str, check: PermissionCheckRequest):
     Check whether an agent is permitted to perform a specific action or
     lifecycle transition.
     """
-    record = registry.get(agent_id)
+    record = _registry.get(agent_id)
     if not record:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -196,7 +193,7 @@ async def list_agents():
                 "role": r.role.value,
                 "active": r.active,
             }
-            for r in registry.list_all()
+            for r in _registry.values()
         ]
     }
 
@@ -204,12 +201,13 @@ async def list_agents():
 @app.delete("/agents/{agent_id}", status_code=204)
 async def deactivate_agent(agent_id: str):
     """Soft-deactivate an agent (preserves record for audit)."""
-    if not registry.get(agent_id):
+    record = _registry.get(agent_id)
+    if not record:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Agent '{agent_id}' not found.",
         )
-    registry.deactivate(agent_id)
+    record.active = False
 
 
 # ── Entry point ─────────────────────────────────────────────────────────

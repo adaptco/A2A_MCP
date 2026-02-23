@@ -14,8 +14,6 @@ dependencies = [
     "requests",
     "jsonschema",
     "mcp[cli]",
-    "PyJWT",
-    "cryptography",
 ]
 
 [project.optional-dependencies]
@@ -27,5 +25,4 @@ dev = [
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 asyncio_mode = "auto"
-pythonpath = ["src"]
-addopts = "-q --doctest-modules"
+pythonpath = ["."]

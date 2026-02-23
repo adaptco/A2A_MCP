@@ -1,14 +1,4 @@
 ---
-<<<<<<< HEAD
-judge:
-  evaluation_mode: "Synchronous"
-  scoring_method: "Weighted MCDA"
-
-criteria:
-  safety:
-    weight: 1.0
-    description: "Vehicle and environment safety constraints"
-=======
 # Judge Criteria Scoring Rubric
 # Defines multi-criteria decision framework for agent action evaluation.
 # All criteria contribute to overall action score [0, 1].
@@ -26,28 +16,11 @@ criteria:
     weight: 1.0
     description: "Vehicle and environment safety constraints"
 
->>>>>>> cde431b91765a0efa58a544c6bbce7e87c940fbe
     sub_criteria:
       bounds_check:
         description: "Entity stays within Base44 cell bounds"
         scoring:
           in_bounds: 1.0
-<<<<<<< HEAD
-          warning_zone: 0.7
-          out_of_bounds: 0.0
-      collision_avoidance:
-        description: "Minimum safe distance from obstacles"
-        scoring:
-          clear_safe_distance: 1.0
-          approaching: 0.6
-          collision: 0.0
-      overspeed_check:
-        description: "Respect vehicle max speed and zone limits"
-        scoring:
-          within_limit: 1.0
-          slightly_over: 0.7
-          overspeed: 0.0
-=======
           warning_zone: 0.7  # 90% into bounds
           out_of_bounds: 0.0
 
@@ -70,7 +43,6 @@ criteria:
             else:
               return 0.0  # Overspeed penalty
 
->>>>>>> cde431b91765a0efa58a544c6bbce7e87c940fbe
       fuel_viability:
         description: "Sufficient fuel to execute action safely"
         scoring:
@@ -79,11 +51,6 @@ criteria:
           fuel_lt_10_percent: 0.3
           no_fuel: 0.0
 
-<<<<<<< HEAD
-  spec_alignment:
-    weight: 0.8
-    description: "Adherence to Supra physics and performance specs"
-=======
       stability_margin:
         description: "Lateral g-forces within ESC threshold"
         scoring_formula: |
@@ -100,32 +67,10 @@ criteria:
     weight: 0.8
     description: "Adherence to Supra physics and performance specs"
 
->>>>>>> cde431b91765a0efa58a544c6bbce7e87c940fbe
     sub_criteria:
       acceleration_realism:
         description: "Acceleration matches Supra 0-60 envelope"
         scoring:
-<<<<<<< HEAD
-          within_envelope: 1.0
-          slightly_slow: 0.8
-          well_below_spec: 0.4
-      handling_compliance:
-        description: "Turning radius and steering ratio respected"
-        scoring:
-          within_turning_spec: 1.0
-          slight_deviation: 0.85
-          significant_deviation: 0.4
-      braking_fidelity:
-        description: "Braking distance matches Supra spec"
-        scoring:
-          within_braking_spec: 1.0
-          slightly_longer: 0.85
-          well_longer: 0.4
-
-  intent:
-    weight: 0.7
-    description: "Alignment with user/player goal"
-=======
           within_envelope: 1.0  # 3.8s ≤ 0-60 time
           slightly_slow: 0.8    # 3.8-4.5s
           well_below_spec: 0.4  # > 4.5s
@@ -156,67 +101,10 @@ criteria:
     weight: 0.7
     description: "Alignment with user/player goal"
 
->>>>>>> cde431b91765a0efa58a544c6bbce7e87c940fbe
     sub_criteria:
       objective_progress:
         description: "Action advances toward stated goal"
         scoring:
-<<<<<<< HEAD
-          direct_progress: 1.0
-          contributing: 0.85
-          neutral: 0.5
-          regressive: 0.0
-      tactical_fit:
-        description: "Action fits current game situation"
-        scoring:
-          perfect_fit: 1.0
-          acceptable: 0.8
-          marginal: 0.5
-
-  latency:
-    weight: 0.5
-    description: "Execution within time budget (frame-level)"
-    sub_criteria:
-      execution_time:
-        description: "Action computes within frame budget"
-        budget_ms: 16.67
-        warning_threshold_ms: 12.0
-        scoring:
-          fast: 1.0
-          acceptable: 0.9
-          slow: 0.5
-          timeout: 0.0
-
-scoring:
-  method: "Weighted Sum"
-  formula: "overall_score = sum(criterion.weight * criterion.score) / sum(criterion.weight)"
-  interpretation:
-    excellent: [0.9, 1.0]
-    good: [0.7, 0.9]
-    acceptable: [0.5, 0.7]
-    poor: [0.0, 0.5]
-
-tuning:
-  presets:
-    "simulation":
-      safety_weight: 1.0
-      spec_weight: 1.0
-      intent_weight: 0.5
-      latency_weight: 1.0
-      description: "Realistic, challenging"
-    
-    "arcade":
-      safety_weight: 0.5
-      spec_weight: 0.4
-      intent_weight: 1.0
-      latency_weight: 0.3
-      description: "Fast, fun, forgiving"
-    
-    "casual":
-      safety_weight: 0.9
-      spec_weight: 0.6
-      intent_weight: 0.9
-=======
           direct_progress: 1.0      # Directly enables objective
           contributing: 0.85        # Indirect help
           neutral: 0.5              # No impact
@@ -381,16 +269,12 @@ tuning:
       safety_weight: 0.9
       spec_alignment_weight: 0.6
       player_intent_weight: 0.9
->>>>>>> cde431b91765a0efa58a544c6bbce7e87c940fbe
       latency_weight: 0.2
       description: "Balanced for fun"
 
 notes:
   - "All agents MUST respect safety criteria (weight 1.0)"
   - "Judge runs synchronously every frame; no offline batch processing"
-<<<<<<< HEAD
-=======
   - "Context must include all required_keys or defaults apply"
   - "Override weights per game mode via tuning.presets"
->>>>>>> cde431b91765a0efa58a544c6bbce7e87c940fbe
   - "ESC threshold (1.08g) is hard limit for Supra physics"

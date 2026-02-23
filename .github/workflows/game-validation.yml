@@ -72,6 +72,7 @@ jobs:
             echo "No Makefile found; skipping engine build." | tee build.log
           fi
           echo "::endgroup::"
+          mkdir -p bin
           echo "binary_size=$(stat -c%s bin/ghost-void_engine 2>/dev/null || echo 0)" >> $GITHUB_OUTPUT
 
       - name: Upload build artifacts
@@ -87,12 +88,8 @@ jobs:
         run: |
           echo "📊 Build Summary"
           echo "───────────────────────────"
-          if [ -f bin/ghost-void_engine ]; then
-            ls -lh bin/
-            echo "Binary size: $(stat -c%s bin/ghost-void_engine) bytes"
-          else
-            echo "No engine binary found; skipping size report."
-          fi
+          ls -lh bin/
+          echo "Binary size: $(stat -c%s bin/ghost-void_engine) bytes"
 
   # ═══════════════════════════════════════════════════════════════════
   #  Stage 2: C++ Unit Tests

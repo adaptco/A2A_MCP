@@ -6,6 +6,13 @@
       "env": {
         "DATABASE_URL": "sqlite:////absolute/path/to/your/A2A_MCP/a2a_mcp.db"
       }
+    },
+    "a2a-runtime": {
+      "command": "python",
+      "args": ["/absolute/path/to/your/A2A_MCP/runtime_mcp_server.py"],
+      "env": {
+        "DATABASE_URL": "sqlite:////absolute/path/to/your/A2A_MCP/a2a_mcp.db"
+      }
     }
   }
 }

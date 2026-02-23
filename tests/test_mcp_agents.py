@@ -38,6 +38,5 @@ async def test_ingestion_with_valid_handshake(mock_snapshot):
                 assert "success" in text
                 assert "adaptco/A2A_MCP" in text
         finally:
-            if hasattr(client, "close"):
-                await client.close()
+            await client.close()
             await asyncio.sleep(0)

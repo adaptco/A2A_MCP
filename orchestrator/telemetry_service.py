@@ -110,7 +110,7 @@ class TelemetryService:
                 input_embedding=event.input_embedding,
                 output_embedding=event.output_embedding,
                 embedding_distance=event.embedding_distance,
-                metadata=event.metadata,
+                metadata_json=event.metadata,
                 duration_ms=event.duration_ms,
                 success=event.success,
                 error_message=event.error_message,

@@ -7,7 +7,6 @@ PlanAction tasks, and assigns each to the appropriate downstream agent.
 """
 from __future__ import annotations
 
-import asyncio
 import uuid
 from typing import List, Optional
 
@@ -44,8 +43,7 @@ class ManagingAgent:
             f"Project description:\n{description}"
         )
 
-        loop = asyncio.get_running_loop()
-        raw_response = await loop.run_in_executor(None, self.llm.call_llm, prompt)
+        raw_response = self.llm.call_llm(prompt)
         actions = self._parse_actions(raw_response)
 
         plan = ProjectPlan(
@@ -62,7 +60,7 @@ class ManagingAgent:
             content=raw_response,
             metadata={"agent": self.AGENT_NAME, "plan_id": plan.plan_id},
         )
-        await loop.run_in_executor(None, self.db.save_artifact, artifact)
+        self.db.save_artifact(artifact)
         return plan
 
     # ------------------------------------------------------------------

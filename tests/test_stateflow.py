@@ -19,7 +19,7 @@ def test_happy_path():
     assert sm.current_state() == State.TERMINATED_SUCCESS
 
 def test_retry_limit_exceeded():
-    sm = StateMachine(max_retries=1)
+    sm = StateMachine(max_retries=2)
     sm.trigger("OBJECTIVE_INGRESS")
     sm.trigger("RUN_DISPATCHED")
     sm.trigger("EXECUTION_COMPLETE")
@@ -28,8 +28,15 @@ def test_retry_limit_exceeded():
     def policy_partial():
         raise PartialVerdict()
 
-    # first partial -> RETRY (attempts becomes 1, which == max_retries)
-    # With max_retries=1 the very first VERDICT_PARTIAL should exhaust the limit
+    # first partial -> RETRY
+    sm.evaluate_apply_policy(policy_partial)
+    assert sm.current_state() == State.RETRY
+    # dispatch retry
+    sm.trigger("RETRY_DISPATCHED")
+    assert sm.current_state() == State.EXECUTING
+    # execution completes again
+    sm.trigger("EXECUTION_COMPLETE")
+    # second partial -> now max_retries is 2 => should lead to TERMINATED_FAIL
     sm.evaluate_apply_policy(policy_partial)
     assert sm.current_state() == State.TERMINATED_FAIL
 

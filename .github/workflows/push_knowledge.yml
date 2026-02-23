@@ -11,7 +11,7 @@ jobs:
     permissions:
       id-token: write  # Required for OIDC handshake
       contents: read
-      issues: write
+      pull-requests: write
 
     steps:
       - name: "Checkout Repository"
@@ -67,20 +67,9 @@ jobs:
         with:
           script: |
             const status = process.env.INGESTION_STATUS === 'success' ? '✅' : '❌';
-            const issue_number = context.payload.pull_request
-              ? context.payload.pull_request.number
-              : context.payload.issue
-                ? context.payload.issue.number
-                : null;
-
-            if (!issue_number) {
-              core.info('No issue/PR context available; skipping ingestion receipt comment.');
-              return;
-            }
-
-            await github.rest.issues.createComment({
-              issue_number,
+            github.rest.issues.createComment({
+              issue_number: context.issue.number || 0,
               owner: context.repo.owner,
               repo: context.repo.repo,
               body: `### 🛡️ A2A Ingestion Status: ${status}\nRepository knowledge has been indexed as multimodal tensors for the Avatar RAG.`
-            });
+            })

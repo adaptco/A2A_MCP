@@ -17,3 +17,7 @@ def get_vertex_ai_model_dir():
     print(f"--------------------------------------")
     
     return model_dir
+class LLMService:
+    def call_llm(self, prompt: str) -> str:
+        # Mock implementation for tests
+        return "Mock response"

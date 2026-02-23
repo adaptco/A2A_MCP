@@ -23,7 +23,7 @@ class PostgresEventStore:
         """
         Append an event and return its Merkle-style hash.
         """
-        timestamp = datetime.datetime.now().isoformat()
+        timestamp = datetime.datetime.now(datetime.timezone.utc).isoformat()
         
         # Create event data for hashing
         event_data = {

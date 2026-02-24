@@ -1,0 +1,12 @@
+.dockerignore
+.env
+.git
+.github
+.gitignore
+.idea
+.vscode
+*.pyc
+*~
+__pycache__
+docker-compose.yml
+README.md

@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mcp-server
+spec:
+  replicas: 0  # Scaled to 0 in base, overridden in overlays
+  selector:
+    matchLabels:
+      app: mcp-server
+  template:
+    metadata:
+      labels:
+        app: mcp-server
+    spec:
+      containers:
+      - name: mcp
+        image: vh2-mcp:latest
+        imagePullPolicy: IfNotPresent
+        # No ports - stdio only
+        stdin: true
+        tty: true

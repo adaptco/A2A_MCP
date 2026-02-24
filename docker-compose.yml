@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  orchestrator:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: qube-orchestrator
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONUNBUFFERED=1
+      # The orchestrator can reach the MCP server using this hostname
+      - MCP_SERVER_URL=http://mcp-server:8080
+    depends_on:
+      - mcp-server
+    networks:
+      - qube-net
+    # Mounts the current directory to allow live code changes during dev
+    volumes:
+      - .:/app
+
+  mcp-server:
+    build:
+      context: ./adapters
+      dockerfile: Dockerfile
+    container_name: qube-mcp-server
+    ports:
+      - "8080:8080"
+    networks:
+      - qube-net
+
+networks:
+  qube-net:
+    driver: bridge

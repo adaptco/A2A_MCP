@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    services:
+      mcp-server:
+        image: mcp-server
+        env:
+          context: .
+          dockerfile: A2A_MCP/Dockerfile
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Build Docker Services
+      run: docker-compose build
+
+    - name: Wait for Server Readiness
+      run: sleep 10
+
+    - name: Lint with Pylint
+      run: |
+        docker-compose run --rm --entrypoint "" orchestrator \
+        sh -c "pip install pylint && pylint --fail-under=8.0 $(git ls-files '*.py')"
+
+    - name: Run Unit Tests
+      run: |
+        docker-compose run --rm --entrypoint "" orchestrator \
+        sh -c "pip install -r requirements-dev.txt && cd A2A_MCP && pytest tests/test_intent_engine.py tests/test_full_pipeline.py"
+
+    - name: Run Integration Tests
+      run: |
+        docker-compose run --rm --entrypoint "" orchestrator \
+        sh -c "pip install -r requirements-dev.txt && cd A2A_MCP && python integration_test.py"
+
+    - name: Clean up services
+      if: always()
+      run: docker-compose down

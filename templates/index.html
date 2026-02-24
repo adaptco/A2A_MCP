@@ -1,0 +1,32 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A2A_MCP Agent Simulator</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>A2A_MCP Agent Simulator</h1>
+        <p>This interface demonstrates the agent lifecycle for LoRA adaptation.</p>
+        
+        <div class="controls">
+            <button id="create-agent-btn">1. Create New Agent</button>
+            <button id="adapt-agent-btn" disabled>2. Start LoRA Adaptation</button>
+        </div>
+
+        <div id="agent-display" class="hidden">
+            <h2>Current Agent</h2>
+            <pre id="agent-json"></pre>
+        </div>
+
+        <div id="status-log">
+            <h3>Lifecycle Log</h3>
+            <ul id="log-list"></ul>
+        </div>
+    </div>
+    <script src="/static/script.js"></script>
+</body>
+</html>

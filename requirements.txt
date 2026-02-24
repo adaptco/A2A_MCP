@@ -1,0 +1,7 @@
+Flask==2.2.3
+google-cloud-aiplatform==1.25.0
+langchain-core==0.1.28
+fastapi
+uvicorn
+httpx
+pytest-asyncio

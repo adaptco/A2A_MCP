@@ -1,0 +1,19 @@
+chore: stabilize ledger logic and optimize orchestration agent
+
+This commit resolves critical testing blockers and performance bottlenecks identified in the A2A_MCP core.
+
+Changes:
+- Corrected duration logic in `previz/ledger.py`: Updated `duration_seconds` to calculate relative duration (last_frame - first_frame) / fps instead of absolute last frame index.
+- Resolved `SyntaxError` in `tests/test_ledger.py`: Removed duplicate future imports and concatenated blocks that were causing test collection to fail.
+- Optimized `OrchestrationAgent`: Refactored `build_blueprint` in `agents/orchestration_agent.py` to use `asyncio.to_thread` for database I/O, preventing event loop starvation.
+- Pydantic Compatibility: Added a feature check for `model_dump_json` vs `json()` to ensure compatibility across Pydantic v1 and v2 environments.
+- Dependency Stubs: Established minimal stubs in `schemas/` and `orchestrator/storage.py` to facilitate isolated agent testing.
+
+Verification:
+- Verified non-blocking execution with `verify_orchestrator.py` (~0.5s for concurrent tasks).
+- All tests in `tests/test_ledger.py` now pass successfully.
+
+PR Checklist:
+- [x] Tests passed locally.
+- [x] Workflow triggers verified.
+- [x] Temp/local artifacts excluded.

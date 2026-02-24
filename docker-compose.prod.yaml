@@ -1,0 +1,8 @@
+version: '3.8'
+services:
+  app:
+    image: ${{ secrets.DOCKERHUB_USERNAME }}/mcp-control-plane:latest
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env.prod

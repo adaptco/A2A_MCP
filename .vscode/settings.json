@@ -1,0 +1,8 @@
+{
+    "python.testing.pytestArgs": [
+        "adapters"
+    ],
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true,
+    "editor.experimental.treeSitterTelemetry": true
+}

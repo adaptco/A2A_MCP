@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mcp-control-plane
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: mcp-control-plane
+  template:
+    metadata:
+      labels:
+        app: mcp-control-plane
+    spec:
+      containers:
+      - name: mcp-control-plane
+        image: ${{ secrets.DOCKERHUB_USERNAME }}/mcp-control-plane:latest
+        ports:
+        - containerPort: 8080
+        envFrom:
+        - configMapRef:
+            name: mcp-control-plane-config
+        securityContext:
+          allowPrivilegeEscalation: false
+          runAsUser: 1000
+          runAsGroup: 3000
+          readOnlyRootFilesystem: true
+--- 
+apiVersion: v1
+kind: Service
+metadata:
+  name: mcp-control-plane
+spec:
+  selector:
+    app: mcp-control-plane
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+  type: LoadBalancer
+--- 
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mcp-control-plane-config
+data:
+  LOG_LEVEL: "info"
+  ENVIRONMENT: "production"
+--- 
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: mcp-control-plane
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: mcp-control-plane
+  minReplicas: 3
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 80
+--- 
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: mcp-control-plane-pdb
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: mcp-control-plane

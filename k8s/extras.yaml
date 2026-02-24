@@ -1,0 +1,37 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: mcp-control-plane-cron
+spec:
+  schedule: "0 0 * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: mcp-control-plane-cron
+            image: ${{ secrets.DOCKERHUB_USERNAME }}/mcp-control-plane:latest
+            args:
+            - /bin/sh
+            - -c
+            - echo 'CronJob running'
+          restartPolicy: OnFailure
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: mcp-control-plane-monitor
+  labels:
+    release: prometheus
+spec:
+  selector:
+    matchLabels:
+      app: mcp-control-plane
+  endpoints:
+  - port: web
+    path: /metrics
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: mcp-staging

@@ -1,6 +1,7 @@
 """FastAPI app for agent-driven WhatsApp channel notifications."""
 
 from __future__ import annotations
+import os
 
 from fastapi import FastAPI
 from pydantic import BaseModel, Field

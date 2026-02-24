@@ -1,28 +1,22 @@
-# A2A_MCP/agents/orchestration_agent.py
-"""
-OrchestrationAgent — Contract / blueprint director.
-
-Defines the canonical execution order across the agent swarm and
-produces a ProjectPlan artifact that downstream agents consume.
-"""
+# agents/orchestration_agent.py
 from __future__ import annotations
 
 import uuid
 from typing import List
 
+# Fix #2: Import for non-blocking I/O
+from anyio import to_thread
+
 from schemas.agent_artifacts import MCPArtifact
 from schemas.project_plan import PlanAction, ProjectPlan
 from orchestrator.storage import DBManager
 
-
-# The canonical delegation pipeline
 AGENT_PIPELINE = [
     "ManagingAgent",
     "ArchitectureAgent",
     "CoderAgent",
     "TesterAgent",
 ]
-
 
 class OrchestrationAgent:
     """Produces a typed blueprint that maps tasks to the agent pipeline."""
@@ -39,10 +33,7 @@ class OrchestrationAgent:
         task_descriptions: List[str],
         requester: str = "system",
     ) -> ProjectPlan:
-        """
-        Accept a list of high-level task descriptions and wrap them into a
-        ProjectPlan with explicit agent-delegation metadata.
-        """
+        """Create project plan with non-blocking persistence."""
         actions: List[PlanAction] = []
         for desc in task_descriptions:
             for agent_name in AGENT_PIPELINE:
@@ -62,12 +53,20 @@ class OrchestrationAgent:
             actions=actions,
         )
 
-        # Persist a blueprint artifact
+        # Fix #1: Handle Pydantic v1 vs v2 API difference
+        if hasattr(plan, 'model_dump_json'):
+            plan_json = plan.model_dump_json()  # Pydantic v2
+        else:
+            plan_json = plan.json()  # Pydantic v1 fallback
+
         artifact = MCPArtifact(
             artifact_id=f"bp-art-{uuid.uuid4().hex[:8]}",
             type="blueprint",
-            content=plan.model_dump_json(),
+            content=plan_json,
             metadata={"agent": self.AGENT_NAME},
         )
-        self.db.save_artifact(artifact)
+
+        # Fix #2: Wrap synchronous DB call in threadpool
+        await to_thread.run_sync(self.db.save_artifact, artifact)
+
         return plan

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, List
 
 from pydantic import BaseModel, Field
@@ -13,7 +13,7 @@ class VectorToken(BaseModel):
     source_artifact_id: str
     vector: List[float]
     text: str
-    timestamp: datetime = Field(default_factory=datetime.utcnow)
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 class WorldModel(BaseModel):

@@ -55,6 +55,48 @@ except ImportError:
     # webhook depends on FastAPI which may not be installed
     webhook_app = None
 
+try:
+    from orchestrator.notifier import WhatsAppNotifier, send_pipeline_completion_notification
+except ImportError:
+    WhatsAppNotifier = None
+    send_pipeline_completion_notification = None
+
+try:
+    from orchestrator.multimodal_worldline import build_worldline_block
+except ImportError:
+    build_worldline_block = None
+
+try:
+    from orchestrator.multimodal_rag_workflow import (
+        build_cicd_logic_tree,
+        build_workflow_bundle,
+        reconstruct_tokens_for_nodes,
+    )
+except ImportError:
+    build_cicd_logic_tree = None
+    build_workflow_bundle = None
+    reconstruct_tokens_for_nodes = None
+
+try:
+    from orchestrator.mcp_core import MCPResult, MCPCore, namespace_project_embedding
+except ImportError:
+    MCPResult = None
+    MCPCore = None
+    namespace_project_embedding = None
+
+try:
+    from orchestrator.client_token_pipe import (
+        ClientTokenContext,
+        ClientTokenPipe,
+        ContaminationError,
+        InMemoryEventStore,
+    )
+except ImportError:
+    ClientTokenContext = None
+    ClientTokenPipe = None
+    ContaminationError = None
+    InMemoryEventStore = None
+
 __all__ = [
     # Core classes (always available)
     'StateMachine',
@@ -75,4 +117,17 @@ __all__ = [
     'ReleasePhase',
     'schedule_job',
     'webhook_app',
+    'WhatsAppNotifier',
+    'send_pipeline_completion_notification',
+    'build_worldline_block',
+    'build_cicd_logic_tree',
+    'build_workflow_bundle',
+    'reconstruct_tokens_for_nodes',
+    'MCPResult',
+    'MCPCore',
+    'namespace_project_embedding',
+    'ClientTokenContext',
+    'ClientTokenPipe',
+    'ContaminationError',
+    'InMemoryEventStore',
 ]

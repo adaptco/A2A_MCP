@@ -43,7 +43,7 @@ class ActionScore:
         return f"<ActionScore action={self.action} score={self.overall_score:.3f}>"
 
 
-class JudgmentModel:
+class Judge:
     """
     Multi-criteria decision analysis for agent judgment.
     Synchronous per-frame evaluation; no RL (extensible for future MARL).
@@ -154,6 +154,16 @@ class JudgmentModel:
         scores = self.judge_actions(actions, context)
         return scores[0] if scores else None
 
+    def judge_action(self, action: str, context: Dict[str, Any], agent_name: str) -> ActionScore:
+        """Score a single action (convenience method)."""
+        scores = self.judge_actions([action], context)
+        return scores[0]
+
+    def get_agent_system_context(self, agent_name: str) -> str:
+        """Return system context/prompt for a specific agent role."""
+        # Placeholder for dynamic context retrieval based on agent role
+        return f"System context for {agent_name}: Prioritize safety and spec compliance."
+
     # Default criterion scorers (override / extend as needed)
 
     @staticmethod
@@ -183,4 +193,4 @@ class JudgmentModel:
         return max(0.0, 1.0 - (elapsed_ms / budget_ms))
 
     def __repr__(self) -> str:
-        return f"<JudgmentModel criteria={list(self._criteria.keys())}>"
+        return f"<Judge criteria={list(self._criteria.keys())}>"

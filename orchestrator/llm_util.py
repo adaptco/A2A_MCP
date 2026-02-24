@@ -21,7 +21,7 @@ class LLMService:
         try:
             payload = response.json()
             message = str(payload.get("error", {}).get("message", "")).lower()
-        except Exception:
+        except requests.exceptions.JSONDecodeError:
             message = str(getattr(response, "text", "")).lower()
         return "model is not supported" in message or "requested model is not supported" in message
 

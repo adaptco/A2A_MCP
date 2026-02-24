@@ -65,6 +65,6 @@ def send_pipeline_completion_notification(
     )
 
     # Placeholder channel URL - in prod this would be config-driven
-    channel_url = "https://whatsapp.com/channel/example"
+    channel_url = os.getenv("WHATSAPP_PIPELINE_STATUS_CHANNEL_URL", "https://whatsapp.com/channel/example")
 
     notifier_agent.send_to_whatsapp_channel(channel_url, message)

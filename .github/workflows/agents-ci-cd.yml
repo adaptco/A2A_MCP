@@ -48,13 +48,13 @@ jobs:
       - name: Compile check
         env:
           PYTHONDONTWRITEBYTECODE: "1"
-        run: python -m compileall -q .
+        run: python -m compileall -q . -x '(^|[/\\])\.git([/\\]|$)'
 
       - name: Run agent/game tests
         env:
           PYTHONDONTWRITEBYTECODE: "1"
         run: |
-          pytest -q tests/test_full_pipeline.py tests/test_intent_engine.py tests/test_avatar_integration.py tests/test_game_model.py tests/test_webgl_integration.py tests/test_cicd_pipeline.py
+          pytest -q tests/test_full_pipeline.py tests/test_intent_engine.py tests/test_avatar_integration.py tests/test_game_model.py tests/test_webgl_integration.py tests/test_cicd_pipeline.py tests/test_orchestration_agent.py tests/test_webhook_handshake.py tests/test_runtime_bridge_contract.py tests/test_runtime_env_contract.py
 
   contract-artifacts:
     runs-on: ubuntu-latest

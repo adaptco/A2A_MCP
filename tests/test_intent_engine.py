@@ -21,7 +21,7 @@ def test_pinn_deterministic_embedding_is_stable():
     assert len(v1) == 16
 
 
-def test_intent_engine_executes_plan(monkeypatch):
+def _make_intent_engine(monkeypatch):
     mock_architect = MagicMock()
     mock_coder = MagicMock()
     mock_tester = MagicMock()

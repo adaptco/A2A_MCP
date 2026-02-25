@@ -5,6 +5,14 @@ from typing import Dict, Any, Optional
 import time
 import math
 from dataclasses import dataclass
+from frontend.three.constants import (
+    MPH_TO_MPS,
+    GRAVITY_MPS2,
+    DEFAULT_FUEL_CAPACITY_GAL,
+    MAX_SPEED_MPH,
+    OBSTACLE_MIN_DISTANCE_M,
+    OBSTACLE_MAX_DISTANCE_M,
+)
 from frontend.three.scene_manager import SceneManager, Vector3
 from frontend.three.world_renderer import WorldRenderer, ZoneRenderer
 from frontend.three.avatar_renderer import AvatarRenderer
@@ -25,7 +33,7 @@ class PlayerState:
     fuel_gal: float
     current_zone: Optional[str] = None
     active: bool = True
-    max_speed_mph: float = 155.0
+    max_speed_mph: float = MAX_SPEED_MPH
     last_rotation: float = 0.0
     last_update_time: float = 0.0
     lateral_g: float = 0.0
@@ -127,8 +135,8 @@ class GameEngine:
             velocity=Vector3(),
             rotation=0.0,
             speed_mph=0.0,
-            fuel_gal=13.2,
-            max_speed_mph=155.0,
+            fuel_gal=DEFAULT_FUEL_CAPACITY_GAL,
+            max_speed_mph=MAX_SPEED_MPH,
             last_rotation=0.0,
             last_update_time=time.time(),
             lateral_g=0.0,
@@ -170,14 +178,14 @@ class GameEngine:
             elif delta_rot < -180:
                 delta_rot += 360
 
-            # v = speed_mph * 0.44704 (m/s)
-            v_ms = speed_mph * 0.44704
+            # v = speed_mph * MPH_TO_MPS (m/s)
+            v_ms = speed_mph * MPH_TO_MPS
             # omega = deg/s * (pi/180) (rad/s)
             omega_rad_s = math.radians(delta_rot / dt)
 
             # a_lat = v * omega
             a_lat = v_ms * omega_rad_s
-            state.lateral_g = abs(a_lat / 9.81)
+            state.lateral_g = abs(a_lat / GRAVITY_MPS2)
 
         state.last_update_time = now
         state.last_rotation = rotation
@@ -210,15 +218,15 @@ class GameEngine:
     def _get_obstacle_distance(self, state: PlayerState) -> float:
         """Estimate nearest obstacle distance based on zone density."""
         if not state.current_zone:
-            return 100.0
+            return OBSTACLE_MAX_DISTANCE_M
 
         zone = self.game_model.zones.get(state.current_zone)
         if not zone:
-            return 100.0
+            return OBSTACLE_MAX_DISTANCE_M
 
         density = zone.obstacle_density
         # Map density 0.0-1.0 to distance 100m-5m
-        return max(5.0, 100.0 * (1.0 - density))
+        return max(OBSTACLE_MIN_DISTANCE_M, OBSTACLE_MAX_DISTANCE_M * (1.0 - density))
 
     def judge_action(
         self,

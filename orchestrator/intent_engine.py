@@ -6,7 +6,7 @@ import asyncio
 import logging
 
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Tuple, Optional
 
 from agents.architecture_agent import ArchitectureAgent
 from agents.coder import CoderAgent
@@ -21,6 +21,8 @@ from schemas.project_plan import PlanAction, ProjectPlan
 logger = logging.getLogger(__name__)
 
 logger = logging.getLogger(__name__)
+from orchestrator.notifier import WhatsAppNotifier, send_pipeline_completion_notification
+from orchestrator.judge_orchestrator import JudgeOrchestrator
 
 @dataclass
 class ActionItem:
@@ -34,6 +36,7 @@ class ProjectPlan:
     project_name: str
     actions: List[ActionItem]
     plan_id: str = "unknown-plan"
+    requester: str = "unknown"
 
 @dataclass
 class PipelineResult:
@@ -75,12 +78,12 @@ class IntentEngine:
         self,
         user_intent: str,
         project_name: str,
-        max_healing_retries: int = 2,
+        max_healing_retries: int = 2, requester: str = "unknown",
     ) -> PipelineResult:
         """Run the full Managing -> Orchestrator -> Architect -> Coder -> Tester flow."""
-        result = self._initialize_pipeline_result(description, requester)
+        result = self._initialize_pipeline_result(user_intent, requester)
 
-        plan = await self._create_plan(description, requester)
+        plan = await self._create_plan(user_intent, requester)
         result.plan = plan
 
         blueprint = await self._create_blueprint(plan, requester)

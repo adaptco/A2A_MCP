@@ -38,6 +38,10 @@ class LoRAConfig(BaseModel):
     alpha: float = Field(default=16.0, description="LoRA alpha scaling factor")
     target_modules: List[str] = Field(default_factory=lambda: ["q_proj", "v_proj"])
     training_samples: int = Field(default=0, description="Number of training samples used")
+    direction_vectors: Dict[str, List[float]] = Field(
+        default_factory=dict,
+        description="Unit vectors that encode LoRA adaptation directions in embedding state space",
+    )
 
 
 class ModelArtifact(BaseModel):

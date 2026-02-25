@@ -35,6 +35,11 @@ def test_worldline_block_contains_mcp_and_unity_payload():
     assert "UNITY_MCP_API_URL" in infra["unity_object_class_source"]
     assert len(infra["token_stream"]) > 0
     assert len(infra["embedding_vector"]) == 32
+    assert infra["lora_weight_directions"]
+    first = next(iter(infra["lora_weight_directions"].values()))
+    assert "weight" in first
+    assert "direction" in first
+    assert len(first["direction"]) == 32
 
     tool_call = block["github_mcp_tool_call"]
     assert tool_call["tool_name"] == "ingest_worldline_block"

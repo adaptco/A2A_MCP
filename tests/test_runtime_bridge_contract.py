@@ -1,4 +1,5 @@
 from schemas.runtime_bridge import (
+    DMNGlobalVariable,
     KernelVectorControlModel,
     RuntimeAssignmentV1,
     RuntimeBridgeMetadata,
@@ -17,6 +18,8 @@ def test_runtime_assignment_v1_round_trip():
         render_backend="threejs",
         runtime_shell="wasm",
         metadata={"lane": "runtime"},
+        avatar={"avatar_id": "avatar-runtime-001", "style": "driver"},
+        rbac={"agent_id": "agent-runtime", "role": "observer"},
         mcp={"provider": "github-mcp"},
     )
     kernel_model = KernelVectorControlModel(
@@ -41,8 +44,26 @@ def test_runtime_assignment_v1_round_trip():
         actor="qa_user",
         prompt="deploy runtime worker",
         runtime={"wasm_shell": {"enabled": True}},
+        rag={"collection": "a2a_worldline_rag_v1", "model": "sentence-transformers/all-mpnet-base-v2"},
         workers=[worker],
         token_stream=[{"token": "runtime", "token_id": "tok-1"}],
+        dmn_global_variables=[
+            DMNGlobalVariable(
+                name="A2A_RUNTIME_ENGINE",
+                value="WASD GameEngine",
+                source="runtime",
+                dmn_key="runtime.engine",
+                xml_path="/dmn/globalVariables/variable[@name='A2A_RUNTIME_ENGINE']",
+            )
+        ],
+        dmn_global_variables_xml=(
+            "<dmnGlobalVariables schema=\"runtime.assignment.v1\" count=\"1\">"
+            "<variable name=\"A2A_RUNTIME_ENGINE\" source=\"runtime\" "
+            "dmnKey=\"runtime.engine\" "
+            "xmlPath=\"/dmn/globalVariables/variable[@name='A2A_RUNTIME_ENGINE']\">"
+            "WASD GameEngine"
+            "</variable></dmnGlobalVariables>"
+        ),
         kernel_model=kernel_model,
         runtime_bridge_metadata=bridge_meta,
         mcp={"provider": "github-mcp", "api_key_fingerprint": "deadbeefdeadbeef"},
@@ -54,7 +75,13 @@ def test_runtime_assignment_v1_round_trip():
     assert reparsed.schema_version == "runtime.assignment.v1"
     assert reparsed.workers[0].render_backend == "threejs"
     assert reparsed.workers[0].metadata["lane"] == "runtime"
+    assert reparsed.workers[0].avatar["avatar_id"] == "avatar-runtime-001"
+    assert reparsed.workers[0].rbac["role"] == "observer"
+    assert reparsed.rag["collection"] == "a2a_worldline_rag_v1"
     assert reparsed.kernel_model is not None
     assert reparsed.kernel_model.api_token_env_var == "A2A_MCP_API_TOKEN"
     assert reparsed.runtime_bridge_metadata is not None
     assert reparsed.runtime_bridge_metadata.runtime_workers_ready == 1
+    assert reparsed.dmn_global_variables
+    assert reparsed.dmn_global_variables[0].dmn_key == "runtime.engine"
+    assert "A2A_RUNTIME_ENGINE" in reparsed.dmn_global_variables_xml

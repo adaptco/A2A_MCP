@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 from orchestrator.multimodal_rag_workflow import (
+    build_agentic_phase_stages,
     build_cicd_logic_tree,
     build_workflow_bundle,
+    model_agentic_phase_loop,
     reconstruct_tokens_for_nodes,
     validate_bundle,
 )
@@ -42,6 +44,29 @@ def test_reconstruction_assigns_actions_per_node():
     assert len(reconstruction["nodes"]) == 6
     assert all(node["selected_action"] for node in reconstruction["nodes"])
     assert all(node["gate_open"] for node in reconstruction["nodes"])
+    for node in reconstruction["nodes"]:
+        for match in node["matches"]:
+            assert -1.0 <= match["score"] <= 1.0
+
+
+def test_agentic_phase_loop_contains_control_layer_handoffs():
+    worldline = _sample_worldline()
+    loop = model_agentic_phase_loop(worldline, top_k=3, min_similarity=0.0)
+
+    assert loop["loop_id"] == "agentic-phase-loop.v1"
+    assert len(loop["stages"]) == len(build_agentic_phase_stages())
+
+    owners = [stage["owner_agent"] for stage in loop["stages"]]
+    assert "ManagingAgent" in owners
+    assert "OrchestrationAgent" in owners
+    assert "CoderAgent" in owners
+
+    token_object_stages = [stage for stage in loop["stages"] if stage["token_objects"]]
+    assert token_object_stages
+    token_object = token_object_stages[0]["token_objects"][0]
+    assert "physics" in token_object
+    assert "transform" in token_object
+    assert token_object["object_id"].startswith("obj::")
 
 
 def test_reconstruction_handles_empty_token_stream():
@@ -65,3 +90,11 @@ def test_bundle_validation_fails_when_gates_closed():
     assert errors
     assert "gate is closed" in errors[0]
 
+
+def test_bundle_includes_agentic_phase_loop():
+    worldline = _sample_worldline()
+    bundle = build_workflow_bundle(worldline, top_k=2, min_similarity=0.0)
+
+    phase_loop = bundle["agentic_phase_loop"]
+    assert phase_loop["stages"]
+    assert phase_loop["entry_phase"] == "IDLE"

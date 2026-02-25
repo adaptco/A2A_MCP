@@ -15,6 +15,9 @@ async def test_ingest_worldline_block_success():
             "token_stream": [{"token": "a", "token_id": "id"}],
             "artifact_clusters": {"cluster_0": ["artifact::a"]},
             "lora_attention_weights": {"cluster_0": 1.0},
+            "lora_weight_directions": {
+                "cluster_0": {"weight": 1.0, "direction": [0.70710678, 0.70710678]}
+            },
         },
     }
     mock_claims = {"repository": "adaptco/A2A_MCP", "actor": "github-actions"}

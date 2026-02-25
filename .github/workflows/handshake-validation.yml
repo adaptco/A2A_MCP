@@ -1,0 +1,58 @@
+name: Handshake Validation Gate
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "orchestrator/runtime_bridge.py"
+      - "orchestrator/webhook.py"
+      - "orchestrator/handshake_client.py"
+      - "schemas/runtime_bridge.py"
+      - "specs/xml_normalization_map.yaml"
+      - "tests/test_webhook_handshake.py"
+      - "tests/test_runtime_bridge_contract.py"
+      - "tests/test_handshake_client.py"
+      - "tests/test_multimodal_rag_workflow.py"
+      - ".github/workflows/handshake-validation.yml"
+  push:
+    branches: [main]
+    paths:
+      - "orchestrator/runtime_bridge.py"
+      - "orchestrator/webhook.py"
+      - "orchestrator/handshake_client.py"
+      - "schemas/runtime_bridge.py"
+      - "specs/xml_normalization_map.yaml"
+      - "tests/test_webhook_handshake.py"
+      - "tests/test_runtime_bridge_contract.py"
+      - "tests/test_handshake_client.py"
+      - "tests/test_multimodal_rag_workflow.py"
+      - ".github/workflows/handshake-validation.yml"
+
+jobs:
+  handshake-e2e-gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      PYTHONPATH: .
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-asyncio
+
+      - name: Run handshake contract and E2E suites
+        run: |
+          pytest -q \
+            tests/test_webhook_handshake.py \
+            tests/test_runtime_bridge_contract.py \
+            tests/test_handshake_client.py \
+            tests/test_multimodal_rag_workflow.py

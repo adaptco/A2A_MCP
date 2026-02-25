@@ -21,6 +21,19 @@ class LogicTreeNode:
 
 
 @dataclass(frozen=True)
+class AgenticPhaseStage:
+    """Stage template for routing query->plan->execution across control layers."""
+
+    stage_id: str
+    from_phase: str
+    to_phase: str
+    control_layer: str
+    owner_agent: str
+    objective: str
+    node_id: str
+
+
+@dataclass(frozen=True)
 class VectorTokenMatch:
     """Semantic match between a query and a token indexed in the vector store."""
 
@@ -47,15 +60,19 @@ class MultimodalVectorStore:
             "token_id": token_id,
             "token": token,
             "cluster": cluster,
-            "vector": deterministic_embedding(token, dimensions=self.dimensions),
+            "vector": _normalize_vector(
+                deterministic_embedding(token, dimensions=self.dimensions)
+            ),
         }
 
     def query(self, *, text: str, top_k: int = 3) -> List[VectorTokenMatch]:
-        query_vector = deterministic_embedding(text, dimensions=self.dimensions)
+        query_vector = _normalize_vector(
+            deterministic_embedding(text, dimensions=self.dimensions)
+        )
         scored: List[VectorTokenMatch] = []
 
         for point in self._points.values():
-            score = _cosine_similarity(query_vector, point["vector"])
+            score = _normalized_dot_product(query_vector, point["vector"])
             scored.append(
                 VectorTokenMatch(
                     token_id=point["token_id"],
@@ -142,6 +159,71 @@ def build_cicd_logic_tree(worldline_block: Dict[str, Any]) -> List[LogicTreeNode
     ]
 
 
+def build_agentic_phase_stages() -> List[AgenticPhaseStage]:
+    """
+    Canonical phase loop for query processing through the agentic control layer.
+
+    The stages map query intent into managing/orchestration/coding flow, then
+    into runtime validation where tokens are treated as physical objects.
+    """
+    return [
+        AgenticPhaseStage(
+            stage_id="S0_QUERY_INGRESS",
+            from_phase="IDLE",
+            to_phase="SCHEDULED",
+            control_layer="query_processor",
+            owner_agent="ManagingAgent",
+            objective="Parse query and extract planning intent.",
+            node_id="N0_INGRESS",
+        ),
+        AgenticPhaseStage(
+            stage_id="S1_PLAN_HANDOFF",
+            from_phase="SCHEDULED",
+            to_phase="EXECUTING",
+            control_layer="agentic_control_layer",
+            owner_agent="ManagingAgent",
+            objective="Dispatch project plan for orchestration oversight.",
+            node_id="N1_PLANNING",
+        ),
+        AgenticPhaseStage(
+            stage_id="S2_ORCHESTRATION_MAPPING",
+            from_phase="EXECUTING",
+            to_phase="EXECUTING",
+            control_layer="orchestration_layer",
+            owner_agent="OrchestrationAgent",
+            objective="Map plan steps to executable orchestrator actions.",
+            node_id="N2_RAG_CONTEXT",
+        ),
+        AgenticPhaseStage(
+            stage_id="S3_CICD_INFRA_BUILD",
+            from_phase="EXECUTING",
+            to_phase="EVALUATING",
+            control_layer="coding_layer",
+            owner_agent="CoderAgent",
+            objective="Build CI/CD infrastructure artifacts for tokenized workloads.",
+            node_id="N3_EXECUTION",
+        ),
+        AgenticPhaseStage(
+            stage_id="S4_TOKEN_PHYSICS_SIM",
+            from_phase="EVALUATING",
+            to_phase="EVALUATING",
+            control_layer="game_runtime_layer",
+            owner_agent="GameRuntimeAgent",
+            objective="Project tokens as physical objects in the simulated runtime.",
+            node_id="N4_VALIDATION",
+        ),
+        AgenticPhaseStage(
+            stage_id="S5_RELEASE_HANDOFF",
+            from_phase="EVALUATING",
+            to_phase="TERMINATED_SUCCESS",
+            control_layer="release_layer",
+            owner_agent="OrchestrationAgent",
+            objective="Commit release handoff for runtime deployment.",
+            node_id="N5_RELEASE",
+        ),
+    ]
+
+
 def reconstruct_tokens_for_nodes(
     worldline_block: Dict[str, Any],
     *,
@@ -190,6 +272,78 @@ def reconstruct_tokens_for_nodes(
     }
 
 
+def model_agentic_phase_loop(
+    worldline_block: Dict[str, Any],
+    *,
+    top_k: int = 3,
+    min_similarity: float = 0.10,
+) -> Dict[str, Any]:
+    """
+    Build a staged loop with explicit phase changes and control-layer ownership.
+
+    This loop is designed for runtime handoff payloads where each stage can
+    route token context to the responsible agent and surface game-physics token
+    objects for simulation-aware execution.
+    """
+    reconstruction = reconstruct_tokens_for_nodes(
+        worldline_block,
+        top_k=top_k,
+        min_similarity=min_similarity,
+    )
+    stage_templates = build_agentic_phase_stages()
+    node_by_id = {node["node_id"]: node for node in reconstruction["nodes"]}
+
+    stage_rows: List[Dict[str, Any]] = []
+    blocked_stages: List[str] = []
+
+    for idx, stage in enumerate(stage_templates, start=1):
+        node = node_by_id.get(stage.node_id, {})
+        gate_open = bool(node.get("gate_open"))
+        if not gate_open:
+            blocked_stages.append(stage.stage_id)
+
+        matches = node.get("matches", [])
+        runtime_objects = [
+            _token_match_to_runtime_object(
+                match=match,
+                stage_index=idx,
+                object_index=object_index,
+            )
+            for object_index, match in enumerate(matches, start=1)
+        ]
+
+        stage_rows.append(
+            {
+                "step": idx,
+                "stage_id": stage.stage_id,
+                "phase_change": {
+                    "from": stage.from_phase,
+                    "to": stage.to_phase,
+                },
+                "control_layer": stage.control_layer,
+                "owner_agent": stage.owner_agent,
+                "objective": stage.objective,
+                "node_id": stage.node_id,
+                "gate_open": gate_open,
+                "selected_action": node.get("selected_action", "escalate_manual_review"),
+                "plan_message": _build_plan_message(stage=stage, gate_open=gate_open),
+                "token_objects": runtime_objects,
+            }
+        )
+
+    exit_phase = "TERMINATED_SUCCESS" if not blocked_stages else "TERMINATED_FAIL"
+    return {
+        "loop_id": "agentic-phase-loop.v1",
+        "entry_phase": "IDLE",
+        "exit_phase": exit_phase,
+        "blocked_stages": blocked_stages,
+        "stages": stage_rows,
+        "vector_store_size": reconstruction["vector_store_size"],
+        "repository": reconstruction["repository"],
+        "commit_sha": reconstruction["commit_sha"],
+    }
+
+
 def build_workflow_bundle(
     worldline_block: Dict[str, Any],
     *,
@@ -199,6 +353,11 @@ def build_workflow_bundle(
     """Build a full CI/CD bundle for GitHub Actions artifact publishing."""
     logic_tree = build_cicd_logic_tree(worldline_block)
     reconstruction = reconstruct_tokens_for_nodes(
+        worldline_block,
+        top_k=top_k,
+        min_similarity=min_similarity,
+    )
+    phase_loop = model_agentic_phase_loop(
         worldline_block,
         top_k=top_k,
         min_similarity=min_similarity,
@@ -227,6 +386,7 @@ def build_workflow_bundle(
         ],
         "token_reconstruction": reconstruction,
         "workflow_actions": workflow_actions,
+        "agentic_phase_loop": phase_loop,
     }
 
 
@@ -267,6 +427,58 @@ def _token_cluster_map(artifact_clusters: Dict[str, Iterable[str]]) -> Dict[str,
     return mapping
 
 
+def _build_plan_message(stage: AgenticPhaseStage, gate_open: bool) -> str:
+    state = "ready" if gate_open else "blocked"
+    return (
+        f"{stage.owner_agent} in {stage.control_layer} is {state} to "
+        f"{stage.objective.lower()}"
+    )
+
+
+def _token_match_to_runtime_object(
+    *,
+    match: Dict[str, Any],
+    stage_index: int,
+    object_index: int,
+) -> Dict[str, Any]:
+    token_id = str(match.get("token_id", "tok-unknown"))
+    token = str(match.get("token", "")).strip()
+    cluster = str(match.get("cluster", "cluster_unassigned"))
+    score = float(match.get("score", 0.0))
+    seed = _stable_seed(token_id, token)
+
+    mass = round(0.75 + (len(token) % 8) * 0.2, 3)
+    friction = round(0.1 + (seed % 25) / 100.0, 3)
+    restitution = round(0.1 + (seed % 30) / 100.0, 3)
+    drag = round(0.05 + (seed % 15) / 100.0, 3)
+    runtime_backend = "unity" if score >= 0.5 else "threejs"
+
+    return {
+        "object_id": f"obj::{token_id}",
+        "token_id": token_id,
+        "token": token,
+        "cluster": cluster,
+        "score": round(score, 6),
+        "runtime_backend": runtime_backend,
+        "physics": {
+            "mass": mass,
+            "friction": friction,
+            "restitution": restitution,
+            "drag": drag,
+        },
+        "transform": {
+            "x": round(stage_index * 2.0 + object_index * 0.35, 3),
+            "y": round(0.5 + (seed % 12) * 0.1, 3),
+            "z": round(object_index * 0.75, 3),
+        },
+    }
+
+
+def _stable_seed(token_id: str, token: str) -> int:
+    value = f"{token_id}:{token}".encode("utf-8")
+    return sum((idx + 1) * byte for idx, byte in enumerate(value))
+
+
 def _select_action(allowed_actions: List[str], gate_open: bool) -> str:
     if not allowed_actions:
         return "no_action_defined"
@@ -277,6 +489,19 @@ def _select_action(allowed_actions: List[str], gate_open: bool) -> str:
     return "escalate_manual_review"
 
 
+def _normalize_vector(values: List[float]) -> List[float]:
+    norm = math.sqrt(sum(value * value for value in values))
+    if norm == 0.0:
+        return [0.0 for _ in values]
+    return [value / norm for value in values]
+
+
+def _normalized_dot_product(a: List[float], b: List[float]) -> float:
+    a_norm = _normalize_vector(a)
+    b_norm = _normalize_vector(b)
+    return sum(x * y for x, y in zip(a_norm, b_norm))
+
+
 def _cosine_similarity(a: List[float], b: List[float]) -> float:
     dot = sum(x * y for x, y in zip(a, b))
     norm_a = math.sqrt(sum(x * x for x in a))
@@ -284,4 +509,3 @@ def _cosine_similarity(a: List[float], b: List[float]) -> float:
     if norm_a == 0.0 or norm_b == 0.0:
         return 0.0
     return dot / (norm_a * norm_b)
-

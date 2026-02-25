@@ -68,13 +68,17 @@ except ImportError:
 
 try:
     from orchestrator.multimodal_rag_workflow import (
+        build_agentic_phase_stages,
         build_cicd_logic_tree,
         build_workflow_bundle,
+        model_agentic_phase_loop,
         reconstruct_tokens_for_nodes,
     )
 except ImportError:
+    build_agentic_phase_stages = None
     build_cicd_logic_tree = None
     build_workflow_bundle = None
+    model_agentic_phase_loop = None
     reconstruct_tokens_for_nodes = None
 
 try:
@@ -96,6 +100,12 @@ except ImportError:
     ClientTokenPipe = None
     ContaminationError = None
     InMemoryEventStore = None
+
+try:
+    from orchestrator.handshake_client import A2AHandshakeClient, HandshakeAgentProfile
+except ImportError:
+    A2AHandshakeClient = None
+    HandshakeAgentProfile = None
 
 __all__ = [
     # Core classes (always available)
@@ -120,8 +130,10 @@ __all__ = [
     'WhatsAppNotifier',
     'send_pipeline_completion_notification',
     'build_worldline_block',
+    'build_agentic_phase_stages',
     'build_cicd_logic_tree',
     'build_workflow_bundle',
+    'model_agentic_phase_loop',
     'reconstruct_tokens_for_nodes',
     'MCPResult',
     'MCPCore',
@@ -130,4 +142,6 @@ __all__ = [
     'ClientTokenPipe',
     'ContaminationError',
     'InMemoryEventStore',
+    'A2AHandshakeClient',
+    'HandshakeAgentProfile',
 ]

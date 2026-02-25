@@ -4,17 +4,32 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 import re
 from typing import Any, Dict, Iterable, List
 
 
-def deterministic_embedding(text: str, dimensions: int = 32) -> List[float]:
+def _l2_normalize(vector: List[float]) -> List[float]:
+    norm = math.sqrt(sum(value * value for value in vector))
+    if norm == 0.0:
+        return [0.0 for _ in vector]
+    return [value / norm for value in vector]
+
+
+def deterministic_embedding(
+    text: str,
+    dimensions: int = 32,
+    *,
+    normalize: bool = True,
+) -> List[float]:
     """Create a deterministic embedding vector from text."""
     digest = hashlib.sha256(text.encode("utf-8")).digest()
     values: List[float] = []
     for idx in range(dimensions):
         byte = digest[idx % len(digest)]
         values.append((byte / 255.0) * 2.0 - 1.0)
+    if normalize:
+        return _l2_normalize(values)
     return values
 
 
@@ -47,6 +62,33 @@ def lora_attention_weights(clusters: Dict[str, List[str]]) -> Dict[str, float]:
         unit = 1.0 / max(1, len(clusters))
         return {name: unit for name in clusters}
     return {name: len(items) / total for name, items in clusters.items()}
+
+
+def lora_weight_directions(
+    clusters: Dict[str, List[str]],
+    embedding_vector: List[float],
+) -> Dict[str, Dict[str, Any]]:
+    """
+    Encode LoRA attention as directional state-space vectors.
+
+    Each cluster keeps the scalar weight while projecting a deterministic unit
+    direction in embedding space so clients can treat LoRA deltas as directional
+    movements instead of scalar-only values.
+    """
+    weights = lora_attention_weights(clusters)
+    base_direction = _l2_normalize(embedding_vector)
+    directions: Dict[str, Dict[str, Any]] = {}
+
+    for cluster, weight in weights.items():
+        cluster_seed = hashlib.sha256(cluster.encode("utf-8")).digest()[0]
+        sign = -1.0 if cluster_seed % 2 else 1.0
+        direction = [sign * component for component in base_direction]
+        directions[cluster] = {
+            "weight": weight,
+            "direction": direction,
+        }
+
+    return directions
 
 
 def _pascal_case(value: str) -> str:
@@ -91,6 +133,7 @@ def build_worldline_block(
     artifacts = [f"artifact::{token}" for token in tokens] or ["artifact::default"]
     clusters = cluster_artifacts(artifacts, cluster_count=cluster_count)
     weights = lora_attention_weights(clusters)
+    directions = lora_weight_directions(clusters, embedding)
 
     class_base = _pascal_case(prompt)[:48]
     unity_class_name = f"{class_base}InfrastructureAgent"
@@ -129,6 +172,12 @@ def build_worldline_block(
         "token_stream": [{"token": t, "token_id": tid} for t, tid in zip(tokens, token_ids)],
         "artifact_clusters": clusters,
         "lora_attention_weights": weights,
+        "lora_weight_directions": directions,
+        "state_space": {
+            "embedding_basis": "prompt_embedding",
+            "encoding": "weight_plus_unit_direction",
+            "dimensions": len(embedding),
+        },
         "unity_object_class_name": unity_class_name,
         "unity_object_class_source": build_unity_class(unity_class_name, unity_env),
         "unity_env": unity_env,

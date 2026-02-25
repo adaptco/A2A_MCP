@@ -25,6 +25,9 @@ Thumbs.db
 *.db
 *.sqlite
 
+# Large generated sensor chunk archives
+*.chunk_*.zip
+
 # Agent temp files
 tmpclaude-*
 tmpclaude-*-cwd/

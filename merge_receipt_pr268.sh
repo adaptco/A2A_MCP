@@ -182,12 +182,15 @@ if [ "$HAS_GH" = "1" ]; then
   # best-effort identity
   GH_AUTH_USER="$(gh api user -q .login 2>/dev/null || true)"
   # best-effort PR metadata (if repo slug is accessible via gh)
-  PR_URL="$(gh api "repos/${REPO_SLUG}/pulls/${PR_NUMBER}" -q .html_url 2>/dev/null || true)"
-  PR_BASE="$(gh api "repos/${REPO_SLUG}/pulls/${PR_NUMBER}" -q .base.ref 2>/dev/null || true)"
-  PR_HEAD="$(gh api "repos/${REPO_SLUG}/pulls/${PR_NUMBER}" -q .head.ref 2>/dev/null || true)"
-  PR_TITLE="$(gh api "repos/${REPO_SLUG}/pulls/${PR_NUMBER}" -q .title 2>/dev/null || true)"
-  PR_MERGEABLE="$(gh api "repos/${REPO_SLUG}/pulls/${PR_NUMBER}" -q .mergeable 2>/dev/null || true)"
-  PR_MERGED_AT="$(gh api "repos/${REPO_SLUG}/pulls/${PR_NUMBER}" -q .merged_at 2>/dev/null || true)"
+  # Fetch all PR data in one call to reduce network requests.
+  {
+    read -r PR_URL
+    read -r PR_BASE
+    read -r PR_HEAD
+    read -r PR_TITLE
+    read -r PR_MERGEABLE
+    read -r PR_MERGED_AT
+  } < <(gh api "repos/${REPO_SLUG}/pulls/${PR_NUMBER}" --jq '[.html_url, .base.ref, .head.ref, .title, .mergeable, .merged_at] | .[]' 2>/dev/null)
 fi
 
 ############################################

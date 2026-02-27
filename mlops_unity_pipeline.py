@@ -159,7 +159,7 @@ class UnityMLOpsOrchestrator:
                 trained_model_path=str(trained_model_path),
                 vertex_model_resource=vertex_resource,
             )
-            await self._emit_event("job_succeeded", job, {"result": result.__dict__})
+            await self._emit_event("job_succeeded", job, {"result": asdict(result)})
             return result
         except Exception as exc:  # pragma: no cover
             LOGGER.exception("Training job failed: %s", job.job_id)

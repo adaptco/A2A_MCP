@@ -14,6 +14,8 @@ dependencies = [
     "requests",
     "jsonschema",
     "mcp[cli]",
+    "croniter",
+    "pyyaml",
 ]
 
 [project.optional-dependencies]

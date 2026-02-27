@@ -118,11 +118,13 @@ class UnityMLOpsOrchestrator:
         self,
         *,
         llm_generate_fn: Optional[Callable[[UnityAssetSpec], Awaitable[str]]] = None,
+        mcp_event_sink: Optional[Callable[[Dict[str, Any]], Awaitable[None]]] = None,
         dry_run: bool = True,
         unity_executable: str = "Unity",
         mlagents_learn_cmd: str = "mlagents-learn",
     ) -> None:
         self._llm_generate_fn = llm_generate_fn
+        self._mcp_event_sink = mcp_event_sink
         self._dry_run = dry_run
         self._unity_executable = unity_executable
         self._mlagents_learn_cmd = mlagents_learn_cmd
@@ -133,12 +135,21 @@ class UnityMLOpsOrchestrator:
         output_root.mkdir(parents=True, exist_ok=True)
 
         try:
+            await self._emit_event("job_started", job, {"output_root": str(output_root)})
             script_path = await self.generate_unity_code(job.asset_spec, output_root)
+            await self._emit_event("code_generated", job, {"generated_script_path": str(script_path)})
             build_path = await self.build_unity_environment(job, output_root)
+            await self._emit_event("unity_build_completed", job, {"build_path": str(build_path)})
             trained_model_path = await self.train_with_mlagents(job, build_path, output_root)
+            await self._emit_event("training_completed", job, {"trained_model_path": str(trained_model_path)})
             vertex_resource = await self.register_in_vertex_ai(job, trained_model_path)
+            await self._emit_event(
+                "vertex_registration_completed",
+                job,
+                {"vertex_model_resource": vertex_resource},
+            )
 
-            return TrainingResult(
+            result = TrainingResult(
                 job_id=job.job_id,
                 status="succeeded",
                 started_at=started_at,
@@ -148,15 +159,33 @@ class UnityMLOpsOrchestrator:
                 trained_model_path=str(trained_model_path),
                 vertex_model_resource=vertex_resource,
             )
+            await self._emit_event("job_succeeded", job, {"result": result.__dict__})
+            return result
         except Exception as exc:  # pragma: no cover
             LOGGER.exception("Training job failed: %s", job.job_id)
-            return TrainingResult(
+            failed_result = TrainingResult(
                 job_id=job.job_id,
                 status="failed",
                 started_at=started_at,
                 completed_at=_utc_now_iso(),
                 error=str(exc),
             )
+            await self._emit_event("job_failed", job, {"error": str(exc)})
+            return failed_result
+
+    async def _emit_event(self, event_type: str, job: TrainingJob, payload: Dict[str, Any]) -> None:
+        if not self._mcp_event_sink:
+            return
+
+        event = {
+            "event_type": event_type,
+            "timestamp": _utc_now_iso(),
+            "job_id": job.job_id,
+            "asset_id": job.asset_spec.asset_id,
+            "asset_name": job.asset_spec.name,
+            "payload": payload,
+        }
+        await self._mcp_event_sink(event)
 
     async def generate_unity_code(self, asset_spec: UnityAssetSpec, output_root: Path) -> Path:
         script_dir = output_root / "generated"

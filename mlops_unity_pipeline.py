@@ -170,7 +170,7 @@ class UnityMLOpsOrchestrator:
                 completed_at=_utc_now_iso(),
                 error=str(exc),
             )
-            await self._emit_event("job_failed", job, {"error": str(exc)})
+            await self._emit_event("job_failed", job, {"result": asdict(failed_result)})
             return failed_result
 
     async def _emit_event(self, event_type: str, job: TrainingJob, payload: Dict[str, Any]) -> None:

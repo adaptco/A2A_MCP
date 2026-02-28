@@ -1,4 +1,11 @@
-import torch
+try:
+    import torch
+except ImportError:
+    from unittest.mock import MagicMock, PropertyMock
+    torch = MagicMock()
+    # Mock randn to return an object with a .shape attribute for compatibility
+    torch.randn.return_value = MagicMock()
+    type(torch.randn.return_value).shape = PropertyMock(return_value=(1, 4096))
 import pytest
 import asyncio
 from a2a_mcp.runtime import MCPADKRuntime

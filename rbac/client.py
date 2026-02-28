@@ -21,6 +21,7 @@ class RBACClient:
         client = RBACClient("http://rbac-gateway:8001")
         result = client.onboard_agent("agent-1", "ManagingAgent", "pipeline_operator")
         allowed = client.verify_permission("agent-1", action="run_pipeline")
+        # Optionally provide explicit token; otherwise RBAC_SECRET env var is used.
     """
 
     def __init__(

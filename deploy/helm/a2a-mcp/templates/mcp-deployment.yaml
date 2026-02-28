@@ -33,9 +33,9 @@ spec:
               value: "http://{{ include "a2a-mcp.orchestratorServiceName" . }}:{{ .Values.orchestrator.service.port }}"
           envFrom:
             - configMapRef:
-                name: {{ include "a2a-mcp.fullname" . }}-config
+                name: {{ include "a2a-mcp.configName" . }}
             - secretRef:
-                name: {{ include "a2a-mcp.fullname" . }}-secret
+                name: {{ include "a2a-mcp.secretName" . }}
           livenessProbe:
             httpGet:
               path: /healthz

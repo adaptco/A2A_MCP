@@ -6,8 +6,8 @@
         "-p",
         "*test.py"
     ],
-    "python.testing.pytestEnabled": false,
-    "python.testing.unittestEnabled": true,
+    "python.testing.pytestEnabled": true,
+    "python.testing.unittestEnabled": false,
     "github-actions.workflows.pinned.workflows": [
         ".github/workflows/game-validation.yml",
         ".github/workflows/daily_ingress.yml",
@@ -18,5 +18,8 @@
         ".github/workflows/pylint.yml",
         ".github/workflows/python-app.yml",
         ".github/workflows/python-publish.yml"
+    ],
+    "python.testing.pytestArgs": [
+        "."
     ]
 }

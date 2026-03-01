@@ -28,3 +28,19 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- define "a2a-mcp.postgresServiceName" -}}
 {{- printf "%s-postgres" (include "a2a-mcp.fullname" .) -}}
 {{- end -}}
+
+{{- define "a2a-mcp.configName" -}}
+{{- if .Values.config.nameOverride -}}
+{{- .Values.config.nameOverride | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
+{{- printf "%s-config" (include "a2a-mcp.fullname" .) -}}
+{{- end -}}
+{{- end -}}
+
+{{- define "a2a-mcp.secretName" -}}
+{{- if .Values.secrets.nameOverride -}}
+{{- .Values.secrets.nameOverride | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
+{{- printf "%s-secret" (include "a2a-mcp.fullname" .) -}}
+{{- end -}}
+{{- end -}}

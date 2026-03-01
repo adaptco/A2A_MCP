@@ -104,7 +104,11 @@ services:
       orchestrator:
         condition: service_healthy
     environment:
-      GITHUB_OIDC_AUDIENCE: ${GITHUB_OIDC_AUDIENCE:-}
+      OIDC_AUDIENCE: ${OIDC_AUDIENCE:-}
+      OIDC_ISSUER: ${OIDC_ISSUER:-https://token.actions.githubusercontent.com}
+      OIDC_JWKS_URL: ${OIDC_JWKS_URL:-https://token.actions.githubusercontent.com/.well-known/jwks}
+      OIDC_ENFORCE: ${OIDC_ENFORCE:-false}
+      ENVIRONMENT: ${ENV:-development}
       ENV: ${ENV:-development}
     healthcheck:
       test: ["CMD-SHELL", "curl -sf http://localhost:8080/healthz || exit 1"]
@@ -135,6 +139,7 @@ services:
       QDRANT_HOST: qdrant
       QDRANT_PORT: 6333
       RBAC_URL: http://rbac-gateway:8001
+      RBAC_SECRET: ${RBAC_SECRET:-dev-secret-change-me}
       LLM_API_KEY: ${LLM_API_KEY:-}
       LLM_ENDPOINT: ${LLM_ENDPOINT:-https://api.mistral.ai/v1/chat/completions}
       ENV: ${ENV:-development}

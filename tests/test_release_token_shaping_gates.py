@@ -48,7 +48,12 @@ def test_verify_token_rejects_bad_issuer_or_audience(
     monkeypatch: pytest.MonkeyPatch,
     decode_error: Exception,
 ) -> None:
-    monkeypatch.setenv("GITHUB_OIDC_AUDIENCE", "sigstore")
+    monkeypatch.setenv("OIDC_AUDIENCE", "sigstore")
+    monkeypatch.setenv("OIDC_ISSUER", "https://token.actions.githubusercontent.com")
+    monkeypatch.setenv(
+        "OIDC_JWKS_URL",
+        "https://token.actions.githubusercontent.com/.well-known/jwks",
+    )
 
     class _MockJwkClient:
         def get_signing_key_from_jwt(self, _token: str):

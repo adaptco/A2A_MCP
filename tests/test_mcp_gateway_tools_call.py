@@ -1,4 +1,5 @@
 from fastapi.testclient import TestClient
+from unittest.mock import patch
 
 from app.mcp_gateway import app
 
@@ -6,28 +7,46 @@ from app.mcp_gateway import app
 client = TestClient(app)
 
 
-def test_tools_call_worldline_ingestion_success(monkeypatch):
+def test_tools_call_ingest_repository_data_success(monkeypatch):
     monkeypatch.setenv("OIDC_ENFORCE", "false")
-    payload = {
-        "tool_name": "ingest_worldline_block",
-        "arguments": {
-            "worldline_block": {
+    with patch(
+        "app.mcp_tooling.verify_github_oidc_token",
+        return_value={"repository": "adaptco/A2A_MCP", "actor": "github-actions"},
+    ):
+        payload = {
+            "tool_name": "ingest_repository_data",
+            "arguments": {
                 "snapshot": {"repository": "adaptco/A2A_MCP"},
-                "infrastructure_agent": {
-                    "embedding_vector": [0.1],
-                    "token_stream": [{"token": "hello", "token_id": "id1"}],
-                    "artifact_clusters": {"cluster_0": ["artifact::hello"]},
-                    "lora_attention_weights": {"cluster_0": 1.0},
-                },
+                "authorization": "Bearer valid-token",
             },
-            "authorization": "Bearer valid-token",
-        },
-    }
-    response = client.post("/tools/call", json=payload, headers={"Authorization": "Bearer valid-token"})
+        }
+        response = client.post("/tools/call", json=payload, headers={"Authorization": "Bearer valid-token"})
     assert response.status_code == 200
     body = response.json()
     assert body["ok"] is True
-    assert "success" in body["result"]
+    assert body["result"]["ok"] is True
+    assert body["result"]["data"]["repository"] == "adaptco/A2A_MCP"
+
+
+def test_tools_call_ingest_avatar_token_stream_success(monkeypatch):
+    monkeypatch.setenv("OIDC_ENFORCE", "false")
+    with patch(
+        "app.mcp_tooling.verify_github_oidc_token",
+        return_value={"repository": "adaptco/A2A_MCP", "actor": "github-actions"},
+    ):
+        payload = {
+            "tool_name": "ingest_avatar_token_stream",
+            "arguments": {
+                "payload": {"tokens": [0.1, 0.2, 0.3], "max_tokens": 16},
+                "authorization": "Bearer valid-token",
+            },
+        }
+        response = client.post("/tools/call", json=payload, headers={"Authorization": "Bearer valid-token"})
+    assert response.status_code == 200
+    body = response.json()
+    assert body["ok"] is True
+    assert body["result"]["ok"] is True
+    assert body["result"]["data"]["token_count"] == 3
 
 
 def test_tools_call_unknown_tool_returns_404():
@@ -42,7 +61,7 @@ def test_tools_call_rejects_invalid_oidc_token(monkeypatch):
         "tool_name": "ingest_repository_data",
         "arguments": {
             "snapshot": {"repository": "adaptco/A2A_MCP"},
-            "authorization": "Bearer invalid",
+            "authorization": "Bearer valid-token",
         },
     }
     response = client.post("/tools/call", json=payload, headers={"Authorization": "Bearer invalid"})

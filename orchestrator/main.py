@@ -1,3 +1,9 @@
+"""Legacy compatibility entrypoint.
+
+Canonical HTTP orchestrator runtime lives in `orchestrator.api:app`.
+This module is retained for backward-compatible local healing-loop runs.
+"""
+
 import asyncio
 from bootstrap import bootstrap_paths
 from orchestrator.storage import DBManager

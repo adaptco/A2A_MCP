@@ -57,11 +57,23 @@ class DBManager:
     def __init__(self) -> None:
         if DBManager._shared_engine is None:
             connect_args = _build_connect_args(DATABASE_URL)
-            DBManager._shared_engine = create_engine(DATABASE_URL, connect_args=connect_args)
-            Base.metadata.create_all(bind=DBManager._shared_engine)
-            DBManager._shared_session = sessionmaker(
-                autocommit=False, autoflush=False, bind=DBManager._shared_engine
-            )
+            
+            # Connection retry loop
+            import time
+            max_retries = 5
+            for attempt in range(max_retries):
+                try:
+                    DBManager._shared_engine = create_engine(DATABASE_URL, connect_args=connect_args)
+                    Base.metadata.create_all(bind=DBManager._shared_engine)
+                    DBManager._shared_session = sessionmaker(
+                        autocommit=False, autoflush=False, bind=DBManager._shared_engine
+                    )
+                    break
+                except Exception as e:
+                    if attempt == max_retries - 1:
+                        raise
+                    print(f"Database not ready (attempt {attempt+1}/{max_retries}), retrying in 5s...")
+                    time.sleep(5)
         
         self.engine = DBManager._shared_engine
         self.SessionLocal = DBManager._shared_session

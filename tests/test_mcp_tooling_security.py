@@ -32,7 +32,7 @@ async def test_call_tool_by_name_returns_error_for_unknown_tool():
 
 @pytest.mark.asyncio
 async def test_ingest_repository_data_enforces_repo_match(monkeypatch):
-    monkeypatch.setenv("GITHUB_OIDC_AUDIENCE", "test-aud")
+    monkeypatch.setenv("OIDC_AUDIENCE", "test-aud")
     
     mock_claims = {"repository": "allowed/repo", "actor": "test-actor"}
     

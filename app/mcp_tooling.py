@@ -26,21 +26,25 @@ def verify_github_oidc_token(token: str) -> dict[str, Any]:
     if not token:
         raise ValueError("Invalid OIDC token")
 
-    audience = os.getenv("GITHUB_OIDC_AUDIENCE")
+    audience = os.getenv("OIDC_AUDIENCE", "").strip()
     if not audience:
-        # Default for development/test if not set, but production should fail
         if os.getenv("ENV") == "production":
             raise ValueError("OIDC audience is not configured")
         audience = "https://github.com/adaptco-main"
 
-    jwks_client = jwt.PyJWKClient("https://token.actions.githubusercontent.com/.well-known/jwks")
+    issuer = os.getenv("OIDC_ISSUER", "https://token.actions.githubusercontent.com").strip()
+    jwks_url = os.getenv(
+        "OIDC_JWKS_URL", "https://token.actions.githubusercontent.com/.well-known/jwks"
+    ).strip()
+
+    jwks_client = jwt.PyJWKClient(jwks_url)
     signing_key = jwks_client.get_signing_key_from_jwt(token).key
     claims = jwt.decode(
         token,
         signing_key,
         algorithms=["RS256"],
         audience=audience,
-        issuer="https://token.actions.githubusercontent.com",
+        issuer=issuer,
     )
 
     repository = str(claims.get("repository", "")).strip()

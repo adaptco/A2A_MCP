@@ -38,6 +38,10 @@ app.include_router(actions_router)
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+app.include_router(workflow_router)
+>>>>>>> Stashed changes
 =======
 app.include_router(workflow_router)
 >>>>>>> Stashed changes

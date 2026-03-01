@@ -16,7 +16,7 @@ from pydantic import BaseModel, Field
 from mcp.server.fastmcp import FastMCP
 from app.mcp_tooling import register_tools, call_tool_by_name
 from app.security.oidc import validate_startup_oidc_requirements
-from orchestrator.logging import setup_logging
+from orchestrator.logging_util import setup_logging
 
 setup_logging()
 validate_startup_oidc_requirements()

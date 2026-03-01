@@ -12,6 +12,12 @@ services:
       - db
     environment:
       DATABASE_URL: postgresql://postgres:pass@db:5432/mcp_db
+      LLM_API_KEY: "mock-key-for-local-dev"
+      LLM_ENDPOINT: "https://api.mistral.ai/v1/chat/completions"
+      LLM_MODEL: "gpt-4o-mini"
+      ENV: "development"
+      RBAC_ENABLED: "true"
+      RBAC_URL: "http://rbac:8001"
 
   rbac:
     build: ./rbac

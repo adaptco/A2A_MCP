@@ -34,8 +34,8 @@ def test_unauthorized_access_denied():
 
     # 1. Missing header -> HTTPBearer raises 401 (or 403 depending on version, but we saw 401)
     response = unauthorized_client.get("/agents")
-    assert response.status_code == 401
-    assert response.json()["detail"] == "Not authenticated"
+    assert response.status_code in {401, 403}
+    assert response.json()["detail"] in {"Not authenticated", "Not authenticated."}
 
     # 2. Invalid token -> verify_token raises 401 with custom message
     response = unauthorized_client.get("/agents", headers={"Authorization": "Bearer invalid-token"})

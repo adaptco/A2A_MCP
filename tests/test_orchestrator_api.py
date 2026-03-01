@@ -31,6 +31,7 @@ class _FakeIntentEngine:
 
 def test_orchestrate_endpoint(monkeypatch):
     monkeypatch.setattr(api_module, "IntentEngine", _FakeIntentEngine)
+    monkeypatch.setenv("AUTH_DISABLED", "true")
     client = TestClient(api_module.app)
 
     response = client.post("/orchestrate", params={"user_query": "build test app"})
@@ -40,7 +41,8 @@ def test_orchestrate_endpoint(monkeypatch):
     assert body["pipeline_results"]["coding"] == ["cod-1"]
 
 
-def test_plans_ingress_endpoint():
+def test_plans_ingress_endpoint(monkeypatch):
+    monkeypatch.setenv("AUTH_DISABLED", "true")
     client = TestClient(api_module.app)
     response = client.post("/plans/ingress", json={"plan_id": "plan-test-123"})
     assert response.status_code == 200

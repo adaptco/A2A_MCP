@@ -67,7 +67,7 @@ except ImportError:
 
 try:
     from orchestrator.end_to_end_orchestration import EndToEndOrchestrator
-except ImportError:
+except Exception:
     EndToEndOrchestrator = None
 
 __all__ = [

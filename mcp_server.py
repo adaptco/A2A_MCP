@@ -1,3 +1,9 @@
+"""Stdio MCP server compatibility entrypoint.
+
+Canonical networked MCP runtime is `app.mcp_gateway:app` (`/mcp`, `/tools/call`).
+This module is retained for local/CLI MCP clients that use stdio transport.
+"""
+
 from bootstrap import bootstrap_paths
 
 bootstrap_paths()

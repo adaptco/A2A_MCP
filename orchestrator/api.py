@@ -12,7 +12,7 @@ from app.api import actions_router, workflow_router
 from orchestrator.intent_engine import IntentEngine
 from orchestrator.webhook import ingress_router
 from orchestrator.auth import authenticate_user
-from orchestrator.logging import setup_logging
+from orchestrator.logging_util import setup_logging
 from orchestrator.actions_gateway import router as actions_router
 
 setup_logging()

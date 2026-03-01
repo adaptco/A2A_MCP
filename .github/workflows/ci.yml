@@ -1,10 +1,45 @@
-- name: Install pnpm
-        uses: pnpm/action-setup@v2
+name: Workspace CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "package.json"
+      - "pnpm-workspace.yaml"
+      - "apps/**"
+      - "packages/**"
+      - ".github/workflows/ci.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "package.json"
+      - "pnpm-workspace.yaml"
+      - "apps/**"
+      - "packages/**"
+      - ".github/workflows/ci.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  pnpm-install:
+    name: Install Workspace Dependencies
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          # Use a quoted string for the version to avoid YAML parsing issues
-          version: "8.15.4"
+          node-version: "20"
+          cache: "pnpm"
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: "9.7.1"
 
       - name: Install dependencies
-        # Use --frozen-lockfile=false because the lockfile is currently missing 
-        # or out of sync in the feature branch
         run: pnpm install --frozen-lockfile=false

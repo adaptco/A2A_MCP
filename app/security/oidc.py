@@ -100,7 +100,9 @@ def load_oidc_config() -> OIDCConfig:
 
 
 def validate_startup_oidc_requirements(environment: str | None = None) -> None:
-    env_name = str(environment or os.getenv("ENVIRONMENT") or os.getenv("APP_ENV") or "").strip().lower()
+    env_name = str(
+        environment or os.getenv("ENVIRONMENT") or os.getenv("APP_ENV") or os.getenv("ENV") or ""
+    ).strip().lower()
     is_production = env_name in {"prod", "production"}
     if not is_production:
         return

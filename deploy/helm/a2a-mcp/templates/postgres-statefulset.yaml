@@ -32,12 +32,12 @@ spec:
             - name: POSTGRES_USER
               valueFrom:
                 secretKeyRef:
-                  name: {{ include "a2a-mcp.fullname" . }}-secret
+                  name: {{ include "a2a-mcp.secretName" . }}
                   key: POSTGRES_USER
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: {{ include "a2a-mcp.fullname" . }}-secret
+                  name: {{ include "a2a-mcp.secretName" . }}
                   key: POSTGRES_PASSWORD
           volumeMounts:
             - name: postgres-data

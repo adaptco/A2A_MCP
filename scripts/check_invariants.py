@@ -1,99 +1,213 @@
 import argparse
+import hashlib
 import json
+import os
+import re
+import subprocess
+import sys
+from dataclasses import dataclass, asdict
 from pathlib import Path
-
-from jsonschema import Draft7Validator
-
-
-def load_json(path: Path):
-    return json.loads(path.read_text())
+from typing import Any
 
 
-def validate_jsonl(schema_path: Path, jsonl_path: Path) -> None:
-    schema = load_json(schema_path)
-    validator = Draft7Validator(schema)
-    errors = []
-    for line_number, line in enumerate(jsonl_path.read_text().splitlines(), start=1):
-        if not line.strip():
+@dataclass
+class InvariantResult:
+    invariant_id: str
+    verdict: str
+    hard_fail: bool
+    details: str
+
+
+class InvariantViolation(Exception):
+    pass
+
+
+def load_json(path: Path) -> dict[str, Any]:
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def sha256_file(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def env_true(name: str, default: str = "false") -> bool:
+    return os.environ.get(name, default).strip().lower() in {"1", "true", "yes", "on"}
+
+
+def check_pr_only_output_policy(criteria: dict[str, Any]) -> tuple[bool, str]:
+    event_name = os.environ.get("GITHUB_EVENT_NAME", "")
+    output_channel = os.environ.get("AUTOMATION_OUTPUT_CHANNEL", "pr")
+    automation_events = set(criteria.get("automation_events", []))
+
+    if event_name in automation_events and output_channel != "pr":
+        return False, (
+            f"automation event '{event_name}' must emit PR-only output; "
+            f"AUTOMATION_OUTPUT_CHANNEL={output_channel!r}"
+        )
+
+    return True, (
+        f"event={event_name or 'unknown'}, output_channel={output_channel}, "
+        f"automation_events={sorted(automation_events)}"
+    )
+
+
+def check_hermetic_fingerprint(criteria: dict[str, Any]) -> tuple[bool, str]:
+    target_file = Path(criteria["fingerprint_file"])
+    expected = criteria["router_pinned_sha256"]
+    actual = sha256_file(target_file)
+    ok = actual == expected
+    return ok, f"file={target_file}, actual_sha256={actual}, expected_sha256={expected}"
+
+
+def check_no_outbound_network(criteria: dict[str, Any]) -> tuple[bool, str]:
+    hermetic_env = criteria.get("hermetic_mode_env", "HERMETIC_MODE")
+    blocked_env = criteria.get("network_blocked_env", "NO_OUTBOUND_NETWORK")
+    hermetic_mode = env_true(hermetic_env)
+
+    if not hermetic_mode:
+        return True, f"{hermetic_env}=false; invariant not applicable"
+
+    blocked = env_true(blocked_env)
+    allow_override = env_true("ALLOW_OUTBOUND_NETWORK", "false")
+
+    ok = blocked and not allow_override
+    return ok, (
+        f"{hermetic_env}=true, {blocked_env}={blocked}, "
+        f"ALLOW_OUTBOUND_NETWORK={allow_override}"
+    )
+
+
+def check_secret_scan_gate(criteria: dict[str, Any]) -> tuple[bool, str]:
+    pathspecs = criteria.get("paths", ["."])
+    ignore = set(criteria.get("ignore", []))
+    patterns = [re.compile(expr) for expr in criteria.get("patterns", [])]
+
+    tracked = subprocess.check_output(["git", "ls-files", *pathspecs], text=True).splitlines()
+    hits: list[str] = []
+
+    for rel in tracked:
+        if rel in ignore:
             continue
-        payload = json.loads(line)
-        for error in validator.iter_errors(payload):
-            errors.append(
-                f"{jsonl_path}:{line_number}: {error.message} (path: {list(error.path)})"
-            )
-    if errors:
-        raise ValueError("\n".join(errors))
+        file_path = Path(rel)
+        if not file_path.exists() or file_path.is_dir():
+            continue
+        try:
+            content = file_path.read_text(encoding="utf-8")
+        except UnicodeDecodeError:
+            continue
+
+        for idx, line in enumerate(content.splitlines(), start=1):
+            if any(p.search(line) for p in patterns):
+                hits.append(f"{rel}:{idx}")
+                if len(hits) >= 20:
+                    break
+        if len(hits) >= 20:
+            break
+
+    if hits:
+        return False, f"Potential secret patterns found at: {hits}"
+    return True, f"Scanned {len(tracked)} tracked files with no secret-pattern matches."
 
 
-def check_cie_manifest(manifest_path: Path) -> None:
-    manifest = load_json(manifest_path)
-    required_modules = {
-        "synthetic.noise.injector.v1",
-        "synthetic.contradiction.synth.v1",
-    }
+def check_policy_zoning(criteria: dict[str, Any]) -> tuple[bool, str]:
+    min_reviewers = criteria.get("min_reviewers")
+    required_checks = criteria.get("required_checks", [])
 
-    module_ids = {module["moduleId"] for module in manifest.get("modules", [])}
-    missing_modules = required_modules - module_ids
-    if missing_modules:
-        raise ValueError(
-            f"Missing modules in manifest: {', '.join(sorted(missing_modules))}"
-        )
-
-    allowed_modules = set(
-        manifest.get("operationalDirectives", {}).get("allowed_modules", [])
+    ok = isinstance(min_reviewers, int) and min_reviewers >= 1 and bool(required_checks)
+    return ok, (
+        f"min_reviewers={min_reviewers}, required_checks={required_checks}"
     )
-    if not required_modules.issubset(allowed_modules):
-        raise ValueError(
-            "Manifest operationalDirectives.allowed_modules does not include all "
-            "required modules."
-        )
 
-    validation_chain = manifest.get("audit_inputs", {}).get("validation_chain", [])
-    if validation_chain != [
-        "synthetic.noise.injector.v1",
-        "synthetic.contradiction.synth.v1",
-    ]:
-        raise ValueError("Manifest audit_inputs.validation_chain must be SNI -> SCS.")
 
-    routing = manifest.get("input_profile", {}).get("routing", {})
-    for payload_type in ("text", "json"):
-        route = routing.get(payload_type)
-        if route != validation_chain:
-            raise ValueError(
-                f"Manifest input_profile.routing.{payload_type} must match validation_chain."
+def check_deterministic_artifact_hash(criteria: dict[str, Any]) -> tuple[bool, str]:
+    artifact_path = Path(criteria["artifact_path"])
+    expected = criteria["expected_sha256"]
+    actual = sha256_file(artifact_path)
+    ok = actual == expected
+    return ok, f"file={artifact_path}, actual_sha256={actual}, expected_sha256={expected}"
+
+
+CHECKERS = {
+    "INV-PR-ONLY-AUTOMATION-OUTPUT": check_pr_only_output_policy,
+    "INV-HERMETIC-FINGERPRINT": check_hermetic_fingerprint,
+    "INV-HERMETIC-NO-NETWORK": check_no_outbound_network,
+    "INV-SECRET-SCAN-GATE": check_secret_scan_gate,
+    "INV-POLICY-ZONING-QUORUM": check_policy_zoning,
+    "INV-DETERMINISTIC-ARTIFACT-HASH": check_deterministic_artifact_hash,
+}
+
+
+def evaluate_invariants(registry: dict[str, Any]) -> list[InvariantResult]:
+    results: list[InvariantResult] = []
+    for invariant in registry.get("locked_invariants", []):
+        invariant_id = invariant["id"]
+        hard_fail = bool(invariant.get("hard_fail", True))
+        checker = CHECKERS.get(invariant_id)
+
+        if checker is None:
+            results.append(
+                InvariantResult(
+                    invariant_id=invariant_id,
+                    verdict="fail",
+                    hard_fail=hard_fail,
+                    details="No checker implemented for invariant ID.",
+                )
             )
+            continue
 
-    neutrality_modules = set(
-        manifest.get("validation", {}).get("neutrality", {}).get("modules", [])
-    )
-    if neutrality_modules != required_modules:
-        raise ValueError(
-            "Manifest validation.neutrality.modules must exactly list SNI and SCS."
+        ok, details = checker(invariant.get("criteria", {}))
+        results.append(
+            InvariantResult(
+                invariant_id=invariant_id,
+                verdict="pass" if ok else "fail",
+                hard_fail=hard_fail,
+                details=details,
+            )
         )
+
+    return results
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Validate core CI invariants.")
+    parser = argparse.ArgumentParser(description="Validate locked CI invariants from registry.")
     parser.add_argument(
-        "--cie-manifest",
+        "--registry",
         type=Path,
-        default=Path("manifests/content_integrity_eval.json"),
+        default=Path("manifests/invariant_registry.json"),
+        help="Path to invariant registry JSON.",
     )
     parser.add_argument(
-        "--audit-schema",
+        "--output",
         type=Path,
-        default=Path("schemas/cie_v1.audit_run.schema.json"),
-    )
-    parser.add_argument(
-        "--audit-runs",
-        type=Path,
-        default=Path("ledger/cie_v1/audit_runs.stub.jsonl"),
+        default=None,
+        help="Optional path to write invariant results JSON.",
     )
     args = parser.parse_args()
 
-    check_cie_manifest(args.cie_manifest)
-    validate_jsonl(args.audit_schema, args.audit_runs)
+    registry = load_json(args.registry)
+    results = evaluate_invariants(registry)
+
+    for result in results:
+        print(json.dumps(asdict(result), sort_keys=True))
+
+    if args.output:
+        args.output.parent.mkdir(parents=True, exist_ok=True)
+        args.output.write_text(
+            json.dumps([asdict(result) for result in results], indent=2) + "\n",
+            encoding="utf-8",
+        )
+
+    hard_failures = [r for r in results if r.hard_fail and r.verdict != "pass"]
+    if hard_failures:
+        raise InvariantViolation(
+            "Hard invariant violations: "
+            + ", ".join(f"{r.invariant_id} ({r.details})" for r in hard_failures)
+        )
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as exc:
+        print(json.dumps({"error": str(exc), "status": "failed"}, sort_keys=True))
+        sys.exit(1)

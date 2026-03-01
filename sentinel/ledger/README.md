@@ -10,6 +10,35 @@ Ledger assets capture immutable audit trails for capsule freezes and CI attestat
 
 Empty `.gitkeep` files live in each directory to document the intended structure without committing generated artifacts.
 
+## Handshake ledger target convention
+Handshake witnesses should be written under `sentinel/ledger/events/` using an append-only file such as:
+
+- `sentinel/ledger/events/handshake.ndjson`
+
+Each appended line is one canonical UTF-8 JSON object plus a trailing `\n` (NDJSON). Writers must emit each line in a single write
+call and reject partial writes.
+
+### Expected NDJSON line schema
+Each line should represent one chained handshake receipt:
+
+```json
+{
+  "type": "handshake.receipt",
+  "digest": "<sha256 hex digest>",
+  "prev": "<sha256 hex digest or null>",
+  "payload": { "...": "wall-clock fields excluded" },
+  "witness": {
+    "handshake.bound": {
+      "digest": "<sha256 hex digest>",
+      "canonical_payload": "<canonical JSON string>",
+      "prev": "<sha256 hex digest or null>"
+    }
+  }
+}
+```
+
+Hashed surfaces (payload canonicalization + digest inputs) must exclude wall-clock fields.
+
 ## Generating a batch
 Use the provided helper to hash inputs and emit ledger entries:
 

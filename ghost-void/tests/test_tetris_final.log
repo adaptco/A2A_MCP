@@ -1,0 +1,46 @@
+﻿============================= test session starts =============================
+platform win32 -- Python 3.13.7, pytest-9.0.2, pluggy-1.6.0 -- C:\Python313\python.exe
+cachedir: .pytest_cache
+rootdir: C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP
+plugins: anyio-4.12.1, asyncio-1.3.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 2 items
+
+tests/test_tetris_aggregation.py::test_tetris_aggregator_buffers_and_flushes FAILED
+tests/test_tetris_aggregation.py::test_tetris_aggregator_ignores_mlops_events FAILED
+
+================================== FAILURES ===================================
+_________________ test_tetris_aggregator_buffers_and_flushes __________________
+tests\test_tetris_aggregation.py:19: in test_tetris_aggregator_buffers_and_flushes
+    ModelArtifact(model_id="t1", weights_hash="h1", embedding_dim=1, category="gaming", state="SCORE_FINALIZED", metadata={"score": 100}),
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   pydantic_core._pydantic_core.ValidationError: 2 validation errors for ModelArtifact
+E   artifact_id
+E     Field required [type=missing, input_value={'model_id': 't1', 'weigh...tadata': {'score': 100}}, input_type=dict]
+E       For further information visit https://errors.pydantic.dev/2.12/v/missing
+E   state
+E     Input should be 'INIT', 'EMBEDDING', 'RAG_QUERY', 'LORA_ADAPT', 'HEALING', 'CONVERGED' or 'FAILED' [type=enum, input_value='SCORE_FINALIZED', input_type=str]
+E       For further information visit https://errors.pydantic.dev/2.12/v/enum
+_________________ test_tetris_aggregator_ignores_mlops_events _________________
+tests\test_tetris_aggregation.py:54: in test_tetris_aggregator_ignores_mlops_events
+    mlops_event = ModelArtifact(model_id="m1", weights_hash="h", embedding_dim=1, category="mlops", state=AgentLifecycleState.INIT)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   pydantic_core._pydantic_core.ValidationError: 1 validation error for ModelArtifact
+E   artifact_id
+E     Field required [type=missing, input_value={'model_id': 'm1', 'weigh...ycleState.INIT: 'INIT'>}, input_type=dict]
+E       For further information visit https://errors.pydantic.dev/2.12/v/missing
+============================== warnings summary ===============================
+schemas\database.py:6
+  C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP\schemas\database.py:6: MovedIn20Warning: The ``declarative_base()`` function is now available as sqlalchemy.orm.declarative_base(). (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    Base = declarative_base()
+
+tests/test_tetris_aggregation.py::test_tetris_aggregator_buffers_and_flushes
+tests/test_tetris_aggregation.py::test_tetris_aggregator_ignores_mlops_events
+  C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP\schemas\agent_artifacts.py:12: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp: str = Field(default_factory=lambda: datetime.utcnow().isoformat())
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/test_tetris_aggregation.py::test_tetris_aggregator_buffers_and_flushes
+FAILED tests/test_tetris_aggregation.py::test_tetris_aggregator_ignores_mlops_events
+======================== 2 failed, 3 warnings in 1.17s ========================

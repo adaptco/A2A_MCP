@@ -11,8 +11,11 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 from typing import Any, Dict
 from urllib.parse import parse_qs, urlparse
-
+from typing import Optional # Fixes 'Optional' is undefined
+from pathlib import Path
 from codex_qernel import CodexQernel, QernelConfig
+# Ensure MergeModel is either imported or defined before use on line 91
+
 
 logger = logging.getLogger("core_orchestrator.server")
 logging.basicConfig(level=logging.INFO)

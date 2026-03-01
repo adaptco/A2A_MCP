@@ -1,0 +1,25 @@
+Metadata-Version: 2.4
+Name: a2a-mcp
+Version: 0.2.0
+Summary: Multi-agent orchestrator with MCP tooling, stateflow FSM, and self-healing pipelines
+Author: Antigravity
+Requires-Python: >=3.8
+License-File: LICENSE
+Requires-Dist: sqlalchemy
+Requires-Dist: psycopg2-binary
+Requires-Dist: pydantic
+Requires-Dist: python-dotenv
+Requires-Dist: fastapi
+Requires-Dist: uvicorn
+Requires-Dist: httpx
+Requires-Dist: requests
+Requires-Dist: jsonschema
+Requires-Dist: mcp[cli]
+Requires-Dist: croniter
+Requires-Dist: pyyaml
+Provides-Extra: dev
+Requires-Dist: pytest; extra == "dev"
+Requires-Dist: pytest-asyncio; extra == "dev"
+Dynamic: author
+Dynamic: license-file
+Dynamic: requires-python

@@ -1,0 +1,46 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "shell",
+			"label": "Build Jurassic Pixels Test (Debug)",
+			"command": "if not exist bin mkdir bin & call \"C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\VC\\Auxiliary\\Build\\vcvars64.bat\" && cl.exe /Fe:bin/jurassic_pixels_test.exe /Iinclude /EHsc /std:c++17 /Zi /DEBUG tests/jurassic_pixels_test.cpp src/engine/*.cpp src/qube/QubeRuntime.cpp src/agents/*.cpp src/safety/*.cpp",
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"problemMatcher": [
+				"$msCompile"
+			],
+			"detail": "Builds the Jurassic Pixels unit verification test using MSVC cl.exe with debug info."
+		},
+		{
+			"type": "docker-build",
+			"label": "docker-build",
+			"platform": "python",
+			"dockerBuild": {
+				"tag": "ghostvoid:latest",
+				"dockerfile": "${workspaceFolder}/Dockerfile",
+				"context": "${workspaceFolder}",
+				"pull": true
+			}
+		},
+		{
+			"type": "docker-run",
+			"label": "docker-run: debug",
+			"dependsOn": [
+				"docker-build"
+			],
+			"python": {
+				"args": [
+					"toolquest.semantic.embedding_pipeline:app",
+					"--host",
+					"0.0.0.0",
+					"--port",
+					"8000"
+				],
+				"module": "uvicorn"
+			}
+		}
+	]
+}

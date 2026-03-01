@@ -1,0 +1,13 @@
+apiVersion: adk.io/v1
+kind: ComplianceChecklist
+metadata:
+  name: ide.compliance_checklist
+  version: v1
+spec:
+  checks:
+    - id: "SEC-001"
+      description: "No hardcoded credentials"
+      severity: "CRITICAL"
+    - id: "PERF-001"
+      description: "Frame time under 16ms"
+      severity: "MAJOR"

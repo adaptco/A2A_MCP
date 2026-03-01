@@ -1,0 +1,11 @@
+apiVersion: adk.io/v1
+kind: Runbook
+metadata:
+  name: ci_parity
+  version: v1
+spec:
+  steps:
+    - name: "Build"
+      command: "make all"
+    - name: "Test"
+      command: "make test"

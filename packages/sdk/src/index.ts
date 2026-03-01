@@ -6,6 +6,7 @@ export * from "./attested_inference_client";
 export * from "./cie/agent";
 export * from "./cie/ingestion";
 export * from "./cie/types";
+export * from "./handshake";
 
 export interface ApiClientOptions {
   baseUrl: string;

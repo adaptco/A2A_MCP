@@ -1,0 +1,16 @@
+sqlalchemy
+psycopg2-binary
+pydantic
+python-dotenv
+fastapi
+uvicorn
+httpx
+requests
+jsonschema
+mcp[cli]
+croniter
+pyyaml
+
+[dev]
+pytest
+pytest-asyncio

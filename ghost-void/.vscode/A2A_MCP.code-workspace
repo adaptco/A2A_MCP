@@ -1,0 +1,21 @@
+{
+	"folders": [
+		{
+			"path": ".."
+		}
+	],
+	"settings": {
+		"github-actions.workflows.pinned.workflows": [
+			".github/workflows/game-validation.yml",
+			".github/workflows/integration_test.yml",
+			".github/workflows/daily_ingress.yml",
+			".github/workflows/deploy-stack.yml",
+			".github/workflows/docker-image.yml",
+			".github/workflows/cd.yml",
+			".github/workflows/ci.yml",
+			".github/workflows/pylint.yml",
+			".github/workflows/python-app.yml",
+			".github/workflows/python-publish.yml"
+		]
+	}
+}

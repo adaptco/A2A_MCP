@@ -1,189 +1,17 @@
 openapi: 3.0.3
 info:
   title: Core Orchestrator API
-  version: 1.1.0
-  description: >-
-    HTTP interface for the Core Orchestrator capsule. Provides service health
-    introspection along with branch merge planning metadata, automation hooks,
-    and middleware contract discovery for cockpit and CI consumers.
-  contact:
-    name: Protocol Automation Team
-    url: https://example.com/core-orchestrator
-    email: ops@example.com
-servers:
-  - url: http://localhost:8080
-tags:
-  - name: health
-    description: Liveness and readiness status endpoints.
-  - name: txtordr
-    description: Txtordr intake and routing endpoints.
-  - name: pos
-    description: POS order intake and deterministic idempotency handling.
+  version: 1.0.0
+  description: Interface for managing POS order flows and audit ledgers.
+
 paths:
-  /health:
-    get:
-      summary: Service health probe
-      operationId: getHealth
-      description: Retrieve the live readiness state of the orchestrator capsule.
-      tags:
-        - health
-      responses:
-        '200':
-          description: Service status information.
-          content:
-            application/json:
-              schema:
-                type: object
-                required:
-                  - status
-                properties:
-                  status:
-                    type: string
-                    description: Service status indicator.
-                    enum:
-                      - ok
-  /txtordr/intake:
-    post:
-      summary: Submit a Txtordr payload
-      description: Receive and route structured Txtordr payloads.
-      operationId: postTxtordrIntake
-      tags:
-        - txtordr
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: 'https://q.enterprises/schemas/txtordr.v1.json'
-      responses:
-        '202':
-          description: Accepted and routed
-          content:
-            application/json:
-              schema:
-                type: object
-                required:
-                  - capsule
-                  - ledger
-                  - events
-                properties:
-                  capsule:
-                    type: string
-                    description: Capsule identifier.
-                    example: capsule.rehearsal.scrollstream.v1
-                  ledger:
-                    type: string
-                    description: Ledger channel name receiving the rehearsal events.
-                    example: scrollstream_ledger
-                  events:
-                    type: array
-                    description: Ordered rehearsal events emitted during the braid simulation.
-                    items:
-                      type: object
-                      required:
-                        - timestamp
-                        - stage
-                        - agent
-                        - output
-                        - hud_feedback
-                        - emotional_payload
-                        - sabrina_spark_test
-                      properties:
-                        timestamp:
-                          type: string
-                          format: date-time
-                          description: ISO-8601 timestamp for the rehearsal event.
-                          example: 2025-02-17T17:00:00Z
-                        capsule_id:
-                          type: string
-                          description: Capsule identifier that produced the event.
-                          example: capsule.rehearsal.scrollstream.v1
-                        ledger:
-                          type: string
-                          description: Ledger channel receiving the emission.
-                          example: scrollstream_ledger
-                        stage:
-                          type: string
-                          description: Audit braid stage represented by the event.
-                          enum:
-                            - audit.summary
-                            - audit.proof
-                            - audit.execution
-                        agent:
-                          type: string
-                          description: Agent responsible for the event within the rehearsal cycle.
-                          enum:
-                            - celine
-                            - luma
-                            - dot
-                        output:
-                          type: string
-                          description: Narrative payload captured for the rehearsal ledger.
-                        hud_feedback:
-                          type: string
-                          description: HUD animation feedback triggered by the event.
-                          example: shimmer
-                        training_mode:
-                          type: boolean
-                          description: Indicates that the event was emitted in training mode.
-                        emotional_payload:
-                          type: string
-                          description: Emotional signature associated with the glyph.
-                          example: anticipation
-                        sabrina_spark_test:
-                          type: string
-                          description: Sabrina Spark Test outcome for the glyph.
-                          example: pass
-                properties:
-                  ok:
-                    type: boolean
-                  order_id:
-                    type: string
-        '400':
-          description: Invalid payload or HMAC
-        '409':
-          description: Duplicate idempotency key
-        '500':
-          description: Internal error
-      security:
-        - hmacAuth: []
   /pos/order:
     post:
-      summary: Submit a normalized POS order EventEnvelope
-      description: >-
-        Accepts Sovereign EventEnvelope payloads emitted by the Codex Connector. Idempotency
-        is enforced via deterministic UUIDv5 anchors built from store, register, and sequence
-        identifiers. Duplicate envelopes return HTTP 409 with the previously recorded resource
-        identifier to prevent state drift.
-      operationId: postPosOrder
-      tags:
-        - pos
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/EventEnvelope'
+      summary: Submit a new POS order
+      operationId: submitOrder
       responses:
-        '202':
-          description: Accepted and routed to the Order Service
-          content:
-            application/json:
-              schema:
-                type: object
-                required:
-                  - ok
-                  - idempotencyKey
-                properties:
-                  ok:
-                    type: boolean
-                    example: true
-                  idempotencyKey:
-                    type: string
-                    format: uuid
-                    description: Deterministic UUIDv5 anchor returned for audit chaining.
-        '400':
-          description: Invalid envelope structure
+        '201':
+          description: Order successfully recorded
         '409':
           description: Duplicate idempotency key already recorded in the Audit Ledger
           content:
@@ -206,42 +34,27 @@ paths:
               description: Previously persisted resource identifier for legacy POS verification.
               schema:
                 type: string
-        '500':
-          description: Internal error
-      security:
-        - hmacAuth: []
+
 components:
-  securitySchemes:
-    hmacAuth:
-      type: apiKey
-      in: header
-      name: X-Txtordr-HMAC
   schemas:
-    EventEnvelope:
+    Order:
       type: object
-      required: [header, payload]
-      additionalProperties: false
       properties:
-        header:
-          type: object
-          required: [idempotencyKey, traceId, timestamp, version]
-          additionalProperties: false
-          properties:
-            idempotencyKey:
-              type: string
-              format: uuid
-              description: Deterministic UUIDv5 generated from the Codex Connector anchor string.
-            traceId:
-              type: string
-              format: uuid
-              description: Distributed trace identifier.
-            timestamp:
-              type: string
-              format: date-time
-            version:
-              type: string
-              const: "1.0.0"
-        payload:
-          type: object
-          description: Sovereign normalized order data emitted by the Codex Connector.
-          additionalProperties: true
+        id:
+          type: string
+          format: uuid
+        version:
+          type: string
+          enum: ["1.0.0"]
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderItem'
+
+    OrderItem:
+      type: object
+      properties:
+        sku:
+          type: string
+        quantity:
+          type: integer

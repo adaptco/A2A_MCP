@@ -56,6 +56,7 @@ A2A_MCP delivers the Synapse digital twin, Chrono-Sync protocol, and World OS ke
 ## 🏗️ Project Structure
 
 ### Kernel Module (Orchestration Core)
+
 - **orchestrator/api.py**: Canonical FastAPI orchestration API.
 - **orchestrator/intent_engine.py**: 5-agent pipeline coordinator.
 - **orchestrator/stateflow.py**: Thread-safe FSM with Prime Directive states.
@@ -63,6 +64,7 @@ A2A_MCP delivers the Synapse digital twin, Chrono-Sync protocol, and World OS ke
 - **orchestrator/webhook.py**: Legacy ingress compatibility routes mounted by API.
 
 ### Agent Swarm
+
 - **Managing Agent**: High-level task assignment.
 - **Orchestration Agent**: Workflow coordination.
 - **Architecture Agent**: System design decisions.
@@ -71,6 +73,7 @@ A2A_MCP delivers the Synapse digital twin, Chrono-Sync protocol, and World OS ke
 - **PINN Agent**: Physics-informed neural network arbitration.
 
 ### Data Contracts & Models
+
 - **schemas/agent_artifacts.py**: MCPArtifact contracts.
 - **schemas/database.py**: SQLAlchemy ORM models.
 - **schemas/project_plan.py**: Planning contracts.
@@ -79,6 +82,7 @@ A2A_MCP delivers the Synapse digital twin, Chrono-Sync protocol, and World OS ke
 ## 🚀 Quick Start
 
 ### Environment Setup
+
 ```bash
 python -m venv .venv
 # Windows
@@ -86,25 +90,37 @@ python -m venv .venv
 # Unix
 source .venv/bin/activate
 
+pip install .
+# Development tools (pytest stack)
+pip install .[dev]
+# Optional external integrations
+pip install .[integrations]
+# Legacy compatibility path
 pip install -r requirements.txt
 ```
 
+`pyproject.toml` is the canonical source for package metadata and dependencies. `requirements.txt` is maintained as a thin wrapper for compatibility.
+
 ### Run MCP Gateway (Canonical)
+
 ```bash
 uvicorn app.mcp_gateway:app --reload --port 8080
 ```
 
 ### Start Orchestrator API (Canonical)
+
 ```bash
 uvicorn orchestrator.api:app --reload --port 8000
 ```
 
 ### Start RBAC Gateway
+
 ```bash
 uvicorn rbac.rbac_service:app --reload --port 8001
 ```
 
 ### Run Tests
+
 ```bash
 pytest tests/ -v
 ```

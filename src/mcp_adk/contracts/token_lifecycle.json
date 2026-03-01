@@ -1,0 +1,23 @@
+{
+  "states": [
+    "issued",
+    "validated",
+    "bound_to_context",
+    "executed",
+    "attested",
+    "archived"
+  ],
+  "transitions": {
+    "issue": ["issued"],
+    "validate": ["issued", "validated"],
+    "bind": ["validated", "bound_to_context"],
+    "execute": ["bound_to_context", "executed"],
+    "attest": ["executed", "attested"],
+    "archive": ["attested", "archived"]
+  },
+  "invariants": [
+    "no_execution_without_binding",
+    "no_attestation_without_execution",
+    "no_context_mutation_after_binding"
+  ]
+}

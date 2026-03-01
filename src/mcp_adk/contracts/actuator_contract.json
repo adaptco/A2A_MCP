@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "A2A_MCP Actuator Contract",
+  "type": "object",
+  "required": [
+    "trigger_reason",
+    "mode",
+    "policy_zone",
+    "required_checks",
+    "max_entropy_budget",
+    "acceptance_invariants"
+  ],
+  "properties": {
+    "trigger_reason": {
+      "type": "string",
+      "enum": [
+        "invariant_violation",
+        "drift_detected",
+        "optimization_requested",
+        "refactor_requested"
+      ]
+    },
+    "mode": {
+      "type": "string",
+      "enum": ["hermetic", "exploratory"]
+    },
+    "policy_zone": {
+      "type": "string",
+      "description": "Derived from AGENTS.md locality and path-based zoning."
+    },
+    "required_checks": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "max_entropy_budget": {
+      "type": "object",
+      "properties": {
+        "max_diff_size": { "type": "integer" },
+        "allow_dependency_changes": { "type": "boolean" }
+      },
+      "required": ["max_diff_size", "allow_dependency_changes"]
+    },
+    "acceptance_invariants": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  }
+}

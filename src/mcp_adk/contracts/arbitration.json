@@ -1,0 +1,17 @@
+{
+  "cost_function": {
+    "compute_cost_weight": "alpha",
+    "diff_size_weight": "beta",
+    "risk_weight": "gamma",
+    "environment_drift_weight": "delta",
+    "flake_penalty_weight": "epsilon"
+  },
+  "constraints": {
+    "hard": [
+      "maker_checker_boundary",
+      "policy_zone_respected",
+      "no_secret_exfil",
+      "hermetic_mode_no_network"
+    ]
+  }
+}

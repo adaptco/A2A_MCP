@@ -1,0 +1,14 @@
+{
+  "events": [
+    "invariant_violation",
+    "drift_detected",
+    "scheduled_scan",
+    "manual_request",
+    "refactor_opportunity"
+  ],
+  "payload": {
+    "state_vector": "x",
+    "policy_zone": "derived",
+    "risk_surface": "computed"
+  }
+}

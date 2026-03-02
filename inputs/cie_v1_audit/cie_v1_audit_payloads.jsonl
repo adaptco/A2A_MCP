@@ -1,5 +1,0 @@
-"assertions": [
-  "Grid-scale batteries respond to frequency deviations within seconds to stabilize voltage, provided current capacity exceeds safety margins.",
-  "Regulation capacity is reserved exclusively for frequency services unless a safety-margin breach is detected.",
-  "Dispatch logic automatically throttles frequency services to preserve the safety margins defined in ssot://registry/trusted_uris/grid/safety_margins."
-]

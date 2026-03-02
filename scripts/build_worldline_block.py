@@ -20,7 +20,11 @@ def main() -> int:
     parser.add_argument("--commit-sha", required=True, help="Commit SHA")
     parser.add_argument("--actor", default="github-actions", help="Actor initiating the run")
     parser.add_argument("--cluster-count", type=int, default=4, help="Number of artifact clusters")
-    parser.add_argument("--output", default="worldline_block.json", help="Output JSON path")
+    parser.add_argument(
+        "--output",
+        default="worldline_block.json",
+        help="Output JSON path",
+    )
     args = parser.parse_args()
 
     block = build_worldline_block(

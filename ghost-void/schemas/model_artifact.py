@@ -12,26 +12,22 @@ from enum import Enum
 class AgentLifecycleState(str, Enum):
     """Simulated state space for agent lifecycle."""
     INIT = "INIT"
-    HANDSHAKE = "HANDSHAKE"
     EMBEDDING = "EMBEDDING"
     RAG_QUERY = "RAG_QUERY"
     LORA_ADAPT = "LORA_ADAPT"
     HEALING = "HEALING"
     CONVERGED = "CONVERGED"
-    MERGE_CONFLICT = "MERGE_CONFLICT"
     FAILED = "FAILED"
 
 
 # Valid state transitions
 STATE_TRANSITIONS: Dict[AgentLifecycleState, List[AgentLifecycleState]] = {
-    AgentLifecycleState.HANDSHAKE: [AgentLifecycleState.INIT, AgentLifecycleState.FAILED],
     AgentLifecycleState.INIT: [AgentLifecycleState.EMBEDDING],
     AgentLifecycleState.EMBEDDING: [AgentLifecycleState.RAG_QUERY, AgentLifecycleState.FAILED],
     AgentLifecycleState.RAG_QUERY: [AgentLifecycleState.LORA_ADAPT, AgentLifecycleState.FAILED],
     AgentLifecycleState.LORA_ADAPT: [AgentLifecycleState.HEALING, AgentLifecycleState.FAILED],
     AgentLifecycleState.HEALING: [AgentLifecycleState.CONVERGED, AgentLifecycleState.LORA_ADAPT, AgentLifecycleState.FAILED],
     AgentLifecycleState.CONVERGED: [],  # Terminal
-    AgentLifecycleState.MERGE_CONFLICT: [AgentLifecycleState.HEALING, AgentLifecycleState.FAILED],
     AgentLifecycleState.FAILED: [AgentLifecycleState.INIT],  # Rollback to INIT
 }
 

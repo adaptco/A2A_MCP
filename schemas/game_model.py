@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
@@ -61,7 +61,7 @@ class AgentRuntimeState(BaseModel):
     last_action: Optional[str] = None
     last_judge_score: Optional[float] = None
     active: bool = True
-    timestamp: datetime = Field(default_factory=datetime.utcnow)
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 class GameActionResult(BaseModel):
@@ -73,7 +73,7 @@ class GameActionResult(BaseModel):
     zone: Optional[str] = None
     speed_mph: float
     fuel_gal: float
-    timestamp: datetime = Field(default_factory=datetime.utcnow)
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 class GameTick(BaseModel):
@@ -81,7 +81,7 @@ class GameTick(BaseModel):
 
     frame: int
     states: Dict[str, AgentRuntimeState] = Field(default_factory=dict)
-    timestamp: datetime = Field(default_factory=datetime.utcnow)
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 class GameModel(BaseModel):

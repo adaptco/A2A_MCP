@@ -1,16 +1,29 @@
 name: Python CI
 
+permissions:
+  contents: read
+
 on:
   push:
-    branches: [ main, constitutional-autogen-workflows ]
+    paths:
+      - "**/*.py"
+      - "pyproject.toml"
+      - "requirements*.txt"
+      - ".github/workflows/python-ci.yml"
   pull_request:
-    branches: [ main ]
+    paths:
+      - "**/*.py"
+      - "pyproject.toml"
+      - "requirements*.txt"
+      - ".github/workflows/python-ci.yml"
 
 jobs:
-  python-ci:
+  test:
+    name: Python Tests
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Set up Python
@@ -18,16 +31,11 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install test tooling
+      - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pytest
+          pip install -e .[dev]
+          pip install fastapi sqlalchemy httpx aiosqlite pytest-asyncio
 
-      - name: Smoke-check Python scripts (syntax + import)
-        run: |
-          python -m compileall -q scripts || true
-          python scripts/physics_semantic_diff.py --help || true
-
-      - name: Run tests (if present)
-        run: |
-          if [ -d tests ]; then pytest -q; else echo "No tests/ directory; skipping."; fi
+      - name: Run pytest
+        run: pytest

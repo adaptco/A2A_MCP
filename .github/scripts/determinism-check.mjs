@@ -21,12 +21,6 @@ console.log(`  Engine:     ${ENGINE_BIN}`);
 console.log(`  Iterations: ${ITERATIONS}`);
 console.log();
 
-// Global timeout to prevent CI hanging indefinitely
-setTimeout(() => {
-  console.error("\n❌ Global timeout reached. Force exiting...");
-  process.exit(1);
-}, 120000); // 2 minute hard limit
-
 /**
  * Runs the engine and returns a SHA-256 of its stdout.
  * Deterministic engines must produce identical output on each run.
@@ -56,14 +50,14 @@ function runTestAndHash(testBinary, label, iteration) {
   try {
     // Build the test first
     execSync(`make ${testBinary}`, {
-      timeout: 60_000,
+      timeout: 30_000,
       stdio: ["pipe", "pipe", "pipe"],
       encoding: "utf8",
     });
 
     const binPath = `./bin/${testBinary.replace("test_", "")}_test`;
     const stdout = execSync(binPath, {
-      timeout: 20_000,
+      timeout: 10_000,
       stdio: ["pipe", "pipe", "pipe"],
       encoding: "utf8",
     });
@@ -72,7 +66,7 @@ function runTestAndHash(testBinary, label, iteration) {
     console.log(`  ${label} Run ${iteration + 1}: ${hash.slice(0, 16)}…`);
     return { hash, stdout, error: null };
   } catch (err) {
-    console.error(`  ${label} Run ${iteration + 1}: ERROR — ${err.message}`);
+    console.log(`  ${label} Run ${iteration + 1}: ERROR — ${err.message}`);
     return { hash: null, stdout: null, error: err.message };
   }
 }
@@ -132,9 +126,9 @@ if (validJurassicResults.length >= 2) {
 // Final verdict
 console.log("═".repeat(50));
 if (failures === 0) {
-  console.log("🎉 Determinism verification PASSED\n");
+  console.log("🎉 Determinism verification PASSED");
   process.exit(0);
 } else {
-  console.error(`⚠️  Determinism verification FAILED (${failures} failures)\n`);
+  console.log(`⚠️  Determinism verification FAILED (${failures} failures)`);
   process.exit(1);
 }

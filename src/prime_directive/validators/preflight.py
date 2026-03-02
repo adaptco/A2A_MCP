@@ -1,1 +1,0 @@
-"""Preflight validation gate placeholder."""

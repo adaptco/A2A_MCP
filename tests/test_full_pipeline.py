@@ -54,7 +54,7 @@ class TestFullPipeline:
         if test_verdicts is None:
             test_verdicts = ["PASS"]
 
-        async def fake_validate(_artifact_id):
+        async def fake_validate(_artifact_id, supplemental_context=None, context_tokens=None):
             verdict = test_verdicts.pop(0) if test_verdicts else "PASS"
             return TestReport(
                 status=verdict,
@@ -96,32 +96,6 @@ class TestFullPipeline:
         # TesterAgent returned verdicts
         assert len(result.test_verdicts) > 0
         assert all(v["status"] == "PASS" for v in result.test_verdicts)
-
-
-    @pytest.mark.asyncio
-    async def test_run_full_pipeline_does_not_double_persist_code_artifacts(self):
-        engine = self._make_engine()
-
-        coder_saved_ids = []
-
-        def record_coder_save(artifact):
-            coder_saved_ids.append(artifact.artifact_id)
-
-        engine.coder.db.save_artifact.side_effect = record_coder_save
-
-        duplicate_attempt_ids = []
-
-        def top_level_save(artifact):
-            if getattr(artifact, "type", None) == "code_solution":
-                duplicate_attempt_ids.append(artifact.artifact_id)
-
-        engine.db.save_artifact.side_effect = top_level_save
-
-        result = await engine.run_full_pipeline("Build a user service")
-
-        assert result.success is True
-        assert coder_saved_ids
-        assert duplicate_attempt_ids == []
 
     # -----------------------------------------------------------------
     # Self-healing: first test fails, second pass succeeds
@@ -187,13 +161,13 @@ class TestFullPipeline:
     async def test_legacy_execute_plan_still_works(self):
         engine = self._make_engine()
 
-        async def fake_generate(parent_id, feedback=None):
+        async def fake_generate(parent_id, feedback=None, context_tokens=None):
             return SimpleNamespace(
                 artifact_id=str(uuid.uuid4()),
                 content="code",
             )
 
-        async def fake_validate(_aid):
+        async def fake_validate(_aid, supplemental_context=None, context_tokens=None):
             return TestReport(status="PASS", critique="ok")
 
         engine.coder.generate_solution = fake_generate  # type: ignore

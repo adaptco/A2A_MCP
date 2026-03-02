@@ -20,12 +20,10 @@ foreach(DIR IN LISTS REQUIRED_DIRS)
 endforeach()
 
 # Check for Engine Binary
-if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../bin/ghost-void_engine.exe" OR EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../bin/ghost-void_engine")
-    message(STATUS "Verified engine binary exists.")
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../bin/ghost-void_engine.exe")
+    message(STATUS "Verified engine binary in /bin")
 else()
-    message(WARNING "Ghost-Void Engine binary not found. You can build the project by executing:")
-    message(STATUS "  cmake -S . -B build")
-    message(STATUS "  cmake --build build --config Release")
+    message(WARNING "Ghost-Void Engine binary not found. Please build the project.")
 endif()
 
 message(STATUS "A2A_MCP Setup Validation Complete.")

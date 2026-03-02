@@ -17,14 +17,6 @@ except ModuleNotFoundError:
 from schemas.agent_artifacts import MCPArtifact
 from schemas.runtime_bridge import RuntimeAssignmentV1
 
-from embed_control_plane import (
-    embed_dispatch_batch,
-    embed_lookup,
-    embed_status,
-    embed_submit,
-    route_a2a_intent,
-)
-
 mcp = FastMCP("A2A_Runtime")
 
 _RUNTIME_ASSIGNMENTS: Dict[str, RuntimeAssignmentV1] = {}
@@ -80,11 +72,6 @@ def list_runtime_assignments(plan_id: str = "") -> dict:
 mcp.tool()(submit_runtime_assignment)
 mcp.tool()(get_runtime_assignment)
 mcp.tool()(list_runtime_assignments)
-mcp.tool()(embed_submit)
-mcp.tool()(embed_status)
-mcp.tool()(embed_lookup)
-mcp.tool()(embed_dispatch_batch)
-mcp.tool()(route_a2a_intent)
 
 
 if __name__ == "__main__":

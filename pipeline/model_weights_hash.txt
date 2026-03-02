@@ -1,2 +1,0 @@
-Model: sentence-transformers/all-mpnet-base-v2
-SHA256: 4509c1ee9d2c8edeefc99bd9ca58668916bee2b9b0cf8bf505310e7b64baf670

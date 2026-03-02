@@ -16,13 +16,11 @@ on:
     branches: [main]
     paths:
       - "orchestrator/multimodal_worldline.py"
-      - "orchestrator/end_to_end_orchestration.py"
       - "scripts/build_worldline_block.py"
-      - "scripts/run_end_to_end_orchestration.py"
       - ".github/workflows/qube-multimodal-worldline.yml"
 
 jobs:
-  run-end-to-end-worldline:
+  build-worldline:
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -37,37 +35,37 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install dependencies
-        run: pip install -r requirements.txt
-
-      - name: Execute end-to-end orchestration
+      - name: Build worldline block artifact
         env:
           INPUT_PROMPT: ${{ github.event.inputs.prompt }}
           INPUT_CLUSTER_COUNT: ${{ github.event.inputs.cluster_count }}
-          GITHUB_MCP_API_URL: ${{ secrets.GITHUB_MCP_API_URL }}
         run: |
           PROMPT="${INPUT_PROMPT:-Infrastructure avatar worldline build for multimodal MCP orchestration}"
           CLUSTER_COUNT="${INPUT_CLUSTER_COUNT:-4}"
-          ARGS=()
-          if [ -n "${GITHUB_MCP_API_URL}" ]; then
-            ARGS+=(--mcp-api-url "${GITHUB_MCP_API_URL}")
-          fi
-          python scripts/run_end_to_end_orchestration.py \
+          python scripts/build_worldline_block.py \
             --prompt "$PROMPT" \
             --repository "${GITHUB_REPOSITORY}" \
             --commit-sha "${GITHUB_SHA}" \
             --actor "${GITHUB_ACTOR}" \
             --cluster-count "${CLUSTER_COUNT}" \
-            --authorization "Bearer ${GITHUB_TOKEN}" \
-            --output-block worldline_block.json \
-            --output-result orchestration_result.json \
-            "${ARGS[@]}"
-          cat orchestration_result.json
+            --output worldline_block.json
+          cat worldline_block.json
 
-      - name: Upload orchestration artifacts
+      - name: Upload worldline block
         uses: actions/upload-artifact@v4
         with:
-          name: worldline-orchestration-${{ github.run_number }}
-          path: |
-            worldline_block.json
-            orchestration_result.json
+          name: worldline-block-${{ github.run_number }}
+          path: worldline_block.json
+
+      - name: Call GitHub MCP API mapping (optional)
+        if: ${{ secrets.GITHUB_MCP_API_URL != '' }}
+        env:
+          GITHUB_MCP_API_URL: ${{ secrets.GITHUB_MCP_API_URL }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          curl -sS -X POST "${GITHUB_MCP_API_URL}/tools/call" \
+            -H "Authorization: Bearer ${GITHUB_TOKEN}" \
+            -H "Content-Type: application/json" \
+            --data-binary @worldline_block.json \
+            -o mcp_response.json
+          cat mcp_response.json

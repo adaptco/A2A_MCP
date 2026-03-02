@@ -1,1 +1,0 @@
-"""PDF/X backend placeholder."""

@@ -27,8 +27,6 @@ jobs:
           python-version: "3.x"
 
       - name: Build release distributions
-        env:
-          PYTHONPATH: .
         run: |
           # NOTE: put your own distribution build steps here.
           python -m pip install build

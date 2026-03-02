@@ -7,14 +7,11 @@ pipeline and executing lifecycle transitions.
 
 from __future__ import annotations
 
-import hmac
-import hashlib
 import os
-from typing import Dict, List
+from typing import Dict
 
-from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi import FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
 from rbac.models import (
     ACTION_PERMISSIONS,
@@ -35,13 +32,11 @@ app = FastAPI(
     version="1.0.0",
 )
 
-# Production-ready CORS
-allowed_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,http://localhost:8080").split(",")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=allowed_origins if os.getenv("ENV") == "production" else ["*"],
+    allow_origins=os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,http://localhost:8000").split(","),
     allow_credentials=True,
-    allow_methods=["GET", "POST", "DELETE", "OPTIONS"],
+    allow_methods=["*"],
     allow_headers=["*"],
 )
 
@@ -49,17 +44,6 @@ app.add_middleware(
 _registry: Dict[str, AgentRecord] = {}
 
 RBAC_SECRET = os.getenv("RBAC_SECRET", "dev-secret-change-me")
-security = HTTPBearer()
-
-
-async def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)):
-    """Enforce token-based authentication."""
-    if credentials.credentials != RBAC_SECRET:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid authentication token",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
 
 
 # ── Health ───────────────────────────────────────────────────────────────
@@ -73,12 +57,15 @@ async def health():
     }
 
 
-# ── Agent Onboarding ─────────────────────────────────────────────────────    
+# ── Agent Onboarding ────────────────────────────────────────────────────
 
-@app.post("/agents/onboard", response_model=OnboardingResult, status_code=201, dependencies=[Depends(verify_token)])
+@app.post("/agents/onboard", response_model=OnboardingResult, status_code=201)
 async def onboard_agent(registration: AgentRegistration):
     """
     Register a new agent with a role and optional embedding config.
+
+    The agent's role determines which lifecycle transitions and actions it
+    may perform within the pipeline.
     """
     if registration.agent_id in _registry:
         raise HTTPException(
@@ -108,9 +95,9 @@ async def onboard_agent(registration: AgentRegistration):
     )
 
 
-# ── Permission Queries ───────────────────────────────────────────────────        
+# ── Permission Queries ──────────────────────────────────────────────────
 
-@app.get("/agents/{agent_id}/permissions", dependencies=[Depends(verify_token)])
+@app.get("/agents/{agent_id}/permissions")
 async def get_agent_permissions(agent_id: str):
     """Return the full permission scope for a registered agent."""
     record = _registry.get(agent_id)
@@ -130,11 +117,11 @@ async def get_agent_permissions(agent_id: str):
     }
 
 
-@app.post("/agents/{agent_id}/verify", response_model=PermissionCheckResponse, dependencies=[Depends(verify_token)])
+@app.post("/agents/{agent_id}/verify", response_model=PermissionCheckResponse)
 async def verify_permission(agent_id: str, check: PermissionCheckRequest):
     """
     Check whether an agent is permitted to perform a specific action or
-    lifecycle transition. (Public endpoint, no signature required for verification query)
+    lifecycle transition.
     """
     record = _registry.get(agent_id)
     if not record:
@@ -193,9 +180,9 @@ async def verify_permission(agent_id: str, check: PermissionCheckRequest):
     )
 
 
-# ── Agent Management ─────────────────────────────────────────────────────    
+# ── Agent Management ────────────────────────────────────────────────────
 
-@app.get("/agents", dependencies=[Depends(verify_token)])
+@app.get("/agents")
 async def list_agents():
     """List all registered agents."""
     return {
@@ -211,7 +198,7 @@ async def list_agents():
     }
 
 
-@app.delete("/agents/{agent_id}", status_code=204, dependencies=[Depends(verify_token)])
+@app.delete("/agents/{agent_id}", status_code=204)
 async def deactivate_agent(agent_id: str):
     """Soft-deactivate an agent (preserves record for audit)."""
     record = _registry.get(agent_id)
@@ -223,7 +210,7 @@ async def deactivate_agent(agent_id: str):
     record.active = False
 
 
-# ── Entry point ──────────────────────────────────────────────────────────
+# ── Entry point ─────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
     import uvicorn

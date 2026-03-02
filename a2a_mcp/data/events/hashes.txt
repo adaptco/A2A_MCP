@@ -1,3 +1,0 @@
-# Core Orchestrator ledger hash manifest
-# Format: <run-id>-<commit-sha7> sha256:<digest>
-

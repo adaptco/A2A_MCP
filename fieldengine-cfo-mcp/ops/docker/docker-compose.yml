@@ -1,7 +1,0 @@
-services:
-  cfo-mcp:
-    build:
-      context: ../..
-      dockerfile: ops/docker/Dockerfile
-    ports:
-      - "3000:3000"

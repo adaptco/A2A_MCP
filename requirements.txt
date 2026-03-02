@@ -1,0 +1,8 @@
+sqlalchemy
+psycopg2-binary
+pydantic
+pytest
+asyncio
+python-dotenv
+fastmcp
+requests

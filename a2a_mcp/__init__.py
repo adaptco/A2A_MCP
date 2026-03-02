@@ -5,13 +5,13 @@ from a2a_mcp.mcp_core import MCPCore, MCPResult
 try:
     from a2a_mcp.client_token_pipe import (
         ClientTokenPipe,
-        ClientTokenPipeContext,
+        ClientTokenContext,
         ContaminationError,
         InMemoryEventStore,
     )
 except ModuleNotFoundError:
     ClientTokenPipe = None
-    ClientTokenPipeContext = None
+    ClientTokenContext = None
     ContaminationError = None
     InMemoryEventStore = None
 
@@ -24,7 +24,7 @@ if ClientTokenPipe is not None:
     __all__.extend(
         [
             "ClientTokenPipe",
-            "ClientTokenPipeContext",
+            "ClientTokenContext",
             "ContaminationError",
             "InMemoryEventStore",
         ]

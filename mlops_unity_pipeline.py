@@ -1,8 +1,9 @@
 """Autonomous Unity MLOps pipeline for code generation, build, RL training, and model registration.
 
-This module provides a production-oriented orchestration surface that can be used as-is
-or subclassed to integrate with specific LLM providers, Unity project layouts, and cloud
-registries.
+The module exposes composable dataclasses plus orchestration classes for single-run jobs
+and cron-style 24/7 scheduling. Default build/training operations are intentionally safe
+placeholders so the pipeline can execute in non-Unity CI environments and be progressively
+replaced with project-specific Unity + ML-Agents commands.
 """
 
 from __future__ import annotations

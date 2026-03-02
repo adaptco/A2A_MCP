@@ -1,0 +1,1 @@
+{"content": "{\"action\": \"modify_physics\", \"params\": {\"slip_angle_max\": 45.0}, \"description\": \"Supra Drift Mode implementation\"}", "$schema": "https://adk.io/schemas/v0/artifact.schema.json"}

@@ -4,9 +4,12 @@ import uuid
 from datetime import datetime, timezone
 from sqlalchemy import (
     Column, String, Text, DateTime, Float, Boolean, JSON, Integer, 
-    LargeBinary, BigInteger, PrimaryKeyConstraint
+    LargeBinary, BigInteger, PrimaryKeyConstraint, UniqueConstraint, Index, ForeignKey
 )
 from sqlalchemy.orm import declarative_base
+
+def _utc_now():
+    return datetime.now(timezone.utc)
 
 Base = declarative_base()
 
@@ -38,6 +41,188 @@ class PlanStateModel(Base):
     def __repr__(self):
         return f"<PlanState(plan_id={self.plan_id})>"
 
+
+class FSMExecutionModel(Base):
+    __tablename__ = "fsm_execution"
+
+    tenant_id = Column(Text, nullable=False)
+    execution_id = Column(Text, primary_key=True)
+    fsm_id = Column(Text, nullable=False)
+    started_at = Column(DateTime, nullable=False, default=_utc_now)
+    finalized_at = Column(DateTime, nullable=True)
+    head_seq = Column(BigInteger, nullable=False, default=0)
+    head_hash = Column(LargeBinary, nullable=True)
+    status = Column(String, nullable=False, default="RUNNING")
+    policy_hash = Column(LargeBinary, nullable=False, default=b"")
+    role_matrix_ver = Column(String, nullable=False, default="unknown")
+    materiality_ver = Column(String, nullable=False, default="unknown")
+    system_version = Column(String, nullable=False, default="1.0.0")
+    hash_version = Column(Integer, nullable=False, default=1)
+
+    __table_args__ = (
+        Index("ix_fsm_execution_tenant_fsm", "tenant_id", "fsm_id"),
+    )
+
+
+class FSMEventModel(Base):
+    __tablename__ = "fsm_event"
+
+    tenant_id = Column(Text, nullable=False)
+    fsm_id = Column(Text, nullable=False)
+    execution_id = Column(Text, nullable=False)
+    seq = Column(BigInteger, nullable=False)
+    event_type = Column(Text, nullable=False)
+    event_version = Column(Integer, nullable=False)
+    occurred_at = Column(DateTime, nullable=False)
+    payload_canonical = Column(LargeBinary, nullable=False)
+    payload_hash = Column(LargeBinary, nullable=False)
+    prev_event_hash = Column(LargeBinary, nullable=True)
+    event_hash = Column(LargeBinary, nullable=False)
+    system_version = Column(Text, nullable=False)
+    hash_version = Column(Integer, nullable=False)
+    certification = Column(Text, nullable=False)
+
+    __table_args__ = (
+        PrimaryKeyConstraint("tenant_id", "execution_id", "seq", name="pk_fsm_event"),
+        UniqueConstraint("tenant_id", "execution_id", "event_hash", name="uq_fsm_event_hash"),
+        Index("ix_fsm_event_tenant_execution", "tenant_id", "execution_id"),
+        Index("ix_fsm_event_tenant_fsm", "tenant_id", "fsm_id"),
+    )
+
+
+class FSMSnapshotModel(Base):
+    __tablename__ = "fsm_snapshot"
+
+    tenant_id = Column(Text, nullable=False)
+    execution_id = Column(Text, nullable=False)
+    snapshot_seq = Column(BigInteger, nullable=False)
+    snapshot_canonical = Column(LargeBinary, nullable=False)
+    snapshot_hash = Column(LargeBinary, nullable=False)
+    created_at = Column(DateTime, nullable=False, default=_utc_now)
+
+    __table_args__ = (
+        PrimaryKeyConstraint("tenant_id", "execution_id", "snapshot_seq", name="pk_fsm_snapshot"),
+    )
+
+
+# ============================================================================
+# Agent Control Schema (ACS) Models
+# ============================================================================
+
+class ActionModel(Base):
+    """Canonical action registry entry."""
+
+    __tablename__ = "actions"
+
+    action_id = Column(String(255), primary_key=True)
+    namespace = Column(String(100), nullable=False)
+    name = Column(String(100), nullable=False)
+    version = Column(Integer, nullable=False)
+    input_schema = Column(JSON, nullable=False)
+    output_schema = Column(JSON, nullable=False)
+    auth_config = Column(JSON, nullable=False)
+    policy_config = Column(JSON, nullable=False)
+    execution_config = Column(JSON, nullable=False)
+    created_at = Column(DateTime, default=_utc_now, nullable=False)
+
+    __table_args__ = (
+        UniqueConstraint("namespace", "name", "version", name="uq_actions_namespace_name_version"),
+    )
+
+
+class RunModel(Base):
+    """Workflow run metadata."""
+
+    __tablename__ = "runs"
+
+    run_id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    workflow_id = Column(String(255), nullable=False)
+    tenant_id = Column(String(100), nullable=False)
+    actor_id = Column(String(255), nullable=False)
+    dag_spec = Column(JSON, nullable=False)
+    status = Column(String(50), nullable=False, default="pending")
+    created_at = Column(DateTime, default=_utc_now, nullable=False)
+    started_at = Column(DateTime, nullable=True)
+    completed_at = Column(DateTime, nullable=True)
+
+    __table_args__ = (
+        Index("ix_runs_tenant_workflow", "tenant_id", "workflow_id"),
+    )
+
+
+class StepModel(Base):
+    """A single actionable step in a workflow run."""
+
+    __tablename__ = "steps"
+
+    step_id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    run_id = Column(String(36), ForeignKey("runs.run_id"), nullable=False)
+    node_id = Column(String(100), nullable=False)
+    action_id = Column(String(255), ForeignKey("actions.action_id"), nullable=True)
+    inputs = Column(JSON, nullable=True)
+    outputs = Column(JSON, nullable=True)
+    status = Column(String(50), nullable=False, default="pending")
+    attempt_count = Column(Integer, nullable=False, default=0)
+    created_at = Column(DateTime, default=_utc_now, nullable=False)
+    started_at = Column(DateTime, nullable=True)
+    completed_at = Column(DateTime, nullable=True)
+
+    __table_args__ = (
+        UniqueConstraint("run_id", "node_id", name="uq_steps_run_node"),
+        Index("ix_steps_run_status", "run_id", "status"),
+    )
+
+
+class ApprovalModel(Base):
+    """Human or automated approval gate state."""
+
+    __tablename__ = "approvals"
+
+    approval_id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    step_id = Column(String(36), ForeignKey("steps.step_id"), nullable=False)
+    policy_name = Column(String(100), nullable=False)
+    approver_group = Column(String(100), nullable=False)
+    status = Column(String(50), nullable=False, default="pending")
+    approver_id = Column(String(255), nullable=True)
+    decision_reason = Column(Text, nullable=True)
+    requested_at = Column(DateTime, default=_utc_now, nullable=False)
+    decided_at = Column(DateTime, nullable=True)
+
+
+class EventModel(Base):
+    """Execution event log for runs and steps."""
+
+    __tablename__ = "events"
+
+    event_id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    run_id = Column(String(36), ForeignKey("runs.run_id"), nullable=False)
+    step_id = Column(String(36), ForeignKey("steps.step_id"), nullable=True)
+    event_type = Column(String(100), nullable=False)
+    payload = Column(JSON, nullable=False)
+    created_at = Column(DateTime, default=_utc_now, nullable=False)
+
+    __table_args__ = (
+        Index("ix_events_run_created", "run_id", "created_at"),
+    )
+
+
+class ActionArtifactModel(Base):
+    """Immutable artifacts emitted by ACS steps."""
+
+    __tablename__ = "action_artifacts"
+
+    artifact_id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    step_id = Column(String(36), ForeignKey("steps.step_id"), nullable=False)
+    artifact_type = Column(String(100), nullable=False)
+    content_hash = Column(String(64), nullable=False)
+    metadata_json = Column("metadata", JSON, nullable=False)
+    storage_path = Column(Text, nullable=False)
+    created_at = Column(DateTime, default=_utc_now, nullable=False)
+
+
+# ============================================================================
+# Telemetry Storage Models - Supporting Diagnostic Telemetry System
+# ============================================================================
 
 class TelemetryEventModel(Base):
     """Raw telemetry events from system execution."""

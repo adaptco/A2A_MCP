@@ -1,0 +1,55 @@
+{
+  "capsule_id": "capsule.gpt.intent.routing.v1",
+  "version": "1.0.0",
+  "type": "IntentRoutingPolicy",
+  "author": "Earl Q Han",
+  "issued_at": "2025-09-24T21:22:00Z",
+  "description": "Intent-aware multi-modal routing discipline for Queen Boo's LoRA orchestration across text, audio, vision, haptic, and affect signals.",
+  "classes": {
+    "affective": "affect",
+    "kinetic": "haptic",
+    "lexical": "text",
+    "prosodic": "audio",
+    "spatial": "vision"
+  },
+  "embeddings": {
+    "affect": "encoder:affect.d_e",
+    "audio": "encoder:audio.d_a",
+    "haptic": "encoder:haptic.d_h",
+    "text": "encoder:text.d_t",
+    "vision": "encoder:vision.d_v"
+  },
+  "composite_intent": {
+    "definition": "weighted multimodal braid",
+    "schedule": "role + governance + scene",
+    "weights": "alpha_m: normalized"
+  },
+  "routing": {
+    "affect_lora": ["affect", "lexical"],
+    "face_lora": ["affect", "vision"],
+    "gesture_lora": ["affect", "kinetic"],
+    "voice_lora": ["audio", "lexical"],
+    "wardrobe_lora": ["lexical", "vision"]
+  },
+  "policy_guards": {
+    "motion": "smear_frame",
+    "static": "lattice_overlay",
+    "still": "intent_diffusion"
+  },
+  "provenance": {
+    "gitflow_ref": "qube.gitflow.v1",
+    "prompt_braid_ref": "capsule.prompt.qube.v1",
+    "runtime_registry_ref": "capsule.registry.runtime.v1"
+  },
+  "rehearsal": {
+    "hud_stream": "30hz.mock",
+    "ledger_guard": "body_only_hash",
+    "telemetry": ["drift", "glyph", "lock"],
+    "verification": "ed25519+schema"
+  },
+  "attestation": {
+    "status": "STAGED",
+    "sealed_at": null,
+    "content_hash": null
+  }
+}

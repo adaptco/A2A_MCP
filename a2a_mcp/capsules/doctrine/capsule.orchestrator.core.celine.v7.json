@@ -1,0 +1,42 @@
+{
+  "capsule_id": "capsule.orchestrator.core.celine.v7",
+  "type": "OrchestratorCapsule",
+  "version": "7.0.0",
+  "purpose": "Celine operates the core orchestrator with CiCi-delegated authority over repo lifecycle.",
+  "roles": {
+    "celine": {
+      "authority": [
+        "repo.create",
+        "repo.destroy",
+        "repo.clone",
+        "repo.prune",
+        "release.publish"
+      ],
+      "delegated_from": "cici",
+      "constraints": [
+        "maker_checker",
+        "quorum_required"
+      ]
+    },
+    "cici": {
+      "authority": [
+        "audit.trace",
+        "merkle.prune",
+        "quorum.verify",
+        "policy.guard.verify"
+      ],
+      "status": "delegator",
+      "delegated_to": "celine"
+    }
+  },
+  "governance": {
+    "maker_checker": true,
+    "quorum_logic": "council.quorum.simple",
+    "audit_trace_required": true
+  },
+  "protocol_tag": "V7",
+  "attestation": {
+    "status": "STAGED"
+  }
+}
+

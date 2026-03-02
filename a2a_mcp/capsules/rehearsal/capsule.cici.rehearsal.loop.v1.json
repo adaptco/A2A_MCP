@@ -1,0 +1,51 @@
+{
+  "capsule_id": "capsule.cici.rehearsal.loop.v1",
+  "version": "1.0.0",
+  "type": "RehearsalLoop",
+  "author": "Queen CiCi",
+  "issued_at": "2025-09-25T06:30:00Z",
+  "description": "Runtime rehearsal program binding CiCi's stabilizer cues, affect overlays, and ledger checkpoints for sovereign-grade previews.",
+  "program": {
+    "beats": [
+      {
+        "id": "warmup",
+        "tempo": 30,
+        "glyphs": ["drift_trace", "hud_lock"],
+        "intent": "stabilize routing braid before rehearsal playback"
+      },
+      {
+        "id": "rehearsal_loop",
+        "tempo": 60,
+        "glyphs": ["glyph_ping", "qlock_tick"],
+        "intent": "mirror Boo's prompts while enforcing affect guardrails"
+      },
+      {
+        "id": "cooldown",
+        "tempo": 24,
+        "glyphs": ["ledger_reflect"],
+        "intent": "export drift deltas and prep ledger replay"
+      }
+    ],
+    "replay_tokens": ["replay:celine:20250924:000", "replay:celine:20250924:001"],
+    "stabilizer_role": "Queen CiCi",
+    "router_partner": "Queen Boo"
+  },
+  "telemetry": {
+    "hud_stream": "30hz.mock",
+    "tolerance_pct": 2.5,
+    "audit": ["affect_trace", "pose_lock", "delta_trace"],
+    "ledger_events": ["capsule.rehearsal.freeze", "hud.broadcast"]
+  },
+  "governance": {
+    "maker": "Queen Boo",
+    "checker": "Queen CiCi",
+    "quorum": ["Dot", "Echo", "Celine"],
+    "enforcement": "maker_checker"
+  },
+  "attestation": {
+    "status": "REHEARSAL",
+    "sealed_at": null,
+    "content_hash": null
+  },
+  "status": "REHEARSAL"
+}

@@ -8,6 +8,7 @@ from typing import Any
 
 from fastapi import FastAPI, HTTPException, Query, Depends
 
+from app.api import actions_router, workflow_router
 from orchestrator.intent_engine import IntentEngine
 from orchestrator.webhook import ingress_router
 from orchestrator.auth import authenticate_user
@@ -31,6 +32,7 @@ logger = logging.getLogger(__name__)
 app = FastAPI(title="A2A Orchestrator API", version="1.0.0")
 app.include_router(ingress_router)
 app.include_router(actions_router)
+app.include_router(workflow_router)
 
 
 @app.get("/healthz")

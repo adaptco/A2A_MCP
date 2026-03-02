@@ -1,0 +1,8 @@
+# Phase 2: The Self-Healing Control Plane [cite: 46]
+Goal: Implement an automated Test-Fix-Verify loop.
+
+## Components
+- Tester v2: Generates actionable AST-based error messages[cite: 43].
+- Coder v2: Consumes tester feedback to produce iterative v2+ fixes[cite: 43].
+- Handshake: OIDC Token generation and verification for A2A proof[cite: 221].
+- Infrastructure: `setup_workload_identity.sh` for keyless WIF[cite: 72].

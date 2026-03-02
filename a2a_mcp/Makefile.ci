@@ -1,0 +1,36 @@
+# Makefile for local CI checks
+# Run with: make -f Makefile.ci test
+# No GitHub Actions required
+
+.PHONY: help test install check-invariants check-schema check-yaml
+
+help:
+	@echo "Available targets:"
+	@echo "  install           - Install dependencies"
+	@echo "  test             - Run all tests"
+	@echo "  check-invariants - Run invariants check"
+	@echo "  check-schema     - Run schema validation"
+	@echo "  check-yaml       - Validate YAML syntax"
+
+install:
+	@echo "Installing dependencies..."
+	pip install jsonschema pynacl requests pytest pyyaml
+
+check-invariants:
+	@echo "Running invariants check..."
+	python scripts/check_invariants.py
+
+check-schema:
+	@echo "Running schema validation..."
+	python scripts/test_arcstate_schema.py
+
+check-yaml:
+	@echo "Validating YAML syntax..."
+	@for workflow in .github/workflows/*.yml environment.yml; do \
+		echo "  Checking $$workflow..."; \
+		python -c "import yaml; yaml.safe_load(open('$$workflow'))" || exit 1; \
+	done
+
+test: check-invariants check-schema check-yaml
+	@echo ""
+	@echo "✅ All tests passed!"

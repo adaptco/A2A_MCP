@@ -1,0 +1,35 @@
+apiVersion: adk.io/v0
+kind: GateChecklist
+metadata:
+  name: gate_checklist
+  version: v0
+  ci_workflow: .github/workflows/ci.yml
+
+gate_checks:
+  - gate: G2
+    check_id: DESIGN_SIGNOFF
+    statement: Design approved and contracts defined.
+    pass_condition: implementation_plan.md approved.
+    severity: BLOCKING
+    ci_job: validate-schemas
+    automation: tools/validate-schemas.sh
+
+  - gate: G3
+    check_id: TOOLING-COMPLIANCE
+    statement: >
+      IDE and tooling control surface complies with Surface Contract
+      tooling requirements.
+    pass_condition: >
+      IDEComplianceChecklist.v1 attached AND all machine checks pass.
+    severity: BLOCKING
+    ci_jobs:
+      - build-engine
+      - test-python
+
+  - gate: G4
+    check_id: RELEASE_READINESS
+    statement: Replay Court verification complete.
+    pass_condition: All tests pass and walkthrough artifact generated.
+    severity: BLOCKING
+    ci_job: build-docker
+    cd_workflow: .github/workflows/cd.yml

@@ -1,0 +1,52 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://adaptco.ai/schemas/v0/assembly_actuator.schema.json",
+    "title": "Assembly Actuator (Node 6)",
+    "type": "object",
+    "properties": {
+        "token_4d": {
+            "type": "object",
+            "properties": {
+                "geometry_hash": {
+                    "type": "string",
+                    "pattern": "^0x[a-fA-F0-9]{64}$"
+                },
+                "version_id": {
+                    "type": "string"
+                },
+                "weight_delta": {
+                    "type": "object"
+                },
+                "signature_set": {
+                    "type": "array",
+                    "minItems": 3,
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            },
+            "required": [
+                "geometry_hash",
+                "version_id",
+                "weight_delta",
+                "signature_set"
+            ]
+        },
+        "merkle_root": {
+            "type": "string",
+            "pattern": "^0x[a-fA-F0-9]{64}$"
+        },
+        "status": {
+            "enum": [
+                "PROPOSED",
+                "VALIDATED",
+                "PETRIFIED"
+            ]
+        }
+    },
+    "required": [
+        "token_4d",
+        "merkle_root",
+        "status"
+    ]
+}

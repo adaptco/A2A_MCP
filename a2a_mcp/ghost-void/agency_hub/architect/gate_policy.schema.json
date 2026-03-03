@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "identity": {
+      "type": "string"
+    },
+    "permissions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "proof_config": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "method": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "required": [
+    "identity",
+    "permissions"
+  ]
+}

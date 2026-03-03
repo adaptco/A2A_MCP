@@ -1,0 +1,216 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.adaptco.io/capsule.schema.json",
+  "title": "CapsuleRegistration",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "capsule_id",
+    "version",
+    "issued_at",
+    "author",
+    "payload",
+    "provenance"
+  ],
+  "properties": {
+    "capsule_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "issued_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "author": {
+      "type": "string",
+      "format": "email"
+    },
+    "payload": {
+      "description": "Arbitrary payload describing the capsule contents.",
+      "type": [
+        "object",
+        "array",
+        "string",
+        "number",
+        "boolean",
+        "null"
+      ]
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "operations": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "preview": {
+          "type": "object",
+          "required": ["descriptor"],
+          "additionalProperties": false,
+          "properties": {
+            "descriptor": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1
+                },
+                {
+                  "$ref": "#/$defs/descriptorPayload"
+                }
+              ]
+            },
+            "out_dir": {
+              "type": "string",
+              "minLength": 1
+            },
+            "descriptor_path": {
+              "type": "string",
+              "minLength": 1
+            },
+            "persist_descriptor": {
+              "type": "boolean"
+            }
+          }
+        },
+        "asset": {
+          "type": "object",
+          "required": ["payload"],
+          "additionalProperties": false,
+          "properties": {
+            "payload": {
+              "$ref": "#/$defs/assetPayload"
+            },
+            "path": {
+              "type": "string",
+              "minLength": 1
+            },
+            "method": {
+              "type": "string",
+              "enum": ["POST", "PUT", "PATCH"]
+            },
+            "headers": {
+              "$ref": "#/$defs/headerMap"
+            }
+          }
+        },
+        "hash": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "inputs": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "minItems": 1
+            },
+            "out_dir": {
+              "type": "string",
+              "minLength": 1
+            },
+            "events_path": {
+              "type": "string",
+              "minLength": 1
+            },
+            "capsule_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "actor": {
+              "type": "string",
+              "minLength": 1
+            },
+            "commit": {
+              "type": "string",
+              "minLength": 1
+            },
+            "run_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "sign_key": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      }
+    }
+  }
+,
+  "$defs": {
+    "descriptorPayload": {
+      "type": "object",
+      "required": ["id", "name", "type", "sourcePath"],
+      "additionalProperties": true,
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "type": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sourcePath": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "assetPayload": {
+      "type": "object",
+      "required": ["id", "name", "kind", "uri", "tags", "meta"],
+      "additionalProperties": true,
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "kind": {
+          "type": "string",
+          "minLength": 1
+        },
+        "uri": {
+          "type": "string",
+          "minLength": 1
+        },
+        "tags": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "meta": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      }
+    },
+    "headerMap": {
+      "type": "object",
+      "patternProperties": {
+        ".+": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

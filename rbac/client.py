@@ -5,6 +5,7 @@ RBAC Client — Lightweight HTTP client for the orchestrator to call the RBAC ga
 from __future__ import annotations
 
 import logging
+import os
 from typing import Any, Dict, Optional
 
 import requests
@@ -20,11 +21,23 @@ class RBACClient:
         client = RBACClient("http://rbac-gateway:8001")
         result = client.onboard_agent("agent-1", "ManagingAgent", "pipeline_operator")
         allowed = client.verify_permission("agent-1", action="run_pipeline")
+        # Optionally provide explicit token; otherwise RBAC_SECRET env var is used.
     """
 
-    def __init__(self, base_url: str = "http://localhost:8001", timeout: int = 5):
+    def __init__(
+        self,
+        base_url: str = "http://localhost:8001",
+        timeout: int = 5,
+        token: str | None = None,
+    ):
         self.base_url = base_url.rstrip("/")
         self.timeout = timeout
+        self.token = (token if token is not None else os.getenv("RBAC_SECRET", "")).strip()
+
+    def _auth_headers(self) -> Dict[str, str]:
+        if not self.token:
+            return {}
+        return {"Authorization": f"Bearer {self.token}"}
 
     # ── Health ───────────────────────────────────────────────────────
 
@@ -64,6 +77,7 @@ class RBACClient:
             r = requests.post(
                 f"{self.base_url}/agents/onboard",
                 json=payload,
+                headers=self._auth_headers(),
                 timeout=self.timeout,
             )
             if r.status_code == 201:
@@ -103,6 +117,7 @@ class RBACClient:
             r = requests.post(
                 f"{self.base_url}/agents/{agent_id}/verify",
                 json=payload,
+                headers=self._auth_headers(),
                 timeout=self.timeout,
             )
             if r.status_code == 200:
@@ -125,6 +140,7 @@ class RBACClient:
         try:
             r = requests.get(
                 f"{self.base_url}/agents/{agent_id}/permissions",
+                headers=self._auth_headers(),
                 timeout=self.timeout,
             )
             r.raise_for_status()

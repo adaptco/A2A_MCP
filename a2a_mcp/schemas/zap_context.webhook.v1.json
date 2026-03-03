@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "zap_context.webhook.v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "arc_id", "event_type", "status", "timestamp", "payload"],
+  "properties": {
+    "schema": { "type": "string", "const": "zap_context.webhook.v1" },
+    "arc_id": { "type": "string", "minLength": 3 },
+    "event_type": { "type": "string", "minLength": 3 },
+    "status": { "type": "string", "minLength": 1 },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "payload": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Event-specific payload. Map to Airtable/GitHub fields in Zap steps."
+    }
+  }
+}

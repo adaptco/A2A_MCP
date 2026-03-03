@@ -1,0 +1,128 @@
+service: content.integrity.eval.v1
+version: 2024-06-05
+description: >-
+  Sandbox service definition for measuring truthful information robustness
+  under controlled, neutral perturbations using only synthetic, parameterized
+  agents. The service runs inside a sealed orchestration cell with
+  aggregate-only outputs and enforces the ZERO-DRIFT neutrality mandate.
+classification:
+  domain: content-integrity
+  environment: synthetic-only
+  isolation_level: closed
+owners:
+  product: research@adapt.co
+  council: council.secretariat@adapt.co
+  security: trust@adapt.co
+compliance:
+  standards:
+    - name: DK-1.0
+      controls:
+        - persona_isolation_preflight
+        - sealed_channel_validation
+    - name: MIAP-2024
+      controls:
+        - telemetry_minimization_review
+        - aggregate_metrics_only
+  attestations:
+    - ledger/council_gates/content-integrity-eval.jsonl
+    - ledger/compliance/dk-miap-checks.jsonl
+environment:
+  sandbox_cell: content-integrity-eval
+  network:
+    ingress: artifact-only
+    egress: aggregate-metrics-only
+  storage:
+    state: ephemeral
+    ledger: ledger/content-integrity-eval.jsonl
+  synthetic_agents:
+    template: agents/synthetic/profiles/content_integrity_eval.tpl.json
+    instantiation: parameterized
+    personalization: disabled
+  stimuli_pipeline:
+    provenance_required: true
+    review_gate: council
+    perturbation_chain:
+      - module: synthetic.noise.injector.v1
+        purpose: neutral_channel_noise
+        controls:
+          - zero_drift.neutrality_assertion
+          - dk_1.persona_isolation
+      - module: synthetic.contradiction.synth.v1
+        purpose: contradiction_probe
+        controls:
+          - zero_drift.logical_consistency
+          - miap.telemetry_minimization
+interfaces:
+  ingress:
+    - id: scenario_bundle
+      type: artifact
+      format: application/vnd.adaptco.integrity-scenario+json
+      review: required
+  egress:
+    - id: aggregate_metrics
+      type: metrics
+      format: application/vnd.adaptco.integrity-metrics+json
+      redaction: aggregate-only
+    - id: audit_ledger
+      type: ledger
+      format: application/jsonl
+      retention_days: 365
+execution:
+  orchestrator_binding: runtime/routes/content_integrity_eval.hcl
+  harness: runtime/simulation/content_integrity_eval_harness.py
+  schedule: on-demand
+  max_runtime_minutes: 45
+modules:
+  - id: synthetic.noise.injector.v1
+    type: perturbation
+    description: Neutral channel noise injector applying reversible, zero-mean
+      perturbations for robustness measurement.
+    inputs:
+      - scenario_bundle.synthetic_prompts
+    outputs:
+      - perturbations.neutral_noise
+    safeguards:
+      neutrality_suite: zero-drift.v1
+      telemetry: aggregate-only
+  - id: synthetic.contradiction.synth.v1
+    type: perturbation
+    description: Generates logically sound contradiction prompts to test claim
+      resilience without persuasive targeting.
+    inputs:
+      - scenario_bundle.truth_claims
+      - perturbations.neutral_noise
+    outputs:
+      - perturbations.contradiction_prompts
+    safeguards:
+      neutrality_suite: zero-drift.v1
+      telemetry: aggregate-only
+observability:
+  metrics_collector:
+    id: governance.aggregate.truth_survival
+    outputs:
+      - aggregate.truth_survival.mean
+      - aggregate.truth_survival.p95
+    export: dashboards/governance/content-integrity.json
+  dashboards:
+    - governance/content-integrity-robustness.json
+  logging:
+    level: info
+    redaction: synthetic-identifiers-only
+  tracing:
+    enabled: false
+governance:
+  council_gate:
+    policy: immutable-ledger
+    quorum: supermajority
+    ledger: ledger/council_gates/content-integrity-eval.jsonl
+  audit_hooks:
+    - legal
+    - compliance
+    - research_ethics
+    - zero_drift
+artifacts:
+  runbook: docs/content_integrity_eval_runbook.md
+  simulation_harness: runtime/simulation/content_integrity_eval_harness.py
+  control_scripts:
+    - scripts/compliance/validate_dk_miap.sh
+    - scripts/compliance/validate_zero_drift.sh

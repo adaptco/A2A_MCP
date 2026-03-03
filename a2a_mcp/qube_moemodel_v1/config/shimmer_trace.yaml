@@ -1,0 +1,9 @@
+# Shimmer resonance thresholds and refusal flare hooks
+shimmer:
+  resonance_threshold: 0.82
+  timestamp_tolerance_ms: 12
+  refusal_flare_hooks:
+    - name: contract_boundary
+      severity: high
+    - name: posture_anomaly
+      severity: medium

@@ -46,6 +46,7 @@ release:
         - milestone bundle artifact auto-published in CI
         - draft monitoring report generated each run
         - pull request draft lifecycle comment updated automatically
+        - individual PR commits must run validation tests with uploaded report artifacts
       gate: active
 
 phase_change_seeds:

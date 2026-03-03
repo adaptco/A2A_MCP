@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="3" time="1.702" timestamp="2026-02-16T09:52:13.307925-05:00" hostname="Mac-Laptop"><testcase classname="tests.test_locomotion_model.TestLocomotionModel" name="test_kinematic_step_telemetry" time="0.015" /><testcase classname="tests.test_locomotion_model.TestLocomotionModel" name="test_move_to_convergence" time="0.223"><failure message="RuntimeError: coroutine raised StopIteration">&gt;   mock_spoke.observe.side_effect = lambda: next(state_iter)
+                                             ^^^^^^^^^^^^^^^^
+E   StopIteration
+
+tests\test_locomotion_model.py:52: StopIteration
+
+The above exception was the direct cause of the following exception:
+
+self = &lt;test_locomotion_model.TestLocomotionModel object at 0x000001F4BAC53C90&gt;
+
+    async def test_move_to_convergence(self):
+        """Verify that move_to reaches the target through multiple steps."""
+        # We'll use a real GhostVoidSpoke but mock the world it connects to if needed.
+        # However, for unit testing, let's mock the spoke to return progressing positions.
+        mock_spoke = MagicMock(spec=GhostVoidSpoke)
+        mock_spoke.act.return_value = True
+    
+        # Side effect state machine for the mock
+        positions = [(5, 5), (6, 5), (7, 5), (8, 5), (9, 5), (10, 5)]
+        state_iter = iter([{"grid_pos": p, "energy": 100-i} for i, p in enumerate(positions)])
+    
+        # Initial observe + subsequent ones
+        mock_spoke.observe.side_effect = lambda: next(state_iter)
+    
+        mock_runtime = MagicMock(spec=AgenticRuntime)
+        mock_runtime.emit_event = AsyncMock()
+    
+        controller = LocomotionController(mock_spoke)
+    
+        # Move from 5,5 to 10,5
+&gt;       success = await controller.move_to((10, 5), mock_runtime)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       RuntimeError: coroutine raised StopIteration
+
+tests\test_locomotion_model.py:60: RuntimeError</failure></testcase><testcase classname="tests.test_locomotion_model.TestLocomotionModel" name="test_calculate_next_action" time="0.002" /></testsuite></testsuites>

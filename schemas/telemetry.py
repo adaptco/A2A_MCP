@@ -8,12 +8,8 @@ for tracking structural gaps, embedding diffs, and formal diagnostics across the
 from __future__ import annotations
 from pydantic import BaseModel, Field
 from typing import Dict, List, Optional, Any
-from datetime import datetime, timezone
+from datetime import datetime
 from enum import Enum
-
-
-def _utc_now() -> datetime:
-    return datetime.now(timezone.utc)
 
 
 # ============================================================================
@@ -230,7 +226,7 @@ DTC_CATALOG = {
 class TelemetryEvent(BaseModel):
     """Raw telemetry event from system execution"""
     event_id: str = Field(..., description="Unique event identifier (UUID)")
-    timestamp: datetime = Field(default_factory=_utc_now)
+    timestamp: datetime = Field(default_factory=datetime.utcnow)
     component: str = Field(..., description="Source component (e.g., 'CoderAgent', 'Judge')")
     event_type: str = Field(..., description="Event category (e.g., 'execution_start', 'inference_complete')")
 
@@ -253,7 +249,7 @@ class TelemetryEvent(BaseModel):
 class StructuralGap(BaseModel):
     """Detected gap between expected and actual artifact structures"""
     gap_id: str = Field(..., description="Unique gap identifier")
-    timestamp: datetime = Field(default_factory=_utc_now)
+    timestamp: datetime = Field(default_factory=datetime.utcnow)
 
     # Gap location
     source_component: str = Field(..., description="Component that produced artifact")
@@ -283,7 +279,7 @@ class StructuralGap(BaseModel):
 class DiagnosticReport(BaseModel):
     """Formal diagnostic report with DTC findings"""
     report_id: str = Field(..., description="Unique report identifier")
-    timestamp: datetime = Field(default_factory=_utc_now)
+    timestamp: datetime = Field(default_factory=datetime.utcnow)
 
     # Report context
     execution_phase: str = Field(..., description="Pipeline phase during diagnosis (e.g., 'transformer_output')")
@@ -341,7 +337,7 @@ class ConstraintViolation(BaseModel):
 class TransformerDiff(BaseModel):
     """Tracks differences in transformer (LLM) output vs expected"""
     diff_id: str = Field(..., description="Unique diff identifier")
-    timestamp: datetime = Field(default_factory=_utc_now)
+    timestamp: datetime = Field(default_factory=datetime.utcnow)
 
     # Context
     prompt_id: str = Field(..., description="Original prompt used")

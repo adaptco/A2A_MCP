@@ -1,0 +1,47 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "cie_v2_plug.v1.schema.json",
+  "title": "CieV2PlugV1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "world_id",
+    "capsule_digest",
+    "engine_hash",
+    "baseline_merkle_root",
+    "kernel_token",
+    "invariant_set",
+    "extractor_version"
+  ],
+  "properties": {
+    "schema_version": { "const": "cie_v2_plug.v1" },
+    "world_id": { "type": "string" },
+    "capsule_digest": { "type": "string" },
+    "engine_hash": { "type": "string" },
+    "baseline_merkle_root": { "type": "string" },
+    "kernel_token": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema_version", "world_id", "capsule_digest", "merkle_root", "tick_count"],
+      "properties": {
+        "schema_version": { "const": "kernel_token.v1" },
+        "world_id": { "type": "string" },
+        "capsule_digest": { "type": "string" },
+        "merkle_root": { "type": "string" },
+        "tick_count": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "invariant_set": { "$ref": "invariant_set.v1.schema.json" },
+    "extractor_version": { "type": "string" },
+    "capsule_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "uri"],
+      "properties": {
+        "kind": { "enum": ["s3", "gcs", "file", "http", "ipfs"] },
+        "uri": { "type": "string" }
+      }
+    }
+  }
+}

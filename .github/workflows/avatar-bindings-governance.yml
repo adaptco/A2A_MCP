@@ -1,8 +1,5 @@
 name: Avatar Bindings Governance
 
-permissions:
-  contents: read
-
 on:
   pull_request:
   push:

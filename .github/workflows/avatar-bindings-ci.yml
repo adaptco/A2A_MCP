@@ -11,8 +11,6 @@ jobs:
   validate-and-seal:
     name: "Validate & Seal"
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4

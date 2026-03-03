@@ -1,5 +1,8 @@
 name: Cockpit Dispatch Handler
 
+permissions:
+  contents: write
+
 on:
   repository_dispatch:
     types: [freeze_artifact, request_override, flag_for_review]

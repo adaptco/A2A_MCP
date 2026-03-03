@@ -71,6 +71,9 @@ fixtures/*.json
 !fixtures/plan_release_candidate_input.json
 *.qcap
 
+# Firebase debug logs
+firebase-debug.log
+
 # CIE smoke artifacts
 runtime/cie_v1_smoke.log.jsonl
 *.egg-info/

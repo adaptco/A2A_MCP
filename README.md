@@ -101,6 +101,8 @@ pip install -r requirements.txt
 
 `pyproject.toml` is the canonical source for package metadata and dependencies. `requirements.txt` is maintained as a thin wrapper for compatibility.
 
+`mcp_adk` contract/schema/template assets are packaged in wheel/sdist artifacts. The `auth` extra is a deprecated compatibility alias and is intentionally empty.
+
 ### Run MCP Gateway (Canonical)
 
 ```bash

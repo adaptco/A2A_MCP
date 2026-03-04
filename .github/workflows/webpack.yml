@@ -14,7 +14,6 @@ jobs:
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
-        # Removed 'with: version: 9' so it reads from package.json instead
 
       - name: Install dependencies
         run: pnpm install

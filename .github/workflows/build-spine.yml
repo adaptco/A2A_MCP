@@ -1,4 +1,6 @@
 name: build-spine
+permissions:
+  contents: read
 
 permissions:
   contents: read

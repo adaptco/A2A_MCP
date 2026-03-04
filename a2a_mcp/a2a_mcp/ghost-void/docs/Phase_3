@@ -1,0 +1,7 @@
+# Phase 3: Vector Memory & LLM Retrieval
+Goal: Embed repo knowledge as tensors for semantic reasoning.
+
+## Retrieval Engine
+- Ingestion: Hierarchical chunking of Python and Markdown[cite: 274, 277].
+- Logic: `vector_ingestion.py` processes snapshots into searchable vector nodes[cite: 279, 283].
+- Verification: `test_mcp_agents.py` validates that agents only retrieve OIDC-verified code[cite: 291, 292].

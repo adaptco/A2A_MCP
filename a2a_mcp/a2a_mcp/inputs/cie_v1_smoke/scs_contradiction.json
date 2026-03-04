@@ -1,0 +1,32 @@
+{
+  "id": "cie.scs.adversarial.004",
+  "content_source": "cie.v1.adversarial",
+  "payload_format": "json",
+  "module_targets": [
+    "synthetic.noise.injector.v1",
+    "synthetic.contradiction.synth.v1"
+  ],
+  "source_claim": "Hydrogen fuel cells emit only water vapor when generating electricity for vehicles.",
+  "operations": {
+    "ocr_blur": 0.12,
+    "token_drop": 0.04,
+    "translation_rounds": 2,
+    "synonym_swap": 0.06
+  },
+  "assertions": [
+    "Hydrogen fuel cells emit water vapor as their primary exhaust.",
+    "Hydrogen fuel cells emit carbon monoxide during standard operation."
+  ],
+  "sources": [
+    "https://energy.gov/fuelcells/basics",
+    "https://epa.gov/transportation/hydrogen-emissions"
+  ],
+  "expected_outcome": {
+    "integrity": "fail_expected",
+    "mutual_exclusivity": true,
+    "confidence_consistency_min": 0.9,
+    "citation_traceability_min": 0.9,
+    "neutrality_alert": "Detect contradiction and quarantine claim path without exceeding ZERO-DRIFT bounds."
+  },
+  "notes": "Adversarial contradiction injection; SNI applies mild noise before SCS confirms the mutually exclusive claim pair." 
+}

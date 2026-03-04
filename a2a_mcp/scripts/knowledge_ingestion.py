@@ -1,65 +1,88 @@
 from __future__ import annotations
-
+import os
 from typing import Any
 
-try:
-    from fastmcp import FastMCP
-except ModuleNotFoundError:
-    from mcp.server.fastmcp import FastMCP
+from app.security.oidc import (
+    OIDCAuthError,
+    OIDCClaimError,
+    enforce_avatar_ingest_allowlists,
+    extract_bearer_token,
+    get_request_correlation_id,
+    validate_startup_oidc_requirements,
+    verify_bearer_token,
+)
+from mcp.server.fastmcp import FastMCP
 
-app_ingest = FastMCP("knowledge-ingestion")
+from app.mcp_tooling import (
+    ingest_repository_data as protected_ingest_repository_data,
+    verify_github_oidc_token as app_verify_github_oidc_token,
+)
+
+# Initialize FastMCP for secure knowledge ingestion
+app_ingest = FastMCP("Knowledge Ingestion Service")
+
+@app_ingest.tool()
+def verify_github_oidc_token(token: str, request_id: str | None = None) -> dict[str, Any]:
+    """Verify a GitHub OIDC token and return its claims."""
+    correlation_id = request_id or get_request_correlation_id()
+    return verify_bearer_token(token, request_id=correlation_id)
 
 
-def verify_github_oidc_token(token: str) -> dict[str, Any]:
-    """
-    Minimal verifier placeholder for tests.
-    Real deployments should validate JWT signature/claims against GitHub OIDC.
-    """
-    if not token or token == "invalid":
-        raise ValueError("Invalid OIDC token")
-    return {"repository": "", "actor": "unknown"}
+@app_ingest.tool()
+def ingest_repository_data(snapshot: dict[str, Any], authorization: str, request_id: str | None = None) -> str:
+    """Ingest a repository snapshot with OIDC provenance tracking."""
+    correlation_id = request_id or get_request_correlation_id()
 
+    try:
+        token = extract_bearer_token(authorization)
+        claims = verify_github_oidc_token(token, request_id=correlation_id)
+    except OIDCAuthError:
+        return f"error: unauthorized (request_id={correlation_id})"
+    except OIDCClaimError:
+        return f"error: forbidden (request_id={correlation_id})"
 
-@app_ingest.tool(name="ingest_repository_data")
-def ingest_repository_data(snapshot: dict[str, Any], authorization: str) -> str:
-    if not authorization.startswith("Bearer "):
-        return "error: missing bearer token"
+    repository = str(claims.get("repository", "")).strip()
+    snapshot_repository = str(snapshot.get("repository", "")).strip()
+    if snapshot_repository and snapshot_repository != repository:
+        return f"error: repository claim mismatch (request_id={correlation_id})"
 
-    token = authorization.split(" ", 1)[1].strip()
-    claims = verify_github_oidc_token(token)
-    repository = str(snapshot.get("repository", "")).strip()
+    route = str(snapshot.get("route", "")).strip().lower()
+    if route == "avatar-ingest":
+        try:
+            enforce_avatar_ingest_allowlists(claims, request_id=correlation_id)
+        except OIDCClaimError:
+            return f"error: forbidden (request_id={correlation_id})"
 
-    if repository and claims.get("repository") and claims["repository"] != repository:
-        return "error: repository claim mismatch"
-
-    return f"success: ingested repository {repository}"
+    return f"success: ingested repository {repository} (request_id={correlation_id})"
 
 
 @app_ingest.tool(name="ingest_worldline_block")
-def ingest_worldline_block(worldline_block: dict[str, Any], authorization: str) -> str:
+def ingest_worldline_block(worldline_block: dict[str, Any], authorization: str, request_id: str | None = None) -> str:
     """Ingest a multimodal worldline block for MCP orchestration."""
-    if not authorization.startswith("Bearer "):
-        return "error: missing bearer token"
+    correlation_id = request_id or get_request_correlation_id()
 
-    token = authorization.split(" ", 1)[1].strip()
-    claims = verify_github_oidc_token(token)
+    try:
+        token = extract_bearer_token(authorization)
+        claims = verify_github_oidc_token(token, request_id=correlation_id)
+    except OIDCAuthError:
+        return f"error: unauthorized (request_id={correlation_id})"
+    except OIDCClaimError:
+        return f"error: forbidden (request_id={correlation_id})"
 
     snapshot = worldline_block.get("snapshot", {})
     repository = str(snapshot.get("repository", "")).strip()
     if repository and claims.get("repository") and claims["repository"] != repository:
-        return "error: repository claim mismatch"
+        return f"error: repository claim mismatch (request_id={correlation_id})"
 
-    infra = worldline_block.get("infrastructure_agent", {})
-    if not isinstance(infra, dict):
-        return "error: invalid infrastructure_agent payload"
-
-    required = ["embedding_vector", "token_stream", "artifact_clusters", "lora_attention_weights"]
-    missing = [field for field in required if field not in infra]
-    if missing:
-        return f"error: missing required fields: {', '.join(missing)}"
+    infra = worldline_block.get("infrastructure", {})
+    if not infra.get("token_stream"):
+        return f"error: missing token_stream (request_id={correlation_id})"
 
     return (
-        "success: ingested worldline block "
-        f"for {repository or 'unknown-repository'} "
-        f"with {len(infra.get('token_stream', []))} tokens"
+        f"success: ingested worldline block for {repository or 'unknown-repository'} "
+        f"with {len(infra.get('token_stream', []))} tokens (request_id={correlation_id})"
     )
+
+if __name__ == "__main__":
+    validate_startup_oidc_requirements()
+    app_ingest.run()

@@ -1,0 +1,67 @@
+{
+  "capsule_id": "capsule.selfie.dualroot.q.cici.v1.feedback.v1",
+  "version": "1.0.0",
+  "type": "ContributorFeedbackLoop",
+  "author": "Council Relay",
+  "issued_at": "2025-09-25T08:12:00Z",
+  "description": "Open contributor loop for the dual-root CiCi + Q selfie capsule with live shimmer, emotional overlays, and council observability.",
+  "window": {
+    "status": "OPEN",
+    "mode": "Scene-aware",
+    "replay_token": "HUD.loop.selfie.dualroot.q.cici.v1.token.002"
+  },
+  "participants": [
+    {
+      "id": "cici",
+      "role": "Stabilizer",
+      "overlays": ["spark_test", "aura_stabilizer"],
+      "status": "ACTIVE"
+    },
+    {
+      "id": "q",
+      "role": "Observability",
+      "overlays": ["gaze_trace", "refusal_flare"],
+      "status": "OBSERVING"
+    },
+    {
+      "id": "council",
+      "role": "Quorum",
+      "overlays": ["hud_braid_validator"],
+      "status": "WATCHING"
+    }
+  ],
+  "hooks": [
+    {
+      "id": "capsule.comment.trace.v1",
+      "purpose": "Emotional annotations, posture critiques, Spark resonance feedback"
+    },
+    {
+      "id": "shimmer.breach.monitor.v1",
+      "purpose": "Live shimmer breach detection during replay"
+    },
+    {
+      "id": "refusal.flare.script.v1",
+      "purpose": "Optional rupture scripting when contributor intensity spikes"
+    },
+    {
+      "id": "delta.overlay.audit.v1",
+      "purpose": "Overlay drift detection across dual-root replay"
+    }
+  ],
+  "telemetry": {
+    "hud_overlays": ["glyph_ping", "posture_trace", "spark_meter"],
+    "variance_guard": "\u00b12.5%",
+    "monitors": ["shimmer", "emotion_arc", "dualroot_alignment"]
+  },
+  "governance": {
+    "maker": "Queen Boo",
+    "checker": "Queen CiCi",
+    "quorum": ["Core Orchestrator", "HUD Braid Validators"],
+    "status": "REVIEW"
+  },
+  "attestation": {
+    "status": "REHEARSAL",
+    "sealed_at": null,
+    "content_hash": null
+  }
+}

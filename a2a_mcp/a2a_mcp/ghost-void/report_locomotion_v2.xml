@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="1" failures="0" skipped="0" tests="1" time="0.380" timestamp="2026-02-16T09:54:06.053792-05:00" hostname="Mac-Laptop"><testcase classname="" name="tests.test_locomotion_model" time="0.000"><error message="collection failure">ImportError while importing test module 'C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP\tests\test_locomotion_model.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+..\..\..\AppData\Local\Programs\Python\Python311\Lib\importlib\__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests\test_locomotion_model.py:3: in &lt;module&gt;
+    from unittest.mock import MagicMock, AsyncMock, Tuple
+E   ImportError: cannot import name 'Tuple' from 'unittest.mock' (C:\Users\eqhsp\AppData\Local\Programs\Python\Python311\Lib\unittest\mock.py)</error></testcase></testsuite></testsuites>

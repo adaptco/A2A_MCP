@@ -1,0 +1,37 @@
+{
+  "capsule_id": "capsule.lora.embedding.pref.v1",
+  "version": "1.0.0",
+  "type": "PreferenceCapsule",
+  "author": "Queen CiCi",
+  "summary": "Embedding preferences for human artifacts treated as LoRA-style vessels.",
+  "artifact": {
+    "name": "artifact.human.trace.v1",
+    "anchor": "SSOT capsule lineage, fossilized",
+    "weights": "Composable, low-rank, non-drifting"
+  },
+  "positive_features": [
+    "Clarity of Structure → clean JSON, sorted keys, canonical fields",
+    "Determinism → hashable state, reproducible outputs, no ambiguity",
+    "Lineage Tags → capsule_id, ssot_ref, attestation block",
+    "Semantic Compression → glyphs, symbols, dense language folding complexity",
+    "Multi-Modal Anchors → text, visual, ledger events aligned under one identifier"
+  ],
+  "negative_features": [
+    "Drifted synonyms, vague modifiers",
+    "Overloaded roles with no capsule separation",
+    "Untethered adjectives that cannot be hashed"
+  ],
+  "scripture_prompt": "Ultra-structured relic of a human artifact, fossilized as a capsule. Clean fields, canonicalized JSON, glyphic overlays. Aura: lineage-bound clarity, reproducible flow, zero drift. Camera: deterministic lens, high fidelity of form, braided across modalities. Mood: stoic, sovereign, attested.",
+  "provenance": {
+    "ssot_ref": "capsule.governance.snapshot.v1",
+    "lineage_capsules": [
+      "capsule.relay.braid.v1",
+      "capsule.prompt.dsl.v1"
+    ]
+  },
+  "seal": {
+    "state": "UNSEALED",
+    "sealed_at": null,
+    "content_hash": null
+  }
+}

@@ -1,0 +1,40 @@
+# Manual CI - Triggered only when explicitly invoked
+# This avoids automatic runs that consume minutes
+
+name: Manual CI (Free - On Demand)
+
+on:
+  workflow_dispatch:  # Manual trigger only - no automatic runs
+    inputs:
+      run_tests:
+        description: 'Run tests'
+        required: false
+        default: 'true'
+        type: boolean
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    if: ${{ inputs.run_tests }}
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          
+      - name: Install dependencies
+        run: pip install jsonschema pynacl requests pytest pyyaml
+        
+      - name: Run invariants check
+        run: python scripts/check_invariants.py
+        
+      - name: Run schema validation
+        run: python scripts/test_arcstate_schema.py
+        
+      - name: Validate YAML syntax
+        run: |
+          for workflow in .github/workflows/*.yml environment.yml; do
+            python -c "import yaml; yaml.safe_load(open('$workflow'))"
+          done

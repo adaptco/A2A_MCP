@@ -3,7 +3,7 @@
 from typing import Dict, Any, Optional
 from avatars.registry import get_avatar_registry
 from avatars.avatar import AvatarStyle
-from avatars.setup import setup_default_avatars
+from avatars.setup import reset_avatars, setup_default_avatars
 from frontend.three.scene_manager import ThreeJSObject, Vector3
 
 CANONICAL_AGENTS = [
@@ -80,10 +80,24 @@ class AvatarUIPanel:
 class AvatarRenderer:
     """Renders agent avatars in the 3D world."""
 
+    _CANONICAL_AGENT_BINDINGS = {
+        "ManagingAgent",
+        "OrchestrationAgent",
+        "ArchitectureAgent",
+        "CoderAgent",
+        "TesterAgent",
+        "ResearcherAgent",
+        "PINNAgent",
+    }
+
     def __init__(self):
         self.registry = get_avatar_registry()
         self.avatar_panels: Dict[str, AvatarUIPanel] = {}
-        if len(self._canonical_avatars()) < len(CANONICAL_AGENTS):
+        bindings = set(self.registry.list_bindings().keys())
+        if not self.registry.list_avatars() or not self._CANONICAL_AGENT_BINDINGS.issubset(bindings):
+            # Keep frontend rendering deterministic even when earlier tests mutate
+            # the singleton registry with partial avatar state.
+            reset_avatars()
             setup_default_avatars()
         self._create_avatar_objects()
 

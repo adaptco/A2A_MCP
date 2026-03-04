@@ -1,0 +1,15 @@
+# Policy definitions for the Engineer Avatar
+version: v1.0.0
+
+runtime_constraints:
+  enforce_pylint: true
+  min_pylint_score: 8.0
+  require_unit_tests: true
+
+data_access:
+  allowed_tenants: ["adaptco"]
+  restricted_metadata: ["secrets", "api_keys"]
+
+tool_usage:
+  max_concurrency: 2
+  retry_strategy: exponential_backoff

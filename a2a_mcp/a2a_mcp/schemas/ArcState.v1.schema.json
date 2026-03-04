@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "schemas/ArcState.v1.schema.json",
+  "title": "ArcState v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "fossil_id",
+    "geodesic_manifold",
+    "lattice_state",
+    "invariant_status"
+  ],
+  "properties": {
+    "fossil_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "geodesic_manifold": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "curvature",
+        "step_vector",
+        "propagator_type"
+      ],
+      "properties": {
+        "curvature": {
+          "const": -1.0
+        },
+        "step_vector": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "minimum": 0.0,
+            "maximum": 1.0
+          },
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "propagator_type": {
+          "type": "string",
+          "enum": [
+            "Poincare_Disk",
+            "Klein_Disk",
+            "Hyperboloid"
+          ]
+        }
+      }
+    },
+    "lattice_state": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "voxel_coords",
+        "rotation_kernel"
+      ],
+      "properties": {
+        "voxel_coords": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2
+          },
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "rotation_kernel": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "items": {
+            "type": "array",
+            "minItems": 3,
+            "maxItems": 3,
+            "items": {
+              "type": "number",
+              "minimum": -1.0,
+              "maximum": 1.0
+            }
+          }
+        }
+      }
+    },
+    "invariant_status": {
+      "type": "string",
+      "enum": [
+        "VALIDATED",
+        "PENDING",
+        "REJECTED"
+      ]
+    }
+  }
+}

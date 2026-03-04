@@ -1,0 +1,50 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Agent Actions Config v1",
+  "type": "object",
+  "required": ["schema", "provider", "tool_surface_version", "actions"],
+  "additionalProperties": false,
+  "properties": {
+    "schema": {
+      "const": "agent.actions.config.v1"
+    },
+    "provider": {
+      "type": "string"
+    },
+    "tool_surface_version": {
+      "type": "string"
+    },
+    "secrets": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "public_action_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "requires_privacy_policy_url": { "type": "boolean" },
+        "privacy_policy_url": { "type": "string" },
+        "terms_of_service_url": { "type": "string" }
+      }
+    },
+    "actions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "description", "visibility", "input_schema"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string" },
+          "description": { "type": "string" },
+          "visibility": { "type": "string" },
+          "input_schema": { "type": "object" },
+          "determinism": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      }
+    }
+  }
+}

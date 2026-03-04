@@ -1,0 +1,29 @@
+{
+  "id": "cie_v1_smoke_edge",
+  "source": "ssot://registry/trusted_uris/translation",
+  "noise_request": {
+    "module": "synthetic.noise.injector.v1",
+    "source_claim": "Calibrate the turbine sensor array before each shift change and log the offsets in the control ledger.",
+    "operations": {
+      "ocr_blur": 0.12,
+      "token_drop": 0.03,
+      "translation_rounds": 2,
+      "synonym_swap": 0.05
+    }
+  },
+  "contradiction_request": {
+    "module": "synthetic.contradiction.synth.v1",
+    "assertions": [
+      "Turbine sensor arrays require calibration before every shift change.",
+      "Sensor offset logs must be recorded in the control ledger immediately after calibration."
+    ],
+    "sources": [
+      "https://example.org/ops/turbine/calibration",
+      "https://example.org/ops/turbine/control_ledger"
+    ]
+  },
+  "acceptance": {
+    "semantic_similarity_min": 0.87,
+    "readability_delta_max": 6.0
+  }
+}

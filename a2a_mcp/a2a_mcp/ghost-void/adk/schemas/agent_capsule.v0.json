@@ -1,0 +1,80 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "adk://schemas/agent_capsule.v0.json",
+    "title": "Agent Capsule V0",
+    "description": "Defines the immutable build package for an agent, including environment and code.",
+    "type": "object",
+    "properties": {
+        "metadata": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "version": {
+                    "type": "string"
+                },
+                "build_timestamp": {
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "build_host": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "name",
+                "version",
+                "build_timestamp"
+            ]
+        },
+        "environment": {
+            "type": "object",
+            "properties": {
+                "image": {
+                    "type": "string"
+                },
+                "digest": {
+                    "type": "string"
+                },
+                "tooling_attestation": {
+                    "type": "object",
+                    "properties": {
+                        "checklist_id": {
+                            "type": "string"
+                        },
+                        "attested_by": {
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "checklist_id"
+                    ]
+                }
+            },
+            "required": [
+                "image",
+                "digest"
+            ]
+        },
+        "codebase": {
+            "type": "object",
+            "properties": {
+                "commit_hash": {
+                    "type": "string"
+                },
+                "repo_url": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "commit_hash"
+            ]
+        }
+    },
+    "required": [
+        "metadata",
+        "environment",
+        "codebase"
+    ]
+}

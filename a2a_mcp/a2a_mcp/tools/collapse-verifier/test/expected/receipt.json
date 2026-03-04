@@ -1,0 +1,16 @@
+{
+  "schema_version": "VERIFICATION_RECEIPT.v1",
+  "batch_id": "batch-2026-01-20-001",
+  "epoch_id": "epoch-2026-01",
+  "item_count": 2,
+  "merkle_root": "",
+  "verified_at_utc": "PLACEHOLDER",
+  "verification": {
+    "merkle_ok": false,
+    "signature_ok": false,
+    "item_proofs_ok": [
+      { "trace_id": "trace-abc-001", "ok": false },
+      { "trace_id": "trace-abc-002", "ok": false }
+    ]
+  }
+}

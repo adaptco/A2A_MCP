@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Token Event v1",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "call_id",
+    "seq",
+    "token",
+    "token_hash",
+    "cumulative_hash"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "TokenEvent.v1"
+    },
+    "call_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "seq": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "token": {
+      "type": "string"
+    },
+    "token_hash": {
+      "type": "string"
+    },
+    "cumulative_hash": {
+      "type": "string"
+    }
+  }
+}

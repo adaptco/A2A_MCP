@@ -1,0 +1,31 @@
+{
+<<<<<<< HEAD
+  "$schema": "https://adk.io/schemas/v0/gate_policy.schema.json",
+  "gate_id": "ad048f68-cdf6-46ac-b528-d63752ad79f5",
+=======
+  "$schema": "../../../../adk/schemas/gate_policy.schema.json",
+  "gate_id": "de72b97c-29c5-4d20-8327-17bf549268e7",
+>>>>>>> 4bf7736cec939ba8771f9f681f687e22e047dd4e
+  "allowed_roles": [
+    "coder",
+    "architect",
+    "manager"
+  ],
+  "required_proofs": [
+    {
+      "proof_type": "physics_compliance",
+      "circuit_id": "circuit_physics_compliance_v1",
+      "parameters": {
+        "node_id": "B7"
+      }
+    },
+    {
+      "proof_type": "integrity_check",
+      "circuit_id": "circuit_integrity_check_v1",
+      "parameters": {
+        "node_id": "B7"
+      }
+    }
+  ],
+  "enforcement_level": "strict"
+}

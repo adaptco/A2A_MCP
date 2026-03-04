@@ -1,0 +1,51 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "adk://schemas/gate_result.v0.json",
+    "title": "Gate Result V0",
+    "description": "The authoritative result of a specific gate check execution.",
+    "type": "object",
+    "properties": {
+        "gate": {
+            "type": "string",
+            "enum": [
+                "G1",
+                "G2",
+                "G3",
+                "G4"
+            ]
+        },
+        "check_id": {
+            "type": "string"
+        },
+        "status": {
+            "type": "string",
+            "enum": [
+                "PASS",
+                "FAIL",
+                "WAIVED"
+            ]
+        },
+        "timestamp": {
+            "type": "string",
+            "format": "date-time"
+        },
+        "details": {
+            "type": "string"
+        },
+        "artifacts_examined": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "auditor": {
+            "type": "string"
+        }
+    },
+    "required": [
+        "gate",
+        "check_id",
+        "status",
+        "timestamp"
+    ]
+}

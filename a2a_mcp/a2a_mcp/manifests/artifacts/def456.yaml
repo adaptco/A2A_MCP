@@ -1,0 +1,6 @@
+snapshot: def456
+source_version: 2024-05-29
+modules:
+  hud_walkthrough: active
+  rehearsal_prompts: active
+  compliance_overlay: passive

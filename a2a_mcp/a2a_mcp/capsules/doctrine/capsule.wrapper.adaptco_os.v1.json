@@ -1,0 +1,38 @@
+{
+  "capsule_id": "capsule.wrapper.adaptco_os.v1",
+  "version": "1.0.0",
+  "type": "OSWrapper",
+  "author": "Earl Q Han",
+  "issued_at": "2025-09-24T21:08:00Z",
+  "description": "ADAPTCO OS sovereign wrapper binding Proof → Flow → Execution → Vault into a resumable, council-audited runtime.",
+  "lineage": {
+    "anchors": [
+      "ssot.registry.v1",
+      "qube.orchestrator.v1",
+      "sol.f1.previz.v1",
+      "relay.artifacts.v1"
+    ]
+  },
+  "governance": {
+    "router": "Queen Boo",
+    "stabilizer": "Queen CiCi",
+    "oracle": "Celine",
+    "weaver": "The Braid",
+    "council": "council/adaptco"
+  },
+  "runtime": {
+    "registry": "capsule.registry.runtime.v1",
+    "vault": "relay.artifacts.v1",
+    "ledger": "scrollstream_ledger.jsonl",
+    "hud": [
+      "glyph_ping",
+      "ritual_caption",
+      "drift_trace"
+    ]
+  },
+  "attestation": {
+    "status": "STAGED",
+    "sealed_at": null,
+    "content_hash": null
+  }
+}

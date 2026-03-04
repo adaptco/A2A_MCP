@@ -1,26 +1,24 @@
-# syntax=docker/dockerfile:1
-FROM python:3.12-slim AS runtime
+# Use an official Python runtime as a parent image
+FROM python:3.12-slim-bookworm
 
-ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1 \
-    PORT=8080
-
+# Set the working directory in the container
 WORKDIR /app
 
-# Copy only the server implementation to keep image lean.
-COPY app/server.py ./server.py
+# Patch vulnerabilities and install system dependencies if needed
+RUN apt-get update && apt-get upgrade -y && rm -rf /var/lib/apt/lists/*
 
-EXPOSE 8080
+# Copy requirements and install them
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-CMD ["python", "server.py"]
-COPY app ./app
-COPY codex_qernel ./codex_qernel
-COPY capsules ./capsules
-COPY scripts ./scripts
-COPY README.md ./README.md
+# Copy the entire project into the container
+COPY . .
 
-RUN mkdir -p var/log
+# Ensure app is in python path
+ENV PYTHONPATH=/app
 
-EXPOSE 8080
+# Expose the port FastAPI runs on
+EXPOSE 8000
 
-CMD ["python", "app/server.py"]
+# Command to run the orchestrator
+CMD ["python", "orchestrator/main.py"]

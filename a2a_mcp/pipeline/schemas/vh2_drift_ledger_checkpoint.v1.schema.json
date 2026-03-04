@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "vh2_drift_ledger_checkpoint.v1.schema.json",
+  "title": "vh2_drift_ledger_checkpoint.v1",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "schema_version",
+    "trust_domain",
+    "head_line_index",
+    "head_line_sha256",
+    "head_line_uri",
+    "last_artifact_canonical_sha256",
+    "hash_version",
+    "system_version"
+  ],
+  "properties": {
+    "schema_version": { "const": "vh2_drift_ledger_checkpoint.v1" },
+    "trust_domain": { "type": "string", "minLength": 1 },
+    "head_line_index": { "type": "integer", "minimum": 0 },
+    "head_line_sha256": { "$ref": "#/$defs/sha256Hex" },
+    "head_line_uri": { "type": "string", "minLength": 1 },
+    "last_artifact_canonical_sha256": { "$ref": "#/$defs/sha256Hex" },
+    "hash_version": { "const": 1 },
+    "system_version": { "type": "string", "minLength": 1 }
+  },
+  "$defs": {
+    "sha256Hex": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    }
+  }
+}

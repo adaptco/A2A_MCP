@@ -1,0 +1,13 @@
+{
+  "$schema": "./gate_policy.schema.json",
+  "identity": "ghost-void-core",
+  "permissions": [
+    "read",
+    "execute",
+    "test"
+  ],
+  "proof_config": {
+    "enabled": true,
+    "method": "sha256-anchored"
+  }
+}

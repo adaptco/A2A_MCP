@@ -1,0 +1,16 @@
+{
+  "schema": "cie.audit_queries.v1",
+  "created_utc": "2026-01-20T00:00:00Z",
+  "queries": [
+    {
+      "query_id": "q_0001",
+      "text": "Describe the zero-drift validation sequence for the audit harness.",
+      "tags": ["zero_drift", "harness"]
+    },
+    {
+      "query_id": "q_0002",
+      "text": "List the required fields in the CIE-V1 audit input contract.",
+      "tags": ["audit_contract"]
+    }
+  ]
+}

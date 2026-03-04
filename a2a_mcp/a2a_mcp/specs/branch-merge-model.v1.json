@@ -1,0 +1,280 @@
+{
+  "version": "1.0.0",
+  "updated": "2025-09-27",
+  "branches": [
+    {
+      "id": "ssot",
+      "name": "adaptco-ssot",
+      "category": "data-plane",
+      "primary_branch": "staging/ssot",
+      "description": "Source of truth for avatar bindings and canonical manifests.",
+      "owner": "Governance & Ledger",
+      "status": "ready",
+      "dependencies": [],
+      "artifacts": [
+        "avatar_bindings.v1.canonical.json",
+        "ledger attestation batches"
+      ],
+      "ci": {
+        "pipelines": [
+          "npm test",
+          "npm run lint"
+        ],
+        "required_checks": [
+          "governance-freeze",
+          "ledger-replay"
+        ]
+      }
+    },
+    {
+      "id": "core",
+      "name": "adaptco-core-orchestrator",
+      "category": "service",
+      "primary_branch": "work",
+      "description": "Node.js capsule registrar and ledger writer.",
+      "owner": "Runtime Integrations",
+      "status": "in-progress",
+      "dependencies": [
+        "ssot"
+      ],
+      "artifacts": [
+        "capsule ledger",
+        "capsule registration schema"
+      ],
+      "ci": {
+        "pipelines": [
+          "npm test",
+          "npm run lint",
+          "npm run build"
+        ],
+        "required_checks": [
+          "capsule-schema-validation"
+        ]
+      }
+    },
+    {
+      "id": "runtime",
+      "name": "core-orchestrator/app",
+      "category": "middleware",
+      "primary_branch": "work",
+      "description": "Python middleware exposing health, merge planning, and automation contracts.",
+      "owner": "Runtime Integrations",
+      "status": "planned",
+      "dependencies": [
+        "ssot",
+        "core"
+      ],
+      "artifacts": [
+        "middleware OpenAPI spec",
+        "automation hook catalog"
+      ],
+      "ci": {
+        "pipelines": [
+          "python -m unittest",
+          "npm run lint:openapi"
+        ],
+        "required_checks": [
+          "middleware-unit-tests"
+        ]
+      }
+    },
+    {
+      "id": "previz",
+      "name": "adaptco-previz",
+      "category": "experience",
+      "primary_branch": "staging/previz",
+      "description": "Preview rendering tools and HUD surfaces that consume orchestrator data.",
+      "owner": "Experience Lab",
+      "status": "ready",
+      "dependencies": [
+        "core",
+        "runtime"
+      ],
+      "artifacts": [
+        "preview scenes",
+        "hud overlays"
+      ],
+      "ci": {
+        "pipelines": [
+          "npm test",
+          "npm run lint"
+        ],
+        "required_checks": [
+          "snapshot-audit"
+        ]
+      }
+    },
+    {
+      "id": "governance",
+      "name": "governance-artifacts",
+      "category": "compliance",
+      "primary_branch": "staging/governance",
+      "description": "Signed hashes, signatures, and SSOT ledgers backing orchestrator policy.",
+      "owner": "Governance & Ledger",
+      "status": "ready",
+      "dependencies": [
+        "ssot"
+      ],
+      "artifacts": [
+        "hash manifest",
+        "signed attestations"
+      ],
+      "ci": {
+        "pipelines": [
+          "python scripts/hash_manifest.py",
+          "python scripts/canonicalize_manifest.py"
+        ],
+        "required_checks": [
+          "hash-verification"
+        ]
+      }
+    }
+  ],
+  "merge_waves": [
+    {
+      "id": "wave-1-foundations",
+      "order": 1,
+      "description": "Align the governance surfaces before downstream merges.",
+      "target": "integration/foundation",
+      "sources": [
+        "ssot",
+        "governance"
+      ],
+      "preconditions": [
+        "ssot: canonical payload frozen",
+        "governance: attestation signatures verified"
+      ],
+      "validation": [
+        "scripts/hash_manifest.py",
+        "ledger replay diff"
+      ]
+    },
+    {
+      "id": "wave-2-middleware",
+      "order": 2,
+      "description": "Land service and middleware logic after foundations settle.",
+      "target": "integration/middleware",
+      "sources": [
+        "core",
+        "runtime"
+      ],
+      "preconditions": [
+        "wave-1-foundations complete",
+        "core: schema registry frozen",
+        "runtime: unit tests green"
+      ],
+      "validation": [
+        "npm run lint:openapi",
+        "python -m unittest"
+      ]
+    },
+    {
+      "id": "wave-3-experience",
+      "order": 3,
+      "description": "Merge client experiences after middleware contract is published.",
+      "target": "main",
+      "sources": [
+        "previz"
+      ],
+      "preconditions": [
+        "wave-2-middleware complete",
+        "runtime contract published"
+      ],
+      "validation": [
+        "npm test (adaptco-previz)",
+        "visual regression sweep"
+      ]
+    }
+  ],
+  "automation": {
+    "hooks": [
+      {
+        "id": "hook-canonicalize-manifests",
+        "description": "Canonicalize and diff manifests prior to landing governance branches.",
+        "entrypoint": "scripts/canonicalize_manifest.py",
+        "triggers": [
+          "wave-1-foundations",
+          "wave-2-middleware"
+        ]
+      },
+      {
+        "id": "hook-hash-bindings",
+        "description": "Hash avatar bindings to confirm SSOT parity before merge gates open.",
+        "entrypoint": "scripts/hash_manifest.py",
+        "triggers": [
+          "wave-1-foundations"
+        ]
+      },
+      {
+        "id": "hook-openapi-lint",
+        "description": "Lint the middleware OpenAPI definition ahead of downstream merges.",
+        "entrypoint": "npm run lint:openapi",
+        "triggers": [
+          "wave-2-middleware",
+          "wave-3-experience"
+        ]
+      }
+    ],
+    "notifications": [
+      {
+        "channel": "ops-cockpit",
+        "events": [
+          "merge-start",
+          "merge-complete"
+        ],
+        "summary_template": "{wave} -> {target}: {status}"
+      },
+      {
+        "channel": "ledger-feed",
+        "events": [
+          "pre-merge",
+          "post-merge"
+        ],
+        "summary_template": "Ledger update {status} for {wave}"
+      }
+    ]
+  },
+  "middleware_contract": {
+    "service_name": "core-orchestrator-middleware",
+    "description": "Lightweight Python middleware exposing merge plans and automation state for cockpit consumers.",
+    "capabilities": [
+      "Expose merge branch metadata and dependencies",
+      "Publish ordered merge waves with gating conditions",
+      "Surface automation hooks and notification channels",
+      "Describe middleware routes for integrators"
+    ],
+    "routes": [
+      {
+        "method": "GET",
+        "path": "/health",
+        "purpose": "Liveness probe for orchestrator smoke tests"
+      },
+      {
+        "method": "GET",
+        "path": "/merge/branches",
+        "purpose": "List managed branches and their merge dependencies"
+      },
+      {
+        "method": "GET",
+        "path": "/merge/plan",
+        "purpose": "Return the merge wave ordering with gating requirements"
+      },
+      {
+        "method": "GET",
+        "path": "/merge/automation",
+        "purpose": "Provide hooks and notification channels referenced by automation"
+      },
+      {
+        "method": "GET",
+        "path": "/middleware/contract",
+        "purpose": "Describe middleware capabilities and routes"
+      },
+      {
+        "method": "GET",
+        "path": "/merge/model",
+        "purpose": "Return the full merge model payload for downstream systems"
+      }
+    ]
+  }
+}
+

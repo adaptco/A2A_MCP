@@ -1,0 +1,40 @@
+{
+  "manifest_id": "authority_map.v1",
+  "version": 1,
+  "maker": {
+    "kid": "Sol.F1",
+    "public_key": "MCowBQYDK2VwAyEAYU81S199MjATh85N2IBDF6MLj5qM9Gt0mIdALAWUbhc="
+  },
+  "checker": {
+    "kid": "BR9ID",
+    "public_key": "MCowBQYDK2VwAyEAOaiRV9qCKVcg1Xvn4oVJ4Xuc9Ankhoyry7H4ZNgGlW8="
+  },
+  "effective_after": "2024-07-15T12:00:00Z",
+  "revoked": [
+    "Retired.X1"
+  ],
+  "binding_table": [
+    {
+      "avatar": "Celine",
+      "vessel": "Aurora",
+      "capsule": "Luma",
+      "gate": "THRUST_CONTROL"
+    },
+    {
+      "avatar": "Spryte",
+      "vessel": "Halcyon",
+      "capsule": "Dot",
+      "gate": "CARGO_BAY"
+    },
+    {
+      "avatar": "Gloh",
+      "vessel": "Vigil",
+      "capsule": "Echo",
+      "gate": "MISSION_PLANNER"
+    }
+  ],
+  "signatures": {
+    "maker": "lKHWyqqUDXXu1bpwt1CEjLix8gguHk1h+saR/3OaXmMUbY1AA1ooFajfnoFow4PuAmwO7BXMb08S01sw2eYABw==",
+    "checker": "zVccSZldApwgzyERfJGh2p5hBa6lAdaHNF/W5EjAA2XE4lu7XkkW5fCo8jnJeMzgEd/BUN1b4m76hsX2Dz+RBg=="
+  }
+}

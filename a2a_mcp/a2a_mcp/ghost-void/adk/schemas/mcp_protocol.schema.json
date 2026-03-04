@@ -1,0 +1,21 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://adk.io/schemas/v0/mcp_protocol.schema.json",
+    "title": "Ghost Void MCP Protocol",
+    "type": "object",
+    "properties": {
+        "command": {
+            "type": "string",
+            "enum": ["move_left", "move_right", "jump", "crouch", "interact"],
+            "description": "Allowed commands for the Ghost Void engine"
+        },
+        "payload": {
+            "type": "object",
+            "properties": {
+                "force": {"type": "number"},
+                "duration_ms": {"type": "integer"}
+            }
+        }
+    },
+    "required": ["command"]
+}

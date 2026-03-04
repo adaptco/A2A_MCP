@@ -16,6 +16,9 @@ class Settings(BaseSettings):
     ENV: str = "dev"
     DATABASE_URL: str = "sqlite+aiosqlite:///./dev.db"
     ALLOW_MONDAY_WRITES: bool = False
+    LLM_API_KEY: str = ""
+    LLM_ENDPOINT: str = ""
+    LLM_MODEL: str = ""
 
 
 settings = Settings()

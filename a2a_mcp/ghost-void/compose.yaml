@@ -1,0 +1,8 @@
+services:
+  ghostvoid:
+    image: ghostvoid
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    ports:
+      - 8000:8000

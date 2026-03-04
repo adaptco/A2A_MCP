@@ -1,0 +1,114 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Conceptual Architecture Review Capsule",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "capsule_id",
+    "version",
+    "intent",
+    "envelope",
+    "weights",
+    "guards",
+    "raci",
+    "attestation"
+  ],
+  "properties": {
+    "capsule_id": {
+      "type": "string",
+      "const": "capsule.concept.arch.review.v1"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "intent": {
+      "type": "string",
+      "const": "stability_vs_evolution"
+    },
+    "envelope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "epsilon_c",
+        "epsilon_c_max",
+        "B_m",
+        "r_min",
+        "t_canary_sec",
+        "rollback_window_sec"
+      ],
+      "properties": {
+        "epsilon_c": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "epsilon_c_max": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "B_m": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "r_min": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "t_canary_sec": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "rollback_window_sec": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "weights": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "w_v",
+        "w_c",
+        "w_o",
+        "w_r",
+        "s_min"
+      ],
+      "properties": {
+        "w_v": {"type": "number"},
+        "w_c": {"type": "number"},
+        "w_o": {"type": "number"},
+        "w_r": {"type": "number"},
+        "s_min": {"type": "number"}
+      }
+    },
+    "guards": {
+      "type": "array",
+      "minItems": 3,
+      "uniqueItems": true,
+      "items": {
+        "type": "string"
+      }
+    },
+    "raci": {
+      "type": "array",
+      "minItems": 4,
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Za-z0-9_.-]+:(maker|checker|auditor|relay|quorum>=\\d+)"
+      }
+    },
+    "attestation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status"],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": ["STAGED", "SEALED"]
+        }
+      }
+    }
+  }
+}

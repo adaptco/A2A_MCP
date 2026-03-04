@@ -1,0 +1,83 @@
+name: MCP Server vs Client API Validation
+
+on:
+    pull_request:
+        branches: [main]
+        paths:
+            - "mcp_server.py"
+            - "mcp_core.py"
+            - "runtime_mcp_server.py"
+            - "mcp_servers/**"
+            - "app/multi_client_api.py"
+            - "src/multi_client_router.py"
+            - "app/clients/**"
+            - "docs/MCP_SERVER_VS_CLIENT_API.md"
+
+permissions:
+    contents: read
+    pull-requests: write
+
+jobs:
+    validate-api-parity:
+        name: Check MCP Server ↔ Client API Parity
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Setup Python
+              uses: actions/setup-python@v5
+              with:
+                  python-version: "3.13"
+
+            - name: Extract server tool definitions
+              id: server_tools
+              run: |
+                  echo "### Server-Side MCP Tools" > /tmp/server_tools.txt
+
+                  echo "#### mcp_server.py (A2A_Orchestrator)" >> /tmp/server_tools.txt
+                  grep -n "mcp.tool\|register_tools\|FastMCP" mcp_server.py >> /tmp/server_tools.txt 2>/dev/null || echo "  (no direct tool defs)" >> /tmp/server_tools.txt
+
+                  echo "#### runtime_mcp_server.py (A2A_Runtime)" >> /tmp/server_tools.txt
+                  grep -n "mcp.tool\|def " runtime_mcp_server.py | head -20 >> /tmp/server_tools.txt 2>/dev/null || echo "  (not found)" >> /tmp/server_tools.txt
+
+                  echo "#### docker_mcp_catalog/server.py" >> /tmp/server_tools.txt
+                  grep -n "def \|get_tools" mcp_servers/docker_mcp_catalog/server.py | head -20 >> /tmp/server_tools.txt 2>/dev/null || echo "  (not found)" >> /tmp/server_tools.txt
+
+                  cat /tmp/server_tools.txt
+
+            - name: Extract client API endpoints
+              id: client_api
+              run: |
+                  echo "### Client-Side API Endpoints" > /tmp/client_api.txt
+
+                  echo "#### multi_client_api.py" >> /tmp/client_api.txt
+                  grep -n "@app\.\|async def " app/multi_client_api.py | head -30 >> /tmp/client_api.txt 2>/dev/null || echo "  (not found)" >> /tmp/client_api.txt
+
+                  echo "#### multi_client_router.py" >> /tmp/client_api.txt
+                  grep -n "class \|async def \|def " src/multi_client_router.py | head -30 >> /tmp/client_api.txt 2>/dev/null || echo "  (not found)" >> /tmp/client_api.txt
+
+                  cat /tmp/client_api.txt
+
+            - name: Parity check
+              run: |
+                  echo "## MCP Server ↔ Client API Parity Report" >> "$GITHUB_STEP_SUMMARY"
+                  echo "" >> "$GITHUB_STEP_SUMMARY"
+
+                  # Count server tools
+                  SERVER_COUNT=$(grep -c "mcp.tool" runtime_mcp_server.py 2>/dev/null || echo "0")
+                  # Count client endpoints
+                  CLIENT_COUNT=$(grep -c "@app\." app/multi_client_api.py 2>/dev/null || echo "0")
+
+                  echo "| Side | Count |" >> "$GITHUB_STEP_SUMMARY"
+                  echo "|------|-------|" >> "$GITHUB_STEP_SUMMARY"
+                  echo "| Server MCP tools (runtime) | ${SERVER_COUNT} |" >> "$GITHUB_STEP_SUMMARY"
+                  echo "| Client API endpoints | ${CLIENT_COUNT} |" >> "$GITHUB_STEP_SUMMARY"
+                  echo "" >> "$GITHUB_STEP_SUMMARY"
+
+                  cat /tmp/server_tools.txt >> "$GITHUB_STEP_SUMMARY"
+                  echo "" >> "$GITHUB_STEP_SUMMARY"
+                  cat /tmp/client_api.txt >> "$GITHUB_STEP_SUMMARY"
+
+                  echo ""
+                  echo "Parity report generated. See job summary for details."

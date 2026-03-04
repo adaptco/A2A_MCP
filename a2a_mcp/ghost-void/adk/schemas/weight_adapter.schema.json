@@ -1,0 +1,35 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://adaptco.ai/schemas/v0/weight_adapter.schema.json",
+    "type": "object",
+    "properties": {
+        "adapter_metadata": {
+            "type": "object",
+            "properties": {
+                "base_model_ref": {
+                    "type": "string"
+                },
+                "lora_rank": {
+                    "type": "integer",
+                    "enum": [
+                        8,
+                        16,
+                        32,
+                        64
+                    ]
+                },
+                "lora_alpha": {
+                    "type": "integer"
+                }
+            },
+            "required": [
+                "base_model_ref",
+                "lora_rank",
+                "lora_alpha"
+            ]
+        }
+    },
+    "required": [
+        "adapter_metadata"
+    ]
+}

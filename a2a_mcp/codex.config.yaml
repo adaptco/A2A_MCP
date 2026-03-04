@@ -1,0 +1,15 @@
+# Sample orchestration configuration
+
+router:
+  channels:
+    - sales
+    - marketing
+
+sinks:
+  notion:
+    database_id: ${NOTION_DATABASE_ID}
+  google_calendar:
+    calendar_id: ${GOOGLE_CALENDAR_ID}
+    default_duration_minutes: 60
+  shopify:
+    store_domain: ${SHOPIFY_STORE_DOMAIN}

@@ -1,0 +1,51 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "adk://schemas/decision_record.v0.json",
+    "title": "Decision Record V0",
+    "description": "A discrete unit of agent observation and action for deterministic replay.",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "string",
+            "format": "uuid"
+        },
+        "timestamp": {
+            "type": "string",
+            "format": "date-time"
+        },
+        "sequence_index": {
+            "type": "integer"
+        },
+        "observation": {
+            "type": "object",
+            "description": "The raw sensor data or state frame provided to the agent."
+        },
+        "action": {
+            "type": "object",
+            "description": "The raw output emitted by the agent."
+        },
+        "annotations": {
+            "type": "object",
+            "properties": {
+                "safety_violation": {
+                    "type": "string",
+                    "enum": [
+                        "NONE",
+                        "SOFT",
+                        "HARD",
+                        "INVARIANT"
+                    ]
+                },
+                "latency_ms": {
+                    "type": "number"
+                }
+            }
+        }
+    },
+    "required": [
+        "id",
+        "timestamp",
+        "observation",
+        "action"
+    ]
+}

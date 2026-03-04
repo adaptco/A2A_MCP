@@ -1,0 +1,50 @@
+# Smart CI - Only runs on important events to conserve minutes
+# Skips runs on draft PRs, specific branches, etc.
+
+name: Smart CI (Conditional)
+
+on:
+  push:
+    branches:
+      - main  # Only run on main branch pushes
+  pull_request:
+    types: [opened, ready_for_review]  # Skip draft PRs
+    branches:
+      - main
+  workflow_dispatch:  # Allow manual triggers
+
+jobs:
+  check-should-run:
+    runs-on: ubuntu-latest
+    outputs:
+      should_run: ${{ steps.check.outputs.should_run }}
+    steps:
+      - name: Check if should run
+        id: check
+        run: |
+          # Skip if PR is draft
+          if [ "${{ github.event.pull_request.draft }}" == "true" ]; then
+            echo "should_run=false" >> $GITHUB_OUTPUT
+          # Skip if commit message contains [skip ci]
+          elif [[ "${{ github.event.head_commit.message }}" == *"[skip ci]"* ]]; then
+            echo "should_run=false" >> $GITHUB_OUTPUT
+          else
+            echo "should_run=true" >> $GITHUB_OUTPUT
+          fi
+
+  test:
+    needs: check-should-run
+    if: needs.check-should-run.outputs.should_run == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          
+      - name: Install dependencies
+        run: pip install jsonschema pynacl requests pytest pyyaml
+        
+      - name: Run checks
+        run: bash scripts/local_ci_check.sh

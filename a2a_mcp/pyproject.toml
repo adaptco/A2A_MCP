@@ -1,0 +1,60 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "a2a-mcp"
+version = "0.2.0"
+description = "Multi-agent orchestrator with MCP tooling, stateflow FSM, and self-healing pipelines"
+requires-python = ">=3.11"
+dependencies = [
+    "sqlalchemy",
+    "psycopg2-binary",
+    "pydantic",
+    "pydantic-settings",
+    "PyJWT",
+    "python-dotenv",
+    "fastapi",
+    "uvicorn",
+    "httpx",
+    "requests",
+    "jsonschema",
+    "mcp[cli]",
+    "numpy>=1.24",
+    "scipy",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-asyncio",
+]
+integrations = [
+    "aiohttp",
+    "pynacl",
+    "google-generativeai",
+    "pandas",
+    "matplotlib",
+]
+# Deprecated compatibility alias; PyJWT is now a core dependency.
+auth = []
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+pythonpath = ["src", ".", "ghost-void"]
+addopts = "-q --doctest-modules --ignore=tests/test_a2a_mcp.py --ignore=tests/test_canonical_json.py --ignore=tests/test_drift_gate.py --ignore=pipeline/replay_test.py"
+
+[tool.setuptools.packages.find]
+where = [".", "src"]
+exclude = [
+    "tests*",
+    "docs*",
+    "deploy*",
+    "qube_forensics*",
+    "qube_moemodel_v1*",
+    "qube_forensic_console*",
+]
+
+[project.scripts]
+mcp-adk = "mcp_adk.cli:main"

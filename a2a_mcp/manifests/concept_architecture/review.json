@@ -1,0 +1,10 @@
+{
+  "proposal_id": "proposal.alpha",
+  "delta_phi_e": 0.0,
+  "delta_phi_c": 0.0025,
+  "delta_phi_m": 0.0016,
+  "pi_v": 0.012,
+  "ops_cost": 0.002,
+  "reversibility": 0.82,
+  "notes": "Baseline conceptual review for proposal.alpha"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "capsule.rehearsal.scrollstream.v1",
+  "version": "1.0.0",
+  "name": "Scrollstream Rehearsal Loop Capsule",
+  "description": "Simulates the audit braid cycle (Celine → Luma → Dot) with ledger emissions, HUD shimmer feedback, and replay glyph pulses.",
+  "created": "2025-02-18T00:00:00Z",
+  "governance": {
+    "author": "adaptco",
+    "council": "council/adaptco",
+    "policy_tag": "scrollstream-rehearsal"
+  },
+  "capsule": {
+    "event": "capsule.rehearsal.scrollstream.v1",
+    "manifest_ref": "public/data/scrollstream_ledger.json",
+    "ledger_event_url": "/data/scrollstream_ledger.json",
+    "path": "public/hud/capsules/scrollstream/index.html"
+  },
+  "artifacts": {
+    "viewer_sha256": "676022b8961fd75f6a93ad4102e2b06389f7c455461ebaa6a72bd09f8470671e"
+  }
+}

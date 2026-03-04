@@ -1,0 +1,26 @@
+{
+  "index_id": "vault.council.arcSix.4737",
+  "artifacts": [
+    "prelude.drift.arcSix.4737",
+    "thread.remix.eligibility.arcSix.4737",
+    "profile.embedding.arcSix.4737",
+    "capsule.fossilPlayback.commit.4736.v1"
+  ],
+  "caption_morphs": [
+    "Inquiry spirals where tension listens.",
+    "Fold declares where echo dares.",
+    "Anchor resolves where gesture returns."
+  ],
+  "emotional_register": "Inquiry → Tension → Resolution",
+  "embedding_register": {
+    "profile": "embedding.arcSix.4737",
+    "model": "GlyphWeave-16d",
+    "dimensionality": 16
+  },
+  "archive_targets": [
+    "Council Vault",
+    "Remix Constellation Registry",
+    "Pedagogical Mesh"
+  ],
+  "seal": ".index.cataloged + .arcSix.attested"
+}

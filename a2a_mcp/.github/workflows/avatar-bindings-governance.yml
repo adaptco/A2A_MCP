@@ -1,0 +1,49 @@
+name: Avatar Bindings Governance
+
+on:
+  pull_request:
+  push:
+    branches: [ main ]
+
+jobs:
+  validate-and-freeze:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq
+          npm install -g ajv-cli
+
+      - name: Run Positive Schema Validation
+        run: |
+          npx ajv validate \
+            -s specs/avatar_bindings.v1.schema.json \
+            -d tests/fixtures/avatar_bindings.good.json \
+            --strict=true
+
+      - name: Run Negative Schema Test (Asserts Failure)
+        run: |
+          ! npx ajv validate \
+            -s specs/avatar_bindings.v1.schema.json \
+            -d tests/fixtures/avatar_bindings.bad.json \
+            --strict=true
+
+      - name: Make Freeze Script Executable
+        run: chmod +x scripts/freeze_avatar_bindings.sh
+
+      - name: Freeze and Sign Avatar Bindings
+        run: ./scripts/freeze_avatar_bindings.sh
+
+      - name: Upload Freeze Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: avatar-bindings-artifacts
+          path: |
+            governance/avatar_bindings.v1.canonical.json
+            governance/avatar_bindings.v1.hash
+            governance/avatar_bindings.v1.sig
+          retention-days: 14

@@ -1,0 +1,11 @@
+{
+  "trigger_reason": "optimization_requested",
+  "mode": "exploratory",
+  "policy_zone": "default",
+  "required_checks": ["pytest"],
+  "max_entropy_budget": {
+    "max_diff_size": 200,
+    "allow_dependency_changes": false
+  },
+  "acceptance_invariants": ["maker_checker_boundary"]
+}

@@ -1,0 +1,47 @@
+[
+    {
+        "directory": "C:/Users/eqhsp/.gemini/antigravity/playground/ghost-void",
+        "command": "cl.exe /I\"C:/Users/eqhsp/.gemini/antigravity/playground/ghost-void/include\" /I\"C:/Program Files (x86)/Microsoft Visual Studio/2019/BuildTools/VC/Tools/MSVC/14.29.30133/include\" /I\"C:/Program Files (x86)/Windows Kits/10/Include/10.0.19041.0/ucrt\" /std:c++17 /c src/main.cpp",
+        "file": "src/main.cpp"
+    },
+    {
+        "directory": "C:/Users/eqhsp/.gemini/antigravity/playground/ghost-void",
+        "command": "cl.exe /I\"C:/Users/eqhsp/.gemini/antigravity/playground/ghost-void/include\" /I\"C:/Program Files (x86)/Microsoft Visual Studio/2019/BuildTools/VC/Tools/MSVC/14.29.30133/include\" /I\"C:/Program Files (x86)/Windows Kits/10/Include/10.0.19041.0/ucrt\" /std:c++17 /c src/engine/Orchestrator.cpp",
+        "file": "src/engine/Orchestrator.cpp"
+    },
+    {
+        "directory": "C:/Users/eqhsp/.gemini/antigravity/playground/ghost-void",
+        "command": "cl.exe /I\"C:/Users/eqhsp/.gemini/antigravity/playground/ghost-void/include\" /I\"C:/Program Files (x86)/Microsoft Visual Studio/2019/BuildTools/VC/Tools/MSVC/14.29.30133/include\" /I\"C:/Program Files (x86)/Windows Kits/10/Include/10.0.19041.0/ucrt\" /std:c++17 /c src/engine/Physics.cpp",
+        "file": "src/engine/Physics.cpp"
+    },
+    {
+        "directory": "C:/Users/eqhsp/.gemini/antigravity/playground/ghost-void",
+        "command": "cl.exe /I\"C:/Users/eqhsp/.gemini/antigravity/playground/ghost-void/include\" /I\"C:/Program Files (x86)/Microsoft Visual Studio/2019/BuildTools/VC/Tools/MSVC/14.29.30133/include\" /I\"C:/Program Files (x86)/Windows Kits/10/Include/10.0.19041.0/ucrt\" /std:c++17 /c src/engine/Sandbox.cpp",
+        "file": "src/engine/Sandbox.cpp"
+    },
+    {
+        "directory": "C:/Users/eqhsp/.gemini/antigravity/playground/ghost-void",
+        "command": "cl.exe /I\"C:/Users/eqhsp/.gemini/antigravity/playground/ghost-void/include\" /I\"C:/Program Files (x86)/Microsoft Visual Studio/2019/BuildTools/VC/Tools/MSVC/14.29.30133/include\" /I\"C:/Program Files (x86)/Windows Kits/10/Include/10.0.19041.0/ucrt\" /std:c++17 /c src/engine/WorldModel.cpp",
+        "file": "src/engine/WorldModel.cpp"
+    },
+    {
+        "directory": "C:/Users/eqhsp/.gemini/antigravity/playground/ghost-void",
+        "command": "cl.exe /I\"C:/Users/eqhsp/.gemini/antigravity/playground/ghost-void/include\" /I\"C:/Program Files (x86)/Microsoft Visual Studio/2019/BuildTools/VC/Tools/MSVC/14.29.30133/include\" /I\"C:/Program Files (x86)/Windows Kits/10/Include/10.0.19041.0/ucrt\" /std:c++17 /c src/agents/Avatar.cpp",
+        "file": "src/agents/Avatar.cpp"
+    },
+    {
+        "directory": "C:/Users/eqhsp/.gemini/antigravity/playground/ghost-void",
+        "command": "cl.exe /I\"C:/Users/eqhsp/.gemini/antigravity/playground/ghost-void/include\" /I\"C:/Program Files (x86)/Microsoft Visual Studio/2019/BuildTools/VC/Tools/MSVC/14.29.30133/include\" /I\"C:/Program Files (x86)/Windows Kits/10/Include/10.0.19041.0/ucrt\" /std:c++17 /c src/agents/BigBoss.cpp",
+        "file": "src/agents/BigBoss.cpp"
+    },
+    {
+        "directory": "C:/Users/eqhsp/.gemini/antigravity/playground/ghost-void",
+        "command": "cl.exe /I\"C:/Users/eqhsp/.gemini/antigravity/playground/ghost-void/include\" /I\"C:/Program Files (x86)/Microsoft Visual Studio/2019/BuildTools/VC/Tools/MSVC/14.29.30133/include\" /I\"C:/Program Files (x86)/Windows Kits/10/Include/10.0.19041.0/ucrt\" /std:c++17 /c src/safety/SafetyLayer.cpp",
+        "file": "src/safety/SafetyLayer.cpp"
+    },
+    {
+        "directory": "C:/Users/eqhsp/.gemini/antigravity/playground/ghost-void",
+        "command": "cl.exe /I\"C:/Users/eqhsp/.gemini/antigravity/playground/ghost-void/include\" /I\"C:/Program Files (x86)/Microsoft Visual Studio/2019/BuildTools/VC/Tools/MSVC/14.29.30133/include\" /I\"C:/Program Files (x86)/Windows Kits/10/Include/10.0.19041.0/ucrt\" /std:c++17 /c src/qube/QubeMain.cpp",
+        "file": "src/qube/QubeMain.cpp"
+    }
+]

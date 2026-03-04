@@ -1,0 +1,141 @@
+{
+  "capsule_id": "capsule.orbit.remix.mesh.novatrace.v1",
+  "version": "1.1.0",
+  "type": "OrbitRemixCapsule",
+  "governance": {
+    "version": "v6.0",
+    "quorum": "two_person",
+    "lineage_priority": "novatrace.mesh",
+    "maker_checker": "required",
+    "audit_channel": "scrollstream"
+  },
+  "lineage": {
+    "source_capsules": [
+      "capsule.scene.ethereal_wrap.v1",
+      "capsule.broadcast.worldengine.v1"
+    ],
+    "remix_token": "remix.novatrace.v1",
+    "rehearsal": {
+      "capsule_ref": "capsule.rehearsal.r2025-001742.v1",
+      "artifact": {
+        "name": "capsule.rehearsal.r2025-001742.v1.json",
+        "expected_hash": "sha256:7eaedb5fa5cf915a75c89acdcb3f713617a10f24b982dedaf59eda7ed76c162b"
+      },
+      "ledger": {
+        "path": "runtime/ledger/novatrace/ledger.jsonl",
+        "mode": "append_only",
+        "validation": [
+          "hash_chain",
+          "quorum_signature"
+        ]
+      }
+    },
+    "archive": {
+      "bundle": "archive_r2025-001742.tgz",
+      "index": "archive/index.json",
+      "expected_hash": "sha256:ce9685f54d8baf0f94563c167e54689eb732004d475c35bf42396573edb9ec56"
+    },
+    "attestation_root": "sha256:49089f4b5ac5c139ad3de9806cd7d716c858a0e7cb8bb4ce179c4a70548fbea2"
+  },
+  "payload": {
+    "mesh_orbit": {
+      "constellation": "contributors/*",
+      "propagation_mode": "orbit-braid",
+      "replay_cycle": "federation",
+      "waypoints": [
+        {
+          "id": "nova-trace.hub",
+          "role": "origin",
+          "requires": [
+            "sig:queen_boo_router"
+          ],
+          "actions": [
+            "seed-remix",
+            "emit-glyph-lock"
+          ],
+          "ledger_entry": "remix-seed"
+        },
+        {
+          "id": "nova-trace.contrib",
+          "role": "braid",
+          "requires": [
+            "sig:cici_stabilizer"
+          ],
+          "actions": [
+            "capture-feedback",
+            "stream-ledger"
+          ],
+          "ledger_entry": "braid-feedback"
+        },
+        {
+          "id": "nova-trace.orbit",
+          "role": "broadcast",
+          "requires": [
+            "sig:axos_nav"
+          ],
+          "actions": [
+            "fanout-telemetry",
+            "record-replay"
+          ],
+          "ledger_entry": "orbit-fanout"
+        }
+      ]
+    },
+    "telemetry": {
+      "channels": [
+        "scrollstream://telemetry/novatrace/mesh",
+        "scrollstream://telemetry/novatrace/orbit"
+      ],
+      "integrity": {
+        "ledger_sink": "s3://scrollstream-ledger/novatrace",
+        "hashing": "sha256",
+        "on_drift": "halt_and_flag"
+      }
+    },
+    "broadcast": {
+      "targets": [
+        "federation:contributors",
+        "relay:scrollstream",
+        "archive:pending"
+      ],
+      "mode": "announce+replay",
+      "replay_token": "capsule.replay.token.v2"
+    },
+    "lineage_integrity": {
+      "ledger_policy": "append_only",
+      "expected_entries": [
+        "remix-seed",
+        "braid-feedback",
+        "orbit-fanout"
+      ],
+      "verification": {
+        "hash_algorithm": "sha256",
+        "on_mismatch": "halt_and_flag"
+      }
+    },
+    "kinematics": {
+      "motion_ledger_ref": "clip.motion.ethereal_wrap.v1",
+      "lock": "ZERO_DRIFT"
+    }
+  },
+  "controls": {
+    "rehearsal_gate": {
+      "status": "required",
+      "success_condition": "ledger_validation_passed",
+      "failure_action": "halt_and_flag"
+    },
+    "archive_gate": {
+      "status": "maker_checker_pending",
+      "success_condition": "attestation_complete",
+      "failure_action": "hold_for_review"
+    }
+  },
+  "attestation": {
+    "required": [
+      "sig:queen_boo_router",
+      "sig:cici_stabilizer",
+      "sig:axos_nav"
+    ],
+    "status": "STAGED"
+  }
+}

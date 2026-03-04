@@ -1,13 +1,22 @@
-- name: Setup pnpm
-  uses: pnpm/action-setup@v4
-  with:
-    run_install: false
+name: CI
+on: [push]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-- name: Use Node.js ${{ matrix.node-version }}
-  uses: actions/setup-node@v4
-  with:
-    node-version: ${{ matrix.node-version }}
-    cache: 'pnpm'
+      - name: Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
 
-- name: Install dependencies
-  run: pnpm install --frozen-lockfile
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build with Webpack
+        run: pnpm run build

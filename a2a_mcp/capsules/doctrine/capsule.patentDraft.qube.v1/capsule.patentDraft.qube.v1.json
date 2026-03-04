@@ -1,0 +1,27 @@
+{
+  "capsule_id": "capsule.patentDraft.qube.v1",
+  "qube": {
+    "p3l_ref": "urn:p3l:raci.plan.v1.1",
+    "sr_gate": "v1",
+    "moe_topology": "experts:4, router:SR",
+    "malintent": "BLQB9X/MIT.01",
+    "artifact": {
+      "type": "R0P3",
+      "format": "iRQLxTR33"
+    }
+  },
+  "lineage": {
+    "qonledge_ref": "urn:qon:raci.plan.v1.1",
+    "scrollstream": true
+  },
+  "integrity": {
+    "sha256_p3l": "sha256:fdca91bc45e01c7d562a09b085a340fdf5b9df8fbb159a0638fb0399765a2111",
+    "merkle_root": "faf6ff3b0f0d445caa69a72bab46ca129a3631f1ccb3797f23bf3d56e5cd0a8d",
+    "attestation_quorum": "2-of-3"
+  },
+  "meta": {
+    "epoch": "phase.1.init",
+    "issuer": "Council",
+    "policy": "P3L.v6"
+  }
+}

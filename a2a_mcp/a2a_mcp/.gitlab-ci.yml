@@ -1,0 +1,25 @@
+stages: [deploy]
+
+deploy:
+  image: ubuntu:22.04
+  stage: deploy
+  variables:
+    GIT_STRATEGY: fetch
+    DEPLOY_CHANNEL: ${DEPLOY_CHANNEL:-production}
+  script:
+    - apt-get update -y
+    - apt-get install -y jq moreutils curl python3 || true
+    - python3 --version && jq --version || true
+    - sha256sum --version || true
+    - if [ -n "$RENDERER_URL" ]; then curl -L "$RENDERER_URL" -o ./render && chmod +x ./render; fi
+    - chmod +x ./deploy.sh
+    - ./deploy.sh "$DEPLOY_CHANNEL"
+    - mkdir -p artifacts
+    - cp -r storage/ledger.jsonl artifacts/ || true
+    - cp -r ops/boo/avatar/guard/out artifacts/out || true
+    - cp -r /tmp/* artifacts/ 2>/dev/null || true
+  artifacts:
+    paths:
+      - artifacts/
+    expire_in: 14 days
+    name: "boo-avatar-guard-$CI_PIPELINE_ID"

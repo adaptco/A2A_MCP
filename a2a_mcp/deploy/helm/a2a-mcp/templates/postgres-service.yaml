@@ -1,0 +1,18 @@
+{{- if eq .Values.database.mode "postgres" }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "a2a-mcp.postgresServiceName" . }}
+  labels:
+    {{- include "a2a-mcp.labels" . | nindent 4 }}
+    app.kubernetes.io/component: postgres
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: postgres
+  ports:
+    - name: postgres
+      port: {{ .Values.database.postgres.servicePort }}
+      targetPort: postgres
+{{- end }}

@@ -1,0 +1,43 @@
+openapi: 3.0.3
+info:
+  title: Txtordr Intake API
+  version: 1.0.0
+  description: |
+    Receives structured Txtordr payloads and routes them based on gesture and tone.
+    Payloads must conform to the Txtordr v1 schema and include a valid HMAC signature.
+paths:
+  /txtordr/intake:
+    post:
+      summary: Submit a Txtordr payload
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: 'https://q.enterprises/schemas/txtordr.v1.json'
+      responses:
+        '202':
+          description: Accepted and routed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                  order_id:
+                    type: string
+        '400':
+          description: Invalid payload or HMAC
+        '409':
+          description: Duplicate idempotency key
+        '500':
+          description: Internal error
+      security:
+        - hmacAuth: []
+components:
+  securitySchemes:
+    hmacAuth:
+      type: apiKey
+      in: header
+      name: X-Txtordr-HMAC

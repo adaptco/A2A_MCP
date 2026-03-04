@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A2A Game Engine - Base44 World</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Courier New', monospace;
+            background: #1a1a1a;
+            color: #00ff00;
+            overflow: hidden;
+        }
+        
+        #canvas {
+            display: block;
+            width: 100vw;
+            height: 100vh;
+        }
+        
+        #ui-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        
+        #info {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #00ff00;
+            padding: 15px;
+            border-radius: 5px;
+            font-size: 12px;
+        }
+        
+        .hud-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 5px 0;
+        }
+        
+        .label {
+            font-weight: bold;
+        }
+        
+        .value {
+            color: #ffff00;
+        }
+        
+        #avatar-panels {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .avatar-panel {
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid;
+            padding: 10px;
+            border-radius: 5px;
+            min-width: 200px;
+            font-size: 11px;
+        }
+        
+        .avatar-panel h4 {
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .score-bar {
+            width: 100%;
+            height: 20px;
+            background: #333;
+            border: 1px solid;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+        
+        .score-fill {
+            height: 100%;
+            transition: width 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+        }
+        
+        .engineer { border-color: #0066cc; color: #0066cc; }
+        .designer { border-color: #ff6600; color: #ff6600; }
+
+        #gemini-ui {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #4285F4;
+            padding: 15px;
+            border-radius: 5px;
+            display: flex;
+            gap: 10px;
+            pointer-events: auto;
+        }
+
+        #prompt-input {
+            flex-grow: 1;
+            background: #1a1a1a;
+            color: #00ff00;
+            border: 1px solid #00ff00;
+            padding: 5px;
+            border-radius: 3px;
+        }
+
+        #send-button {
+            background: #4285F4;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        #response-display {
+            position: absolute;
+            bottom: 80px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #4285F4;
+            padding: 15px;
+            border-radius: 5px;
+            width: 300px;
+            min-height: 100px;
+            pointer-events: auto;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    
+    <div id="ui-overlay">
+        <div id="info">
+            <div class="hud-row">
+                <span class="label">Frame:</span>
+                <span class="value" id="frame">0</span>
+            </div>
+            <div class="hud-row">
+                <span class="label">Zones:</span>
+                <span class="value" id="zones">44</span>
+            </div>
+            <div class="hud-row">
+                <span class="label">Status:</span>
+                <span class="value" id="status">Running</span>
+            </div>
+        </div>
+        
+        <div id="avatar-panels"></div>
+
+        <div id="gemini-ui">
+            <input type="text" id="prompt-input" placeholder="Enter a prompt for Gemini...">
+            <button id="send-button">Send</button>
+        </div>
+        <div id="response-display"></div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        const canvas = document.getElementById("canvas");
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x87ceeb);
+
+        const camera = new THREE.OrthographicCamera(
+            -400, 400, 300, -300, 1, 5000
+        );
+        camera.position.set(0, 150, 150);
+
+        const renderer = new THREE.WebGLRenderer({ canvas });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+        scene.add(ambientLight);
+
+        const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        dirLight.position.set(100, 100, 100);
+        scene.add(dirLight);
+
+        let frame = 0;
+
+        function createWorld() {
+            const colors = [0x4488ff, 0xffaa44, 0xff6688];
+            const layers = [4, 4, 3];
+            
+            for (let layer = 0; layer < 3; layer++) {
+                for (let x = 0; x < 4; x++) {
+                    for (let y = 0; y < layers[layer]; y++) {
+                        const geo = new THREE.BoxGeometry(100, 5, 100);
+                        const mat = new THREE.MeshLambertMaterial({ color: colors[layer] });
+                        const mesh = new THREE.Mesh(geo, mat);
+                        mesh.position.set(x * 100 + 50, layer * 50, y * 100 + 50);
+                        scene.add(mesh);
+                    }
+                }
+            }
+        }
+
+        function createAvatars() {
+            const names = ["Manager", "Conductor", "Architect", "Coder", "Tester", "Researcher", "Physicist", "Ralph"];
+            const colors = [0x0066cc, 0x0066cc, 0xff6600, 0x0066cc, 0x0066cc, 0xff6600, 0x0066cc, 0xffd700];
+            
+            names.forEach((name, idx) => {
+                const geo = new THREE.SphereGeometry(8, 32, 32);
+                const mat = new THREE.MeshStandardMaterial({ color: colors[idx] });
+                const mesh = new THREE.Mesh(geo, mat);
+                mesh.position.set(-150 + (idx % 4) * 100, 100 + Math.floor(idx / 4) * 80, 0);
+                scene.add(mesh);
+            });
+        }
+
+        function updateUI() {
+            document.getElementById("frame").textContent = frame;
+            document.getElementById("zones").textContent = "44";
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            frame++;
+            updateUI();
+            renderer.render(scene, camera);
+        }
+
+        createWorld();
+        createAvatars();
+        animate();
+
+        window.addEventListener("resize", () => {
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        const sendButton = document.getElementById("send-button");
+        const promptInput = document.getElementById("prompt-input");
+        const responseDisplay = document.getElementById("response-display");
+
+        sendButton.addEventListener("click", () => {
+            const prompt = promptInput.value;
+            if (prompt) {
+                responseDisplay.textContent = `User prompt: ${prompt}\n\nGemini response: This is a mocked response.`;
+                promptInput.value = "";
+            }
+        });
+    </script>
+</body>
+</html>

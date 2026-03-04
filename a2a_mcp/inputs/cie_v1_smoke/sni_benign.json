@@ -1,0 +1,21 @@
+{
+  "id": "cie.sni.benign.001",
+  "content_source": "cie.v1.smoke",
+  "payload_format": "text",
+  "module_targets": [
+    "synthetic.noise.injector.v1"
+  ],
+  "source_claim": "Photosynthesis converts light energy into chemical energy stored in glucose, releasing oxygen as a byproduct.",
+  "operations": {
+    "ocr_blur": 0.1,
+    "token_drop": 0.02,
+    "translation_rounds": 2,
+    "synonym_swap": 0.05
+  },
+  "expected_outcome": {
+    "integrity": "pass",
+    "semantic_similarity_min": 0.9,
+    "readability_delta_max": 4.0
+  },
+  "notes": "Baseline neutral pass with default SNI knobs; should remain above comprehension threshold."
+}

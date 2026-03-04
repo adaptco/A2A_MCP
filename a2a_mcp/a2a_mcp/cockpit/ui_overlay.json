@@ -1,0 +1,12 @@
+{
+  "hud": {
+    "layers": [
+      {"id": "status-ribbon", "text": "selector.preview.bundle.v1", "style": "accent"},
+      {"id": "prompt-carousel", "items": ["rupture.flare", "restoration.loop", "mesh.response"]}
+    ]
+  },
+  "shimmer": {
+    "intensity": 0.6,
+    "palette": ["#F5A623", "#7ED321", "#4A90E2"]
+  }
+}

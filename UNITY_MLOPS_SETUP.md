@@ -94,6 +94,32 @@ async def run_forever() -> None:
 asyncio.run(run_forever())
 ```
 
+## Debugging Quick Start
+
+If you want to start a focused debugging session, use the targeted pipeline test first:
+
+```bash
+pytest tests/test_mlops_unity_pipeline.py -q
+```
+
+To step through a single failing test with an interactive debugger:
+
+```bash
+pytest tests/test_mlops_unity_pipeline.py -k scheduler -vv --pdb
+```
+
+To debug the standalone script path directly, run:
+
+```bash
+python -m pdb mlops_unity_pipeline.py
+```
+
+Recommended order:
+
+1. Run the targeted pytest command to confirm baseline behavior.
+2. Re-run with `--pdb` and a `-k` filter to inspect failures.
+3. Use `python -m pdb` for manual orchestration flow debugging outside pytest.
+
 
 ## Offline RL Mode
 

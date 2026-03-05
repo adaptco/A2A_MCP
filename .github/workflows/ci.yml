@@ -91,19 +91,20 @@ jobs:
     name: Install Workspace Dependencies
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
           node-version: "20"
           registry-url: "https://registry.npmjs.org"
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
+      - name: Upload staging artifacts (debug)
+        if: failure()
+        uses: actions/upload-artifact@v4
         with:
-          version: "9.7.1"
+          name: staging-behavior
+          path: staging/
 
       - name: Configure @world-os package access
         shell: bash

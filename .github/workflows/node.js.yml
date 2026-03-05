@@ -32,7 +32,7 @@ jobs:
         run: pnpm install --frozen-lockfile --ignore-scripts
 
       - name: Build
-        run: pnpm run --if-present build
+        run: pnpm -r --if-present run build
 
       - name: Test
-        run: pnpm run --if-present test
+        run: pnpm -r --if-present run test

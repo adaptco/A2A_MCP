@@ -36,5 +36,5 @@ jobs:
           if [ -f webpack.config.js ] || [ -f webpack.config.cjs ] || [ -f webpack.config.mjs ]; then
             npx webpack
           else
-            pnpm run --if-present build
+            echo "No webpack config found; skipping webpack build."
           fi

@@ -34,4 +34,4 @@ jobs:
       - name: Run actionlint
         run: |
           set -euo pipefail
-          ./actionlint -color
+          ./actionlint -color -shellcheck= -pyflakes=

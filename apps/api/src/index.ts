@@ -13,6 +13,7 @@ import rateLimit from "@fastify/rate-limit";
 
 const app = Fastify({ logger: true });
 app.register(cors, { origin: true });
+app.register(rateLimit, { global: false });
 app.register(rateLimit, {
   max: 100,
   timeWindow: "1 minute",

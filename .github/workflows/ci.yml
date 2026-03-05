@@ -1,10 +1,12 @@
-<<<<<<< HEAD
 name: CI
 
 on:
   pull_request:
   push:
     branches: [develop]
+
+permissions:
+  contents: read
 
 jobs:
   behavior:
@@ -57,50 +59,3 @@ jobs:
         with:
           name: staging-receipts
           path: staging/
-=======
-name: Workspace CI
-
-on:
-  push:
-    branches: [main]
-    paths:
-      - "package.json"
-      - "pnpm-workspace.yaml"
-      - "apps/**"
-      - "packages/**"
-      - ".github/workflows/ci.yml"
-  pull_request:
-    branches: [main]
-    paths:
-      - "package.json"
-      - "pnpm-workspace.yaml"
-      - "apps/**"
-      - "packages/**"
-      - ".github/workflows/ci.yml"
-
-permissions:
-  contents: read
-
-jobs:
-  pnpm-install:
-    name: Install Workspace Dependencies
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-          cache: "pnpm"
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: "9.7.1"
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile=false
->>>>>>> 6932ba103d4188564ddd391c3aa1c2413daed0c6

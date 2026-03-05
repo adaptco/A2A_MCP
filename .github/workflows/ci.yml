@@ -13,9 +13,6 @@ concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-permissions:
-  contents: read
-
 jobs:
   behavior:
     name: Behavior Validator
@@ -88,3 +85,83 @@ jobs:
         with:
           name: staging-receipts
           path: staging/
+          if-no-files-found: ignore
+
+  workspace-install:
+    name: Install Workspace Dependencies
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: "9.7.1"
+
+      - name: Configure @world-os package access
+        shell: bash
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          WORLD_OS_NPM_REGISTRY: ${{ vars.WORLD_OS_NPM_REGISTRY }}
+        run: |
+          set -euo pipefail
+          REGISTRY="${WORLD_OS_NPM_REGISTRY:-https://registry.npmjs.org}"
+          HOST="${REGISTRY#https://}"
+          HOST="${HOST#http://}"
+          HOST="${HOST%/}"
+          if [ -n "${NPM_TOKEN:-}" ]; then
+            {
+              echo "@world-os:registry=${REGISTRY}"
+              echo "//${HOST}/:_authToken=${NPM_TOKEN}"
+              echo "always-auth=true"
+            } >> .npmrc
+            echo "Configured npm auth for @world-os via ${REGISTRY}"
+          else
+            echo "NPM_TOKEN not set; rewriting @world-os/* deps to workspace:* for CI"
+            python - <<'PY'
+            import glob
+            import json
+            changed = 0
+            patterns = [
+                "apps/*/package.json",
+                "packages/*/package.json",
+                "ui/**/package.json",
+                "api/**/package.json",
+                "tools/**/package.json",
+            ]
+            for pattern in patterns:
+                for path in glob.glob(pattern, recursive=True):
+                    try:
+                        with open(path, "r", encoding="utf-8") as fh:
+                            data = json.load(fh)
+                    except Exception:
+                        continue
+                    dirty = False
+                    for section in ("dependencies", "devDependencies", "optionalDependencies", "peerDependencies"):
+                        deps = data.get(section)
+                        if not isinstance(deps, dict):
+                            continue
+                        for name, version in list(deps.items()):
+                            if name.startswith("@world-os/") and not str(version).startswith("workspace:"):
+                                deps[name] = "workspace:*"
+                                dirty = True
+                    if dirty:
+                        with open(path, "w", encoding="utf-8") as fh:
+                            json.dump(data, fh, indent=2)
+                            fh.write("\n")
+                        changed += 1
+            print(f"Updated {changed} package manifest(s) for @world-os workspace fallback.")
+            PY
+          fi
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile=false
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

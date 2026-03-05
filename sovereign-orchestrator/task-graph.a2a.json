@@ -1,0 +1,141 @@
+{
+    "schema_version": "1.0",
+    "project": "sovereign-orchestrator",
+    "description": "End-to-end AI coding agent pipeline using GitHub Actions as production VM",
+    "tasks": [
+        {
+            "task_id": "T-001",
+            "name": "Decompose Prompt",
+            "description": "Parse high-level user prompt into structured sub-tasks via LLM",
+            "inputs": [
+                "user_prompt"
+            ],
+            "outputs": [
+                "task_list_artifact"
+            ],
+            "agent_card": "agents/Celine/planner.py",
+            "rasic_role": "R",
+            "boo_binding": "Celine",
+            "llm_target": "gemini",
+            "mcp_server": null,
+            "webhook_out": "https://mcp.echo.internal/sse",
+            "github_action": "orchestrator.yml",
+            "status": "pending"
+        },
+        {
+            "task_id": "T-002",
+            "name": "Generate Implementation Plan",
+            "description": "Compile decomposed tasks into a structured implementation plan with dependencies",
+            "inputs": [
+                "task_list_artifact"
+            ],
+            "outputs": [
+                "implementation_plan_artifact"
+            ],
+            "agent_card": "agents/Celine/planner.py",
+            "rasic_role": "R",
+            "boo_binding": "Celine",
+            "llm_target": "claude",
+            "mcp_server": null,
+            "webhook_out": "https://mcp.echo.internal/sse",
+            "github_action": "agent-runner.yml",
+            "status": "pending"
+        },
+        {
+            "task_id": "T-003",
+            "name": "Retrieve Context",
+            "description": "Query RAG vector store to inject relevant codebase context into the plan",
+            "inputs": [
+                "implementation_plan_artifact"
+            ],
+            "outputs": [
+                "enriched_plan_artifact"
+            ],
+            "agent_card": "agents/Gloh/retrieval.py",
+            "rasic_role": "S",
+            "boo_binding": "Gloh",
+            "llm_target": "any",
+            "mcp_server": "https://mcp.gloh.internal/sse",
+            "webhook_out": "https://mcp.echo.internal/sse",
+            "github_action": "agent-runner.yml",
+            "status": "pending"
+        },
+        {
+            "task_id": "T-004",
+            "name": "Generate Code",
+            "description": "Produce executable code artifacts from the enriched implementation plan",
+            "inputs": [
+                "enriched_plan_artifact"
+            ],
+            "outputs": [
+                "code_artifact"
+            ],
+            "agent_card": "agents/runner.py",
+            "rasic_role": "R",
+            "boo_binding": "Dot",
+            "llm_target": "claude",
+            "mcp_server": null,
+            "webhook_out": "https://mcp.echo.internal/sse",
+            "github_action": "agent-runner.yml",
+            "status": "pending"
+        },
+        {
+            "task_id": "T-005",
+            "name": "Generate Frontend",
+            "description": "Create UI/frontend artifacts from code solutions when applicable",
+            "inputs": [
+                "code_artifact"
+            ],
+            "outputs": [
+                "frontend_artifact"
+            ],
+            "agent_card": "agents/Spryte/frontend_gen.py",
+            "rasic_role": "R",
+            "boo_binding": "Spryte",
+            "llm_target": "gemini",
+            "mcp_server": null,
+            "webhook_out": "https://mcp.echo.internal/sse",
+            "github_action": "agent-runner.yml",
+            "status": "pending"
+        },
+        {
+            "task_id": "T-006",
+            "name": "Relay Results",
+            "description": "Route all completed artifacts through the Echo webhook relay broker",
+            "inputs": [
+                "code_artifact",
+                "frontend_artifact"
+            ],
+            "outputs": [
+                "relay_receipt"
+            ],
+            "agent_card": "agents/Echo/relay.py",
+            "rasic_role": "R",
+            "boo_binding": "Echo",
+            "llm_target": "any",
+            "mcp_server": "https://mcp.echo.internal/sse",
+            "webhook_out": null,
+            "github_action": "webhook-dispatch.yml",
+            "status": "pending"
+        },
+        {
+            "task_id": "T-007",
+            "name": "Attest Receipts",
+            "description": "Quality gate: validate all artifacts have execution receipts and sign attestation",
+            "inputs": [
+                "relay_receipt"
+            ],
+            "outputs": [
+                "attestation_receipt"
+            ],
+            "agent_card": "agents/Luma/attest.py",
+            "rasic_role": "R",
+            "boo_binding": "Luma",
+            "llm_target": "any",
+            "mcp_server": null,
+            "webhook_out": null,
+            "github_action": "orchestrator.yml",
+            "status": "pending"
+        }
+    ]
+}

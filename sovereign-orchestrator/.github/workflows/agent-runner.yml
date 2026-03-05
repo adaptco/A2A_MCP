@@ -1,0 +1,55 @@
+name: Agent Runner
+on:
+    workflow_call:
+        inputs:
+            task_id:
+                type: string
+                required: true
+            agent_card:
+                type: string
+                required: true
+            llm_target:
+                type: string
+                required: true
+
+jobs:
+    run-agent:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+            - uses: actions/setup-python@v5
+              with:
+                  python-version: "3.12"
+            - name: Install dependencies
+              working-directory: sovereign-orchestrator
+              run: pip install -r requirements.txt
+            - name: Execute Agent
+              working-directory: sovereign-orchestrator
+              env:
+                  ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+                  OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+                  GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+                  OLLAMA_HOST: ${{ secrets.OLLAMA_HOST }}
+                  ECHO_MCP_TOKEN: ${{ secrets.ECHO_MCP_TOKEN }}
+                  GLOH_MCP_TOKEN: ${{ secrets.GLOH_MCP_TOKEN }}
+                  TASK_ID: ${{ inputs.task_id }}
+                  AGENT_CARD: ${{ inputs.agent_card }}
+                  LLM_TARGET: ${{ inputs.llm_target }}
+              run: python agents/runner.py
+            - name: Fire Webhook via Echo Relay
+              working-directory: sovereign-orchestrator
+              env:
+                  TASK_ID: ${{ inputs.task_id }}
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              run: python agents/Echo/relay.py ${{ inputs.task_id }}
+            - name: Upload Task Artifacts
+              uses: actions/upload-artifact@v4
+              with:
+                  name: ${{ inputs.task_id }}-artifacts
+                  path: sovereign-orchestrator/artifacts/${{ inputs.task_id }}/
+            - name: Upload Receipts
+              uses: actions/upload-artifact@v4
+              with:
+                  name: receipts
+                  path: sovereign-orchestrator/receipts/
+                  if-no-files-found: ignore

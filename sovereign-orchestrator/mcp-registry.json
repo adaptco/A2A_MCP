@@ -1,0 +1,33 @@
+{
+    "schema_version": "1.0",
+    "servers": [
+        {
+            "name": "echo-relay",
+            "url": "https://mcp.echo.internal/sse",
+            "auth_env": "ECHO_MCP_TOKEN",
+            "agents": [
+                "Echo"
+            ],
+            "purpose": "Cross-LLM webhook relay broker — all inter-agent messages route through Echo"
+        },
+        {
+            "name": "gloh-rag",
+            "url": "https://mcp.gloh.internal/sse",
+            "auth_env": "GLOH_MCP_TOKEN",
+            "agents": [
+                "Gloh"
+            ],
+            "purpose": "Vector store retrieval for RAG context injection"
+        },
+        {
+            "name": "sovereign-control",
+            "url": "https://mcp.sovereign.internal/sse",
+            "auth_env": "SOVEREIGN_MCP_TOKEN",
+            "agents": [
+                "Dot",
+                "Celine"
+            ],
+            "purpose": "Orchestrator control plane for task graph management"
+        }
+    ]
+}

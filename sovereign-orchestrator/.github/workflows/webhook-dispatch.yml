@@ -1,0 +1,68 @@
+name: Webhook Dispatch Handler
+on:
+    repository_dispatch:
+        types:
+            - agent-relay-celine
+            - agent-relay-spryte
+            - agent-relay-echo
+            - agent-relay-gloh
+            - agent-relay-luma
+            - agent-relay-dot
+            - chat-trigger
+            - browser-webhook
+
+permissions:
+    contents: read
+    actions: write
+
+jobs:
+    route-webhook:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+            - uses: actions/setup-python@v5
+              with:
+                  python-version: "3.12"
+            - name: Install dependencies
+              working-directory: sovereign-orchestrator
+              run: pip install -r requirements.txt
+
+            - name: Extract Payload
+              id: payload
+              run: |
+                  echo "event_type=${{ github.event.action }}" >> $GITHUB_OUTPUT
+                  echo "task_id=${{ github.event.client_payload.task_id || 'T-webhook' }}" >> $GITHUB_OUTPUT
+                  echo "to_agent=${{ github.event.client_payload.to_agent || 'Dot' }}" >> $GITHUB_OUTPUT
+
+            - name: Route to Agent
+              working-directory: sovereign-orchestrator
+              env:
+                  ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+                  OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+                  GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+                  ECHO_MCP_TOKEN: ${{ secrets.ECHO_MCP_TOKEN }}
+                  GLOH_MCP_TOKEN: ${{ secrets.GLOH_MCP_TOKEN }}
+                  TASK_ID: ${{ steps.payload.outputs.task_id }}
+                  LLM_TARGET: gemini
+                  USER_PROMPT: ${{ toJson(github.event.client_payload.payload) }}
+              run: |
+                  AGENT="${{ steps.payload.outputs.to_agent }}"
+                  echo "[Webhook] Routing ${{ steps.payload.outputs.event_type }} → $AGENT"
+
+                  case "$AGENT" in
+                    Celine) AGENT_CARD="agents/Celine/planner.py" ;;
+                    Spryte) AGENT_CARD="agents/Spryte/frontend_gen.py" ;;
+                    Gloh)   AGENT_CARD="agents/Gloh/retrieval.py" ;;
+                    Luma)   AGENT_CARD="agents/Luma/attest.py" ;;
+                    Echo)   AGENT_CARD="agents/Echo/relay.py" ;;
+                    *)      AGENT_CARD="agents/runner.py" ;;
+                  esac
+
+                  export AGENT_CARD
+                  python agents/runner.py
+
+            - name: Upload Results
+              uses: actions/upload-artifact@v4
+              with:
+                  name: webhook-${{ steps.payload.outputs.task_id }}
+                  path: sovereign-orchestrator/artifacts/

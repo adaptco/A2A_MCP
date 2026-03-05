@@ -1,0 +1,70 @@
+name: Sovereign Orchestrator
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      prompt:
+        description: 'High-level task prompt from chat context'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  actions: write
+
+concurrency:
+  group: sovereign-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  parse-task-graph:
+    runs-on: ubuntu-latest
+    outputs:
+      tasks: ${{ steps.graph.outputs.tasks }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install dependencies
+        run: pip install -r sovereign-orchestrator/requirements.txt
+      - id: graph
+        name: Parse Task Graph
+        working-directory: sovereign-orchestrator
+        run: python agents/Dot/parse_graph.py task-graph.a2a.json
+
+  dispatch-agents:
+    needs: parse-task-graph
+    strategy:
+      max-parallel: 2
+      matrix:
+        task: ${{ fromJson(needs.parse-task-graph.outputs.tasks) }}
+    uses: ./.github/workflows/agent-runner.yml
+    with:
+      task_id: ${{ matrix.task.task_id }}
+      agent_card: ${{ matrix.task.agent_card }}
+      llm_target: ${{ matrix.task.llm_target }}
+    secrets: inherit
+
+  attest-receipts:
+    needs: dispatch-agents
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: sovereign-orchestrator/artifacts/
+      - name: Download receipts
+        uses: actions/download-artifact@v4
+        with:
+          name: receipts
+          path: sovereign-orchestrator/receipts/
+        continue-on-error: true
+      - name: Run Luma Attestation
+        working-directory: sovereign-orchestrator
+        run: python agents/Luma/attest.py receipts/

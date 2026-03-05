@@ -1,0 +1,68 @@
+{
+    "schema_version": "1.0",
+    "matrix": {
+        "T-001": {
+            "Celine": "R",
+            "Dot": "A",
+            "Echo": "I",
+            "Gloh": "S",
+            "Luma": "I",
+            "Spryte": "I"
+        },
+        "T-002": {
+            "Celine": "R",
+            "Dot": "A",
+            "Echo": "I",
+            "Gloh": "C",
+            "Luma": "I",
+            "Spryte": "I"
+        },
+        "T-003": {
+            "Celine": "C",
+            "Dot": "A",
+            "Echo": "I",
+            "Gloh": "R",
+            "Luma": "I",
+            "Spryte": "I"
+        },
+        "T-004": {
+            "Celine": "I",
+            "Dot": "R",
+            "Echo": "I",
+            "Gloh": "S",
+            "Luma": "I",
+            "Spryte": "I"
+        },
+        "T-005": {
+            "Celine": "I",
+            "Dot": "A",
+            "Echo": "I",
+            "Gloh": "S",
+            "Luma": "I",
+            "Spryte": "R"
+        },
+        "T-006": {
+            "Celine": "I",
+            "Dot": "A",
+            "Echo": "R",
+            "Gloh": "I",
+            "Luma": "I",
+            "Spryte": "I"
+        },
+        "T-007": {
+            "Celine": "I",
+            "Dot": "A",
+            "Echo": "I",
+            "Gloh": "I",
+            "Luma": "R",
+            "Spryte": "I"
+        }
+    },
+    "legend": {
+        "R": "Responsible — does the work",
+        "A": "Accountable — owns the outcome",
+        "S": "Supportive — assists with execution",
+        "I": "Informed — receives status updates",
+        "C": "Consulted — provides input/expertise"
+    }
+}

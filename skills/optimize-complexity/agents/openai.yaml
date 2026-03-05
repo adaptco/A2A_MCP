@@ -1,0 +1,7 @@
+interface:
+  display_name: "Optimize Complexity"
+  short_description: "Deterministically rebalance tool complexity from CSV checkpoints"
+  default_prompt: "Use $optimize-complexity to optimize an orchestration checkpoint CSV and produce CI-ready reports."
+
+policy:
+  allow_implicit_invocation: true

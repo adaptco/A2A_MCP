@@ -1,0 +1,56 @@
+{{- if eq .Values.database.mode "postgres" }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "a2a-mcp.postgresServiceName" . }}
+  labels:
+    {{- include "a2a-mcp.labels" . | nindent 4 }}
+    app.kubernetes.io/component: postgres
+spec:
+  serviceName: {{ include "a2a-mcp.postgresServiceName" . }}
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/component: postgres
+  template:
+    metadata:
+      labels:
+        {{- include "a2a-mcp.labels" . | nindent 8 }}
+        app.kubernetes.io/component: postgres
+    spec:
+      containers:
+        - name: postgres
+          image: "{{ .Values.images.postgres.repository }}:{{ .Values.images.postgres.tag }}"
+          imagePullPolicy: {{ .Values.images.postgres.pullPolicy }}
+          ports:
+            - name: postgres
+              containerPort: {{ .Values.database.postgres.servicePort }}
+          env:
+            - name: POSTGRES_DB
+              value: {{ .Values.database.postgres.credentials.database | quote }}
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "a2a-mcp.fullname" . }}-secret
+                  key: POSTGRES_USER
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "a2a-mcp.fullname" . }}-secret
+                  key: POSTGRES_PASSWORD
+          volumeMounts:
+            - name: postgres-data
+              mountPath: /var/lib/postgresql/data
+  volumeClaimTemplates:
+    - metadata:
+        name: postgres-data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: {{ .Values.database.postgres.storage.size }}
+        {{- if .Values.database.postgres.storage.storageClassName }}
+        storageClassName: {{ .Values.database.postgres.storage.storageClassName | quote }}
+        {{- end }}
+{{- end }}

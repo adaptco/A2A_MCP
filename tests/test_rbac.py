@@ -2,6 +2,7 @@
 RBAC Unit Tests — Agent onboarding and permission enforcement.
 """
 
+import os
 import pytest
 from fastapi.testclient import TestClient
 
@@ -23,7 +24,27 @@ def clear_registry():
 
 @pytest.fixture
 def client():
-    return TestClient(app)
+    token = os.getenv("RBAC_SECRET", "dev-secret-change-me")
+    return TestClient(app, headers={"Authorization": f"Bearer {token}"})
+
+
+def test_unauthorized_access_denied():
+    """Ensure requests without a valid token are rejected."""
+    unauthorized_client = TestClient(app)
+
+    # 1. Missing header -> HTTPBearer raises 401 (or 403 depending on version, but we saw 401)
+    response = unauthorized_client.get("/agents")
+    assert response.status_code == 401
+    assert response.json()["detail"] == "Not authenticated"
+
+    # 2. Invalid token -> verify_token raises 401 with custom message
+    response = unauthorized_client.get("/agents", headers={"Authorization": "Bearer invalid-token"})
+    assert response.status_code == 401
+    assert response.json()["detail"] == "Invalid authentication token"
+
+    # 3. Health check should still be accessible
+    response = unauthorized_client.get("/health")
+    assert response.status_code == 200
 
 
 # ── Health ───────────────────────────────────────────────────────────────

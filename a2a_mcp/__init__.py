@@ -1,21 +1,31 @@
-"""Shared MCP core and tenant-isolated client token pipe primitives."""
+"""Core MCP package for shared protocol logic with tenant isolation."""
 
-from .client_token_pipe import (
-    ClientContext,
-    ClientTokenContext,
-    ClientTokenPipe,
-    ContaminationError,
-    InMemoryEventStore,
-)
-from .mcp_core import MCPResult, MCPCore, namespace_project_embedding
+from a2a_mcp.mcp_core import MCPCore, MCPResult
+
+try:
+    from a2a_mcp.client_token_pipe import (
+        ClientTokenPipe,
+        ClientTokenPipeContext,
+        ContaminationError,
+        InMemoryEventStore,
+    )
+except ModuleNotFoundError:
+    ClientTokenPipe = None
+    ClientTokenPipeContext = None
+    ContaminationError = None
+    InMemoryEventStore = None
 
 __all__ = [
-    "ClientContext",
-    "ClientTokenContext",
-    "ClientTokenPipe",
-    "ContaminationError",
-    "InMemoryEventStore",
     "MCPCore",
     "MCPResult",
-    "namespace_project_embedding",
 ]
+
+if ClientTokenPipe is not None:
+    __all__.extend(
+        [
+            "ClientTokenPipe",
+            "ClientTokenPipeContext",
+            "ContaminationError",
+            "InMemoryEventStore",
+        ]
+    )

@@ -50,6 +50,7 @@ jobs:
   build-images:
     name: Build Docker Images
     runs-on: ubuntu-latest
+    if: github.event_name == 'push'
     needs: unit-tests
 
     steps:
@@ -68,6 +69,7 @@ jobs:
   integration-test:
     name: Stack Integration Test
     runs-on: ubuntu-latest
+    if: github.event_name == 'push'
     needs: build-images
 
     services:
@@ -111,15 +113,23 @@ jobs:
           curl -sf http://localhost:8001/health || (echo "RBAC gateway unhealthy" && exit 1)
 
           echo "=== Checking Orchestrator ==="
-          curl -sf http://localhost:8000/health || echo "Orchestrator health endpoint not yet implemented (non-blocking)"
+          curl -sf http://localhost:8000/healthz || (echo "Orchestrator unhealthy" && exit 1)
+
+          echo "=== Checking MCP Gateway ==="
+          curl -sf http://localhost:8080/healthz || (echo "MCP Gateway unhealthy" && exit 1)
 
           echo "=== All health checks passed ==="
 
       - name: E2E - Agent onboarding via RBAC
         run: |
           echo "=== Onboarding test agent ==="
+          TS=$(date +%s)
+          SIG=$(echo -n "$TS" | openssl dgst -sha256 -hmac "$RBAC_SECRET" | sed 's/^.* //')
+          
           curl -sf -X POST http://localhost:8001/agents/onboard \
             -H "Content-Type: application/json" \
+            -H "X-RBAC-Timestamp: $TS" \
+            -H "X-RBAC-Signature: $SIG" \
             -d '{
               "agent_id": "ci-test-agent",
               "agent_name": "CI Test Agent",
@@ -129,7 +139,9 @@ jobs:
 
           echo ""
           echo "=== Verify permissions ==="
-          curl -sf http://localhost:8001/agents/ci-test-agent/permissions
+          curl -sf http://localhost:8001/agents/ci-test-agent/permissions \
+            -H "X-RBAC-Timestamp: $TS" \
+            -H "X-RBAC-Signature: $SIG"
 
           echo ""
           echo "=== Verify pipeline access ==="
@@ -141,8 +153,13 @@ jobs:
 
           echo ""
           echo "=== Verify observer cannot run pipeline ==="
+          TS=$(date +%s)
+          SIG=$(echo -n "$TS" | openssl dgst -sha256 -hmac "$RBAC_SECRET" | sed 's/^.* //')
+          
           curl -sf -X POST http://localhost:8001/agents/onboard \
             -H "Content-Type: application/json" \
+            -H "X-RBAC-Timestamp: $TS" \
+            -H "X-RBAC-Signature: $SIG" \
             -d '{
               "agent_id": "ci-observer",
               "agent_name": "CI Observer",

@@ -1,0 +1,65 @@
+schema_version: "1.0"
+pipeline:
+  name: worldline-hardened-cicd
+  objective: >-
+    Debase and merge the worldline branch into main through verified,
+    policy-driven quality and security gates.
+  source_branch: worldline
+  target_branch: main
+
+controls:
+  required_checks:
+    - lint
+    - unit_tests
+    - integration_tests
+    - contract_validation
+    - sbom_generation
+    - container_scan
+    - provenance_attestation
+  security:
+    minimum_permissions: read
+    enforce_oidc: true
+    require_dependency_review: true
+    block_unpinned_actions: true
+  release:
+    strategy: blue_green
+    require_approval_environment: production
+    rollback_window_minutes: 30
+
+stages:
+  - id: validate
+    gates:
+      - name: workflow-syntax
+        criterion: all workflow YAML files parse without errors
+      - name: branch-contract
+        criterion: source branch equals worldline and target equals main
+  - id: quality
+    gates:
+      - name: lint
+        criterion: no linter violations at error level
+      - name: tests
+        criterion: unit and integration tests pass
+      - name: coverage
+        criterion: total coverage >= 85%
+  - id: supply_chain
+    gates:
+      - name: sbom
+        criterion: generate CycloneDX or SPDX SBOM artifact
+      - name: vuln_scan
+        criterion: critical vulnerabilities == 0
+      - name: provenance
+        criterion: signed provenance artifact uploaded
+  - id: release
+    gates:
+      - name: deploy-smoke
+        criterion: deployment smoke checks pass
+      - name: post_deploy_monitoring
+        criterion: no SLO breach during rollback window
+
+artifacts:
+  reports_dir: build/worldline
+  required:
+    - build/worldline/check-summary.json
+    - build/worldline/sbom.json
+    - build/worldline/provenance.json
+    - build/worldline/deploy-smoke.txt

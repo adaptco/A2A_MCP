@@ -1,0 +1,14 @@
+# Production values for a2a-mcp
+image:
+  repository: ghcr.io/adaptco/a2a-mcp
+  tag: "latest"
+
+config:
+  environment: production
+  oidc:
+    enforce: true
+    issuer: "https://token.actions.githubusercontent.com"
+    audience: ""
+    jwksUrl: "https://token.actions.githubusercontent.com/.well-known/jwks"
+    avatarRepositoryAllowlist: "adaptco/A2A_MCP"
+    avatarActorAllowlist: "github-actions[bot]"

@@ -1,0 +1,25 @@
+# Default values for a2a-mcp.
+# These values are intended for local/dev usage.
+
+secrets:
+  # Set false when using a pre-created Kubernetes Secret.
+  create: true
+
+  # Optional override; defaults to <release-name>-secrets.
+  nameOverride: ""
+
+  # Sensitive values -> rendered into templates/secret.yaml and consumed as env vars.
+  oidcAudience: ""
+  oidcIssuer: ""
+  oidcJwksUrl: ""
+  avatarTokenSigningKey: ""
+  avatarTokenValidationKey: ""
+
+config:
+  # Optional override; defaults to <release-name>-config.
+  nameOverride: ""
+
+  # Non-sensitive values -> rendered into templates/configmap.yaml and consumed as env vars.
+  avatarTokenAlgorithm: "HS256"
+  avatarTokenTtlSeconds: "900"
+  oidcRequired: "true"

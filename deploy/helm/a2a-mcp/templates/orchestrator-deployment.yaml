@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "a2a-mcp.orchestratorServiceName" . }}
+  labels:
+    {{- include "a2a-mcp.labels" . | nindent 4 }}
+    app.kubernetes.io/component: orchestrator
+spec:
+  replicas: {{ .Values.orchestrator.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/component: orchestrator
+  template:
+    metadata:
+      labels:
+        {{- include "a2a-mcp.labels" . | nindent 8 }}
+        app.kubernetes.io/component: orchestrator
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: orchestrator
+          image: "{{ .Values.images.orchestrator.repository }}:{{ .Values.images.orchestrator.tag }}"
+          imagePullPolicy: {{ .Values.images.orchestrator.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.orchestrator.service.port }}
+          envFrom:
+            - configMapRef:
+                name: {{ include "a2a-mcp.fullname" . }}-config
+            - secretRef:
+                name: {{ include "a2a-mcp.fullname" . }}-secret
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          resources:
+            {{- toYaml .Values.orchestrator.resources | nindent 12 }}
+          {{- if eq .Values.database.mode "sqlite" }}
+          volumeMounts:
+            - name: sqlite-data
+              mountPath: /data
+          {{- end }}
+      {{- if eq .Values.database.mode "sqlite" }}
+      volumes:
+        - name: sqlite-data
+          persistentVolumeClaim:
+            claimName: {{ include "a2a-mcp.fullname" . }}-sqlite
+      {{- end }}
+      nodeSelector:
+        {{- toYaml .Values.nodeSelector | nindent 8 }}
+      tolerations:
+        {{- toYaml .Values.tolerations | nindent 8 }}
+      affinity:
+        {{- toYaml .Values.affinity | nindent 8 }}

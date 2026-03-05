@@ -29,6 +29,19 @@ services:
       timeout: 3s
       retries: 5
 
+  migration:
+    build:
+      context: .
+      dockerfile: orchestrator/Dockerfile
+    container_name: a2a-migration
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD:-pass}@db:5432/${POSTGRES_DB:-mcp_db}
+    command: ["sh", "scripts/migrate.sh"]
+    restart: on-failure
+
   redis:
     image: redis:7-alpine
     container_name: a2a-redis
@@ -71,16 +84,40 @@ services:
     environment:
       DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD:-pass}@db:5432/${POSTGRES_DB:-mcp_db}
       RBAC_SECRET: ${RBAC_SECRET:-dev-secret-change-me}
+      ENV: ${ENV:-development}
     healthcheck:
       test: ["CMD-SHELL", "curl -sf http://localhost:8001/health || exit 1"]
-      interval: 5s
-      timeout: 3s
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─── MCP Gateway ─────────────────────────────────────────────────────
+
+  mcp-gateway:
+    build:
+      context: .
+      dockerfile: app/Dockerfile
+    container_name: a2a-mcp-gateway
+    ports:
+      - "8080:8080"
+    depends_on:
+      orchestrator:
+        condition: service_healthy
+    environment:
+      GITHUB_OIDC_AUDIENCE: ${GITHUB_OIDC_AUDIENCE:-}
+      ENV: ${ENV:-development}
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8080/healthz || exit 1"]
+      interval: 10s
+      timeout: 5s
       retries: 5
 
   # ─── Orchestrator ─────────────────────────────────────────────────────
 
   orchestrator:
-    build: .
+    build:
+      context: .
+      dockerfile: orchestrator/Dockerfile
     container_name: a2a-orchestrator
     ports:
       - "8000:8000"
@@ -100,8 +137,9 @@ services:
       RBAC_URL: http://rbac-gateway:8001
       LLM_API_KEY: ${LLM_API_KEY:-}
       LLM_ENDPOINT: ${LLM_ENDPOINT:-https://api.mistral.ai/v1/chat/completions}
+      ENV: ${ENV:-development}
     healthcheck:
-      test: ["CMD-SHELL", "curl -sf http://localhost:8000/health || exit 1"]
+      test: ["CMD-SHELL", "curl -sf http://localhost:8000/healthz || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 5

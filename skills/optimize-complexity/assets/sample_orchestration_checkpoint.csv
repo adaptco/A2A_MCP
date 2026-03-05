@@ -1,0 +1,7 @@
+agent,tool_name,crud_category,complexity,input_parameter_count
+ManagingAgent,plan.create,create,moderate,2
+OrchestrationAgent,dag.expand,update,0.82,5
+CoderAgent,repo.patch,update,complex,4
+TesterAgent,test.run,read,0.45,1
+JudgeAgent,artifact.gate,read,simple,3
+RuntimeAgent,world.tick,update,67,6

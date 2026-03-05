@@ -103,6 +103,50 @@
         
         .engineer { border-color: #0066cc; color: #0066cc; }
         .designer { border-color: #ff6600; color: #ff6600; }
+
+        #gemini-ui {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #4285F4;
+            padding: 15px;
+            border-radius: 5px;
+            display: flex;
+            gap: 10px;
+            pointer-events: auto;
+        }
+
+        #prompt-input {
+            flex-grow: 1;
+            background: #1a1a1a;
+            color: #00ff00;
+            border: 1px solid #00ff00;
+            padding: 5px;
+            border-radius: 3px;
+        }
+
+        #send-button {
+            background: #4285F4;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        #response-display {
+            position: absolute;
+            bottom: 80px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #4285F4;
+            padding: 15px;
+            border-radius: 5px;
+            width: 300px;
+            min-height: 100px;
+            pointer-events: auto;
+        }
     </style>
 </head>
 <body>
@@ -125,6 +169,12 @@
         </div>
         
         <div id="avatar-panels"></div>
+
+        <div id="gemini-ui">
+            <input type="text" id="prompt-input" placeholder="Enter a prompt for Gemini...">
+            <button id="send-button">Send</button>
+        </div>
+        <div id="response-display"></div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -168,8 +218,8 @@
         }
 
         function createAvatars() {
-            const names = ["Manager", "Conductor", "Architect", "Coder", "Tester", "Researcher", "Physicist"];
-            const colors = [0x0066cc, 0x0066cc, 0xff6600, 0x0066cc, 0x0066cc, 0xff6600, 0x0066cc];
+            const names = ["Manager", "Conductor", "Architect", "Coder", "Tester", "Researcher", "Physicist", "Ralph"];
+            const colors = [0x0066cc, 0x0066cc, 0xff6600, 0x0066cc, 0x0066cc, 0xff6600, 0x0066cc, 0xffd700];
             
             names.forEach((name, idx) => {
                 const geo = new THREE.SphereGeometry(8, 32, 32);
@@ -198,6 +248,18 @@
 
         window.addEventListener("resize", () => {
             renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        const sendButton = document.getElementById("send-button");
+        const promptInput = document.getElementById("prompt-input");
+        const responseDisplay = document.getElementById("response-display");
+
+        sendButton.addEventListener("click", () => {
+            const prompt = promptInput.value;
+            if (prompt) {
+                responseDisplay.textContent = `User prompt: ${prompt}\n\nGemini response: This is a mocked response.`;
+                promptInput.value = "";
+            }
         });
     </script>
 </body>

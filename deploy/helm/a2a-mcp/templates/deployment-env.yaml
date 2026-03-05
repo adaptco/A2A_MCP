@@ -1,0 +1,15 @@
+# Env wiring snippet for OIDC runtime configuration
+- name: ENVIRONMENT
+  value: {{ .Values.config.environment | quote }}
+- name: OIDC_ENFORCE
+  value: {{ ternary "true" "false" .Values.config.oidc.enforce | quote }}
+- name: OIDC_ISSUER
+  value: {{ required "config.oidc.issuer is required in production" .Values.config.oidc.issuer | quote }}
+- name: OIDC_AUDIENCE
+  value: {{ required "config.oidc.audience is required in production" .Values.config.oidc.audience | quote }}
+- name: OIDC_JWKS_URL
+  value: {{ required "config.oidc.jwksUrl is required in production" .Values.config.oidc.jwksUrl | quote }}
+- name: OIDC_AVATAR_REPOSITORY_ALLOWLIST
+  value: {{ .Values.config.oidc.avatarRepositoryAllowlist | quote }}
+- name: OIDC_AVATAR_ACTOR_ALLOWLIST
+  value: {{ .Values.config.oidc.avatarActorAllowlist | quote }}

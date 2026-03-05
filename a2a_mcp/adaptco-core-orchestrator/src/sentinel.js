@@ -252,7 +252,19 @@ function defaultRunCommand(command, options = {}) {
 
 function createDescriptorWriter(baseDir) {
   return async (descriptor, explicitPath) => {
-    const targetPath = explicitPath ? path.resolve(explicitPath) : await createDescriptorPath(baseDir, descriptor);
+    const baseRoot = path.resolve(baseDir) + path.sep;
+    let targetPath;
+
+    if (explicitPath) {
+      // Resolve user-provided paths within the descriptor base directory
+      targetPath = path.resolve(baseDir, explicitPath);
+      if (!targetPath.startsWith(baseRoot)) {
+        throw new Error('descriptorPath is outside the allowed descriptor directory');
+      }
+    } else {
+      targetPath = await createDescriptorPath(baseDir, descriptor);
+    }
+
     const payload = JSON.stringify(descriptor, null, 2);
 
     await fsp.mkdir(path.dirname(targetPath), { recursive: true });

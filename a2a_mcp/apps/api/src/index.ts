@@ -9,9 +9,15 @@ import crypto from "crypto";
 import { ethers } from "ethers";
 import fs from "fs";
 import path from "path";
+import rateLimit from "@fastify/rate-limit";
 
 const app = Fastify({ logger: true });
 app.register(cors, { origin: true });
+app.register(rateLimit, {
+  global: true,
+  max: 60,
+  timeWindow: "1 minute"
+});
 app.register(websocket);
 
 const prisma = new PrismaClient();
@@ -82,25 +88,36 @@ app.post("/chrono/challenge", async (request, reply) => {
   return { challenge, message, wallet };
 });
 
-app.post("/chrono/claim", async (request, reply) => {
-  const { challenge, signature, wallet } = request.body as any;
-  const recovered = ethers.verifyMessage(JSON.stringify(challenge), signature);
-  if (recovered.toLowerCase() !== wallet.toLowerCase()) return reply.status(400).send({ error: "bad sig" });
-  if (challenge.expiresAt < Date.now()) return reply.status(400).send({ error: "expired" });
-  const existing = await prisma.chronoKeyClaim.findUnique({ where: { pidHash: challenge.pidHash } });
-  if (existing) return reply.status(400).send({ error: "used" });
-  await prisma.chronoKeyClaim.create({ data: { pidHash: challenge.pidHash, rarityTier: challenge.rarityTier, wallet } });
-  const provider = new ethers.JsonRpcProvider(process.env.CHAIN_RPC || "http://127.0.0.1:8545");
-  const signer = new ethers.Wallet(process.env.MINTER_PRIVATE_KEY || ethers.Wallet.createRandom().privateKey, provider);
-  const address = process.env.CONTRACT_ADDRESS || "";
-  if (!address) return { authorized: true, note: "Deploy contract then mint" };
-  const abiPath = path.join(__dirname, "..", "..", "packages", "contracts", "artifacts", "contracts", "TimekeepersTFT.sol", "TimekeepersTFT.json");
-  const abi = JSON.parse(fs.readFileSync(abiPath, "utf-8")).abi;
-  const contract = new ethers.Contract(address, abi, signer);
-  const tx = await contract.chronoSyncMint(wallet, `0x${challenge.pidHash}`, challenge.rarityTier);
-  const receipt = await tx.wait();
-  return { tx: receipt?.hash };
-});
+app.post(
+  "/chrono/claim",
+  {
+    config: {
+      rateLimit: {
+        max: 10,
+        timeWindow: "1 minute"
+      }
+    }
+  },
+  async (request, reply) => {
+    const { challenge, signature, wallet } = request.body as any;
+    const recovered = ethers.verifyMessage(JSON.stringify(challenge), signature);
+    if (recovered.toLowerCase() !== wallet.toLowerCase()) return reply.status(400).send({ error: "bad sig" });
+    if (challenge.expiresAt < Date.now()) return reply.status(400).send({ error: "expired" });
+    const existing = await prisma.chronoKeyClaim.findUnique({ where: { pidHash: challenge.pidHash } });
+    if (existing) return reply.status(400).send({ error: "used" });
+    await prisma.chronoKeyClaim.create({ data: { pidHash: challenge.pidHash, rarityTier: challenge.rarityTier, wallet } });
+    const provider = new ethers.JsonRpcProvider(process.env.CHAIN_RPC || "http://127.0.0.1:8545");
+    const signer = new ethers.Wallet(process.env.MINTER_PRIVATE_KEY || ethers.Wallet.createRandom().privateKey, provider);
+    const address = process.env.CONTRACT_ADDRESS || "";
+    if (!address) return { authorized: true, note: "Deploy contract then mint" };
+    const abiPath = path.join(__dirname, "..", "..", "packages", "contracts", "artifacts", "contracts", "TimekeepersTFT.sol", "TimekeepersTFT.json");
+    const abi = JSON.parse(fs.readFileSync(abiPath, "utf-8")).abi;
+    const contract = new ethers.Contract(address, abi, signer);
+    const tx = await contract.chronoSyncMint(wallet, `0x${challenge.pidHash}`, challenge.rarityTier);
+    const receipt = await tx.wait();
+    return { tx: receipt?.hash };
+  }
+);
 
 app.post("/forge/request", async (request) => {
   const payload = request.body as any;

@@ -7,8 +7,6 @@ pipeline and executing lifecycle transitions.
 
 from __future__ import annotations
 
-import hmac
-import hashlib
 import os
 from typing import Dict, List
 
@@ -25,7 +23,12 @@ from rbac.models import (
     OnboardingResult,
     PermissionCheckRequest,
     PermissionCheckResponse,
+    RBACTokenIntrospectRequest,
+    RBACTokenIntrospectResponse,
+    RBACTokenIssueRequest,
+    RBACTokenIssueResponse,
 )
+from rbac.token_service import RBACJWTIssuer, TokenServiceError, token_fingerprint
 
 # ── App setup ────────────────────────────────────────────────────────────
 
@@ -50,6 +53,7 @@ _registry: Dict[str, AgentRecord] = {}
 
 RBAC_SECRET = os.getenv("RBAC_SECRET", "dev-secret-change-me")
 security = HTTPBearer()
+token_issuer = RBACJWTIssuer(secret=RBAC_SECRET)
 
 
 async def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)):
@@ -221,6 +225,51 @@ async def deactivate_agent(agent_id: str):
             detail=f"Agent '{agent_id}' not found.",
         )
     record.active = False
+
+
+# ── RBAC Token Issuance / Introspection ─────────────────────────────────
+
+@app.post("/tokens/issue", response_model=RBACTokenIssueResponse, dependencies=[Depends(verify_token)])
+async def issue_access_token(request: RBACTokenIssueRequest):
+    """Issue short-lived signed JWT for A2A/MCP handshakes."""
+
+    claims = {
+        "sub": request.subject,
+        "tenant_id": request.tenant_id,
+        "client_id": request.client_id,
+        "avatar_id": request.avatar_id,
+        "roles": sorted(set(request.roles)),
+        "scopes": sorted(set(request.scopes)),
+        "tools": sorted(set(request.tools)),
+    }
+    try:
+        token, expanded_claims = token_issuer.issue_access_token(
+            claims,
+            ttl_seconds=request.ttl_seconds,
+        )
+    except TokenServiceError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
+
+    expires_at = int(expanded_claims["exp"])
+    expires_in = max(0, expires_at - int(expanded_claims["iat"]))
+    return RBACTokenIssueResponse(
+        access_token=token,
+        expires_at=expires_at,
+        expires_in=expires_in,
+        fingerprint=token_fingerprint(token),
+        claims=expanded_claims,
+    )
+
+
+@app.post("/tokens/introspect", response_model=RBACTokenIntrospectResponse, dependencies=[Depends(verify_token)])
+async def introspect_access_token(request: RBACTokenIntrospectRequest):
+    """Verify issued RBAC token and return claims."""
+
+    try:
+        claims = token_issuer.verify_access_token(request.access_token)
+    except TokenServiceError as exc:
+        return RBACTokenIntrospectResponse(active=False, claims={}, reason=str(exc))
+    return RBACTokenIntrospectResponse(active=True, claims=claims, reason="")
 
 
 # ── Entry point ──────────────────────────────────────────────────────────

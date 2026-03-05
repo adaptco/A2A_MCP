@@ -148,3 +148,56 @@ class RBACClient:
         except requests.RequestException as e:
             logger.warning("Failed to fetch permissions for '%s': %s", agent_id, e)
             return {}
+
+    # ── Token operations ───────────────────────────────────────────
+
+    def issue_access_token(
+        self,
+        *,
+        subject: str,
+        tenant_id: str,
+        client_id: str,
+        avatar_id: str,
+        roles: list[str],
+        scopes: list[str],
+        tools: list[str] | None = None,
+        ttl_seconds: int = 900,
+    ) -> Dict[str, Any]:
+        """Issue signed RBAC access token from the gateway."""
+
+        payload = {
+            "subject": subject,
+            "tenant_id": tenant_id,
+            "client_id": client_id,
+            "avatar_id": avatar_id,
+            "roles": roles,
+            "scopes": scopes,
+            "tools": tools or [],
+            "ttl_seconds": ttl_seconds,
+        }
+        try:
+            response = requests.post(
+                f"{self.base_url}/tokens/issue",
+                json=payload,
+                headers=self._auth_headers(),
+                timeout=self.timeout,
+            )
+            response.raise_for_status()
+            return response.json()
+        except requests.RequestException as exc:
+            raise RuntimeError(f"RBAC token issuance failed: {exc}") from exc
+
+    def introspect_access_token(self, access_token: str) -> Dict[str, Any]:
+        """Verify token via RBAC introspection endpoint."""
+
+        try:
+            response = requests.post(
+                f"{self.base_url}/tokens/introspect",
+                json={"access_token": access_token},
+                headers=self._auth_headers(),
+                timeout=self.timeout,
+            )
+            response.raise_for_status()
+            return response.json()
+        except requests.RequestException as exc:
+            raise RuntimeError(f"RBAC token introspection failed: {exc}") from exc

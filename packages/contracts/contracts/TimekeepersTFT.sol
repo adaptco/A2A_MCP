@@ -37,4 +37,13 @@ contract TimekeepersTFT is ERC721Enumerable, AccessControl {
     function pidReverse(bytes32 pidHash) external view returns (uint256) {
         return pidToTokenId[pidHash];
     }
+
+    function supportsInterface(bytes4 interfaceId)
+        public
+        view
+        override(ERC721Enumerable, AccessControl)
+        returns (bool)
+    {
+        return super.supportsInterface(interfaceId);
+    }
 }

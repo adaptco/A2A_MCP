@@ -5,9 +5,14 @@
     "declaration": true,
     "outDir": "dist",
     "rootDir": "src",
+    "baseUrl": ".",
     "strict": true,
     "esModuleInterop": true,
     "moduleResolution": "Node",
+    "resolveJsonModule": true,
+    "paths": {
+      "@world-os/kernel": ["../kernel/src/index.ts"]
+    },
     "skipLibCheck": true
   },
   "include": ["src/**/*"]

@@ -1,8 +1,8 @@
 """Core MCP package exports with lazy loading for optional modules."""
 
-from __future__ import annotations
-
 from typing import Any
+
+from a2a_mcp.mcp_core import MCPCore, MCPResult
 
 __all__ = [
     "MCPCore",
@@ -39,4 +39,3 @@ def __getattr__(name: str) -> Any:
 
 def __dir__() -> list[str]:
     return sorted(__all__)
-

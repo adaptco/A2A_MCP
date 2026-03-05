@@ -11,6 +11,24 @@ Core areas include:
 
 When working in this repo, prefer minimal, targeted changes and avoid unrelated refactors.
 
+## Frontier agent index + RBAC token flow
+Generate the Frontier LLM agent index, agent cards, and per-agent RBAC tokens for MCP tool pulls with:
+- `make frontier-index`
+- If `make` is unavailable: `python scripts/build_frontier_agent_index.py`
+
+Artifacts written by the command:
+- `registry/agents/frontier_agent_index.v1.json`
+- `registry/agents/frontier_agent_cards.v1.json`
+- `runtime/rbac/frontier_rbac_tokens.local.json` (local token bundle; do not commit)
+
+## Agent cards (roles with embedded skills)
+| Agent ID | Frontier LLM | RBAC role | Embedded skills | MCP tool pull scope |
+| --- | --- | --- | --- | --- |
+| `agent:frontier.endpoint.gpt` | `endpoint / gpt-4o-mini` | `pipeline_operator` | planning, implementation, integration, code_generation | full MCP tool scope |
+| `agent:frontier.anthropic.claude` | `anthropic / claude-3-5-sonnet-latest` | `admin` | governance, policy_enforcement, orchestration, release_governance | full MCP tool scope |
+| `agent:frontier.vertex.gemini` | `vertex / gemini-1.5-pro` | `pipeline_operator` | architecture_mapping, context_synthesis, integration | full MCP tool scope |
+| `agent:frontier.ollama.llama` | `ollama / llama3.1` | `healer` | regression_triage, self_healing, patch_synthesis, verification | healing + read-oriented MCP tools |
+
 ## Build and test commands
 Use the smallest command set needed for the files you touched.
 

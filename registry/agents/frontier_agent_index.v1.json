@@ -1,0 +1,53 @@
+{
+  "version": "v1",
+  "generated_at": "2026-03-05T13:10:17Z",
+  "sources": {
+    "agent_registry": "registry/agents/agent_registry.json",
+    "expert_catalog": "registry/experts/expert_catalog.v1.json",
+    "rbac_models": "rbac/models.py"
+  },
+  "frontier_agent_count": 4,
+  "mcp_tool_count": 10,
+  "mcp_tools": [
+    "embed_dispatch_batch",
+    "embed_lookup",
+    "embed_status",
+    "embed_submit",
+    "get_runtime_assignment",
+    "ingest_avatar_token_stream",
+    "ingest_repository_data",
+    "list_runtime_assignments",
+    "route_a2a_intent",
+    "submit_runtime_assignment"
+  ],
+  "agents": [
+    {
+      "agent_id": "agent:frontier.endpoint.gpt",
+      "role": "pipeline_operator",
+      "provider": "endpoint",
+      "model_family": "gpt",
+      "card_ref": "registry/agents/frontier_agent_cards.v1.json#agent:frontier.endpoint.gpt"
+    },
+    {
+      "agent_id": "agent:frontier.anthropic.claude",
+      "role": "admin",
+      "provider": "anthropic",
+      "model_family": "claude",
+      "card_ref": "registry/agents/frontier_agent_cards.v1.json#agent:frontier.anthropic.claude"
+    },
+    {
+      "agent_id": "agent:frontier.vertex.gemini",
+      "role": "pipeline_operator",
+      "provider": "vertex",
+      "model_family": "gemini",
+      "card_ref": "registry/agents/frontier_agent_cards.v1.json#agent:frontier.vertex.gemini"
+    },
+    {
+      "agent_id": "agent:frontier.ollama.llama",
+      "role": "healer",
+      "provider": "ollama",
+      "model_family": "llama",
+      "card_ref": "registry/agents/frontier_agent_cards.v1.json#agent:frontier.ollama.llama"
+    }
+  ]
+}

@@ -1,6 +1,13 @@
-.PHONY: freeze listener post verify seal qube-stage qube-seal qube-export echo-flare review canary promote rollback fossilize
+.PHONY: freeze listener post verify seal qube-stage qube-seal qube-export echo-flare review canary promote rollback fossilize frontier-index frontier-cards frontier-tokens
 
 PYTHON ?= python3
+
+FRONTIER_INDEX_TOOL := scripts/build_frontier_agent_index.py
+FRONTIER_INDEX_OUT := registry/agents/frontier_agent_index.v1.json
+FRONTIER_CARDS_OUT := registry/agents/frontier_agent_cards.v1.json
+FRONTIER_TOKENS_OUT := runtime/rbac/frontier_rbac_tokens.local.json
+FRONTIER_TOKEN_ISSUER ?= mcp://a2a/rbac
+FRONTIER_TOKEN_TTL_HOURS ?= 24
 
 QUBE_DRAFT ?= capsule.patentDraft.qube.v1.json
 QUBE_EXPORT_REQ ?= capsule.export.qubePatent.v1.request.json
@@ -100,3 +107,14 @@ rollback:
 
 fossilize:
 	@$(PYTHON) $(REVIEW_TOOL) --manifest $(REVIEW_MANIFEST) fossilize --scenario $(REVIEW_SCENARIO_DIR)/fossilize.json
+
+frontier-index:
+	@$(PYTHON) $(FRONTIER_INDEX_TOOL) --index-out $(FRONTIER_INDEX_OUT) --cards-out $(FRONTIER_CARDS_OUT) --tokens-out $(FRONTIER_TOKENS_OUT) --issuer "$(FRONTIER_TOKEN_ISSUER)" --ttl-hours $(FRONTIER_TOKEN_TTL_HOURS)
+	@echo "Frontier agent index generated at $(FRONTIER_INDEX_OUT)"
+	@echo "RBAC token bundle generated at $(FRONTIER_TOKENS_OUT)"
+
+frontier-cards: frontier-index
+	@echo "Frontier agent cards refreshed at $(FRONTIER_CARDS_OUT)"
+
+frontier-tokens: frontier-index
+	@echo "Frontier RBAC tokens refreshed at $(FRONTIER_TOKENS_OUT)"

@@ -1,6 +1,6 @@
 import Fastify from "fastify";
-import cors from "fastify-cors";
-import websocket from "fastify-websocket";
+import cors from "@fastify/cors";
+import websocket from "@fastify/websocket";
 import { PrismaClient } from "@prisma/client";
 import { Queue } from "bullmq";
 import { initialState, reduce, replay, stateHash, Action } from "@world-os/kernel";

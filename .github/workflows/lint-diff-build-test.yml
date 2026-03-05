@@ -9,10 +9,10 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
+  IMAGE_NAME: adaptco-main/a2a_mcp
   IMAGE_TAG: ${{ github.sha }}
-  REGISTRY_IMAGE: ghcr.io/${{ github.repository }}
-  LOCAL_IMAGE: ghcr.io/${{ github.repository }}:${{ github.sha }}
+  REGISTRY_IMAGE: ghcr.io/adaptco-main/a2a_mcp
+  LOCAL_IMAGE: ghcr.io/adaptco-main/a2a_mcp:${{ github.sha }}
   OPENAPI_DIFF_VERSION: 2.1.3
 
 jobs:
@@ -141,6 +141,7 @@ jobs:
           context: .
           file: ${{ steps.dockerfile.outputs.file }}
           push: ${{ github.event_name != 'pull_request' }}
+          load: ${{ github.event_name == 'pull_request' }}
           tags: |
             ${{ env.LOCAL_IMAGE }}
           cache-from: type=local,src=/tmp/.buildx-cache

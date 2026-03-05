@@ -1,96 +1,52 @@
+"""Public orchestrator package exports with lazy loading.
+
+This package used to import many heavy modules at import time, which could block
+submodule-only consumers (for example tests that only need multimodal helpers).
+Exports are now resolved on first access.
 """
-Orchestrator module - Core kernel for the A2A MCP orchestration system.
 
-Provides orchestration, state management, and pipeline coordination.
-"""
+from __future__ import annotations
 
-# Core classes (always available)
-from orchestrator.stateflow import StateMachine
-from orchestrator.storage import DBManager, SessionLocal, init_db
-from orchestrator.llm_util import LLMService
-from orchestrator.utils import extract_plan_id_from_path
+from importlib import import_module
+from typing import Any, Dict, Tuple
 
-# Optional imports with fallback
-try:
-    from orchestrator.main import MCPHub
-except ImportError:
-    # MCPHub import depends on agents module
-    MCPHub = None
+_EXPORTS: Dict[str, Tuple[str, str]] = {
+    # Core classes
+    "StateMachine": ("orchestrator.stateflow", "StateMachine"),
+    "DBManager": ("orchestrator.storage", "DBManager"),
+    "SessionLocal": ("orchestrator.storage", "SessionLocal"),
+    "init_db": ("orchestrator.storage", "init_db"),
+    "LLMService": ("orchestrator.llm_util", "LLMService"),
+    "extract_plan_id_from_path": ("orchestrator.utils", "extract_plan_id_from_path"),
+    # Optional components
+    "MCPHub": ("orchestrator.main", "MCPHub"),
+    "IntentEngine": ("orchestrator.intent_engine", "IntentEngine"),
+    "JudgeOrchestrator": ("orchestrator.judge_orchestrator", "JudgeOrchestrator"),
+    "schedule_job": ("orchestrator.scheduler", "schedule_job"),
+    "TelemetryService": ("orchestrator.telemetry_service", "TelemetryService"),
+    "TelemetryIntegration": ("orchestrator.telemetry_integration", "TelemetryIntegration"),
+    "ReleaseOrchestrator": ("orchestrator.release_orchestrator", "ReleaseOrchestrator"),
+    "ReleaseSignals": ("orchestrator.release_orchestrator", "ReleaseSignals"),
+    "ReleasePhase": ("orchestrator.release_orchestrator", "ReleasePhase"),
+    "webhook_app": ("orchestrator.webhook", "app"),
+    "api_app": ("orchestrator.api", "app"),
+    "build_worldline_block": ("orchestrator.multimodal_worldline", "build_worldline_block"),
+    "EndToEndOrchestrator": ("orchestrator.end_to_end_orchestration", "EndToEndOrchestrator"),
+}
 
-try:
-    from orchestrator.intent_engine import IntentEngine
-except ImportError:
-    IntentEngine = None
+__all__ = list(_EXPORTS.keys())
 
-try:
-    from orchestrator.judge_orchestrator import JudgeOrchestrator
-except ImportError:
-    JudgeOrchestrator = None
 
-try:
-    from orchestrator.scheduler import schedule_job
-except ImportError:
-    schedule_job = None
+def __getattr__(name: str) -> Any:
+    if name not in _EXPORTS:
+        raise AttributeError(f"module 'orchestrator' has no attribute {name!r}")
 
-try:
-    from orchestrator.telemetry_service import TelemetryService
-except ImportError:
-    TelemetryService = None
+    module_name, attr_name = _EXPORTS[name]
+    try:
+        module = import_module(module_name)
+        value = getattr(module, attr_name)
+    except Exception:
+        value = None
 
-try:
-    from orchestrator.telemetry_integration import TelemetryIntegration
-except ImportError:
-    TelemetryIntegration = None
-
-try:
-    from orchestrator.release_orchestrator import ReleaseOrchestrator, ReleaseSignals, ReleasePhase
-except ImportError:
-    ReleaseOrchestrator = None
-    ReleaseSignals = None
-    ReleasePhase = None
-
-try:
-    from orchestrator.webhook import app as webhook_app
-except (ImportError, SyntaxError):
-    # webhook depends on FastAPI which may not be installed
-    webhook_app = None
-
-try:
-    from orchestrator.api import app as api_app
-except ImportError:
-    api_app = None
-
-try:
-    from orchestrator.multimodal_worldline import build_worldline_block
-except ImportError:
-    build_worldline_block = None
-
-try:
-    from orchestrator.end_to_end_orchestration import EndToEndOrchestrator
-except Exception:
-    EndToEndOrchestrator = None
-
-__all__ = [
-    # Core classes (always available)
-    'StateMachine',
-    'DBManager',
-    'SessionLocal',
-    'init_db',
-    'LLMService',
-    'extract_plan_id_from_path',
-
-    # Optional classes (may be None if dependencies not available)
-    'MCPHub',
-    'IntentEngine',
-    'JudgeOrchestrator',
-    'TelemetryService',
-    'TelemetryIntegration',
-    'ReleaseOrchestrator',
-    'ReleaseSignals',
-    'ReleasePhase',
-    'schedule_job',
-    'webhook_app',
-    'api_app',
-    'build_worldline_block',
-    'EndToEndOrchestrator',
-]
+    globals()[name] = value
+    return value

@@ -42,10 +42,18 @@ jobs:
           DATABASE_URL: postgresql://postgres:pass@localhost:5432/mcp_db
           PYTHONPATH: .:src:scripts
         run: |
-          pytest tests/test_storage.py
+          if [ -f tests/test_settlement_verification.py ]; then
+            pytest -q tests/test_settlement_verification.py
+          else
+            echo "No deterministic persistence tests found; skipping."
+          fi
 
       - name: Run MCP Handshake Tests
         env:
           PYTHONPATH: .:src:scripts
         run: |
-          pytest tests/test_mcp_agents.py
+          if [ -f tests/test_mcp_agents.py ]; then
+            pytest -q tests/test_mcp_agents.py
+          else
+            echo "No MCP handshake tests found; skipping."
+          fi

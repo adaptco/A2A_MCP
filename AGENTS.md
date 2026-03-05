@@ -101,3 +101,12 @@ The A2A_MCP implements a multi-tiered agent orchestration system designed to man
 
 ### Local Skill Extensions
 - `skills/mcp-entropy-template-router`: Generates API skill tokens for avatar runtime shell, computes enthalpy/entropy style temperature, and routes deterministic frontend/backend/fullstack template actions via uniform dotproduct scoring.
+
+<!-- avatar-engine:auto:start -->
+## Avatar-Engine Production Pipeline
+
+- Use `.github/workflows/avatar-engine.yml` as the production artifact pipeline.
+- The scheduled upskill job regenerates `skills/SKILL.md`, syncs docs, and opens/updates a PR automatically.
+- Auto-merge is configured in safe mode only (`gh pr merge --auto --squash`) and depends on green required checks.
+- Secrets are consumed from GitHub Actions secrets only (not plaintext files): `AVATAR_ENGINE_AUTOMATION_PAT`.
+<!-- avatar-engine:auto:end -->

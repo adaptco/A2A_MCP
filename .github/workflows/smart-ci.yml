@@ -24,12 +24,14 @@ jobs:
     steps:
       - name: Check if should run
         id: check
+        env:
+          HEAD_COMMIT_MESSAGE: ${{ github.event.head_commit.message || '' }}
         run: |
           # Skip if PR is draft
           if [ "${{ github.event.pull_request.draft }}" == "true" ]; then
             echo "should_run=false" >> $GITHUB_OUTPUT
           # Skip if commit message contains [skip ci]
-          elif [[ "${{ github.event.head_commit.message }}" == *"[skip ci]"* ]]; then
+          elif [[ "${HEAD_COMMIT_MESSAGE}" == *"[skip ci]"* ]]; then
             echo "should_run=false" >> $GITHUB_OUTPUT
           else
             echo "should_run=true" >> $GITHUB_OUTPUT

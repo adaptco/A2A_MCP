@@ -23,7 +23,12 @@ jobs:
           node-version: '18'
 
       - name: Install dependencies
-        run: npm ci
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci --ignore-scripts || npm install --ignore-scripts
+          else
+            npm install --ignore-scripts
+          fi
 
       - name: Init event log
         run: |
@@ -39,8 +44,9 @@ jobs:
           EVENTS_FILE="${EVENTS_FILE:-events.ndjson}"
           now() { date -u +"%Y-%m-%dT%H:%M:%SZ"; }
           emit() {
-            jq -nc --arg t "$(now)" --arg id "$1" --arg s "$2" --argjson extra "${3:-{}}" \
-              '{ts:$t,event:$id,step:$s} + $extra' >> "$EVENTS_FILE"
+            extra="${3:-{}}"
+            jq -nc --arg t "$(now)" --arg id "$1" --arg s "$2" --arg extra "$extra" \
+              '({ts:$t,event:$id,step:$s}) + (try ($extra|fromjson) catch {})' >> "$EVENTS_FILE"
           }
           EOS
           chmod +x scripts/emit_event.sh
@@ -107,8 +113,8 @@ jobs:
 
       - name: Validate event log
         run: |
-          jq -e 'any(.event=="ci.step.start" and .step=="build")' events.ndjson >/dev/null
-          jq -e 'any(.event=="ci.step.end"   and .step=="build")' events.ndjson >/dev/null
+          jq -s -e 'any(.[]; .event=="ci.step.start" and .step=="build")' events.ndjson >/dev/null
+          jq -s -e 'any(.[]; .event=="ci.step.end"   and .step=="build")' events.ndjson >/dev/null
 
       - name: Upload events.ndjson
         uses: actions/upload-artifact@v4

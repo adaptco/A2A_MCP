@@ -64,3 +64,54 @@ orchestrator.register_skill(
 - 21-test harness remains green
 
 **Commit-ready.** Replace previous section with this block. Paste agent router if exact registration patch needed.
+
+---
+
+### MultimodalRAG3DCoderExecution
+
+**Version:** 1.0  
+**Spec pack:** `specs/mcp_3d_agent_execution.v1`  
+**Mode:** Production deterministic dual-runtime (`unity` + `threejs`)  
+**Token authority:** `kernel_control_token.v1` + `TokenEvent.v1`
+
+#### Deterministic Agent Chain
+- `Planner -> Architect -> Coder -> Tester -> Reviewer`
+
+#### MCP Runtime Tools (client-side contract)
+- `submit_runtime_assignment`
+- `get_runtime_assignment`
+- `list_runtime_assignments`
+- `embed_submit`
+- `embed_status`
+- `embed_lookup`
+- `embed_dispatch_batch`
+- `route_a2a_intent`
+
+#### Production Artifact Flow
+1. `worldline_block.json`
+2. `multimodal_rag_logic_tree.json`
+3. `token_reconstruction.json`
+4. `workflow_actions.json`
+5. `runtime_assignment`
+6. `vector_direction_token_bundle`
+
+#### Hardening Requirements
+- Deterministic outputs for identical `(prompt, repo, commit, actor, cluster_count, top_k, min_similarity)`
+- Hash lineage continuity from token event sequence through final cumulative hash
+- Fail-closed intent routing and tool access constraints
+- Replayable receipt chain for runtime and embedding control-plane actions
+
+#### Defaults
+```json
+{
+  "cluster_count": 4,
+  "top_k": 3,
+  "min_similarity": 0.10,
+  "strict_mode": true
+}
+```
+
+#### Validation Commands
+```bash
+python scripts/validate_mcp_3d_agent_execution_spec.py --strict
+```

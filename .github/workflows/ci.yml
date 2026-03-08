@@ -115,8 +115,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
+      - name: Upload staging artifacts (debug)
+        if: failure()
+        uses: actions/upload-artifact@v4
         with:
           version: "9.7.1"
           run_install: false

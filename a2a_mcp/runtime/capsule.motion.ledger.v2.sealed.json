@@ -1,0 +1,97 @@
+{
+  "attestation": {
+    "content_hash": "sha256:5a4e3b9051bcf97d16e80429ee73ea64fd8bc177492237ab4549d1d4e41df9ef",
+    "sealed_at": "2025-09-25T07:41:37Z",
+    "sealed_by": "Council",
+    "status": "FOSSILIZED"
+  },
+  "author": "Earl Q Han",
+  "capsule_id": "capsule.motion.ledger.v2",
+  "description": "Scrollstream fossil of the sovereign vessel invocation with emotional arc, pose locks, camera grammar, and HUD overlays bound to the runtime braid.",
+  "governance": {
+    "checker": "Queen CiCi",
+    "maker": "Queen Boo",
+    "oracle": "Celine",
+    "signatures": {
+      "checker": "sig:cici",
+      "maker": "sig:queen_boo"
+    },
+    "weaver": "The Braid"
+  },
+  "issued_at": "2025-09-26T02:10:00Z",
+  "render_loop": {
+    "camera_grammar": {
+      "axis": "sovereign",
+      "drift_allowed": "none",
+      "primary": "glyph-orbit"
+    },
+    "emotional_arc": [
+      {
+        "notes": "soft glyph pulse, exploratory cadence",
+        "phase": "curiosity",
+        "timestamp": "T+00s"
+      },
+      {
+        "notes": "aura gold intensifies, pose lock engaged",
+        "phase": "intimacy",
+        "timestamp": "T+24s"
+      },
+      {
+        "notes": "orbit stabilized, qlock tick audible",
+        "phase": "clarity",
+        "timestamp": "T+48s"
+      },
+      {
+        "notes": "merge complete, overlays settle",
+        "phase": "wisdom",
+        "timestamp": "T+72s"
+      }
+    ],
+    "hud_overlays": [
+      {
+        "behaviour": "modulated_to_emotion",
+        "id": "glyph.pulse"
+      },
+      {
+        "behaviour": "peaks_on_merge",
+        "id": "aura.gold"
+      },
+      {
+        "behaviour": "locks_every_3s",
+        "id": "qlock.tick"
+      }
+    ],
+    "pose_lock": {
+      "enforcement": "sovereign",
+      "id": "3q-window-stance",
+      "variance_deg": 4
+    }
+  },
+  "replay": {
+    "conditions": [
+      "maker_checker.quorum",
+      "ledger.digest_verified",
+      "hud.overlay_intact"
+    ],
+    "governance": "remix_safe",
+    "permissions": [
+      "replay",
+      "audit_trace",
+      "hud_stream"
+    ],
+    "token_capsule": "capsule.replay.token.v2"
+  },
+  "scrollstream": {
+    "digest": "sha256:5a4e3b9051bcf97d16e80429ee73ea64fd8bc177492237ab4549d1d4e41df9ef",
+    "frames": 90,
+    "ledger_id": "capsule.motion.ledger.v2",
+    "telemetry": [
+      "hud_overlay",
+      "pose_enforcer",
+      "emotion_trace"
+    ]
+  },
+  "status": "SEALED",
+  "type": "MotionLedger",
+  "version": "2.0.0"
+}

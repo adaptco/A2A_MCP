@@ -1,0 +1,65 @@
+name: NodeJS with Webpack
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x, 22.x]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.7.1
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Configure @world-os package access
+        shell: bash
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          WORLD_OS_NPM_REGISTRY: ${{ vars.WORLD_OS_NPM_REGISTRY }}
+        run: |
+          set -euo pipefail
+          REGISTRY="${WORLD_OS_NPM_REGISTRY:-https://registry.npmjs.org}"
+          HOST="${REGISTRY#https://}"
+          HOST="${HOST#http://}"
+          HOST="${HOST%/}"
+          if [ -n "${NPM_TOKEN:-}" ]; then
+            {
+              echo "@world-os:registry=${REGISTRY}"
+              echo "//${HOST}/:_authToken=${NPM_TOKEN}"
+              echo "always-auth=true"
+            } >> .npmrc
+            echo "Configured npm auth for @world-os via ${REGISTRY}"
+          else
+            echo "NPM_TOKEN not set; rewriting @world-os/* deps to workspace:* for CI"
+            python scripts/rewrite_world_os_workspace_deps.py --repo-root .
+          fi
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --ignore-scripts
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Build
+        run: pnpm build
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: webpack-artifact-${{ matrix.node-version }}
+          path: dist/

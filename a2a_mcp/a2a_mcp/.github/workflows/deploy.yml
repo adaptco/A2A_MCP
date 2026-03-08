@@ -1,0 +1,50 @@
+name: QUBE Federation Deploy
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      DEPLOY_CHANNEL: ${{ vars.DEPLOY_CHANNEL || 'production' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Tooling
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y jq moreutils curl python3 || true
+          python3 --version && jq --version || true
+          sha256sum --version || true
+
+      - name: Install renderer (optional)
+        if: ${{ env.RENDERER_URL != '' }}
+        env:
+          RENDERER_URL: ${{ secrets.RENDERER_URL }}
+        run: |
+          curl -L "$RENDERER_URL" -o ./render
+          chmod +x ./render
+
+      - name: Deploy
+        env:
+          DEPLOY_CHANNEL: ${{ env.DEPLOY_CHANNEL }}
+        run: |
+          chmod +x ./deploy.sh
+          ./deploy.sh "$DEPLOY_CHANNEL"
+
+      - name: Collect artifacts
+        run: |
+          mkdir -p artifacts
+          cp -r storage/ledger.jsonl artifacts/ || true
+          cp -r ops/boo/avatar/guard/out artifacts/out || true
+          cp -r /tmp/* artifacts/ 2>/dev/null || true
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: federation-deploy
+          path: artifacts/**

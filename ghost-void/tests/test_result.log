@@ -1,0 +1,203 @@
+============================= test session starts =============================
+platform win32 -- Python 3.11.9, pytest-9.0.2, pluggy-1.6.0 -- C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP\.venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP
+plugins: anyio-4.12.1, asyncio-1.3.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 3 items
+
+tests/test_mlops_ticker.py::TestMLOpsTicker::test_event_store_terminal_filtering FAILED [ 33%]
+tests/test_mlops_ticker.py::TestMLOpsTicker::test_whatsapp_message_format FAILED [ 66%]
+tests/test_mlops_ticker.py::TestMLOpsTicker::test_whatsapp_send_success FAILED [100%]
+
+================================== FAILURES ===================================
+_____________ TestMLOpsTicker.test_event_store_terminal_filtering _____________
+
+self = <test_mlops_ticker.TestMLOpsTicker object at 0x00000258C28DA6D0>
+
+    async def test_event_store_terminal_filtering(self):
+        """Verify that only terminal events trigger observers."""
+        mock_observer = AsyncMock()
+        mock_db = MagicMock()
+        # Mock save to return input
+        mock_db.save_artifact.side_effect = lambda x: x
+    
+        # Patch the module-level _db_manager in event_store
+        with patch("orchestrator.event_store._db_manager", mock_db):
+            store = PostgresEventStore(observers=[mock_observer])
+    
+            # 1. INIT -> No notification
+            artifact_init = ModelArtifact(
+                artifact_id="init-1",
+                model_id="test",
+                weights_hash="h1",
+                embedding_dim=1,
+                state=AgentLifecycleState.INIT,
+                content="test"
+            )
+            await store.append_event(artifact_init)
+            mock_observer.on_state_change.assert_not_called()
+    
+            # 2. CONVERGED -> Notification
+>           artifact_converged = artifact_init.transition(AgentLifecycleState.CONVERGED)
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_mlops_ticker.py:33: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = ModelArtifact(artifact_id='init-1', type='model_artifact', content='test', timestamp='2026-02-16T14:12:16.591808', met...ntLifecycleState.INIT: 'INIT'>, parent_artifact_id=None, agent_name='ModelRegistry', version='1.0.0', lora_config=None)
+target = <AgentLifecycleState.CONVERGED: 'CONVERGED'>
+
+    def transition(self, target: AgentLifecycleState) -> "ModelArtifact":
+        """
+        Transition to a new state if valid.
+        Returns a new artifact with updated state (immutable pattern).
+        """
+        if not self.can_transition_to(target):
+>           raise ValueError(
+                f"Invalid transition: {self.state.value} -> {target.value}. "
+                f"Valid targets: {[s.value for s in STATE_TRANSITIONS.get(self.state, [])]}"
+            )
+E           ValueError: Invalid transition: INIT -> CONVERGED. Valid targets: ['EMBEDDING']
+
+schemas\model_artifact.py:63: ValueError
+________________ TestMLOpsTicker.test_whatsapp_message_format _________________
+
+self = <test_mlops_ticker.TestMLOpsTicker object at 0x00000258C7373390>
+
+    async def test_whatsapp_message_format(self):
+        """Verify WhatsApp message formatting."""
+        observer = WhatsAppEventObserver(channel_id="123", api_token="abc")
+    
+        artifact = ModelArtifact(
+            artifact_id="verify-1",
+            model_id="test-model",
+            weights_hash="ver-hash-1234567890",
+            embedding_dim=10,
+            state=AgentLifecycleState.CONVERGED,
+            content="verification content",
+            metadata={"pipeline_id": "pip-1", "execution_id": "exec-1"}
+        )
+    
+>       body = observer._format_message(artifact)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_mlops_ticker.py:51: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+orchestrator\whatsapp.py:70: in _format_message
+    f"timestamp: {event.created_at}"
+                  ^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = ModelArtifact(artifact_id='verify-1', type='model_artifact', content='verification content', timestamp='2026-02-16T14:...eState.CONVERGED: 'CONVERGED'>, parent_artifact_id=None, agent_name='ModelRegistry', version='1.0.0', lora_config=None)
+item = 'created_at'
+
+    def __getattr__(self, item: str) -> Any:
+        private_attributes = object.__getattribute__(self, '__private_attributes__')
+        if item in private_attributes:
+            attribute = private_attributes[item]
+            if hasattr(attribute, '__get__'):
+                return attribute.__get__(self, type(self))  # type: ignore
+    
+            try:
+                # Note: self.__pydantic_private__ cannot be None if self.__private_attributes__ has items
+                return self.__pydantic_private__[item]  # type: ignore
+            except KeyError as exc:
+                raise AttributeError(f'{type(self).__name__!r} object has no attribute {item!r}') from exc
+        else:
+            # `__pydantic_extra__` can fail to be set if the model is not yet fully initialized.
+            # See `BaseModel.__repr_args__` for more details
+            try:
+                pydantic_extra = object.__getattribute__(self, '__pydantic_extra__')
+            except AttributeError:
+                pydantic_extra = None
+    
+            if pydantic_extra and item in pydantic_extra:
+                return pydantic_extra[item]
+            else:
+                if hasattr(self.__class__, item):
+                    return super().__getattribute__(item)  # Raises AttributeError if appropriate
+                else:
+                    # this is the current error
+>                   raise AttributeError(f'{type(self).__name__!r} object has no attribute {item!r}')
+E                   AttributeError: 'ModelArtifact' object has no attribute 'created_at'
+
+.venv\Lib\site-packages\pydantic\main.py:1026: AttributeError
+_________________ TestMLOpsTicker.test_whatsapp_send_success __________________
+
+self = <test_mlops_ticker.TestMLOpsTicker object at 0x00000258C7373B90>
+mock_client_cls = <MagicMock name='AsyncClient' id='2580323355216'>
+
+    @patch("httpx.AsyncClient")
+    async def test_whatsapp_send_success(self, mock_client_cls):
+        """Verify WhatsApp sending logic."""
+        mock_client = AsyncMock()
+        mock_client_cls.return_value.__aenter__.return_value = mock_client
+    
+        observer = WhatsAppEventObserver(channel_id="123", api_token="abc")
+        artifact = ModelArtifact(
+            artifact_id="send-1",
+            model_id="test",
+            weights_hash="hash",
+            embedding_dim=1,
+            state=AgentLifecycleState.FAILED,
+            content="failed"
+        )
+    
+>       await observer.on_state_change(artifact)
+
+tests\test_mlops_ticker.py:74: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+orchestrator\whatsapp.py:25: in on_state_change
+    body = self._format_message(event)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+orchestrator\whatsapp.py:70: in _format_message
+    f"timestamp: {event.created_at}"
+                  ^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = ModelArtifact(artifact_id='send-1', type='model_artifact', content='failed', timestamp='2026-02-16T14:12:16.721945', m...fecycleState.FAILED: 'FAILED'>, parent_artifact_id=None, agent_name='ModelRegistry', version='1.0.0', lora_config=None)
+item = 'created_at'
+
+    def __getattr__(self, item: str) -> Any:
+        private_attributes = object.__getattribute__(self, '__private_attributes__')
+        if item in private_attributes:
+            attribute = private_attributes[item]
+            if hasattr(attribute, '__get__'):
+                return attribute.__get__(self, type(self))  # type: ignore
+    
+            try:
+                # Note: self.__pydantic_private__ cannot be None if self.__private_attributes__ has items
+                return self.__pydantic_private__[item]  # type: ignore
+            except KeyError as exc:
+                raise AttributeError(f'{type(self).__name__!r} object has no attribute {item!r}') from exc
+        else:
+            # `__pydantic_extra__` can fail to be set if the model is not yet fully initialized.
+            # See `BaseModel.__repr_args__` for more details
+            try:
+                pydantic_extra = object.__getattribute__(self, '__pydantic_extra__')
+            except AttributeError:
+                pydantic_extra = None
+    
+            if pydantic_extra and item in pydantic_extra:
+                return pydantic_extra[item]
+            else:
+                if hasattr(self.__class__, item):
+                    return super().__getattribute__(item)  # Raises AttributeError if appropriate
+                else:
+                    # this is the current error
+>                   raise AttributeError(f'{type(self).__name__!r} object has no attribute {item!r}')
+E                   AttributeError: 'ModelArtifact' object has no attribute 'created_at'
+
+.venv\Lib\site-packages\pydantic\main.py:1026: AttributeError
+============================== warnings summary ===============================
+schemas\database.py:6
+  C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP\schemas\database.py:6: MovedIn20Warning: The ``declarative_base()`` function is now available as sqlalchemy.orm.declarative_base(). (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    Base = declarative_base()
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/test_mlops_ticker.py::TestMLOpsTicker::test_event_store_terminal_filtering
+FAILED tests/test_mlops_ticker.py::TestMLOpsTicker::test_whatsapp_message_format
+FAILED tests/test_mlops_ticker.py::TestMLOpsTicker::test_whatsapp_send_success
+======================== 3 failed, 1 warning in 0.77s =========================

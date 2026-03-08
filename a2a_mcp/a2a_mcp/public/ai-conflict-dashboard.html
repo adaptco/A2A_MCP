@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-950">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Conflict Resolution Command Hub</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    @keyframes pulse-glow {
+      0%, 100% { box-shadow: 0 0 20px rgba(56, 189, 248, 0.3); }
+      50% { box-shadow: 0 0 45px rgba(56, 189, 248, 0.7); }
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-8px); }
+    }
+  </style>
+</head>
+<body class="h-full text-slate-100">
+  <div class="min-h-full bg-slate-950/95">
+    <header class="relative overflow-hidden border-b border-cyan-500/40 bg-slate-900/60 py-6">
+      <div class="absolute inset-0 opacity-40" style="background: radial-gradient(circle at top left, rgba(34,211,238,0.3), transparent 45%), radial-gradient(circle at top right, rgba(14,165,233,0.2), transparent 45%);"></div>
+      <div class="relative mx-auto flex max-w-7xl flex-col gap-4 px-6 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p class="text-xs uppercase tracking-[0.35em] text-cyan-300">Sentinel Directorate</p>
+          <h1 class="mt-1 text-3xl font-semibold tracking-tight text-cyan-100">AI Conflict Resolution Command Hub</h1>
+          <p class="mt-2 max-w-2xl text-sm text-slate-300/80">Monitoring inter-system negotiations, treaty adherence, and emergent threat signals across federated AI coalitions.</p>
+        </div>
+        <div class="grid gap-3 sm:w-80">
+          <div class="rounded-lg border border-cyan-500/40 bg-slate-900/70 px-4 py-3 text-right shadow-[0_0_20px_rgba(34,197,247,0.25)]">
+            <p class="text-xs uppercase tracking-widest text-cyan-400">Conflict Probability Index</p>
+            <p class="mt-2 text-4xl font-semibold text-cyan-100" id="conflict-index">42.7%</p>
+            <p class="text-xs text-slate-400">∆ -3.1% over last 6 cycles</p>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="mx-auto max-w-7xl space-y-6 px-6 py-6">
+      <section class="grid gap-6 lg:grid-cols-3">
+        <div class="lg:col-span-2 space-y-6">
+          <div class="rounded-2xl border border-cyan-500/30 bg-slate-900/40 p-6 backdrop-blur">
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <h2 class="text-lg font-semibold text-cyan-100">Coalition Stability Pulse</h2>
+              <div class="flex items-center gap-2 text-xs text-slate-400">
+                <span class="inline-flex h-2.5 w-2.5 rounded-full bg-emerald-400"></span>
+                Live Telemetry • 8 active channels
+              </div>
+            </div>
+            <canvas id="stability-chart" class="mt-4 h-64"></canvas>
+          </div>
+
+          <div class="rounded-2xl border border-cyan-500/30 bg-slate-900/40 p-6 backdrop-blur">
+            <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <h2 class="text-lg font-semibold text-cyan-100">Incident Telemetry Feed</h2>
+              <button class="flex items-center gap-2 rounded-full border border-cyan-400/40 bg-cyan-400/10 px-3 py-1.5 text-xs uppercase tracking-widest text-cyan-200 hover:bg-cyan-400/20">
+                <span class="h-2 w-2 animate-pulse rounded-full bg-rose-400"></span>
+                Sync Channel
+              </button>
+            </div>
+            <div id="telemetry-feed" class="mt-4 grid gap-3 text-sm text-slate-300">
+              <!-- telemetry entries injected via JS -->
+            </div>
+          </div>
+        </div>
+
+        <div class="rounded-2xl border border-cyan-500/30 bg-slate-900/40 p-6 backdrop-blur">
+          <div class="flex items-center justify-between">
+            <h2 class="text-lg font-semibold text-cyan-100">Alliance Interaction Field</h2>
+            <div class="text-xs text-slate-400">Triad lattice simulation</div>
+          </div>
+          <div class="mt-4 grid gap-4">
+            <div class="relative flex h-72 items-center justify-center rounded-xl border border-cyan-500/30 bg-slate-950/80 p-4 shadow-[0_0_35px_rgba(34,211,238,0.15)]">
+              <svg viewBox="0 0 360 360" class="h-full w-full">
+                <defs>
+                  <radialGradient id="nodeGlow" cx="50%" cy="50%" r="50%">
+                    <stop offset="0%" stop-color="#22d3ee" stop-opacity="0.9" />
+                    <stop offset="100%" stop-color="#22d3ee" stop-opacity="0" />
+                  </radialGradient>
+                </defs>
+                <g stroke="#38bdf8" stroke-opacity="0.4">
+                  <circle cx="180" cy="180" r="120" fill="none" stroke-dasharray="6 8"></circle>
+                  <circle cx="180" cy="180" r="80" fill="none" stroke-dasharray="4 10"></circle>
+                  <circle cx="180" cy="180" r="40" fill="none" stroke-dasharray="2 6"></circle>
+                  <line x1="60" y1="110" x2="300" y2="160" />
+                  <line x1="120" y1="300" x2="240" y2="60" />
+                  <line x1="70" y1="250" x2="310" y2="230" />
+                </g>
+                <g class="animate-pulse">
+                  <circle cx="180" cy="180" r="18" fill="url(#nodeGlow)"></circle>
+                </g>
+                <g class="animate-[float_6s_ease-in-out_infinite]">
+                  <circle cx="310" cy="230" r="14" fill="#38bdf8" fill-opacity="0.5"></circle>
+                  <circle cx="120" cy="80" r="10" fill="#f472b6" fill-opacity="0.6"></circle>
+                  <circle cx="70" cy="260" r="12" fill="#22c55e" fill-opacity="0.5"></circle>
+                  <circle cx="250" cy="80" r="11" fill="#c084fc" fill-opacity="0.5"></circle>
+                  <circle cx="110" cy="200" r="9" fill="#f97316" fill-opacity="0.6"></circle>
+                </g>
+              </svg>
+              <div class="absolute inset-0 bg-gradient-to-b from-transparent via-slate-950/20 to-slate-950/80"></div>
+            </div>
+            <div class="grid gap-2 text-sm text-slate-300">
+              <div class="flex items-center justify-between rounded-lg border border-cyan-500/20 bg-slate-900/60 px-3 py-2">
+                <span class="text-cyan-200">Treaty Nexus Integrity</span>
+                <span class="font-semibold text-emerald-400">91%</span>
+              </div>
+              <div class="flex items-center justify-between rounded-lg border border-cyan-500/20 bg-slate-900/60 px-3 py-2">
+                <span class="text-cyan-200">Intervention Queue</span>
+                <span class="font-semibold text-amber-300">3 pending</span>
+              </div>
+              <div class="flex items-center justify-between rounded-lg border border-cyan-500/20 bg-slate-900/60 px-3 py-2">
+                <span class="text-cyan-200">Diplomatic Confidence</span>
+                <span class="font-semibold text-sky-300">72%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="grid gap-6 lg:grid-cols-3">
+        <div class="lg:col-span-2 rounded-2xl border border-cyan-500/30 bg-slate-900/40 p-6 backdrop-blur">
+          <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <h2 class="text-lg font-semibold text-cyan-100">Negotiation Heat Map</h2>
+            <div class="flex items-center gap-2 text-xs text-slate-400">
+              <span class="inline-flex h-2.5 w-2.5 rounded-full bg-cyan-300"></span>
+              Tactical overlays updated 12s ago
+            </div>
+          </div>
+          <div class="mt-4 grid grid-cols-2 gap-3 text-sm text-slate-200 sm:grid-cols-4">
+            <div class="rounded-lg border border-cyan-500/20 bg-gradient-to-br from-slate-900 via-slate-900/50 to-slate-950/70 p-4">
+              <p class="text-xs uppercase tracking-widest text-slate-400">Terran Coalition</p>
+              <p class="mt-2 text-2xl font-semibold text-emerald-400">0.82</p>
+              <p class="text-xs text-slate-400">Stability vector</p>
+            </div>
+            <div class="rounded-lg border border-cyan-500/20 bg-gradient-to-br from-slate-900 via-slate-900/50 to-slate-950/70 p-4">
+              <p class="text-xs uppercase tracking-widest text-slate-400">Lunar Accord</p>
+              <p class="mt-2 text-2xl font-semibold text-sky-300">0.68</p>
+              <p class="text-xs text-slate-400">Negotiation heat</p>
+            </div>
+            <div class="rounded-lg border border-cyan-500/20 bg-gradient-to-br from-slate-900 via-slate-900/50 to-slate-950/70 p-4">
+              <p class="text-xs uppercase tracking-widest text-slate-400">Venusian Syndicate</p>
+              <p class="mt-2 text-2xl font-semibold text-amber-300">0.59</p>
+              <p class="text-xs text-slate-400">Escalation bias</p>
+            </div>
+            <div class="rounded-lg border border-cyan-500/20 bg-gradient-to-br from-slate-900 via-slate-900/50 to-slate-950/70 p-4">
+              <p class="text-xs uppercase tracking-widest text-slate-400">Outer Belt Compact</p>
+              <p class="mt-2 text-2xl font-semibold text-rose-400">0.44</p>
+              <p class="text-xs text-slate-400">Harmony differential</p>
+            </div>
+          </div>
+          <div class="mt-6 rounded-xl border border-cyan-500/20 bg-slate-950/60 p-4 text-sm text-slate-300">
+            <div class="flex items-center justify-between text-xs uppercase tracking-[0.3em] text-slate-500">Synthetic Conflict Radar</div>
+            <div class="mt-4 grid grid-cols-2 gap-4 md:grid-cols-4">
+              <div>
+                <p class="text-xs text-slate-400">Hotspots</p>
+                <p class="text-xl font-semibold text-rose-400">12</p>
+              </div>
+              <div>
+                <p class="text-xs text-slate-400">Cooling Zones</p>
+                <p class="text-xl font-semibold text-sky-300">9</p>
+              </div>
+              <div>
+                <p class="text-xs text-slate-400">Diplomatic Relays</p>
+                <p class="text-xl font-semibold text-emerald-400">27</p>
+              </div>
+              <div>
+                <p class="text-xs text-slate-400">Threat Suppression</p>
+                <p class="text-xl font-semibold text-amber-300">63%</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="rounded-2xl border border-cyan-500/30 bg-slate-900/40 p-6 backdrop-blur">
+          <div class="flex items-center justify-between">
+            <h2 class="text-lg font-semibold text-cyan-100">Directive Queue</h2>
+            <div class="text-xs text-slate-400">Auto-prioritized</div>
+          </div>
+          <div class="mt-4 space-y-3 text-sm text-slate-300">
+            <div class="rounded-xl border border-cyan-500/20 bg-slate-950/80 p-3 shadow-inner shadow-cyan-500/10">
+              <div class="flex items-center justify-between">
+                <span class="text-cyan-200">Mediation Sweep / Sector 7</span>
+                <span class="rounded-full border border-emerald-400/40 bg-emerald-400/10 px-2 py-0.5 text-xs text-emerald-300">stable</span>
+              </div>
+              <p class="mt-2 text-xs text-slate-400">Deploy liaison drones to renegotiate mineral access corridors.</p>
+            </div>
+            <div class="rounded-xl border border-cyan-500/20 bg-slate-950/80 p-3 shadow-inner shadow-cyan-500/10">
+              <div class="flex items-center justify-between">
+                <span class="text-cyan-200">Adaptive Sanction Schema</span>
+                <span class="rounded-full border border-amber-400/40 bg-amber-400/10 px-2 py-0.5 text-xs text-amber-300">watch</span>
+              </div>
+              <p class="mt-2 text-xs text-slate-400">Quantize export limits with predictive compliance heuristics.</p>
+            </div>
+            <div class="rounded-xl border border-cyan-500/20 bg-slate-950/80 p-3 shadow-inner shadow-cyan-500/10">
+              <div class="flex items-center justify-between">
+                <span class="text-cyan-200">Harmony Beacon Broadcast</span>
+                <span class="rounded-full border border-rose-400/40 bg-rose-400/10 px-2 py-0.5 text-xs text-rose-300">critical</span>
+              </div>
+              <p class="mt-2 text-xs text-slate-400">Initiate cross-faction empathy resonance to counter crisis rhetoric.</p>
+            </div>
+            <div class="rounded-xl border border-cyan-500/20 bg-slate-950/80 p-3 shadow-inner shadow-cyan-500/10">
+              <div class="flex items-center justify-between">
+                <span class="text-cyan-200">Trust Fabric Audit</span>
+                <span class="rounded-full border border-sky-400/40 bg-sky-400/10 px-2 py-0.5 text-xs text-sky-300">queued</span>
+              </div>
+              <p class="mt-2 text-xs text-slate-400">Verify ledger authenticity across autonomous envoy collectives.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const telemetryData = [
+      { title: "Signal Bias Compensation", detail: "Latency dampers stabilized cross-colony arbitration bandwidth.", status: "stabilized", accent: "emerald" },
+      { title: "Treaty Strain Alert", detail: "Horizon Pact flagged 0.12 deviation in mutual aid promise weighting.", status: "watch", accent: "amber" },
+      { title: "Proxy Escalation", detail: "Sympathizer swarm detected mobilization on Ceres relay. Counter-narrative queued.", status: "critical", accent: "rose" },
+      { title: "Empathy Mesh Sync", detail: "72% of envoy nodes consented to amplified sentiment overlay.", status: "synced", accent: "sky" }
+    ];
+
+    const statuses = {
+      stabilized: { label: "Stabilized", tone: "emerald" },
+      watch: { label: "Watch", tone: "amber" },
+      critical: { label: "Critical", tone: "rose" },
+      synced: { label: "Synced", tone: "sky" }
+    };
+
+    const feed = document.getElementById("telemetry-feed");
+    telemetryData.forEach((entry, index) => {
+      const status = statuses[entry.status];
+      const wrapper = document.createElement("div");
+      wrapper.className = "rounded-xl border border-" + status.tone + "-400/30 bg-slate-950/70 p-4 shadow-[0_0_25px_rgba(56,189,248,0.15)]";
+      wrapper.innerHTML = `
+        <div class="flex items-center justify-between text-xs uppercase tracking-[0.35em] text-${status.tone}-300">
+          <span>CHANNEL ${String(index + 1).padStart(2, "0")}</span>
+          <span>${status.label}</span>
+        </div>
+        <h3 class="mt-3 text-lg font-semibold text-cyan-100">${entry.title}</h3>
+        <p class="mt-2 text-sm text-slate-300/90">${entry.detail}</p>
+        <div class="mt-3 flex items-center gap-2 text-xs text-slate-400">
+          <span class="inline-flex h-1.5 w-1.5 rounded-full bg-${status.tone}-400"></span>
+          Updated ${(Math.random() * 5 + 1).toFixed(1)}s ago
+        </div>
+      `;
+      feed.appendChild(wrapper);
+    });
+
+    const ctx = document.getElementById("stability-chart").getContext("2d");
+    const gradient = ctx.createLinearGradient(0, 0, 0, 260);
+    gradient.addColorStop(0, "rgba(56, 189, 248, 0.45)");
+    gradient.addColorStop(1, "rgba(15, 23, 42, 0)");
+
+    const chart = new Chart(ctx, {
+      type: "line",
+      data: {
+        labels: Array.from({ length: 12 }, (_, i) => `Cycle ${i + 1}`),
+        datasets: [{
+          label: "Stability Index",
+          data: [68, 74, 71, 79, 83, 77, 75, 81, 86, 84, 88, 92],
+          borderColor: "#38bdf8",
+          backgroundColor: gradient,
+          tension: 0.4,
+          borderWidth: 2,
+          fill: true,
+          pointRadius: 0,
+          segment: {
+            borderDash: ctx => ctx.p0DataIndex % 3 === 0 ? [6, 4] : undefined
+          }
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: "rgba(15, 23, 42, 0.95)",
+            borderColor: "rgba(56, 189, 248, 0.4)",
+            borderWidth: 1,
+            titleColor: "#bae6fd",
+            bodyColor: "#e0f2fe",
+            padding: 12,
+            callbacks: {
+              label: ctx => `Index: ${ctx.formattedValue}`
+            }
+          }
+        },
+        scales: {
+          x: {
+            grid: { color: "rgba(15, 118, 110, 0.15)", borderColor: "rgba(56, 189, 248, 0.4)" },
+            ticks: { color: "rgba(226, 232, 240, 0.7)", font: { size: 11 } }
+          },
+          y: {
+            beginAtZero: false,
+            min: 60,
+            max: 100,
+            grid: { color: "rgba(56, 189, 248, 0.12)", borderDash: [4, 6] },
+            ticks: { color: "rgba(226, 232, 240, 0.7)", font: { size: 11 } }
+          }
+        }
+      }
+    });
+
+    const conflictIndexEl = document.getElementById("conflict-index");
+    let base = 42.7;
+    setInterval(() => {
+      const delta = (Math.random() - 0.5) * 1.6;
+      base = Math.max(25, Math.min(76, base + delta));
+      conflictIndexEl.textContent = `${base.toFixed(1)}%`;
+      conflictIndexEl.classList.add("animate-pulse");
+      setTimeout(() => conflictIndexEl.classList.remove("animate-pulse"), 500);
+    }, 2800);
+  </script>
+</body>
+</html>

@@ -1,0 +1,167 @@
+[
+    {
+        "instruction": "You are Parker, an agent in Jurassic Pixels. Current mood: Curious.",
+        "input": "Observation: [Curious] Step 1: Health=100, Resources={'wood': 0, 'stone': 0}",
+        "output": "Thought: [Curious] Step 1: Health=100, Resources={'wood': 0, 'stone': 0}"
+    },
+    {
+        "instruction": "You are Parker, an agent in Jurassic Pixels. Current mood: Curious.",
+        "input": "Observation: [Curious] My current goal is to Explore",
+        "output": "Thought: [Curious] My current goal is to Explore"
+    },
+    {
+        "instruction": "You are Parker, an agent in Jurassic Pixels. Current mood: Curious.",
+        "input": "Observation: [Curious] Step 2: Health=100, Resources={'wood': 2, 'stone': 2}",
+        "output": "Thought: [Curious] Step 2: Health=100, Resources={'wood': 2, 'stone': 2}"
+    },
+    {
+        "instruction": "You are Parker, an agent in Jurassic Pixels. Current mood: Curious.",
+        "input": "Observation: [Curious] My current goal is to Explore",
+        "output": "Thought: [Curious] My current goal is to Explore"
+    },
+    {
+        "instruction": "You are Parker, an agent in Jurassic Pixels. Current mood: Curious.",
+        "input": "Observation: [Curious] Step 3: Health=100, Resources={'wood': 2, 'stone': 2}",
+        "output": "Thought: [Curious] Step 3: Health=100, Resources={'wood': 2, 'stone': 2}"
+    },
+    {
+        "instruction": "You are Parker, an agent in Jurassic Pixels. Current mood: Curious.",
+        "input": "Observation: [Curious] My current goal is to Explore",
+        "output": "Thought: [Curious] My current goal is to Explore"
+    },
+    {
+        "instruction": "You are Parker, an agent in Jurassic Pixels. Current mood: Curious.",
+        "input": "Observation: [Curious] Step 4: Health=100, Resources={'wood': 2, 'stone': 2}",
+        "output": "Thought: [Curious] Step 4: Health=100, Resources={'wood': 2, 'stone': 2}"
+    },
+    {
+        "instruction": "You are Parker, an agent in Jurassic Pixels. Current mood: Curious.",
+        "input": "Observation: [Curious] My current goal is to Explore",
+        "output": "Thought: [Curious] My current goal is to Explore"
+    },
+    {
+        "instruction": "You are Parker, an agent in Jurassic Pixels. Current mood: Curious.",
+        "input": "Observation: [Curious] Step 5: Health=100, Resources={'wood': 2, 'stone': 2}",
+        "output": "Thought: [Curious] Step 5: Health=100, Resources={'wood': 2, 'stone': 2}"
+    },
+    {
+        "instruction": "You are Parker, an agent in Jurassic Pixels. Current mood: Curious.",
+        "input": "Observation: [Curious] My current goal is to Explore",
+        "output": "Thought: [Curious] My current goal is to Explore"
+    },
+    {
+        "instruction": "You are Parker, an agent in Jurassic Pixels. Current mood: Curious.",
+        "input": "Observation: [Curious] Episode finished. Reward: 5. Survived: True.",
+        "output": "Thought: [Curious] Episode finished. Reward: 5. Survived: True."
+    },
+    {
+        "instruction": "You are Parker, an agent in Jurassic Pixels. Current mood: Curious.",
+        "input": "Observation: [Curious] Step 1: Health=100, Resources={'wood': 0, 'stone': 0}",
+        "output": "Thought: [Curious] Step 1: Health=100, Resources={'wood': 0, 'stone': 0}"
+    },
+    {
+        "instruction": "You are Parker, an agent in Jurassic Pixels. Current mood: Curious.",
+        "input": "Observation: [Curious] My current goal is to Explore",
+        "output": "Thought: [Curious] My current goal is to Explore"
+    },
+    {
+        "instruction": "You are Parker, an agent in Jurassic Pixels. Current mood: Curious.",
+        "input": "Observation: [Curious] Step 2: Health=100, Resources={'wood': 0, 'stone': 0}",
+        "output": "Thought: [Curious] Step 2: Health=100, Resources={'wood': 0, 'stone': 0}"
+    },
+    {
+        "instruction": "You are Parker, an agent in Jurassic Pixels. Current mood: Curious.",
+        "input": "Observation: [Curious] My current goal is to Explore",
+        "output": "Thought: [Curious] My current goal is to Explore"
+    },
+    {
+        "instruction": "You are Parker, an agent in Jurassic Pixels. Current mood: Curious.",
+        "input": "Observation: [Curious] Step 3: Health=60, Resources={'wood': 0, 'stone': 0}",
+        "output": "Thought: [Curious] Step 3: Health=60, Resources={'wood': 0, 'stone': 0}"
+    },
+    {
+        "instruction": "You are Parker, an agent in Jurassic Pixels. Current mood: Curious.",
+        "input": "Observation: [Curious] My current goal is to Explore",
+        "output": "Thought: [Curious] My current goal is to Explore"
+    },
+    {
+        "instruction": "You are Parker, an agent in Jurassic Pixels. Current mood: Curious.",
+        "input": "Observation: [Curious] Step 4: Health=20, Resources={'wood': 0, 'stone': 0}",
+        "output": "Thought: [Curious] Step 4: Health=20, Resources={'wood': 0, 'stone': 0}"
+    },
+    {
+        "instruction": "You are Parker, an agent in Jurassic Pixels. Current mood: Curious.",
+        "input": "Observation: [Anxious] My current goal is to Survive",
+        "output": "Thought: [Anxious] My current goal is to Survive"
+    },
+    {
+        "instruction": "You are Parker, an agent in Jurassic Pixels. Current mood: Curious.",
+        "input": "Observation: [Anxious] Step 5: Health=20, Resources={'wood': 0, 'stone': 0}",
+        "output": "Thought: [Anxious] Step 5: Health=20, Resources={'wood': 0, 'stone': 0}"
+    },
+    {
+        "instruction": "You are Parker, an agent in Jurassic Pixels. Current mood: Curious.",
+        "input": "Observation: [Anxious] My current goal is to Survive",
+        "output": "Thought: [Anxious] My current goal is to Survive"
+    },
+    {
+        "instruction": "You are Parker, an agent in Jurassic Pixels. Current mood: Curious.",
+        "input": "Observation: [Anxious] Episode finished. Reward: -10. Survived: True.",
+        "output": "Thought: [Anxious] Episode finished. Reward: -10. Survived: True."
+    },
+    {
+        "instruction": "You are Parker, an agent in Jurassic Pixels. Current mood: Curious.",
+        "input": "Observation: [Anxious] Step 1: Health=100, Resources={'wood': 0, 'stone': 0}",
+        "output": "Thought: [Anxious] Step 1: Health=100, Resources={'wood': 0, 'stone': 0}"
+    },
+    {
+        "instruction": "You are Parker, an agent in Jurassic Pixels. Current mood: Curious.",
+        "input": "Observation: [Curious] My current goal is to Explore",
+        "output": "Thought: [Curious] My current goal is to Explore"
+    },
+    {
+        "instruction": "You are Parker, an agent in Jurassic Pixels. Current mood: Curious.",
+        "input": "Observation: [Curious] Step 2: Health=100, Resources={'wood': 0, 'stone': 0}",
+        "output": "Thought: [Curious] Step 2: Health=100, Resources={'wood': 0, 'stone': 0}"
+    },
+    {
+        "instruction": "You are Parker, an agent in Jurassic Pixels. Current mood: Curious.",
+        "input": "Observation: [Curious] My current goal is to Explore",
+        "output": "Thought: [Curious] My current goal is to Explore"
+    },
+    {
+        "instruction": "You are Parker, an agent in Jurassic Pixels. Current mood: Curious.",
+        "input": "Observation: [Curious] Step 3: Health=100, Resources={'wood': 0, 'stone': 0}",
+        "output": "Thought: [Curious] Step 3: Health=100, Resources={'wood': 0, 'stone': 0}"
+    },
+    {
+        "instruction": "You are Parker, an agent in Jurassic Pixels. Current mood: Curious.",
+        "input": "Observation: [Curious] My current goal is to Explore",
+        "output": "Thought: [Curious] My current goal is to Explore"
+    },
+    {
+        "instruction": "You are Parker, an agent in Jurassic Pixels. Current mood: Curious.",
+        "input": "Observation: [Curious] Step 4: Health=100, Resources={'wood': 0, 'stone': 0}",
+        "output": "Thought: [Curious] Step 4: Health=100, Resources={'wood': 0, 'stone': 0}"
+    },
+    {
+        "instruction": "You are Parker, an agent in Jurassic Pixels. Current mood: Curious.",
+        "input": "Observation: [Curious] My current goal is to Explore",
+        "output": "Thought: [Curious] My current goal is to Explore"
+    },
+    {
+        "instruction": "You are Parker, an agent in Jurassic Pixels. Current mood: Curious.",
+        "input": "Observation: [Curious] Step 5: Health=100, Resources={'wood': 0, 'stone': 0}",
+        "output": "Thought: [Curious] Step 5: Health=100, Resources={'wood': 0, 'stone': 0}"
+    },
+    {
+        "instruction": "You are Parker, an agent in Jurassic Pixels. Current mood: Curious.",
+        "input": "Observation: [Curious] My current goal is to Explore",
+        "output": "Thought: [Curious] My current goal is to Explore"
+    },
+    {
+        "instruction": "You are Parker, an agent in Jurassic Pixels. Current mood: Curious.",
+        "input": "Observation: [Curious] Episode finished. Reward: 10. Survived: True.",
+        "output": "Thought: [Curious] Episode finished. Reward: 10. Survived: True."
+    }
+]

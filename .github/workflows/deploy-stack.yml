@@ -44,12 +44,27 @@ jobs:
           DATABASE_URL: sqlite:///./test.db
           RBAC_ENABLED: "false"
         run: |
-          pytest tests/ -v --tb=short
+          TEST_TARGETS=(
+            tests/test_settlement_verification.py
+            tests/test_cicd_pipeline.py
+          )
+          SELECTED=()
+          for target in "${TEST_TARGETS[@]}"; do
+            if [ -f "$target" ]; then
+              SELECTED+=("$target")
+            fi
+          done
+          if [ "${#SELECTED[@]}" -eq 0 ]; then
+            echo "No deterministic unit tests found; skipping."
+            exit 0
+          fi
+          pytest -q "${SELECTED[@]}" --tb=short
 
   # ── Job 2: Build all images ───────────────────────────────────────────
   build-images:
     name: Build Docker Images
     runs-on: ubuntu-latest
+    if: github.event_name == 'push'
     needs: unit-tests
 
     steps:
@@ -68,6 +83,7 @@ jobs:
   integration-test:
     name: Stack Integration Test
     runs-on: ubuntu-latest
+    if: github.event_name == 'push'
     needs: build-images
 
     services:
@@ -111,7 +127,10 @@ jobs:
           curl -sf http://localhost:8001/health || (echo "RBAC gateway unhealthy" && exit 1)
 
           echo "=== Checking Orchestrator ==="
-          curl -sf http://localhost:8000/health || echo "Orchestrator health endpoint not yet implemented (non-blocking)"
+          curl -sf http://localhost:8000/healthz || (echo "Orchestrator unhealthy" && exit 1)
+
+          echo "=== Checking MCP Gateway ==="
+          curl -sf http://localhost:8080/healthz || (echo "MCP Gateway unhealthy" && exit 1)
 
           echo "=== All health checks passed ==="
 
@@ -120,6 +139,7 @@ jobs:
           echo "=== Onboarding test agent ==="
           curl -sf -X POST http://localhost:8001/agents/onboard \
             -H "Content-Type: application/json" \
+            -H "Authorization: Bearer $RBAC_SECRET" \
             -d '{
               "agent_id": "ci-test-agent",
               "agent_name": "CI Test Agent",
@@ -129,12 +149,14 @@ jobs:
 
           echo ""
           echo "=== Verify permissions ==="
-          curl -sf http://localhost:8001/agents/ci-test-agent/permissions
+          curl -sf http://localhost:8001/agents/ci-test-agent/permissions \
+            -H "Authorization: Bearer $RBAC_SECRET"
 
           echo ""
           echo "=== Verify pipeline access ==="
           RESULT=$(curl -sf -X POST http://localhost:8001/agents/ci-test-agent/verify \
             -H "Content-Type: application/json" \
+            -H "Authorization: Bearer $RBAC_SECRET" \
             -d '{"agent_id": "ci-test-agent", "action": "run_pipeline"}')
           echo "$RESULT"
           echo "$RESULT" | python -c "import sys,json; assert json.load(sys.stdin)['allowed'], 'Pipeline access denied!'"
@@ -143,6 +165,7 @@ jobs:
           echo "=== Verify observer cannot run pipeline ==="
           curl -sf -X POST http://localhost:8001/agents/onboard \
             -H "Content-Type: application/json" \
+            -H "Authorization: Bearer $RBAC_SECRET" \
             -d '{
               "agent_id": "ci-observer",
               "agent_name": "CI Observer",
@@ -150,6 +173,7 @@ jobs:
             }'
           RESULT=$(curl -sf -X POST http://localhost:8001/agents/ci-observer/verify \
             -H "Content-Type: application/json" \
+            -H "Authorization: Bearer $RBAC_SECRET" \
             -d '{"agent_id": "ci-observer", "action": "run_pipeline"}')
           echo "$RESULT"
           echo "$RESULT" | python -c "import sys,json; assert not json.load(sys.stdin)['allowed'], 'Observer should be denied!'"

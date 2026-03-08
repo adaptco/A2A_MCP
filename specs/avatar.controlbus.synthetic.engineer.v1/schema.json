@@ -1,0 +1,132 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "avatar.controlbus.synthetic.engineer.v1.schema.json",
+  "title": "avatar.controlbus.synthetic.engineer.v1",
+  "type": "object",
+  "oneOf": [
+    { "$ref": "#/$defs/ControlBusRequest" },
+    { "$ref": "#/$defs/ControlBusResponse" },
+    { "$ref": "#/$defs/VVLRecord" }
+  ],
+  "$defs": {
+    "Hex64": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "Phase": {
+      "type": "string",
+      "enum": ["SAMPLE", "COMPOSE", "GENERATE", "LEDGER"]
+    },
+    "BifurcationReason": {
+      "type": "string"
+    },
+    "Constraint": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "DecisionVector": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "SubstratePayload": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "Bifurcation": {
+      "type": "object",
+      "properties": {
+        "status": { "type": "string" },
+        "reason": { "type": "string" }
+      },
+      "required": ["status", "reason"]
+    },
+    "VVLEntry": {
+        "type": "object",
+        "properties": {
+            "prev_hash": { "$ref": "#/$defs/Hex64" },
+            "record_hash": { "$ref": "#/$defs/Hex64" }
+        },
+        "required": ["prev_hash", "record_hash"]
+    },
+    "ControlBusRequest": {
+      "type": "object",
+      "required": [
+        "request_id",
+        "session_id",
+        "seed",
+        "track_id",
+        "mode",
+        "phase"
+      ],
+      "properties": {
+        "request_id": { "type": "string" },
+        "session_id": { "type": "string" },
+        "seed": { "type": "string" },
+        "track_id": { "type": "string" },
+        "mode": { "type": "string", "minLength": 1 },
+        "phase": { "$ref": "#/$defs/Phase" },
+        "constraints": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/Constraint" },
+          "default": []
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": true,
+          "default": {}
+        }
+      },
+      "additionalProperties": false
+    },
+    "ControlBusResponse": {
+      "type": "object",
+      "required": [
+        "request_id",
+        "session_id",
+        "phase",
+        "sample_id",
+        "decision_vector",
+        "substrate_payload",
+        "bifurcation",
+        "vvl_entry"
+      ],
+      "properties": {
+        "request_id": { "type": "string" },
+        "session_id": { "type": "string" },
+        "phase": { "$ref": "#/$defs/Phase" },
+        "sample_id": { "type": "string" },
+        "decision_vector": { "$ref": "#/$defs/DecisionVector" },
+        "substrate_payload": { "$ref": "#/$defs/SubstratePayload" },
+        "bifurcation": { "$ref": "#/$defs/Bifurcation" },
+        "vvl_entry": { "$ref": "#/$defs/VVLEntry" }
+      },
+      "additionalProperties": false
+    },
+    "VVLRecord": {
+      "type": "object",
+      "required": [
+        "vvl_id",
+        "session_id",
+        "phase",
+        "prev_hash",
+        "record_hash",
+        "timestamp",
+        "decision_vector",
+        "bifurcation_reason"
+      ],
+      "properties": {
+        "vvl_id": { "type": "string" },
+        "session_id": { "type": "string" },
+        "phase": { "$ref": "#/$defs/Phase" },
+        "prev_hash": { "$ref": "#/$defs/Hex64" },
+        "record_hash": { "$ref": "#/$defs/Hex64" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "decision_vector": { "$ref": "#/$defs/DecisionVector" },
+        "bifurcation_reason": { "$ref": "#/$defs/BifurcationReason" },
+        "prev_ledger_hash": { "$ref": "#/$defs/Hex64" },
+        "integrity_hash": { "$ref": "#/$defs/Hex64" }
+      },
+      "additionalProperties": false
+    }
+  }
+}

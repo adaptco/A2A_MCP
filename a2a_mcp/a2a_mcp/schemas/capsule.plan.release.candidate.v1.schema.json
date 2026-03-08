@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Capsule Plan Release Candidate v1",
+  "type": "object",
+  "required": [
+    "capsule_id",
+    "schema_version",
+    "input",
+    "output",
+    "input_hash",
+    "output_hash",
+    "sealed_at"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "capsule_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "capsule.plan.release.candidate.v1"
+    },
+    "input": {
+      "$ref": "./adapter.plan.release.candidate.input.v1.schema.json"
+    },
+    "output": {
+      "$ref": "./adapter.plan.release.candidate.output.v1.schema.json"
+    },
+    "input_hash": {
+      "type": "string",
+      "description": "SHA-256 hash of the canonical input payload."
+    },
+    "output_hash": {
+      "type": "string",
+      "description": "SHA-256 hash of the canonical output payload."
+    },
+    "sealed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "notes": {
+      "type": "string"
+    }
+  }
+}

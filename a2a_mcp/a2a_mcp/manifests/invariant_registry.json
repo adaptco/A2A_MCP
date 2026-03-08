@@ -1,0 +1,78 @@
+{
+  "registry_version": "2026-02-01",
+  "locked_invariants": [
+    {
+      "id": "INV-PR-ONLY-AUTOMATION-OUTPUT",
+      "name": "PR-only output policy for automation events",
+      "hard_fail": true,
+      "criteria": {
+        "automation_events": [
+          "schedule",
+          "workflow_dispatch",
+          "repository_dispatch",
+          "workflow_run"
+        ]
+      }
+    },
+    {
+      "id": "INV-HERMETIC-FINGERPRINT",
+      "name": "Hermetic fingerprint match against router-pinned value",
+      "hard_fail": true,
+      "criteria": {
+        "fingerprint_file": "runtime/freeze_manifest.json",
+        "router_pinned_sha256": "0e2de2acb543bee32b839c0688416b465dc8741b70553d8e614ffaaca839c9d3"
+      }
+    },
+    {
+      "id": "INV-HERMETIC-NO-NETWORK",
+      "name": "No outbound network in hermetic mode",
+      "hard_fail": true,
+      "criteria": {
+        "hermetic_mode_env": "HERMETIC_MODE",
+        "network_blocked_env": "NO_OUTBOUND_NETWORK"
+      }
+    },
+    {
+      "id": "INV-SECRET-SCAN-GATE",
+      "name": "Secret scan gate",
+      "hard_fail": true,
+      "criteria": {
+        "paths": [
+          "."
+        ],
+        "ignore": [
+          "ledger/cie_v1/audit_runs.stub.jsonl",
+          "governance/test-ed25519.pem",
+          "tests/fixtures/keys/checker_ed25519.pem",
+          "tests/fixtures/keys/maker_ed25519.pem"
+        ],
+        "patterns": [
+          "-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----",
+          "AKIA[0-9A-Z]{16}",
+          "ghp_[A-Za-z0-9]{36}",
+          "AIza[0-9A-Za-z\\-_]{35}"
+        ]
+      }
+    },
+    {
+      "id": "INV-POLICY-ZONING-QUORUM",
+      "name": "Policy-zoning reviewer quorum + required checks",
+      "hard_fail": true,
+      "criteria": {
+        "min_reviewers": 2,
+        "required_checks": [
+          "invariants"
+        ]
+      }
+    },
+    {
+      "id": "INV-DETERMINISTIC-ARTIFACT-HASH",
+      "name": "Deterministic artifact hash verification",
+      "hard_fail": true,
+      "criteria": {
+        "artifact_path": "manifests/content_integrity_eval.json",
+        "expected_sha256": "be994a320adccb431e4f6e267d731a435537edc95d5722bbff3d6d0fbeec8732"
+      }
+    }
+  ]
+}

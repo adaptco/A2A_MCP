@@ -1,0 +1,61 @@
+dimensions:
+  height_in: 51.6
+  length_in: 172.3
+  source: Toyota Official
+  wheelbase_in: 97.2
+  width_in: 76.4
+engine:
+  displacement_l: 3.0
+  hp: 335
+  hp_source: Toyota Official
+  manufacturer: BMW
+  model: B58B30M1
+  redline_rpm:
+    corrected_from: 7000
+    source: BMW B58 Tech Spec
+    value: 6500
+  torque_lb_ft: 365
+  torque_source: Toyota Official
+  type: Single-Turbo Inline-6
+fuel:
+  capacity_gal: 13.2
+  fuel_grade: Premium 91+ octane
+  mpg_city: 20
+  mpg_highway: 27
+  source: Toyota + EPA
+metadata:
+  model: Toyota GR Supra A90
+  region: North America
+  status: CORRECTED - see SPECS_AUDIT.md
+  verified_date: '2024-12-01'
+  year: 2024
+performance:
+  acceleration_0_60_sec:
+    corrected_from: 3.8
+    source: EPA Official
+    value: 3.9
+  top_speed_mph:
+    source: Toyota Official
+    type: electronically limited
+    value: 155
+removed_fields:
+  aeb_settings: Not Supra-specific - removed
+  battery_soc_min: Not applicable - Supra is ICE only
+  fuel_consumption_rate: No source - removed
+  response_time_ms: Generic estimate - removed
+  twin_turbo: INCORRECT - is single-turbo B58
+transmission:
+  epa_tested: 8-speed Automatic
+  options:
+  - 6-speed Manual (Aisin)
+  - 8-speed Automatic (ZF)
+unverified_fields:
+  braking_distance_60_ft:
+    status: estimated, needs test data
+    value: 122
+  skid_pad_g:
+    status: estimated, needs track test
+    value: 1.08
+  steering_radius_ft:
+    status: calculated, needs measurement test
+    value: 37.4

@@ -1,0 +1,110 @@
+name: Automerge Threads
+
+on:
+    workflow_dispatch:
+        inputs:
+            target_branch:
+                description: "Branch to merge threads into"
+                required: false
+                default: "main"
+    pull_request:
+        types: [closed]
+        branches: [main]
+
+permissions:
+    contents: write
+    pull-requests: write
+
+jobs:
+    detect-and-merge:
+        if: >-
+            github.event_name == 'workflow_dispatch' ||
+            (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+                  token: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Configure git identity
+              run: |
+                  git config user.name "github-actions[bot]"
+                  git config user.email "github-actions[bot]@users.noreply.github.com"
+
+            - name: Detect divergent branches
+              id: detect
+              run: |
+                  TARGET="${{ github.event.inputs.target_branch || 'main' }}"
+                  git fetch --all --prune
+
+                  DIVERGENT=$(git branch -r --no-merged "origin/${TARGET}" \
+                    | grep -v HEAD \
+                    | grep -v "origin/${TARGET}" \
+                    | sed 's|origin/||' \
+                    | tr -d ' ' \
+                    || true)
+
+                  if [ -z "$DIVERGENT" ]; then
+                    echo "No divergent branches found."
+                    echo "has_divergent=false" >> "$GITHUB_OUTPUT"
+                  else
+                    echo "Divergent branches: ${DIVERGENT}"
+                    echo "has_divergent=true" >> "$GITHUB_OUTPUT"
+                    # Save as newline-delimited file for iteration
+                    echo "${DIVERGENT}" > /tmp/divergent_branches.txt
+                  fi
+
+            - name: Merge divergent threads
+              if: steps.detect.outputs.has_divergent == 'true'
+              id: merge
+              run: |
+                  TARGET="${{ github.event.inputs.target_branch || 'main' }}"
+                  git checkout "${TARGET}"
+                  git pull origin "${TARGET}"
+
+                  FAILED=""
+                  MERGED=""
+
+                  while IFS= read -r branch; do
+                    [ -z "$branch" ] && continue
+                    echo "--- Merging origin/${branch} ---"
+                    if git merge "origin/${branch}" --no-ff \
+                      -m "merge: reconcile thread from ${branch} into ${TARGET}"; then
+                      MERGED="${MERGED} ${branch}"
+                    else
+                      echo "::warning::Conflict detected merging ${branch}. Aborting this merge."
+                      git merge --abort
+                      FAILED="${FAILED} ${branch}"
+                    fi
+                  done < /tmp/divergent_branches.txt
+
+                  echo "merged=${MERGED}" >> "$GITHUB_OUTPUT"
+                  echo "failed=${FAILED}" >> "$GITHUB_OUTPUT"
+
+            - name: Push merged target
+              if: steps.detect.outputs.has_divergent == 'true'
+              run: |
+                  TARGET="${{ github.event.inputs.target_branch || 'main' }}"
+                  git push origin "${TARGET}"
+
+            - name: Report results
+              if: steps.detect.outputs.has_divergent == 'true'
+              run: |
+                  echo "### Merge Results" >> "$GITHUB_STEP_SUMMARY"
+                  echo "**Merged**: ${{ steps.merge.outputs.merged || 'none' }}" >> "$GITHUB_STEP_SUMMARY"
+                  echo "**Failed (conflicts)**: ${{ steps.merge.outputs.failed || 'none' }}" >> "$GITHUB_STEP_SUMMARY"
+
+            - name: Open conflict resolution PR
+              if: steps.merge.outputs.failed != ''
+              uses: peter-evans/create-pull-request@v6
+              with:
+                  title: "fix: resolve merge conflicts from automerge-threads"
+                  body: |
+                      The following branches had merge conflicts and need manual resolution:
+                      ${{ steps.merge.outputs.failed }}
+
+                      Please resolve and merge manually.
+                  branch: automerge-conflict-resolution
+                  labels: merge-conflict, automated

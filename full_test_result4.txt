@@ -1,0 +1,486 @@
+============================= test session starts =============================
+platform win32 -- Python 3.11.9, pytest-9.0.2, pluggy-1.6.0
+rootdir: C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP
+configfile: pytest.ini (WARNING: ignoring pytest config in pyproject.toml!)
+plugins: anyio-4.12.1, asyncio-1.3.0
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 96 items / 36 errors / 3 skipped
+
+=================================== ERRORS ====================================
+________________ ERROR collecting tests/test_agents_import.py _________________
+ImportError while importing test module 'C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP\tests\test_agents_import.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+..\..\..\AppData\Local\Programs\Python\Python311\Lib\importlib\__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests\test_agents_import.py:3: in <module>
+    from agents import TesterAgent, GatingAgent, ActionModelingAgent
+E   ImportError: cannot import name 'TesterAgent' from 'agents' (C:\Users\eqhsp\.antigravity\A2A_MCP\agents\__init__.py)
+______________ ERROR collecting tests/test_avatar_integration.py ______________
+ImportError while importing test module 'C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP\tests\test_avatar_integration.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+..\..\..\AppData\Local\Programs\Python\Python311\Lib\importlib\__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests\test_avatar_integration.py:9: in <module>
+    from orchestrator.judge_orchestrator import get_judge_orchestrator
+E   ModuleNotFoundError: No module named 'orchestrator.judge_orchestrator'
+________________ ERROR collecting tests/test_cicd_pipeline.py _________________
+ImportError while importing test module 'C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP\tests\test_cicd_pipeline.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+..\..\..\AppData\Local\Programs\Python\Python311\Lib\importlib\__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests\test_cicd_pipeline.py:10: in <module>
+    from schemas.model_artifact import ModelArtifact, AgentLifecycleState, LoRAConfig
+E   ModuleNotFoundError: No module named 'schemas.model_artifact'
+_________________ ERROR collecting tests/test_drift_logic.py __________________
+ImportError while importing test module 'C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP\tests\test_drift_logic.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+..\..\..\AppData\Local\Programs\Python\Python311\Lib\importlib\__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests\test_drift_logic.py:8: in <module>
+    from wham_engine.physics.supra_drift import SupraDriftModel
+E   ModuleNotFoundError: No module named 'wham_engine.physics.supra_drift'; 'wham_engine.physics' is not a package
+________________ ERROR collecting tests/test_full_pipeline.py _________________
+ImportError while importing test module 'C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP\tests\test_full_pipeline.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+..\..\..\AppData\Local\Programs\Python\Python311\Lib\importlib\__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests\test_full_pipeline.py:15: in <module>
+    from orchestrator.intent_engine import IntentEngine, PipelineResult
+E   ImportError: cannot import name 'PipelineResult' from 'orchestrator.intent_engine' (C:\Users\eqhsp\.antigravity\A2A_MCP\orchestrator\intent_engine.py)
+__________________ ERROR collecting tests/test_game_model.py __________________
+ImportError while importing test module 'C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP\tests\test_game_model.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+..\..\..\AppData\Local\Programs\Python\Python311\Lib\importlib\__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests\test_game_model.py:3: in <module>
+    from schemas.game_model import (
+E   ModuleNotFoundError: No module named 'schemas.game_model'
+_______________ ERROR collecting tests/test_gemini_agent_e2e.py _______________
+ImportError while importing test module 'C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP\tests\test_gemini_agent_e2e.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+..\..\..\AppData\Local\Programs\Python\Python311\Lib\importlib\__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests\test_gemini_agent_e2e.py:4: in <module>
+    from agents.gemini_agent import GeminiAgent
+E   ModuleNotFoundError: No module named 'agents.gemini_agent'
+______________ ERROR collecting tests/test_genie_scaffolding.py _______________
+ImportError while importing test module 'C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP\tests\test_genie_scaffolding.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+..\..\..\AppData\Local\Programs\Python\Python311\Lib\importlib\__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests\test_genie_scaffolding.py:5: in <module>
+    from middleware.genie_adapter import GenieAdapter
+middleware\__init__.py:1: in <module>
+    from .runtime import AgenticRuntime
+middleware\runtime.py:5: in <module>
+    from schemas.model_artifact import ModelArtifact, AgentLifecycleState
+E   ModuleNotFoundError: No module named 'schemas.model_artifact'
+____________ ERROR collecting tests/test_ghost_void_integration.py ____________
+ImportError while importing test module 'C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP\tests\test_ghost_void_integration.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+..\..\..\AppData\Local\Programs\Python\Python311\Lib\importlib\__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests\test_ghost_void_integration.py:13: in <module>
+    from agency_hub.docking_shell import DockingShell
+agency_hub\docking_shell.py:11: in <module>
+    from middleware import AgenticRuntime
+middleware\__init__.py:1: in <module>
+    from .runtime import AgenticRuntime
+middleware\runtime.py:5: in <module>
+    from schemas.model_artifact import ModelArtifact, AgentLifecycleState
+E   ModuleNotFoundError: No module named 'schemas.model_artifact'
+________________ ERROR collecting tests/test_handshake_flow.py ________________
+ImportError while importing test module 'C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP\tests\test_handshake_flow.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+..\..\..\AppData\Local\Programs\Python\Python311\Lib\importlib\__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests\test_handshake_flow.py:4: in <module>
+    from middleware import AgenticRuntime
+middleware\__init__.py:1: in <module>
+    from .runtime import AgenticRuntime
+middleware\runtime.py:5: in <module>
+    from schemas.model_artifact import ModelArtifact, AgentLifecycleState
+E   ModuleNotFoundError: No module named 'schemas.model_artifact'
+_______________ ERROR collecting tests/test_locomotion_model.py _______________
+ImportError while importing test module 'C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP\tests\test_locomotion_model.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+..\..\..\AppData\Local\Programs\Python\Python311\Lib\importlib\__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests\test_locomotion_model.py:5: in <module>
+    from agency_hub.architect.locomotion import LocomotionController
+agency_hub\architect\locomotion.py:6: in <module>
+    from middleware.runtime import AgenticRuntime
+middleware\__init__.py:1: in <module>
+    from .runtime import AgenticRuntime
+middleware\runtime.py:5: in <module>
+    from schemas.model_artifact import ModelArtifact, AgentLifecycleState
+E   ModuleNotFoundError: No module named 'schemas.model_artifact'
+_________________ ERROR collecting tests/test_lora_harness.py _________________
+ImportError while importing test module 'C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP\tests\test_lora_harness.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+..\..\..\AppData\Local\Programs\Python\Python311\Lib\importlib\__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests\test_lora_harness.py:8: in <module>
+    from schemas.model_artifact import ModelArtifact, AgentLifecycleState, LoRAConfig
+E   ModuleNotFoundError: No module named 'schemas.model_artifact'
+__________________ ERROR collecting tests/test_mcp_agents.py __________________
+ImportError while importing test module 'C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP\tests\test_mcp_agents.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+..\..\..\AppData\Local\Programs\Python\Python311\Lib\importlib\__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests\test_mcp_agents.py:4: in <module>
+    from fastmcp import Client
+E   ModuleNotFoundError: No module named 'fastmcp'
+______________ ERROR collecting tests/test_middleware_runtime.py ______________
+ImportError while importing test module 'C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP\tests\test_middleware_runtime.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+..\..\..\AppData\Local\Programs\Python\Python311\Lib\importlib\__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests\test_middleware_runtime.py:3: in <module>
+    from middleware import AgenticRuntime
+middleware\__init__.py:1: in <module>
+    from .runtime import AgenticRuntime
+middleware\runtime.py:5: in <module>
+    from schemas.model_artifact import ModelArtifact, AgentLifecycleState
+E   ModuleNotFoundError: No module named 'schemas.model_artifact'
+_________________ ERROR collecting tests/test_mlops_ticker.py _________________
+ImportError while importing test module 'C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP\tests\test_mlops_ticker.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+..\..\..\AppData\Local\Programs\Python\Python311\Lib\importlib\__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests\test_mlops_ticker.py:4: in <module>
+    from middleware.observers.whatsapp import WhatsAppEventObserver
+middleware\__init__.py:1: in <module>
+    from .runtime import AgenticRuntime
+middleware\runtime.py:5: in <module>
+    from schemas.model_artifact import ModelArtifact, AgentLifecycleState
+E   ModuleNotFoundError: No module named 'schemas.model_artifact'
+_____________ ERROR collecting tests/test_mlops_unity_pipeline.py _____________
+ImportError while importing test module 'C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP\tests\test_mlops_unity_pipeline.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+..\..\..\AppData\Local\Programs\Python\Python311\Lib\importlib\__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests\test_mlops_unity_pipeline.py:3: in <module>
+    from mlops_unity_pipeline import RLTrainingConfig, TrainingSchedule, TrainingScheduler, UnityAssetSpec, UnityMLOpsOrchestrator
+mlops_unity_pipeline.py:23: in <module>
+    from croniter import croniter
+E   ModuleNotFoundError: No module named 'croniter'
+___________ ERROR collecting tests/test_multimodal_rag_workflow.py ____________
+ImportError while importing test module 'C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP\tests\test_multimodal_rag_workflow.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+..\..\..\AppData\Local\Programs\Python\Python311\Lib\importlib\__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests\test_multimodal_rag_workflow.py:3: in <module>
+    from orchestrator.multimodal_rag_workflow import (
+E   ModuleNotFoundError: No module named 'orchestrator.multimodal_rag_workflow'
+_____________ ERROR collecting tests/test_multimodal_worldline.py _____________
+ImportError while importing test module 'C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP\tests\test_multimodal_worldline.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+..\..\..\AppData\Local\Programs\Python\Python311\Lib\importlib\__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests\test_multimodal_worldline.py:1: in <module>
+    from orchestrator.multimodal_worldline import (
+E   ModuleNotFoundError: No module named 'orchestrator.multimodal_worldline'
+______________ ERROR collecting tests/test_notification_agent.py ______________
+ImportError while importing test module 'C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP\tests\test_notification_agent.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+..\..\..\AppData\Local\Programs\Python\Python311\Lib\importlib\__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests\test_notification_agent.py:1: in <module>
+    from agents.notification_agent import NotificationAgent
+E   ModuleNotFoundError: No module named 'agents.notification_agent'
+_______________ ERROR collecting tests/test_notification_app.py _______________
+ImportError while importing test module 'C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP\tests\test_notification_app.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+..\..\..\AppData\Local\Programs\Python\Python311\Lib\importlib\__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests\test_notification_app.py:3: in <module>
+    import app.notification_app as notification_app
+app\notification_app.py:8: in <module>
+    from agents.notification_agent import NotificationAgent
+E   ModuleNotFoundError: No module named 'agents.notification_agent'
+___________________ ERROR collecting tests/test_notifier.py ___________________
+ImportError while importing test module 'C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP\tests\test_notifier.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+..\..\..\AppData\Local\Programs\Python\Python311\Lib\importlib\__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests\test_notifier.py:3: in <module>
+    from orchestrator.notifier import (
+E   ModuleNotFoundError: No module named 'orchestrator.notifier'
+_________________ ERROR collecting tests/test_phase9_merge.py _________________
+ImportError while importing test module 'C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP\tests\test_phase9_merge.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+..\..\..\AppData\Local\Programs\Python\Python311\Lib\importlib\__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests\test_phase9_merge.py:9: in <module>
+    from middleware.drift_gate import gate_drift, RevenuePolicy
+middleware\__init__.py:1: in <module>
+    from .runtime import AgenticRuntime
+middleware\runtime.py:5: in <module>
+    from schemas.model_artifact import ModelArtifact, AgentLifecycleState
+E   ModuleNotFoundError: No module named 'schemas.model_artifact'
+___________ ERROR collecting tests/test_qube_forensics_validate.py ____________
+ImportError while importing test module 'C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP\tests\test_qube_forensics_validate.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+..\..\..\AppData\Local\Programs\Python\Python311\Lib\importlib\__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests\test_qube_forensics_validate.py:2: in <module>
+    from jsonschema.exceptions import ValidationError
+.venv\Lib\site-packages\jsonschema\__init__.py:13: in <module>
+    from jsonschema._format import FormatChecker
+.venv\Lib\site-packages\jsonschema\_format.py:11: in <module>
+    from jsonschema.exceptions import FormatError
+.venv\Lib\site-packages\jsonschema\exceptions.py:15: in <module>
+    from referencing.exceptions import Unresolvable as _Unresolvable
+.venv\Lib\site-packages\referencing\__init__.py:5: in <module>
+    from referencing._core import Anchor, Registry, Resource, Specification
+.venv\Lib\site-packages\referencing\_core.py:9: in <module>
+    from rpds import HashTrieMap, HashTrieSet, List
+.venv\Lib\site-packages\rpds\__init__.py:1: in <module>
+    from .rpds import *
+E   ModuleNotFoundError: No module named 'rpds.rpds'
+_________________ ERROR collecting tests/test_rag_pipeline.py _________________
+ImportError while importing test module 'C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP\tests\test_rag_pipeline.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+..\..\..\AppData\Local\Programs\Python\Python311\Lib\importlib\__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests\test_rag_pipeline.py:10: in <module>
+    from schemas.model_artifact import ModelArtifact, AgentLifecycleState
+E   ModuleNotFoundError: No module named 'schemas.model_artifact'
+_____________ ERROR collecting tests/test_release_orchestrator.py _____________
+ImportError while importing test module 'C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP\tests\test_release_orchestrator.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+..\..\..\AppData\Local\Programs\Python\Python311\Lib\importlib\__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests\test_release_orchestrator.py:1: in <module>
+    from orchestrator.release_orchestrator import (
+E   ModuleNotFoundError: No module named 'orchestrator.release_orchestrator'
+_______________ ERROR collecting tests/test_release_webhook.py ________________
+ImportError while importing test module 'C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP\tests\test_release_webhook.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+..\..\..\AppData\Local\Programs\Python\Python311\Lib\importlib\__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests\test_release_webhook.py:4: in <module>
+    import orchestrator.webhook as webhook
+..\orchestrator\webhook.py:4: in <module>
+    from orchestrator.utils import extract_plan_id_from_path
+E   ModuleNotFoundError: No module named 'orchestrator.utils'
+___________ ERROR collecting tests/test_runtime_bridge_contract.py ____________
+ImportError while importing test module 'C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP\tests\test_runtime_bridge_contract.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+..\..\..\AppData\Local\Programs\Python\Python311\Lib\importlib\__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests\test_runtime_bridge_contract.py:1: in <module>
+    from schemas.runtime_bridge import (
+E   ModuleNotFoundError: No module named 'schemas.runtime_bridge'
+______________ ERROR collecting tests/test_runtime_mcp_server.py ______________
+ImportError while importing test module 'C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP\tests\test_runtime_mcp_server.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+..\..\..\AppData\Local\Programs\Python\Python311\Lib\importlib\__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests\test_runtime_mcp_server.py:2: in <module>
+    from schemas.runtime_bridge import RuntimeAssignmentV1, RuntimeWorkerAssignment
+E   ModuleNotFoundError: No module named 'schemas.runtime_bridge'
+_________________ ERROR collecting tests/test_state_space.py __________________
+ImportError while importing test module 'C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP\tests\test_state_space.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+..\..\..\AppData\Local\Programs\Python\Python311\Lib\importlib\__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests\test_state_space.py:10: in <module>
+    from schemas.model_artifact import (
+E   ModuleNotFoundError: No module named 'schemas.model_artifact'
+______________ ERROR collecting tests/test_tetris_aggregation.py ______________
+ImportError while importing test module 'C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP\tests\test_tetris_aggregation.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+..\..\..\AppData\Local\Programs\Python\Python311\Lib\importlib\__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests\test_tetris_aggregation.py:4: in <module>
+    from middleware.observers.tetris import TetrisScoreAggregator
+middleware\__init__.py:1: in <module>
+    from .runtime import AgenticRuntime
+middleware\runtime.py:5: in <module>
+    from schemas.model_artifact import ModelArtifact, AgentLifecycleState
+E   ModuleNotFoundError: No module named 'schemas.model_artifact'
+_______________ ERROR collecting tests/test_tetris_observer.py ________________
+ImportError while importing test module 'C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP\tests\test_tetris_observer.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+..\..\..\AppData\Local\Programs\Python\Python311\Lib\importlib\__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests\test_tetris_observer.py:4: in <module>
+    from middleware.observers.tetris import TetrisScoreAggregator
+middleware\__init__.py:1: in <module>
+    from .runtime import AgenticRuntime
+middleware\runtime.py:5: in <module>
+    from schemas.model_artifact import ModelArtifact, AgentLifecycleState
+E   ModuleNotFoundError: No module named 'schemas.model_artifact'
+_________________ ERROR collecting tests/test_vector_gate.py __________________
+ImportError while importing test module 'C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP\tests\test_vector_gate.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+..\..\..\AppData\Local\Programs\Python\Python311\Lib\importlib\__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests\test_vector_gate.py:11: in <module>
+    from orchestrator.vector_gate import VectorGate
+E   ModuleNotFoundError: No module named 'orchestrator.vector_gate'
+______________ ERROR collecting tests/test_webgl_integration.py _______________
+ImportError while importing test module 'C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP\tests\test_webgl_integration.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+..\..\..\AppData\Local\Programs\Python\Python311\Lib\importlib\__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests\test_webgl_integration.py:6: in <module>
+    from frontend.three.scene_manager import SceneManager, ThreeJSObject, Vector3
+frontend\three\__init__.py:6: in <module>
+    from frontend.three.game_engine import GameEngine, PlayerState
+frontend\three\game_engine.py:16: in <module>
+    from orchestrator.judge_orchestrator import get_judge_orchestrator
+E   ModuleNotFoundError: No module named 'orchestrator.judge_orchestrator'
+_____________ ERROR collecting tests/test_webhook_cicd_monitor.py _____________
+ImportError while importing test module 'C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP\tests\test_webhook_cicd_monitor.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+..\..\..\AppData\Local\Programs\Python\Python311\Lib\importlib\__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests\test_webhook_cicd_monitor.py:7: in <module>
+    from agents.cicd_monitor_agent import CICDMonitorAgent
+E   ModuleNotFoundError: No module named 'agents.cicd_monitor_agent'
+______________ ERROR collecting tests/test_webhook_handshake.py _______________
+ImportError while importing test module 'C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP\tests\test_webhook_handshake.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+..\..\..\AppData\Local\Programs\Python\Python311\Lib\importlib\__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests\test_webhook_handshake.py:5: in <module>
+    import orchestrator.webhook as webhook
+..\orchestrator\webhook.py:4: in <module>
+    from orchestrator.utils import extract_plan_id_from_path
+E   ModuleNotFoundError: No module named 'orchestrator.utils'
+_____________ ERROR collecting tests/test_worldline_ingestion.py ______________
+ImportError while importing test module 'C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP\tests\test_worldline_ingestion.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+..\..\..\AppData\Local\Programs\Python\Python311\Lib\importlib\__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests\test_worldline_ingestion.py:4: in <module>
+    from fastmcp import Client
+E   ModuleNotFoundError: No module named 'fastmcp'
+============================== warnings summary ===============================
+..\schemas\database.py:6
+  C:\Users\eqhsp\.antigravity\A2A_MCP\schemas\database.py:6: MovedIn20Warning: The ``declarative_base()`` function is now available as sqlalchemy.orm.declarative_base(). (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    Base = declarative_base()
+
+..\agents\tester.py:10
+  C:\Users\eqhsp\.antigravity\A2A_MCP\agents\tester.py:10: PytestCollectionWarning: cannot collect test class 'TesterAgent' because it has a __init__ constructor (from: tests/test_agent_context_tokens.py)
+    class TesterAgent:
+
+..\agents\tester.py:6
+  C:\Users\eqhsp\.antigravity\A2A_MCP\agents\tester.py:6: PytestCollectionWarning: cannot collect test class 'TestReport' because it has a __init__ constructor (from: tests/test_intent_engine.py)
+    class TestReport(BaseModel):
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+ERROR tests/test_agents_import.py
+ERROR tests/test_avatar_integration.py
+ERROR tests/test_cicd_pipeline.py
+ERROR tests/test_drift_logic.py
+ERROR tests/test_full_pipeline.py
+ERROR tests/test_game_model.py
+ERROR tests/test_gemini_agent_e2e.py
+ERROR tests/test_genie_scaffolding.py
+ERROR tests/test_ghost_void_integration.py
+ERROR tests/test_handshake_flow.py
+ERROR tests/test_locomotion_model.py
+ERROR tests/test_lora_harness.py
+ERROR tests/test_mcp_agents.py
+ERROR tests/test_middleware_runtime.py
+ERROR tests/test_mlops_ticker.py
+ERROR tests/test_mlops_unity_pipeline.py
+ERROR tests/test_multimodal_rag_workflow.py
+ERROR tests/test_multimodal_worldline.py
+ERROR tests/test_notification_agent.py
+ERROR tests/test_notification_app.py
+ERROR tests/test_notifier.py
+ERROR tests/test_phase9_merge.py
+ERROR tests/test_qube_forensics_validate.py
+ERROR tests/test_rag_pipeline.py
+ERROR tests/test_release_orchestrator.py
+ERROR tests/test_release_webhook.py
+ERROR tests/test_runtime_bridge_contract.py
+ERROR tests/test_runtime_mcp_server.py
+ERROR tests/test_state_space.py
+ERROR tests/test_tetris_aggregation.py
+ERROR tests/test_tetris_observer.py
+ERROR tests/test_vector_gate.py
+ERROR tests/test_webgl_integration.py
+ERROR tests/test_webhook_cicd_monitor.py
+ERROR tests/test_webhook_handshake.py
+ERROR tests/test_worldline_ingestion.py
+!!!!!!!!!!!!!!!!!! Interrupted: 36 errors during collection !!!!!!!!!!!!!!!!!!!
+================== 3 skipped, 3 warnings, 36 errors in 1.94s ==================

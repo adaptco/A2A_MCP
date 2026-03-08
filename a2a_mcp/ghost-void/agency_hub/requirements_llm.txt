@@ -1,0 +1,10 @@
+# Multi-LLM Handoff Pipeline Requirements
+
+# Claude API
+anthropic>=0.18.0
+
+# Gemini API
+google-generativeai>=0.4.0
+
+# Mistral API
+mistralai>=0.1.0

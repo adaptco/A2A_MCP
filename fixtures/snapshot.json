@@ -1,0 +1,87 @@
+{
+  "snapshot_id": "registry-runtime-v1",
+  "captured_at": "2025-09-24T15:18:00Z",
+  "source": "/workspace/core-orchestrator/runtime/frozen/capsule.registry.runtime.v1.json",
+  "bundles": [
+    "capsule.bundle.scene.qube.v1",
+    "capsule.checkpoint.bundle.v1"
+  ],
+  "capsule_summary": {
+    "total": 15,
+    "states": {
+      "STAGED": 5,
+      "FROZEN": 9,
+      "ACTIVE": 1
+    },
+    "frozen_capsules": [
+      "capsule.checkpoint.bundle.v1",
+      "capsule.scene.archivist.v1",
+      "capsule.scene.driver.v1",
+      "capsule.scene.fighter.v1",
+      "capsule.scene.ignition.v1",
+      "capsule.scene.scrollsmith.v1",
+      "model.stable_diffusion.cici.v1",
+      "policy.guard.counterfactual.v1",
+      "tensor.semantic.cici.v1"
+    ]
+  },
+  "link_summary": {
+    "audit": [
+      {
+        "from": "policy.guard.counterfactual.v1",
+        "to": "capsule.audit.counterfactual.v1"
+      }
+    ],
+    "model": [
+      {
+        "from": "capsule.scene.ignition.v1",
+        "to": "model.stable_diffusion.cici.v1"
+      }
+    ],
+    "overlay": [
+      {
+        "from": "capsule.viewer.relay.v1",
+        "to": "hud.overlay.arc.v1"
+      }
+    ],
+    "policy": [
+      {
+        "from": "capsule.checkpoint.bundle.v1",
+        "to": "policy.guard.counterfactual.v1"
+      }
+    ],
+    "tensor": [
+      {
+        "from": "capsule.scene.ignition.v1",
+        "to": "tensor.semantic.cici.v1"
+      }
+    ],
+    "uses": [
+      {
+        "from": "capsule.checkpoint.bundle.v1",
+        "to": "capsule.timeline.checkpoints.v1"
+      }
+    ]
+  },
+  "health": {
+    "drift_tolerance_ms": 30,
+    "style_integrity_min": 0.95,
+    "telemetry_ws": {
+      "arc": "ws://localhost:8083/streams/telemetry/arc/v1",
+      "status": "OK"
+    }
+  },
+  "metaagent_overrides": {
+    "capsule.metaagent.solf1.oneshot.v1": {
+      "status": "STAGED",
+      "schema": "p3l://moe.oneshot@1",
+      "anchors": {
+        "metaagent_staging": "capsule.metaagent.staging.solf1.v1",
+        "render_token": "R-2025-001742",
+        "hud_overlay": "config.hud_overlays.v1.json"
+      },
+      "inputs": {},
+      "outputs": {}
+    }
+  }
+}

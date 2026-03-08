@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sovereign Fleet Architect</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Sovereign Fleet - A dark, technical palette anchored by matte black (#111827) and charcoal gray (#1F2937), with vibrant, distinct accents for each vessel class: cool blue (#0EA5E9), emerald green (#06D6A0), and runtime orange (#F97316). A soft silver (#C0C0C0) is used for trims. The colors are designed to feel professional, high-tech, and easily distinguishable.
+    Application Structure Plan: This SPA is designed as a dynamic dashboard for a "Fleet Architect." The structure begins with a high-level overview and a central composition chart. The primary navigation is a filter system that allows users to select a vessel type (Mecha, Console, Car) to view only the relevant avatars. The filtered avatars are displayed in an accordion-style grid, enabling a user to inspect a full dossier of an avatar's properties. This structure was chosen to make a complex, multi-dimensional dataset easily explorable and comprehensible, moving from high-level summaries to detailed individual records.
+    Visualization & Content Choices: 
+    - Report Info: Avatar vessel types. Goal: Inform/Compare. Viz/Method: Donut chart. Interaction: Tooltips on hover. Justification: A donut chart provides a clear and immediate visual breakdown of the fleet's composition, which is a key high-level metric for an architect. Library/Method: Chart.js on Canvas.
+    - Report Info: All avatar metadata (geometry, colors, features). Goal: Organize/Inform. Viz/Method: A filterable accordion grid of cards. Interaction: Clicking a card's header expands to show full details; clicking a vessel filter button updates the grid. Justification: This pattern allows for the progressive disclosure of a large amount of detailed information, preventing a cluttered interface while enabling deep dives into each record. Library/Method: Vanilla JS.
+    - Report Info: Avatar glyphs and capsules. Goal: Inform. Viz/Method: Prominent text and styling within each card. Justification: These are key identifiers of the protocol's core functions, so they must be visually distinct and easily scannable. Library/Method: Tailwind CSS.
+    CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. 
+    -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #111827;
+        }
+        .vessel-filter.active {
+            box-shadow: 0 0 0 4px currentColor;
+        }
+        .accordion-header {
+            cursor: pointer;
+            user-select: none;
+        }
+        .accordion-body {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-in-out, padding 0.5s ease-in-out;
+            padding: 0 1.5rem;
+        }
+        .accordion-item.open .accordion-body {
+            max-height: 500px;
+            padding-top: 1rem;
+            padding-bottom: 1.5rem;
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .vessel-filter[disabled] {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .chart-container {
+            position: relative;
+            height: 20rem;
+            width: 100%;
+            max-width: 20rem;
+            margin-left: auto;
+            margin-right: auto;
+        }
+    </style>
+</head>
+<body class="antialiased text-stone-200">
+
+    <div class="dashboard-capture-target min-h-screen" data-dashboard-export-root>
+    <main class="max-w-7xl mx-auto p-4 sm:p-8 space-y-16">
+
+        <section class="text-center py-12">
+            <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight text-stone-100">Sovereign Fleet Architect</h1>
+            <p class="mt-4 text-lg md:text-xl max-w-4xl mx-auto text-stone-400">An interactive console for building and auditing the fleet. Filter by vessel type to inspect each avatar's core traits, geometry, and protocol bindings.</p>
+            <div class="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
+                <button type="button" id="export-previz-shots" data-export-shots class="px-6 py-3 rounded-full bg-sky-500 text-stone-50 font-semibold shadow-lg shadow-sky-900/40 transition-transform duration-200 hover:-translate-y-0.5 focus:outline-none focus:ring-4 focus:ring-sky-300">
+                    Export reviewer PNGs
+                </button>
+                <p class="max-w-xl text-sm text-stone-500 sm:text-left">
+                    Generates <code>Previz_R-2025-001742_1920x1080_dark.png</code> and <code>Previz_R-2025-001742_2560x1440_light.png</code> using the approved html2canvas exporter.
+                </p>
+            </div>
+        </section>
+
+        <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 items-start">
+            <div class="lg:col-span-2">
+                <h2 class="text-2xl font-bold text-stone-100 mb-6 text-center lg:text-left">Operational Avatars</h2>
+                <div id="vessel-filters" class="flex flex-wrap justify-center lg:justify-start gap-4 mb-8">
+                    <button data-vessel="all" class="vessel-filter px-6 py-2 rounded-full border-2 border-stone-600 bg-stone-800 text-sm font-semibold text-stone-200 transition-all duration-300 active">All</button>
+                    <button data-vessel="console" class="vessel-filter px-6 py-2 rounded-full border-2 border-stone-600 bg-stone-800 text-sm font-semibold text-stone-200 transition-all duration-300">Console</button>
+                    <button data-vessel="car" class="vessel-filter px-6 py-2 rounded-full border-2 border-stone-600 bg-stone-800 text-sm font-semibold text-stone-200 transition-all duration-300">Car</button>
+                    <button data-vessel="mecha" class="vessel-filter px-6 py-2 rounded-full border-2 border-stone-600 bg-stone-800 text-sm font-semibold text-stone-200 transition-all duration-300">Mecha</button>
+                </div>
+                <div id="avatars-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    
+                </div>
+            </div>
+            <div class="lg:col-span-1 p-6 bg-stone-800 rounded-2xl shadow-xl border border-stone-700">
+                <h2 class="text-2xl font-bold text-stone-100 text-center mb-6">Fleet Composition</h2>
+                <div class="chart-container">
+                    <canvas id="compositionChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+    </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const avatarsGrid = document.getElementById('avatars-grid');
+            const vesselFilters = document.querySelectorAll('.vessel-filter');
+            const ctx = document.getElementById('compositionChart').getContext('2d');
+
+            const vesselColors = {
+                'car': '#00A1E4',
+                'mecha': '#F97316',
+                'console': '#06D6A0'
+            };
+            const vesselOrder = ['mecha', 'console', 'car'];
+
+            let avatarData = [];
+            let compositionChart = null;
+
+            const matKeysByVessel = {
+              car:     ["vessel_finish","jacket","glass"],
+              console: ["console_skin","ui_glow","jacket"],
+              mecha:   ["armor","terminal","glass","accents","mechanicals","rig","hud","wardrobe"]
+            };
+
+            const fmtMaterials = a =>
+              (matKeysByVessel[a.vessel] || [])
+                .map(k => a.materials?.[k])
+                .filter(Boolean)
+                .join(" • ") || "—";
+
+            const fmtFeatures = a => {
+              if (!a.features) {
+                return '—';
+              }
+              const bits = Object.values(a.features)
+                .filter(value => typeof value === 'string' && value.trim().length > 0);
+              return bits.join(", ") || '—';
+            };
+
+            function setFiltersEnabled(enabled) {
+                vesselFilters.forEach(button => {
+                    button.disabled = !enabled;
+                });
+            }
+
+            function renderAvatars(filter = 'all') {
+                if (!avatarData.length) {
+                    avatarsGrid.innerHTML = `
+                        <p class="col-span-full text-center text-stone-500 text-lg py-12">
+                          Loading avatar manifest…
+                        </p>`;
+                    return;
+                }
+
+                avatarsGrid.innerHTML = '';
+                const filtered = filter === 'all'
+                  ? avatarData
+                  : avatarData.filter(a => a.vessel === filter);
+
+                if (!filtered.length) {
+                  avatarsGrid.innerHTML = `
+                    <p class="col-span-full text-center text-stone-500 text-lg py-12">
+                      No avatars found for this vessel type.
+                    </p>`;
+                  return;
+                }
+
+                filtered.forEach(avatar => {
+                  const name = avatar.displayName || avatar.name || 'Avatar';
+                  const id = `acc-${name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
+                  const accent = vesselColors[avatar.vessel] || '#374151';
+                  const card = document.createElement('div');
+                  card.className = 'accordion-item bg-stone-800 rounded-xl shadow-lg border border-stone-700 transition-all duration-300 hover:shadow-xl';
+                  card.innerHTML = `
+                    <button class="accordion-header flex w-full items-center justify-between p-6 text-left"
+                            aria-controls="${id}" aria-expanded="false">
+                      <div class="flex items-center space-x-4">
+                        <span class="h-10 w-10 flex items-center justify-center rounded-full text-stone-100 text-2xl font-bold"
+                              style="background-color:${accent};">
+                          ${avatar.glyph.text}
+                        </span>
+                        <div>
+                          <h3 class="text-xl font-bold text-stone-100">${name}</h3>
+                          <p class="text-sm text-stone-400 capitalize">${avatar.vessel} Vessel</p>
+                        </div>
+                      </div>
+                      <span class="text-lg text-stone-500" aria-hidden="true">▶️</span>
+                    </button>
+                    <div id="${id}" class="accordion-body fade-in" role="region" aria-label="${name} details">
+                      <div class="text-sm space-y-4 text-stone-400">
+                        <div>
+                          <p class="font-semibold text-stone-200">Capsule Binding:</p>
+                          <p>${avatar.capsule}</p>
+                        </div>
+                        <div>
+                          <p class="font-semibold text-stone-200">Geometry & Materials:</p>
+                          <p>${avatar.geometry.silhouette} / ${fmtMaterials(avatar)}</p>
+                        </div>
+                        <div>
+                          <p class="font-semibold text-stone-200">Core Features:</p>
+                          <p>${fmtFeatures(avatar) || "—"}</p>
+                        </div>
+                        <div>
+                          <p class="font-semibold text-stone-200">Visual Framing:</p>
+                          <p>${avatar.framing}</p>
+                        </div>
+                      </div>
+                    </div>`;
+                  avatarsGrid.appendChild(card);
+
+                  const header = card.querySelector('.accordion-header');
+                  header.addEventListener('click', () => {
+                    const opened = card.classList.toggle('open');
+                    header.setAttribute('aria-expanded', opened ? 'true' : 'false');
+                    document.querySelectorAll('.accordion-item').forEach(el => {
+                      if (el !== card) {
+                        el.classList.remove('open');
+                        el.querySelector('.accordion-header')
+                          ?.setAttribute('aria-expanded','false');
+                      }
+                    });
+                  });
+                });
+            }
+
+            function updateCompositionChart() {
+                if (!avatarData.length) {
+                    return;
+                }
+
+                const vesselCounts = avatarData.reduce((acc, a) => {
+                    acc[a.vessel] = (acc[a.vessel] || 0) + 1;
+                    return acc;
+                }, { car: 0, console: 0, mecha: 0 });
+
+                const dataset = vesselOrder.map(vessel => vesselCounts[vessel] || 0);
+
+                if (compositionChart) {
+                    compositionChart.data.datasets[0].data = dataset;
+                    compositionChart.update();
+                    return;
+                }
+
+                compositionChart = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Mecha', 'Console', 'Car'],
+                        datasets: [{
+                            data: dataset,
+                            backgroundColor: vesselOrder.map(vessel => vesselColors[vessel]),
+                            borderColor: '#111827',
+                            borderWidth: 4,
+                            hoverOffset: 10
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    color: '#C0C0C0',
+                                    font: { weight: 'bold' }
+                                }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    title: (tooltipItems) => {
+                                        const item = tooltipItems[0];
+                                        const label = item.chart.data.labels[item.dataIndex];
+                                        return Array.isArray(label) ? label.join(' ') : label;
+                                    }
+                                }
+                            }
+                        },
+                        cutout: '70%'
+                    }
+                });
+            }
+
+            async function loadAvatarData() {
+                avatarsGrid.innerHTML = `
+                    <p class="col-span-full text-center text-stone-500 text-lg py-12">
+                      Loading avatar manifest…
+                    </p>`;
+
+                try {
+                    const response = await fetch('/data/avatar_bindings.v1.json', { cache: 'no-store' });
+                    if (!response.ok) {
+                        throw new Error(`Request failed with status ${response.status}`);
+                    }
+
+                    const manifest = await response.json();
+                    if (!manifest || !Array.isArray(manifest.avatars)) {
+                        throw new Error('Manifest missing avatars array');
+                    }
+
+                    avatarData = manifest.avatars.map(raw => ({
+                        ...raw,
+                        displayName: raw.name,
+                        gate: raw.capsule_gate,
+                        glyph: raw.glyph || { text: '—', color: vesselColors[raw.vessel] }
+                    }));
+
+                    setFiltersEnabled(true);
+                    updateCompositionChart();
+                    renderAvatars('all');
+                } catch (error) {
+                    console.error('Failed to load avatar manifest', error);
+                    avatarsGrid.innerHTML = `
+                        <p class="col-span-full text-center text-rose-400 text-lg py-12">
+                          Unable to load avatar manifest. Please try again later.
+                        </p>`;
+                }
+            }
+
+            setFiltersEnabled(false);
+
+            vesselFilters.forEach(button => {
+                button.addEventListener('click', () => {
+                    if (!avatarData.length || button.disabled) {
+                        return;
+                    }
+                    vesselFilters.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    renderAvatars(button.dataset.vessel);
+                });
+            });
+
+            loadAvatarData();
+        });
+    </script>
+    <script>
+        (function () {
+            const EXPORT_SPECS = [
+                { width: 1920, height: 1080, theme: 'dark', name: 'Previz_R-2025-001742_1920x1080_dark.png' },
+                { width: 2560, height: 1440, theme: 'light', name: 'Previz_R-2025-001742_2560x1440_light.png' },
+            ];
+
+            const TARGET_SELECTOR = '[data-dashboard-export-root]';
+            const THEME_STYLE_ID = 'png-theme-override';
+            const EXPORT_BUTTON = document.querySelector('[data-export-shots]');
+
+            if (!EXPORT_BUTTON) {
+                return;
+            }
+
+            let loaderPromise = null;
+            let exporting = false;
+
+            function ensureHtml2Canvas() {
+                if (window.html2canvas) {
+                    return Promise.resolve(window.html2canvas);
+                }
+
+                if (!loaderPromise) {
+                    loaderPromise = new Promise((resolve, reject) => {
+                        const script = document.createElement('script');
+                        script.src = 'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js';
+                        script.onload = () => resolve(window.html2canvas);
+                        script.onerror = () => reject(new Error('Failed to load html2canvas'));
+                        document.head.appendChild(script);
+                    });
+                }
+
+                return loaderPromise;
+            }
+
+            function injectTheme(theme) {
+                const existing = document.getElementById(THEME_STYLE_ID);
+                if (existing) {
+                    existing.remove();
+                }
+
+                if (theme !== 'light') {
+                    return;
+                }
+
+                const style = document.createElement('style');
+                style.id = THEME_STYLE_ID;
+                style.textContent = `
+                    :root{--bg:#F7FBFF;--card:#FFFFFF;--grid:#CFD8E3;--text:#0B1020;--sub:#355C6C;--accent:#0A7BBE;--plot:#0891B2}
+                    body{background:var(--bg)!important;color:var(--text)!important}
+                    ${TARGET_SELECTOR}{background:var(--bg)!important;color:var(--text)!important}
+                    ${TARGET_SELECTOR} .bg-stone-800,
+                    ${TARGET_SELECTOR} .bg-stone-900,
+                    ${TARGET_SELECTOR} .border-stone-700,
+                    ${TARGET_SELECTOR} .border-stone-600{background:var(--card)!important;border-color:var(--grid)!important;color:var(--text)!important}
+                    ${TARGET_SELECTOR} .text-stone-100,
+                    ${TARGET_SELECTOR} .text-stone-200,
+                    ${TARGET_SELECTOR} .text-stone-300{color:var(--text)!important}
+                    ${TARGET_SELECTOR} .text-stone-400,
+                    ${TARGET_SELECTOR} .text-stone-500{color:var(--sub)!important}
+                `;
+                document.head.appendChild(style);
+            }
+
+            async function exportPNG({ width, height, theme, name }) {
+                const html2canvas = await ensureHtml2Canvas();
+                const target = document.querySelector(TARGET_SELECTOR) || document.body;
+
+                const previousScroll = [window.scrollX, window.scrollY];
+
+                injectTheme(theme);
+                window.scrollTo(0, 0);
+
+                try {
+                    const rect = target.getBoundingClientRect();
+                    const baseWidth = rect.width || target.clientWidth || target.scrollWidth || width;
+                    const baseHeight = rect.height || target.clientHeight || target.scrollHeight || height;
+                    const scale = Math.max(width / baseWidth, height / baseHeight, 1);
+                    const capturedCanvas = await html2canvas(target, {
+                        scale,
+                        backgroundColor: null,
+                        useCORS: true,
+                    });
+
+                    const outputCanvas = document.createElement('canvas');
+                    outputCanvas.width = width;
+                    outputCanvas.height = height;
+                    const ctx = outputCanvas.getContext('2d');
+
+                    const sx = Math.max(0, Math.floor((capturedCanvas.width - width) / 2));
+                    const sy = Math.max(0, Math.floor((capturedCanvas.height - height) / 2));
+                    const sw = Math.min(width, capturedCanvas.width);
+                    const sh = Math.min(height, capturedCanvas.height);
+
+                    ctx.drawImage(capturedCanvas, sx, sy, sw, sh, 0, 0, width, height);
+
+                    await new Promise((resolve, reject) => {
+                        outputCanvas.toBlob((blob) => {
+                            if (!blob) {
+                                reject(new Error('Unable to encode PNG'));
+                                return;
+                            }
+                            const link = document.createElement('a');
+                            link.download = name;
+                            link.href = URL.createObjectURL(blob);
+                            link.click();
+                            setTimeout(() => URL.revokeObjectURL(link.href), 2000);
+                            resolve();
+                        }, 'image/png', 1.0);
+                    });
+                } finally {
+                    injectTheme(null);
+                    window.scrollTo(previousScroll[0], previousScroll[1]);
+                }
+            }
+
+            async function handleExportClick() {
+                if (exporting) {
+                    return;
+                }
+
+                exporting = true;
+                const originalText = EXPORT_BUTTON.textContent;
+                EXPORT_BUTTON.disabled = true;
+                EXPORT_BUTTON.textContent = 'Exporting…';
+
+                try {
+                    for (const spec of EXPORT_SPECS) {
+                        await exportPNG(spec);
+                    }
+                } catch (error) {
+                    console.error('Failed to export dashboard PNGs', error);
+                    alert('Dashboard export failed. Check the console for details.');
+                } finally {
+                    injectTheme(null);
+                    EXPORT_BUTTON.disabled = false;
+                    EXPORT_BUTTON.textContent = originalText;
+                    exporting = false;
+                }
+            }
+
+            EXPORT_BUTTON.addEventListener('click', () => {
+                handleExportClick();
+            });
+        })();
+    </script>
+</body>
+</html>

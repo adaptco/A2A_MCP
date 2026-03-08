@@ -1,0 +1,62 @@
+name: CI/CD Monitor Hook
+
+on:
+  workflow_run:
+    workflows:
+      - "Agents CI/CD"
+      - "Python application"
+      - "A2A-MCP Integration Tests"
+    types: [completed]
+
+permissions:
+  contents: read
+
+jobs:
+  emit-status:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send workflow status to MCP monitor endpoint
+        env:
+          MCP_ENDPOINT: ${{ secrets.MCP_ENDPOINT }}
+          MCP_TOKEN: ${{ secrets.MCP_TOKEN }}
+          MCP_WEBHOOK_SECRET: ${{ secrets.MCP_WEBHOOK_SECRET }}
+        shell: bash
+        run: |
+          if [ -z "$MCP_ENDPOINT" ]; then
+            echo "MCP_ENDPOINT is not configured; skipping monitor hook."
+            exit 0
+          fi
+
+          payload=$(cat <<JSON
+          {
+            "workflow_run": {
+              "id": ${{ github.event.workflow_run.id }},
+              "name": "${{ github.event.workflow_run.name }}",
+              "status": "${{ github.event.workflow_run.status }}",
+              "conclusion": "${{ github.event.workflow_run.conclusion }}",
+              "head_sha": "${{ github.event.workflow_run.head_sha }}",
+              "head_branch": "${{ github.event.workflow_run.head_branch }}",
+              "html_url": "${{ github.event.workflow_run.html_url }}",
+              "event": "${{ github.event.workflow_run.event }}",
+              "run_number": ${{ github.event.workflow_run.run_number }}
+            }
+          }
+          JSON
+          )
+
+          SIG_HEADER=()
+          if [ -n "$MCP_WEBHOOK_SECRET" ]; then
+            SIGNATURE=$(printf '%s' "$payload" | openssl dgst -sha256 -hmac "$MCP_WEBHOOK_SECRET" | awk '{print $NF}')
+            SIG_HEADER=(-H "X-Hub-Signature-256: sha256=${SIGNATURE}")
+          fi
+
+          curl -sS --fail-with-body \
+            --retry 3 \
+            --retry-delay 3 \
+            --retry-all-errors \
+            -X POST "${MCP_ENDPOINT}/webhooks/github/actions" \
+            -H "Authorization: Bearer ${MCP_TOKEN}" \
+            -H "X-GitHub-Event: workflow_run" \
+            -H "Content-Type: application/json" \
+            "${SIG_HEADER[@]}" \
+            -d "${payload}"

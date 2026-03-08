@@ -8,10 +8,11 @@ pipeline and executing lifecycle transitions.
 from __future__ import annotations
 
 import os
-from typing import Dict
+from typing import Dict, List
 
-from fastapi import FastAPI, HTTPException, status
+from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
 from rbac.models import (
     ACTION_PERMISSIONS,
@@ -22,7 +23,12 @@ from rbac.models import (
     OnboardingResult,
     PermissionCheckRequest,
     PermissionCheckResponse,
+    RBACTokenIntrospectRequest,
+    RBACTokenIntrospectResponse,
+    RBACTokenIssueRequest,
+    RBACTokenIssueResponse,
 )
+from rbac.token_service import RBACJWTIssuer, TokenServiceError, token_fingerprint
 
 # ── App setup ────────────────────────────────────────────────────────────
 
@@ -32,11 +38,13 @@ app = FastAPI(
     version="1.0.0",
 )
 
+# Production-ready CORS
+allowed_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,http://localhost:8080").split(",")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=allowed_origins if os.getenv("ENV") == "production" else ["*"],
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
 
@@ -44,6 +52,18 @@ app.add_middleware(
 _registry: Dict[str, AgentRecord] = {}
 
 RBAC_SECRET = os.getenv("RBAC_SECRET", "dev-secret-change-me")
+security = HTTPBearer()
+token_issuer = RBACJWTIssuer(secret=RBAC_SECRET)
+
+
+async def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    """Enforce token-based authentication."""
+    if credentials.credentials != RBAC_SECRET:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid authentication token",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
 
 
 # ── Health ───────────────────────────────────────────────────────────────
@@ -57,15 +77,12 @@ async def health():
     }
 
 
-# ── Agent Onboarding ────────────────────────────────────────────────────
+# ── Agent Onboarding ─────────────────────────────────────────────────────    
 
-@app.post("/agents/onboard", response_model=OnboardingResult, status_code=201)
+@app.post("/agents/onboard", response_model=OnboardingResult, status_code=201, dependencies=[Depends(verify_token)])
 async def onboard_agent(registration: AgentRegistration):
     """
     Register a new agent with a role and optional embedding config.
-
-    The agent's role determines which lifecycle transitions and actions it
-    may perform within the pipeline.
     """
     if registration.agent_id in _registry:
         raise HTTPException(
@@ -95,9 +112,9 @@ async def onboard_agent(registration: AgentRegistration):
     )
 
 
-# ── Permission Queries ──────────────────────────────────────────────────
+# ── Permission Queries ───────────────────────────────────────────────────        
 
-@app.get("/agents/{agent_id}/permissions")
+@app.get("/agents/{agent_id}/permissions", dependencies=[Depends(verify_token)])
 async def get_agent_permissions(agent_id: str):
     """Return the full permission scope for a registered agent."""
     record = _registry.get(agent_id)
@@ -117,11 +134,11 @@ async def get_agent_permissions(agent_id: str):
     }
 
 
-@app.post("/agents/{agent_id}/verify", response_model=PermissionCheckResponse)
+@app.post("/agents/{agent_id}/verify", response_model=PermissionCheckResponse, dependencies=[Depends(verify_token)])
 async def verify_permission(agent_id: str, check: PermissionCheckRequest):
     """
     Check whether an agent is permitted to perform a specific action or
-    lifecycle transition.
+    lifecycle transition. (Public endpoint, no signature required for verification query)
     """
     record = _registry.get(agent_id)
     if not record:
@@ -180,9 +197,9 @@ async def verify_permission(agent_id: str, check: PermissionCheckRequest):
     )
 
 
-# ── Agent Management ────────────────────────────────────────────────────
+# ── Agent Management ─────────────────────────────────────────────────────    
 
-@app.get("/agents")
+@app.get("/agents", dependencies=[Depends(verify_token)])
 async def list_agents():
     """List all registered agents."""
     return {
@@ -198,7 +215,7 @@ async def list_agents():
     }
 
 
-@app.delete("/agents/{agent_id}", status_code=204)
+@app.delete("/agents/{agent_id}", status_code=204, dependencies=[Depends(verify_token)])
 async def deactivate_agent(agent_id: str):
     """Soft-deactivate an agent (preserves record for audit)."""
     record = _registry.get(agent_id)
@@ -210,7 +227,52 @@ async def deactivate_agent(agent_id: str):
     record.active = False
 
 
-# ── Entry point ─────────────────────────────────────────────────────────
+# ── RBAC Token Issuance / Introspection ─────────────────────────────────
+
+@app.post("/tokens/issue", response_model=RBACTokenIssueResponse, dependencies=[Depends(verify_token)])
+async def issue_access_token(request: RBACTokenIssueRequest):
+    """Issue short-lived signed JWT for A2A/MCP handshakes."""
+
+    claims = {
+        "sub": request.subject,
+        "tenant_id": request.tenant_id,
+        "client_id": request.client_id,
+        "avatar_id": request.avatar_id,
+        "roles": sorted(set(request.roles)),
+        "scopes": sorted(set(request.scopes)),
+        "tools": sorted(set(request.tools)),
+    }
+    try:
+        token, expanded_claims = token_issuer.issue_access_token(
+            claims,
+            ttl_seconds=request.ttl_seconds,
+        )
+    except TokenServiceError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
+
+    expires_at = int(expanded_claims["exp"])
+    expires_in = max(0, expires_at - int(expanded_claims["iat"]))
+    return RBACTokenIssueResponse(
+        access_token=token,
+        expires_at=expires_at,
+        expires_in=expires_in,
+        fingerprint=token_fingerprint(token),
+        claims=expanded_claims,
+    )
+
+
+@app.post("/tokens/introspect", response_model=RBACTokenIntrospectResponse, dependencies=[Depends(verify_token)])
+async def introspect_access_token(request: RBACTokenIntrospectRequest):
+    """Verify issued RBAC token and return claims."""
+
+    try:
+        claims = token_issuer.verify_access_token(request.access_token)
+    except TokenServiceError as exc:
+        return RBACTokenIntrospectResponse(active=False, claims={}, reason=str(exc))
+    return RBACTokenIntrospectResponse(active=True, claims=claims, reason="")
+
+
+# ── Entry point ──────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
     import uvicorn

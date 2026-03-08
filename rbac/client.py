@@ -5,6 +5,7 @@ RBAC Client — Lightweight HTTP client for the orchestrator to call the RBAC ga
 from __future__ import annotations
 
 import logging
+import os
 from typing import Any, Dict, Optional
 
 import requests
@@ -20,11 +21,23 @@ class RBACClient:
         client = RBACClient("http://rbac-gateway:8001")
         result = client.onboard_agent("agent-1", "ManagingAgent", "pipeline_operator")
         allowed = client.verify_permission("agent-1", action="run_pipeline")
+        # Optionally provide explicit token; otherwise RBAC_SECRET env var is used.
     """
 
-    def __init__(self, base_url: str = "http://localhost:8001", timeout: int = 5):
+    def __init__(
+        self,
+        base_url: str = "http://localhost:8001",
+        timeout: int = 5,
+        token: str | None = None,
+    ):
         self.base_url = base_url.rstrip("/")
         self.timeout = timeout
+        self.token = (token if token is not None else os.getenv("RBAC_SECRET", "")).strip()
+
+    def _auth_headers(self) -> Dict[str, str]:
+        if not self.token:
+            return {}
+        return {"Authorization": f"Bearer {self.token}"}
 
     # ── Health ───────────────────────────────────────────────────────
 
@@ -64,6 +77,7 @@ class RBACClient:
             r = requests.post(
                 f"{self.base_url}/agents/onboard",
                 json=payload,
+                headers=self._auth_headers(),
                 timeout=self.timeout,
             )
             if r.status_code == 201:
@@ -103,6 +117,7 @@ class RBACClient:
             r = requests.post(
                 f"{self.base_url}/agents/{agent_id}/verify",
                 json=payload,
+                headers=self._auth_headers(),
                 timeout=self.timeout,
             )
             if r.status_code == 200:
@@ -125,6 +140,7 @@ class RBACClient:
         try:
             r = requests.get(
                 f"{self.base_url}/agents/{agent_id}/permissions",
+                headers=self._auth_headers(),
                 timeout=self.timeout,
             )
             r.raise_for_status()
@@ -132,3 +148,56 @@ class RBACClient:
         except requests.RequestException as e:
             logger.warning("Failed to fetch permissions for '%s': %s", agent_id, e)
             return {}
+
+    # ── Token operations ───────────────────────────────────────────
+
+    def issue_access_token(
+        self,
+        *,
+        subject: str,
+        tenant_id: str,
+        client_id: str,
+        avatar_id: str,
+        roles: list[str],
+        scopes: list[str],
+        tools: list[str] | None = None,
+        ttl_seconds: int = 900,
+    ) -> Dict[str, Any]:
+        """Issue signed RBAC access token from the gateway."""
+
+        payload = {
+            "subject": subject,
+            "tenant_id": tenant_id,
+            "client_id": client_id,
+            "avatar_id": avatar_id,
+            "roles": roles,
+            "scopes": scopes,
+            "tools": tools or [],
+            "ttl_seconds": ttl_seconds,
+        }
+        try:
+            response = requests.post(
+                f"{self.base_url}/tokens/issue",
+                json=payload,
+                headers=self._auth_headers(),
+                timeout=self.timeout,
+            )
+            response.raise_for_status()
+            return response.json()
+        except requests.RequestException as exc:
+            raise RuntimeError(f"RBAC token issuance failed: {exc}") from exc
+
+    def introspect_access_token(self, access_token: str) -> Dict[str, Any]:
+        """Verify token via RBAC introspection endpoint."""
+
+        try:
+            response = requests.post(
+                f"{self.base_url}/tokens/introspect",
+                json={"access_token": access_token},
+                headers=self._auth_headers(),
+                timeout=self.timeout,
+            )
+            response.raise_for_status()
+            return response.json()
+        except requests.RequestException as exc:
+            raise RuntimeError(f"RBAC token introspection failed: {exc}") from exc

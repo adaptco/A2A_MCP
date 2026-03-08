@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "vh2_drift_ledger_line.v1.schema.json",
+  "title": "vh2_drift_ledger_line.v1",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "schema_version",
+    "trust_domain",
+    "line_index",
+    "prev_line_sha256",
+    "line_sha256",
+    "artifact_path",
+    "artifact_canonical_sha256",
+    "hash_version"
+  ],
+  "properties": {
+    "schema_version": { "const": "vh2_drift_ledger_line.v1" },
+    "trust_domain": { "type": "string", "minLength": 1 },
+    "line_index": { "type": "integer", "minimum": 0 },
+    "prev_line_sha256": {
+      "type": "string",
+      "pattern": "^(GENESIS_VH2_DRIFT_LEDGER_V1|[a-f0-9]{64})$",
+      "description": "Use GENESIS_VH2_DRIFT_LEDGER_V1 for line_index=0, otherwise previous line SHA-256."
+    },
+    "line_sha256": { "$ref": "#/$defs/sha256Hex" },
+    "artifact_path": { "type": "string", "minLength": 1 },
+    "artifact_canonical_sha256": { "$ref": "#/$defs/sha256Hex" },
+    "hash_version": { "const": 1 }
+  },
+  "$defs": {
+    "sha256Hex": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    }
+  }
+}

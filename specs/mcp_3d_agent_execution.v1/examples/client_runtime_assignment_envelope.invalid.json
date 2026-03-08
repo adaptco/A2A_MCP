@@ -1,0 +1,50 @@
+{
+  "schema_version": "client_runtime_assignment_envelope.v1",
+  "runtime_assignment": {
+    "schema_version": "runtime.assignment.v1",
+    "assignment_id": "assign-20260305-002",
+    "handshake_id": "hs-20260305-002",
+    "plan_id": "plan-20260305-002",
+    "repository": "adaptco-main/A2A_MCP",
+    "commit_sha": "ad854486a840079f438a361b8fa584586fd2122f",
+    "actor": "codex",
+    "prompt": "invalid dual runtime coverage",
+    "runtime": {
+      "environment": "production",
+      "engine": "wham"
+    },
+    "workers": [
+      {
+        "worker_id": "worker-unity-only",
+        "agent_name": "CoderAgentUnity",
+        "role": "coder",
+        "fidelity": "high",
+        "runtime_target": "production-unity",
+        "deployment_mode": "rolling",
+        "render_backend": "unity",
+        "runtime_shell": "wasm"
+      }
+    ],
+    "token_stream": [
+      {
+        "token": "invalid",
+        "token_id": "badbadbadbadbad1"
+      }
+    ],
+    "token_stream_stats": {
+      "normalized": true,
+      "count": 1
+    },
+    "stateful_artifacts": [],
+    "orchestration_state": {
+      "phase": "executing"
+    },
+    "mcp": {
+      "server": "A2A_Runtime",
+      "runtime_tools": [
+        "submit_runtime_assignment",
+        "get_runtime_assignment"
+      ]
+    }
+  }
+}

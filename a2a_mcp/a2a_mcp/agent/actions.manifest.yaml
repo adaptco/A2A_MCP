@@ -1,0 +1,47 @@
+schema: actions.manifest.v1
+agent_name: ai-architecture-specialist
+integrity_mode: fail_closed
+public_action_policy:
+  require_privacy_policy_url: true
+  validation:
+    url_must_match_regex: "^https://"
+    url_must_not_be_placeholder: true
+
+tool_providers:
+  - id: zapier_mcp
+    type: mcp
+    display_name: "Zapier MCP"
+    endpoint:
+      mode: url
+      # Put the real MCP server URL here (not the token).
+      url: "${ZAPIER_MCP_ENDPOINT}"
+    auth:
+      mode: env
+      env_var: "ZAPIER_MCP_TOKEN"
+    privacy:
+      # REQUIRED for any public action capability
+      policy_url: "https://YOUR-DOMAIN.TLD/privacy"
+    receipts:
+      emit: true
+      fields: [trace_id, tool_id, action_id, request_hash, response_hash]
+
+actions:
+  - id: zapier.run_zap
+    provider_id: zapier_mcp
+    visibility: public
+    purpose: "Trigger a Zapier workflow deterministically from a governed event."
+    input_schema_ref: "schemas/action.zapier.run_zap.v1.json"
+    output_schema_ref: "schemas/action.zapier.run_zap.result.v1.json"
+    determinism:
+      idempotency_key_required: true
+      forbid_wall_clock_in_hashed_regions: true
+
+  - id: ledger.append_receipt
+    provider_id: local
+    visibility: private
+    purpose: "Append-only receipt writer for audit and offline RL."
+    input_schema_ref: "schemas/action.ledger.append_receipt.v1.json"
+    output_schema_ref: "schemas/action.ledger.append_receipt.result.v1.json"
+    determinism:
+      jcs_canonical_json: true
+      sha256_chain: true

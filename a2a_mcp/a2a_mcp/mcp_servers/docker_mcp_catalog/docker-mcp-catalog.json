@@ -1,0 +1,10 @@
+[
+  {
+    "path": "/safe_path/for/io",
+    "readOnly": false
+  },
+  {
+    "path": "/readonly_path",
+    "readOnly": true
+  }
+]

@@ -1,0 +1,58 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Digital Thread Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "thread_id",
+    "corpus_id",
+    "project_id",
+    "vertical_id",
+    "episode_id",
+    "type",
+    "text",
+    "source_uri",
+    "source_hash",
+    "claims",
+    "spec_refs",
+    "tags",
+    "sensitivity",
+    "created_at",
+    "hash"
+  ],
+  "properties": {
+    "thread_id": { "type": "string" },
+    "corpus_id": { "type": "string" },
+    "project_id": { "type": "string" },
+    "vertical_id": { "type": "string" },
+    "episode_id": { "type": "string" },
+    "type": { "type": "string" },
+    "text": { "type": "string" },
+    "title": { "type": "string" },
+    "source_uri": { "type": "string" },
+    "source_hash": { "type": "string" },
+    "claims": {
+      "type": "array",
+      "items": { "type": "object" },
+      "default": []
+    },
+    "spec_refs": {
+      "type": "array",
+      "items": { "type": "string" },
+      "default": []
+    },
+    "tags": {
+      "type": "array",
+      "items": { "type": "string" },
+      "default": []
+    },
+    "sensitivity": { "type": "string" },
+    "created_at": { "type": "string", "format": "date-time" },
+    "hash": { "type": "string" },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true,
+      "default": {}
+    }
+  }
+}

@@ -1,0 +1,123 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "vh2_drift_artifact.v2.schema.json",
+  "title": "vh2_drift_artifact.v2",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "schema_version",
+    "trust_domain",
+    "canonicalization",
+    "signature_mode",
+    "integrity",
+    "judgment",
+    "inputs"
+  ],
+  "properties": {
+    "schema_version": { "const": "vh2_drift_artifact.v2" },
+    "trust_domain": { "type": "string", "minLength": 1 },
+    "canonicalization": { "$ref": "#/$defs/canonicalizationBlock" },
+    "signature_mode": { "const": "VERIFIABLE_NONDETERMINISTIC" },
+    "integrity": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "sig_scope",
+        "signing_input",
+        "sig_alg",
+        "key_fingerprint_sha256",
+        "signature_b64",
+        "canonical_sha256",
+        "artifact_id",
+        "replay_digest_sha256"
+      ],
+      "properties": {
+        "sig_scope": { "const": "CANONICAL_BYTES_ONLY" },
+        "signing_input": { "const": "DRIFT_CANON_BYTES_UTF8" },
+        "sig_alg": {
+          "type": "string",
+          "enum": ["RSASSA_PSS_SHA_256", "ECDSA_SHA_256"]
+        },
+        "key_fingerprint_sha256": { "$ref": "#/$defs/sha256Hex" },
+        "signature_b64": {
+          "type": "string",
+          "contentEncoding": "base64",
+          "minLength": 1
+        },
+        "canonical_sha256": { "$ref": "#/$defs/sha256Hex" },
+        "artifact_id": {
+          "type": "string",
+          "pattern": "^drift_[a-f0-9]{16}$"
+        },
+        "replay_digest_sha256": { "$ref": "#/$defs/sha256Hex" }
+      }
+    },
+    "judgment": { "type": "object" },
+    "inputs": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["corpus_mode"],
+      "properties": {
+        "corpus_mode": {
+          "type": "string",
+          "enum": ["EMBEDDED", "EXTERNAL_REF"]
+        },
+        "observed_corpus": { "type": "object" },
+        "corpus_ref": {
+          "type": "object",
+          "additionalProperties": true,
+          "required": [
+            "uri",
+            "corpus_canon_sha256",
+            "corpus_canon_bytes_len",
+            "canonicalization"
+          ],
+          "properties": {
+            "uri": { "type": "string", "minLength": 1 },
+            "corpus_canon_sha256": { "$ref": "#/$defs/sha256Hex" },
+            "corpus_canon_bytes_len": { "type": "integer", "minimum": 0 },
+            "canonicalization": { "$ref": "#/$defs/canonicalizationBlock" }
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": { "corpus_mode": { "const": "EMBEDDED" } },
+            "required": ["corpus_mode"]
+          },
+          "then": {
+            "required": ["observed_corpus"],
+            "not": { "required": ["corpus_ref"] }
+          }
+        },
+        {
+          "if": {
+            "properties": { "corpus_mode": { "const": "EXTERNAL_REF" } },
+            "required": ["corpus_mode"]
+          },
+          "then": {
+            "required": ["corpus_ref"],
+            "not": { "required": ["observed_corpus"] }
+          }
+        }
+      ]
+    }
+  },
+  "$defs": {
+    "sha256Hex": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "canonicalizationBlock": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["spec", "impl", "impl_sha256"],
+      "properties": {
+        "spec": { "const": "RFC8785_JCS" },
+        "impl": { "type": "string", "minLength": 1 },
+        "impl_sha256": { "$ref": "#/$defs/sha256Hex" }
+      }
+    }
+  }
+}

@@ -1,0 +1,195 @@
+{
+  "id": "looks.film_portra.v1",
+  "version": "1.0.0",
+  "name": "Analog Film Look Capsule — Portra Base",
+  "description": "Adobe Lightroom recipe capturing Kodak Portra 400 warmth with an optional Fuji Provia variant for Queen Boo or Celine renders.",
+  "created": "2025-09-22T22:21:16Z",
+  "governance": {
+    "author": "adaptco",
+    "council": "council/adaptco",
+    "policy_tag": "visual-look-presets"
+  },
+  "capsule": {
+    "category": "look-preset",
+    "tool": "Adobe Lightroom",
+    "application_surfaces": [
+      "Lightroom Classic Desktop",
+      "Lightroom Mobile"
+    ],
+    "applies_to": [
+      "Queen Boo renders",
+      "Celine renders"
+    ],
+    "default_variant": "kodak_portra_400",
+    "workflow": {
+      "prep": [
+        "Start from a balanced exposure with highlight headroom maintained.",
+        "Capture or render with wide dynamic range to preserve tonal detail for the roll-off."
+      ],
+      "post": [
+        "Apply adjustments in the order listed and revisit exposure and white balance after grading.",
+        "Export with the included grain; avoid downstream sharpening that removes the film softness."
+      ]
+    },
+    "variants": {
+      "kodak_portra_400": {
+        "name": "Kodak Portra 400 Inspired",
+        "summary": "Warm, soft, cinematic analog response with gentle highlights and lifted shadows.",
+        "adjustment_groups": [
+          {
+            "group": "Basic Adjustments",
+            "settings": [
+              {
+                "control": "Exposure",
+                "value": "Adjust per render",
+                "notes": "Keep highlights slightly underexposed for smoother roll-off."
+              },
+              {
+                "control": "Contrast",
+                "value": -10
+              },
+              {
+                "control": "Highlights",
+                "value": -30
+              },
+              {
+                "control": "Shadows",
+                "value": 20
+              },
+              {
+                "control": "Whites",
+                "value": -10
+              },
+              {
+                "control": "Blacks",
+                "value": 10
+              }
+            ]
+          },
+          {
+            "group": "Tone Curve",
+            "settings": [
+              {
+                "control": "Composite Curve",
+                "value": "gentle_s",
+                "notes": "Add a mild S-curve and lift the black point slightly."
+              },
+              {
+                "control": "Black Point",
+                "value": "Raised",
+                "notes": "Set output around 8–10% to preserve the film fade."
+              }
+            ]
+          },
+          {
+            "group": "Color Grading",
+            "settings": [
+              {
+                "control": "Temperature",
+                "value": "+3 to +5",
+                "notes": "Adds a touch of warmth reminiscent of Portra skin tones."
+              },
+              {
+                "control": "Vibrance",
+                "value": -10
+              },
+              {
+                "control": "Saturation",
+                "value": -5
+              },
+              {
+                "control": "Shadows Tint",
+                "value": "Teal",
+                "notes": "Hue ~ 200 deg, saturation around 8."
+              },
+              {
+                "control": "Highlights Tint",
+                "value": "Amber",
+                "notes": "Hue ~ 40 deg, saturation around 10."
+              }
+            ]
+          },
+          {
+            "group": "Effects",
+            "settings": [
+              {
+                "control": "Grain",
+                "value": {
+                  "amount": 25,
+                  "size": 25,
+                  "roughness": 50
+                }
+              },
+              {
+                "control": "Texture",
+                "value": -10
+              },
+              {
+                "control": "Clarity",
+                "value": -15
+              },
+              {
+                "control": "Dehaze",
+                "value": -5
+              }
+            ]
+          },
+          {
+            "group": "Optics",
+            "settings": [
+              {
+                "control": "Lens Corrections",
+                "value": "Enable"
+              },
+              {
+                "control": "Vignette",
+                "value": -12,
+                "notes": "Aim for -10 to -15 for subtle edge falloff."
+              }
+            ]
+          }
+        ],
+        "optional": [
+          {
+            "control": "Radial Filter",
+            "value": "+0.2 exposure",
+            "notes": "Place around strong highlights to mimic halation."
+          },
+          {
+            "control": "Overlay",
+            "value": "Dust or scratches",
+            "notes": "Use sparingly for archival character."
+          }
+        ]
+      },
+      "fuji_provia": {
+        "name": "Fuji Provia Variant",
+        "summary": "Cooler balance with slightly higher contrast while retaining the analog grain.",
+        "inherit_from": "kodak_portra_400",
+        "overrides": [
+          {
+            "control": "Contrast",
+            "value": 10
+          },
+          {
+            "control": "Shadows",
+            "value": 10
+          },
+          {
+            "control": "Temperature",
+            "value": "-2",
+            "notes": "Nudge cooler for Fuji neutrality."
+          },
+          {
+            "control": "Saturation",
+            "value": 5
+          }
+        ],
+        "notes": [
+          "Maintain the same grain and tone curve lift but allow blacks to sit slightly deeper if desired.",
+          "Cool highlights minimally to keep specular detail crisp without going magenta."
+        ]
+      }
+    }
+  }
+}

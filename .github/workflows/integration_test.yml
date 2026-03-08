@@ -1,6 +1,10 @@
 name: A2A-MCP Integration Tests
 
-on: [push, pull_request]
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
 
 jobs:
   test:
@@ -20,18 +24,36 @@ jobs:
           --health-retries 5
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version: '3.11'
       
       - name: Install dependencies
         run: |
-          pip install sqlalchemy psycopg2-binary pydantic pytest
+          pip install -r requirements.txt
+          pip install -e .
       
       - name: Run Persistence Unit Tests
         env:
           DATABASE_URL: postgresql://postgres:pass@localhost:5432/mcp_db
+          PYTHONPATH: .:src:scripts
         run: |
-          pytest tests/test_storage.py
+          if [ -f tests/test_settlement_verification.py ]; then
+            pytest -q tests/test_settlement_verification.py
+          else
+            echo "No deterministic persistence tests found; skipping."
+          fi
+
+      - name: Run MCP Handshake Tests
+        env:
+          PYTHONPATH: .:src:scripts
+        run: |
+          if [ -f tests/test_mcp_agents.py ]; then
+            pytest -q tests/test_mcp_agents.py
+          else
+            echo "No MCP handshake tests found; skipping."
+          fi

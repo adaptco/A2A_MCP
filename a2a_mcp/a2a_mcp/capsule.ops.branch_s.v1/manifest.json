@@ -1,0 +1,32 @@
+{
+  "$schema": "https://adaptco.dev/schemas/capsule-ops-manifest-v1.json",
+  "capsule": "capsule.ops.branch_s.v1",
+  "epoch": "sentinel-branch-s",
+  "operations": {
+    "apply": {
+      "script": "./apply_and_seal.sh",
+      "description": "Seal a new Sentinel trust braid into the ledger"
+    },
+    "revoke": {
+      "script": "./revoke_branch_s.sh",
+      "description": "Rollback the Sentinel-100 seal with lineage preservation"
+    },
+    "reissue": {
+      "script": "./reissue_branch_s.sh",
+      "description": "Issue a refreshed Sentinel epoch and receipts"
+    },
+    "federate": {
+      "script": "./reissue_branch_s.sh --federate",
+      "description": "Relay the Sentinel epoch to federation endpoints"
+    }
+  },
+  "artifacts": {
+    "ledger": "ledger.branch_s.jsonl",
+    "outputDir": ".out",
+    "hashes": [
+      "checksums.sha256",
+      "revoke.sha256",
+      "reissue.sha256"
+    ]
+  }
+}

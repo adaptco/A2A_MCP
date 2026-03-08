@@ -1,0 +1,212 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Client Runtime Assignment Envelope v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "runtime_assignment"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "client_runtime_assignment_envelope.v1"
+    },
+    "runtime_assignment": {
+      "type": "object",
+      "required": [
+        "schema_version",
+        "assignment_id",
+        "handshake_id",
+        "plan_id",
+        "repository",
+        "commit_sha",
+        "actor",
+        "prompt",
+        "runtime",
+        "workers",
+        "token_stream",
+        "token_stream_stats",
+        "stateful_artifacts",
+        "orchestration_state",
+        "mcp"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "runtime.assignment.v1"
+        },
+        "assignment_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "handshake_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "plan_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "repository": {
+          "type": "string",
+          "minLength": 1
+        },
+        "commit_sha": {
+          "type": "string",
+          "minLength": 7
+        },
+        "actor": {
+          "type": "string",
+          "minLength": 1
+        },
+        "prompt": {
+          "type": "string",
+          "minLength": 1
+        },
+        "runtime": {
+          "type": "object"
+        },
+        "workers": {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "type": "object",
+            "required": [
+              "worker_id",
+              "agent_name",
+              "role",
+              "fidelity",
+              "runtime_target",
+              "deployment_mode",
+              "render_backend",
+              "runtime_shell"
+            ],
+            "properties": {
+              "worker_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "agent_name": {
+                "type": "string",
+                "minLength": 1
+              },
+              "role": {
+                "type": "string",
+                "minLength": 1
+              },
+              "fidelity": {
+                "type": "string",
+                "enum": [
+                  "high",
+                  "low"
+                ]
+              },
+              "runtime_target": {
+                "type": "string",
+                "minLength": 1
+              },
+              "deployment_mode": {
+                "type": "string",
+                "minLength": 1
+              },
+              "render_backend": {
+                "type": "string",
+                "enum": [
+                  "unity",
+                  "threejs"
+                ]
+              },
+              "runtime_shell": {
+                "const": "wasm"
+              },
+              "metadata": {
+                "type": "object"
+              },
+              "mcp": {
+                "type": "object"
+              }
+            },
+            "additionalProperties": true
+          },
+          "allOf": [
+            {
+              "contains": {
+                "type": "object",
+                "properties": {
+                  "render_backend": {
+                    "const": "unity"
+                  }
+                },
+                "required": [
+                  "render_backend"
+                ]
+              }
+            },
+            {
+              "contains": {
+                "type": "object",
+                "properties": {
+                  "render_backend": {
+                    "const": "threejs"
+                  }
+                },
+                "required": [
+                  "render_backend"
+                ]
+              }
+            }
+          ]
+        },
+        "token_stream": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "token_stream_stats": {
+          "type": "object"
+        },
+        "stateful_artifacts": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "orchestration_state": {
+          "type": "object"
+        },
+        "kernel_model": {
+          "type": "object"
+        },
+        "runtime_bridge_metadata": {
+          "type": "object"
+        },
+        "mcp": {
+          "type": "object",
+          "required": [
+            "server",
+            "runtime_tools"
+          ],
+          "properties": {
+            "server": {
+              "type": "string",
+              "minLength": 1
+            },
+            "runtime_tools": {
+              "type": "array",
+              "uniqueItems": true,
+              "minItems": 1,
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "additionalProperties": true
+        },
+        "created_at": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true
+    }
+  }
+}

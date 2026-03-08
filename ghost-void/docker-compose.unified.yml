@@ -1,0 +1,167 @@
+###############################################################################
+# A2A_MCP — Unified Multi-Container Stack
+#
+# Merges root (orchestrator + db) and pipeline (redis + qdrant + workers)
+# into a single deployable stack with RBAC agent onboarding.
+#
+# Usage:
+#   docker compose -f docker-compose.unified.yml up -d --build
+#   docker compose -f docker-compose.unified.yml down -v
+###############################################################################
+
+services:
+
+  # ─── Data Layer ────────────────────────────────────────────────────────
+
+  db:
+    image: postgres:15
+    container_name: a2a-postgres
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-pass}
+      POSTGRES_DB: ${POSTGRES_DB:-mcp_db}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: a2a-redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: a2a-qdrant
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - qdrant_storage:/qdrant/storage
+    environment:
+      - QDRANT__SERVICE__GRPC_PORT=6334
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:6333/healthz || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # ─── RBAC Gateway ─────────────────────────────────────────────────────
+
+  rbac-gateway:
+    build:
+      context: ./rbac
+      dockerfile: Dockerfile
+    container_name: a2a-rbac-gateway
+    ports:
+      - "8001:8001"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD:-pass}@db:5432/${POSTGRES_DB:-mcp_db}
+      RBAC_SECRET: ${RBAC_SECRET:-dev-secret-change-me}
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8001/health || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # ─── Orchestrator ─────────────────────────────────────────────────────
+
+  orchestrator:
+    build: .
+    container_name: a2a-orchestrator
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rbac-gateway:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD:-pass}@db:5432/${POSTGRES_DB:-mcp_db}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      QDRANT_HOST: qdrant
+      QDRANT_PORT: 6333
+      RBAC_URL: http://rbac-gateway:8001
+      LLM_API_KEY: ${LLM_API_KEY:-}
+      LLM_ENDPOINT: ${LLM_ENDPOINT:-https://api.mistral.ai/v1/chat/completions}
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8000/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─── Embedding Pipeline Workers ───────────────────────────────────────
+
+  ingest-api:
+    build:
+      context: ./pipeline/ingest_api
+      dockerfile: Dockerfile
+    container_name: a2a-ingest-api
+    ports:
+      - "8002:8000"
+    depends_on:
+      redis:
+        condition: service_healthy
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    volumes:
+      - ./pipeline/lib:/app/lib
+      - upload_temp:/tmp/docling_uploads
+
+  docling-worker:
+    build:
+      context: ./pipeline/docling_worker
+      dockerfile: Dockerfile
+    container_name: a2a-docling-worker
+    depends_on:
+      redis:
+        condition: service_healthy
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    volumes:
+      - ./pipeline/lib:/app/lib
+      - upload_temp:/tmp/docling_uploads
+    restart: unless-stopped
+
+  embed-worker:
+    build:
+      context: ./pipeline/embed_worker
+      dockerfile: Dockerfile
+    container_name: a2a-embed-worker
+    depends_on:
+      redis:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - QDRANT_HOST=qdrant
+      - QDRANT_PORT=6333
+    volumes:
+      - ./pipeline/lib:/app/lib
+      - ./pipeline/ledger:/data/ledger
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+  qdrant_storage:
+  upload_temp:

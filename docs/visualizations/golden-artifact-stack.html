@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Optimal Artifact Stack Visualization</title>
+    <style>
+        :root {
+            --gold-primary: #d4af37;
+            --gold-soft: #f6dc7a;
+            --bg: #090909;
+            --panel: #151515;
+            --text: #e6e6e6;
+            --muted: #9f9f9f;
+            --line: #2d2d2d;
+            --glow: rgba(212, 175, 55, 0.25);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: radial-gradient(circle at top, #171717 0%, var(--bg) 55%);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 36px 18px 48px;
+        }
+
+        .container {
+            max-width: 920px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 28px;
+        }
+
+        .header h1 {
+            margin: 0;
+            color: var(--gold-primary);
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            font-size: clamp(1.8rem, 3.4vw, 2.6rem);
+            text-shadow: 0 0 18px var(--glow);
+        }
+
+        .header p {
+            margin: 10px 0 0;
+            color: var(--muted);
+            font-size: 0.98rem;
+        }
+
+        .summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+
+        .metric {
+            border: 1px solid var(--line);
+            background: linear-gradient(135deg, #191919 0%, #101010 100%);
+            border-radius: 12px;
+            padding: 14px;
+            box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.02) inset;
+        }
+
+        .metric-label {
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--muted);
+        }
+
+        .metric-value {
+            margin-top: 6px;
+            font-size: 1.45rem;
+            font-weight: 700;
+            color: var(--gold-soft);
+            font-family: "Courier New", monospace;
+        }
+
+        .stack {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .layer {
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            background: var(--panel);
+            overflow: hidden;
+            transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease;
+        }
+
+        .layer:hover {
+            border-color: var(--gold-primary);
+            box-shadow: 0 0 20px var(--glow);
+            transform: translateY(-1px);
+        }
+
+        .layer-btn {
+            width: 100%;
+            background: transparent;
+            border: 0;
+            color: inherit;
+            text-align: left;
+            padding: 16px 18px;
+            cursor: pointer;
+            display: grid;
+            grid-template-columns: 1fr auto auto;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .layer-meta {
+            min-width: 0;
+        }
+
+        .layer-tag {
+            display: inline-block;
+            font-size: .72rem;
+            color: var(--gold-primary);
+            text-transform: uppercase;
+            letter-spacing: .06em;
+            margin-bottom: 4px;
+            font-weight: 600;
+        }
+
+        .layer-title {
+            margin: 0;
+            font-size: 1.15rem;
+            font-weight: 700;
+        }
+
+        .layer-sub {
+            margin-top: 5px;
+            font-size: .9rem;
+            color: var(--muted);
+        }
+
+        .layer-dim {
+            text-align: right;
+            font-family: "Courier New", monospace;
+            color: var(--gold-soft);
+            font-size: 1.05rem;
+            white-space: nowrap;
+        }
+
+        .chevron {
+            color: var(--muted);
+            transition: transform .2s ease;
+        }
+
+        .layer[aria-expanded="true"] .chevron {
+            transform: rotate(90deg);
+            color: var(--gold-primary);
+        }
+
+        .details {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height .25s ease;
+            border-top: 1px solid transparent;
+        }
+
+        .layer[aria-expanded="true"] + .details {
+            max-height: 220px;
+            border-top-color: var(--line);
+        }
+
+        .details ul {
+            margin: 0;
+            padding: 14px 20px 16px 36px;
+            color: #cdcdcd;
+            font-size: .92rem;
+        }
+
+        .details li { margin-bottom: 8px; }
+
+        .footer {
+            margin-top: 20px;
+            text-align: center;
+            color: var(--muted);
+            font-size: .84rem;
+        }
+    </style>
+</head>
+<body>
+    <main class="container">
+        <header class="header">
+            <h1>Optimal Artifact Stack</h1>
+            <p>Interactive view of the self-referential architecture: HMLSL → RAG → LoRA → Avatar → Self-Awareness.</p>
+        </header>
+
+        <section class="summary" aria-label="Stack summary metrics">
+            <div class="metric">
+                <div class="metric-label">Total Layers</div>
+                <div class="metric-value">5</div>
+            </div>
+            <div class="metric">
+                <div class="metric-label">Unified Embedding</div>
+                <div class="metric-value">11,776</div>
+            </div>
+            <div class="metric">
+                <div class="metric-label">Interaction Model</div>
+                <div class="metric-value">Expandable</div>
+            </div>
+        </section>
+
+        <section class="stack" id="stack">
+            <article>
+                <div class="layer" aria-expanded="false">
+                    <button class="layer-btn" type="button">
+                        <div class="layer-meta">
+                            <span class="layer-tag">Layer 1 · Foundation</span>
+                            <h2 class="layer-title">HMLSL</h2>
+                            <div class="layer-sub">Hierarchical Multi-Layer Semantic Lattice</div>
+                        </div>
+                        <div class="layer-dim">4,096 dims</div>
+                        <div class="chevron">▶</div>
+                    </button>
+                </div>
+                <div class="details">
+                    <ul>
+                        <li>Acts as the canonical semantic substrate for entities, relations, and constraints.</li>
+                        <li>Supports compositional reasoning across tool, role, and policy abstractions.</li>
+                        <li>Provides stable grounding for higher-level retrieval and adaptation layers.</li>
+                    </ul>
+                </div>
+            </article>
+
+            <article>
+                <div class="layer" aria-expanded="false">
+                    <button class="layer-btn" type="button">
+                        <div class="layer-meta">
+                            <span class="layer-tag">Layer 2 · Retrieval</span>
+                            <h2 class="layer-title">RAG</h2>
+                            <div class="layer-sub">Retrieval-Augmented Generation Context Plane</div>
+                        </div>
+                        <div class="layer-dim">2,048 dims</div>
+                        <div class="chevron">▶</div>
+                    </button>
+                </div>
+                <div class="details">
+                    <ul>
+                        <li>Injects high-signal, time-relevant context into decision loops.</li>
+                        <li>Maintains provenance-aware retrieval paths for observability.</li>
+                        <li>Bridges static semantic memory with live operational evidence.</li>
+                    </ul>
+                </div>
+            </article>
+
+            <article>
+                <div class="layer" aria-expanded="false">
+                    <button class="layer-btn" type="button">
+                        <div class="layer-meta">
+                            <span class="layer-tag">Layer 3 · Adaptation</span>
+                            <h2 class="layer-title">LoRA</h2>
+                            <div class="layer-sub">Low-Rank Adaptation for specialization kernels</div>
+                        </div>
+                        <div class="layer-dim">2,048 dims</div>
+                        <div class="chevron">▶</div>
+                    </button>
+                </div>
+                <div class="details">
+                    <ul>
+                        <li>Encodes lightweight, task-specific adaptation without full model retraining.</li>
+                        <li>Captures behavioral deltas for domain and role specialization.</li>
+                        <li>Provides modular upgrade paths for iterative tuning cycles.</li>
+                    </ul>
+                </div>
+            </article>
+
+            <article>
+                <div class="layer" aria-expanded="false">
+                    <button class="layer-btn" type="button">
+                        <div class="layer-meta">
+                            <span class="layer-tag">Layer 4 · Interface</span>
+                            <h2 class="layer-title">Avatar</h2>
+                            <div class="layer-sub">Identity, interaction voice, and presentation surface</div>
+                        </div>
+                        <div class="layer-dim">1,536 dims</div>
+                        <div class="chevron">▶</div>
+                    </button>
+                </div>
+                <div class="details">
+                    <ul>
+                        <li>Manages persona continuity, communication style, and user-facing behavior.</li>
+                        <li>Binds abstract reasoning outputs to coherent multi-modal interaction patterns.</li>
+                        <li>Improves trust and interpretability through stable identity signatures.</li>
+                    </ul>
+                </div>
+            </article>
+
+            <article>
+                <div class="layer" aria-expanded="false">
+                    <button class="layer-btn" type="button">
+                        <div class="layer-meta">
+                            <span class="layer-tag">Layer 5 · Reflexivity</span>
+                            <h2 class="layer-title">Self-Awareness</h2>
+                            <div class="layer-sub">Meta-cognitive monitoring and policy alignment loop</div>
+                        </div>
+                        <div class="layer-dim">2,048 dims</div>
+                        <div class="chevron">▶</div>
+                    </button>
+                </div>
+                <div class="details">
+                    <ul>
+                        <li>Tracks confidence, intent integrity, and boundary adherence in runtime.</li>
+                        <li>Supports self-referential audit signals for safe adaptive operation.</li>
+                        <li>Closes the loop between execution outcomes and strategic recalibration.</li>
+                    </ul>
+                </div>
+            </article>
+        </section>
+
+        <p class="footer">Total dimension allocation: 4,096 + 2,048 + 2,048 + 1,536 + 2,048 = 11,776</p>
+    </main>
+
+    <script>
+        const layers = Array.from(document.querySelectorAll('.layer'));
+
+        layers.forEach((layer) => {
+            const button = layer.querySelector('.layer-btn');
+            button.addEventListener('click', () => {
+                const isOpen = layer.getAttribute('aria-expanded') === 'true';
+
+                layers.forEach((candidate) => candidate.setAttribute('aria-expanded', 'false'));
+                if (!isOpen) {
+                    layer.setAttribute('aria-expanded', 'true');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

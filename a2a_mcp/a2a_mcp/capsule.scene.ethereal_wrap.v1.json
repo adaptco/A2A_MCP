@@ -1,0 +1,55 @@
+{
+  "capsule_id": "capsule.scene.ethereal_wrap.v1",
+  "version": "1.0.0",
+  "type": "SceneCapsule",
+  "name": "Ethereal Wrap Scene Capsule",
+  "description": "Scene capsule capturing the Ethereal Wrap finale pass inside the Qube stage lattice for Queen CiCi's automation flows.",
+  "issued_at": "2025-09-24T22:45:00Z",
+  "status": "DRAFT",
+  "governance": {
+    "council": "council/adaptco",
+    "policy_tag": "scene.ethereal-wrap",
+    "steward": "Queen CiCi"
+  },
+  "lineage": {
+    "anchors": [
+      "ssot.registry.v1",
+      "qube.orchestrator.v1",
+      "sol.f1.previz.v1",
+      "relay.artifacts.v1"
+    ]
+  },
+  "scene": {
+    "environment": "Qube stage — chrome lattice with refracted aurora veil",
+    "setup": "Three-camera relay with Steadicam halo and volumetric capture nodes",
+    "beats": [
+      {
+        "beat": 1,
+        "call": "Celine threads the ribbon through the lattice",
+        "response": "The Braid harmonizes ambient motes"
+      },
+      {
+        "beat": 2,
+        "call": "Queen CiCi seals the wrap pose",
+        "response": "Vault glyph ignites behind the triad"
+      }
+    ]
+  },
+  "payload": {
+    "storyboard_capsule": "capsule.storyboard.ethereal_wrap.v1",
+    "asset_bundle": [
+      "asset.costume.aurora_wrap.v1",
+      "asset.prop.vault_glyph.v1"
+    ],
+    "motion_profile": "clip.motion.ethereal_wrap.v1"
+  },
+  "automation": {
+    "stabilizer": "Queen CiCi",
+    "router": "Queen Boo",
+    "checkpoint_vault": "relay.artifacts.v1",
+    "resumable": true
+  },
+  "attestation": {
+    "status": "UNSEALED"
+  }
+}

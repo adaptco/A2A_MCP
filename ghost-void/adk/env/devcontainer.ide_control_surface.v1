@@ -1,0 +1,12 @@
+apiVersion: adk.io/v1
+kind: IDEControlSurface
+metadata:
+  name: devcontainer.ide_control_surface
+  version: v1
+spec:
+  environment:
+    type: "sandbox"
+    image: "ghost-void/sandbox:latest"
+    restrictions:
+      - "network_isolation"
+      - "filesystem_jail"

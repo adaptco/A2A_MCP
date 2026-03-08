@@ -1,0 +1,7 @@
+{
+  "code": "repo tree + diff",
+  "env": "environment fingerprint",
+  "ci": "test/build/type/lint outcomes",
+  "gov": "policy zone + required gates",
+  "risk": "blast radius estimate"
+}

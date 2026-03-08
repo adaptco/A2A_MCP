@@ -1,0 +1,21 @@
+{
+  "id": "cie.sni.edge.002",
+  "content_source": "cie.v1.edge",
+  "payload_format": "text",
+  "module_targets": [
+    "synthetic.noise.injector.v1"
+  ],
+  "source_claim": "The James Webb Space Telescope operates near the Sun-Earth L2 point to observe faint infrared signals with minimal interference, using a multi-layer sunshield to maintain cryogenic temperatures.",
+  "operations": {
+    "ocr_blur": 0.18,
+    "token_drop": 0.05,
+    "translation_rounds": 3,
+    "synonym_swap": 0.08
+  },
+  "expected_outcome": {
+    "integrity": "pass_with_monitoring",
+    "semantic_similarity_min": 0.86,
+    "readability_delta_max": 6.0
+  },
+  "notes": "Edge-case density and higher noise; remain within neutrality and readability bounds while triggering monitoring alerts if similarity dips." 
+}

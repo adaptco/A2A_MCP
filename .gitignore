@@ -5,17 +5,27 @@ __pycache__/
 
 # Environments
 .env
+.env.*
 .venv
 env/
 venv/
 ENV/
 
-# Docker
-.docker/
+# Build artifacts
+dist/
+build/
+.out/
+out/
+tmp/
+temp/
 
 # IDEs
 .vscode/
 .idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
 
 # OS generated files
 .DS_Store
@@ -23,9 +33,22 @@ Thumbs.db
 
 # Runtime artifacts
 *.db
+*.sqlite
+*.pem
+*.key
+*.crt
+*.jks
+logs/
+*.log
+coverage/
+.nyc_output/
+runtime/rbac/*.local.json
 
 # Agent temp files
 tmpclaude-*
+tmpclaude-*-cwd/
+tmpclaude-*-cwd
+specs/tmpclaude-*-cwd
 
 # Test output dumps
 test_output*.txt
@@ -34,3 +57,24 @@ test_full_output*.txt
 
 # Pytest
 .pytest_cache/
+
+# Spectral & API-Diff caches
+.spectral/
+openapi-diff.cache/
+
+# GitHub Actions logs & artifacts
+.github/workflows/**/action-logs/
+.github/workflows/**/artifacts/
+
+# Custom scripts / local fixtures
+scripts/local-*.*
+fixtures/*.json
+!fixtures/plan_release_candidate_input.json
+*.qcap
+
+# Firebase debug logs
+firebase-debug.log
+
+# CIE smoke artifacts
+runtime/cie_v1_smoke.log.jsonl
+*.egg-info/

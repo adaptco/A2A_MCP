@@ -1,0 +1,60 @@
+openapi: 3.0.3
+info:
+  title: Core Orchestrator API
+  version: 1.0.0
+  description: Interface for managing POS order flows and audit ledgers.
+
+paths:
+  /pos/order:
+    post:
+      summary: Submit a new POS order
+      operationId: submitOrder
+      responses:
+        '201':
+          description: Order successfully recorded
+        '409':
+          description: Duplicate idempotency key already recorded in the Audit Ledger
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - error
+                  - idempotencyKey
+                properties:
+                  error:
+                    type: string
+                    example: duplicate_idempotency_key
+                  idempotencyKey:
+                    type: string
+                    format: uuid
+                    description: The deterministic UUIDv5 submitted by the client.
+          headers:
+            X-Resource-ID:
+              description: Previously persisted resource identifier for legacy POS verification.
+              schema:
+                type: string
+
+components:
+  schemas:
+    Order:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        version:
+          type: string
+          enum: ["1.0.0"]
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderItem'
+
+    OrderItem:
+      type: object
+      properties:
+        sku:
+          type: string
+        quantity:
+          type: integer

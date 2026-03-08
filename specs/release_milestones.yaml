@@ -1,0 +1,65 @@
+release:
+  name: foundation-model-infra
+  version: 1.1.0
+  status_scale:
+    - idle
+    - scheduled
+    - executing
+    - evaluating
+    - retry
+    - terminated_success
+    - terminated_fail
+  milestones:
+    - id: M0_BOOTSTRAP
+      name: import-bootstrap-normalization
+      required:
+        - bootstrap.py loaded by tests and entrypoints
+        - consistent import behavior for package/non-package invocations
+      gate: passed
+    - id: M1_DEPENDENCY_BASELINE
+      name: test-environment-alignment
+      required:
+        - fastmcp present in runtime and CI
+        - stdlib-only entries removed from requirements
+      gate: passed
+    - id: M2_ACTIONS_KERNEL
+      name: action-routing-contract
+      required:
+        - stateflow transitions audited
+        - ingress and MCP trigger paths validated
+      gate: in_progress
+    - id: M3_LEDGER_TRACEABILITY
+      name: state-change-ledger-contract
+      required:
+        - event schema defines who/what/when/how fields
+        - append-only log behavior documented for blockchain adapter
+      gate: in_progress
+    - id: M4_SYNTHETIC_COWORKER
+      name: skill-marketplace-planning
+      required:
+        - chat intake token contract defined
+        - role/rule/responsibility map defined
+      gate: in_progress
+    - id: M5_DRAFT_MONITORING
+      name: ci-autopublish-and-draft-observability
+      required:
+        - milestone bundle artifact auto-published in CI
+        - draft monitoring report generated each run
+        - pull request draft lifecycle comment updated automatically
+        - individual PR commits must run validation tests with uploaded report artifacts
+      gate: active
+
+phase_change_seeds:
+  idle_to_scheduled:
+    - verify release gates from M0 and M1 are passed
+    - load agent seed instructions for role selection
+    - bind action kernel inputs to stateflow OBJECTIVE_INGRESS
+  scheduled_to_executing:
+    - dispatch planning artifacts to orchestrator
+    - persist checkpoint record with timestamp and actor
+  executing_to_evaluating:
+    - run validation suites
+    - score rule compliance and telemetry drift
+  evaluating_to_retry_or_terminated:
+    - route failures to retry queue with bounded attempts
+    - route pass/fail to terminal states and append commit log event

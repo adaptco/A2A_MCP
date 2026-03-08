@@ -1,0 +1,36 @@
+{
+  "schema_version": "vector_direction_token_bundle.v1",
+  "kernel_control_token": {
+    "schema_version": "kernel_control_token.v1",
+    "token_id": "kct-20260305-002",
+    "session_id": "session-20260305-002",
+    "issued_at": "2026-03-05T13:00:00+00:00",
+    "physics_constraints": {
+      "gravity": 9.81,
+      "friction": 0.35,
+      "visibility_range": 120.0,
+      "entropy_budget": 0.1
+    },
+    "stability_mode": "hardened-realtime"
+  },
+  "token_events": [
+    {
+      "schema_version": "TokenEvent.v1",
+      "call_id": "123e4567-e89b-12d3-a456-426614174000",
+      "seq": 0,
+      "token_hash": "244b8435061420f6b2887681bbe2d24b18fc8f790a75c5bf16937bb8417e651a",
+      "cumulative_hash": "d3605c21964562fc10d4e12ffc129a7b7d4459373b41dd178dbbf948b913480f"
+    }
+  ],
+  "lineage": {
+    "runtime_assignment_id": "assign-20260305-002",
+    "rag_node_ids": [
+      "N0_INGRESS"
+    ],
+    "token_event_count": 1,
+    "final_cumulative_hash": "d3605c21964562fc10d4e12ffc129a7b7d4459373b41dd178dbbf948b913480f",
+    "generated_from": [
+      "worldline_block.json"
+    ]
+  }
+}

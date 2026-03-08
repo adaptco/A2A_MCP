@@ -1,0 +1,34 @@
+============================= test session starts =============================
+platform win32 -- Python 3.11.9, pytest-9.0.2, pluggy-1.6.0
+rootdir: C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP
+configfile: pytest.ini (WARNING: ignoring pytest config in pyproject.toml!)
+plugins: anyio-4.12.1, asyncio-1.3.0
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 24 items
+
+tests\test_release_webhook.py ...                                        [ 12%]
+tests\test_webhook_cicd_monitor.py .F...                                 [ 33%]
+tests\test_phase9_merge.py ...........                                   [ 79%]
+tests\test_handshake_flow.py ..                                          [ 87%]
+tests\test_middleware_runtime.py ...                                     [100%]
+
+================================== FAILURES ===================================
+______________ test_github_actions_webhook_rejects_invalid_token ______________
+tests\test_webhook_cicd_monitor.py:58: in test_github_actions_webhook_rejects_invalid_token
+    assert response.status_code == 401
+E   assert 200 == 401
+E    +  where 200 = <Response [200 OK]>.status_code
+============================== warnings summary ===============================
+agents\sovereign\agents.py:38
+  C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP\agents\sovereign\agents.py:38: PytestCollectionWarning: cannot collect test class 'TesterAgent' because it has a __init__ constructor (from: tests/test_phase9_merge.py)
+    class TesterAgent(BaseAgent):
+
+tests/test_webhook_cicd_monitor.py::test_github_actions_webhook_accepts_valid_signature_when_configured
+tests/test_webhook_cicd_monitor.py::test_github_actions_webhook_rejects_invalid_signature_when_configured
+  C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP\.venv\Lib\site-packages\httpx\_models.py:408: DeprecationWarning: Use 'content=<...>' to upload raw bytes/text content.
+    headers, stream = encode_request(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/test_webhook_cicd_monitor.py::test_github_actions_webhook_rejects_invalid_token
+================== 1 failed, 23 passed, 3 warnings in 2.33s ===================

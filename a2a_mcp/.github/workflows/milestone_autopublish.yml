@@ -1,0 +1,182 @@
+name: Milestone Autopublish and Draft Monitor
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+    types: [opened, reopened, synchronize, ready_for_review, converted_to_draft]
+  schedule:
+    - cron: "0 * * * *"
+  workflow_dispatch:
+
+jobs:
+  publish-milestone-bundle:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build milestone manifest
+        run: |
+          python - <<'PY'
+          import json
+          import re
+          from pathlib import Path
+
+          spec_path = Path("specs/release_milestones.yaml")
+          milestones = []
+          current = {}
+
+          for raw_line in spec_path.read_text(encoding="utf-8").splitlines():
+              line = raw_line.strip()
+              id_match = re.match(r"- id:\s*(\S+)", line)
+              gate_match = re.match(r"gate:\s*(\S+)", line)
+              if id_match:
+                  if current:
+                      milestones.append(current)
+                  current = {"id": id_match.group(1)}
+              elif gate_match and current:
+                  current["gate"] = gate_match.group(1)
+          if current:
+              milestones.append(current)
+
+          out_dir = Path("bundle")
+          out_dir.mkdir(parents=True, exist_ok=True)
+          manifest = {
+              "commit": "${{ github.sha }}",
+              "workflow": "${{ github.workflow }}",
+              "milestones": milestones,
+          }
+          (out_dir / "milestone_manifest.json").write_text(
+              json.dumps(manifest, indent=2),
+              encoding="utf-8",
+          )
+          PY
+
+      - name: Collect release bundle
+        run: |
+          mkdir -p bundle
+          cp specs/release_milestones.yaml bundle/release_milestones.yaml
+          cp docs/release/FOUNDATION_MODEL_RELEASE_SPEC.md bundle/FOUNDATION_MODEL_RELEASE_SPEC.md
+          cp docs/release/AGENT_IDLE_STATE_RELEASE_NOTES.md bundle/AGENT_IDLE_STATE_RELEASE_NOTES.md
+
+      - name: Upload milestone bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: milestone-bundle-${{ github.run_number }}
+          path: bundle/
+          if-no-files-found: error
+
+  monitor-drafts:
+    runs-on: ubuntu-latest
+    needs: publish-milestone-bundle
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+    steps:
+      - name: Draft monitoring snapshot
+        id: draft_snapshot
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pulls = await github.paginate(
+              github.rest.pulls.list,
+              {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                state: "open",
+                per_page: 100
+              }
+            );
+
+            const drafts = pulls.filter((pr) => pr.draft);
+            const payload = {
+              generated_at: new Date().toISOString(),
+              open_draft_count: drafts.length,
+              open_drafts: drafts.map((pr) => ({
+                number: pr.number,
+                title: pr.title,
+                author: pr.user.login,
+                updated_at: pr.updated_at
+              }))
+            };
+
+            const fs = require("fs");
+            fs.writeFileSync(
+              "draft_monitor_report.json",
+              JSON.stringify(payload, null, 2)
+            );
+
+            core.summary
+              .addHeading("Draft Monitoring Snapshot")
+              .addRaw(`Open drafts: ${drafts.length}\n\n`);
+
+            for (const draft of drafts) {
+              core.summary.addRaw(`- #${draft.number} ${draft.title}\n`);
+            }
+            await core.summary.write();
+
+            core.setOutput("open_drafts", String(drafts.length));
+
+      - name: Upload draft monitor report
+        uses: actions/upload-artifact@v4
+        with:
+          name: draft-monitor-report-${{ github.run_number }}
+          path: draft_monitor_report.json
+
+      - name: Update PR monitoring comment
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            try {
+              const marker = "<!-- a2a-draft-monitor -->";
+              const pr = context.payload.pull_request;
+              const owner = context.repo.owner;
+              const repo = context.repo.repo;
+              const issue_number = pr.number;
+
+              const body = `${marker}
+              ### Milestone Draft Monitor
+              - PR: #${issue_number}
+              - Draft status: ${pr.draft ? "Draft" : "Ready for review"}
+              - Milestone bundle: published as workflow artifact
+
+              Triggered actions:
+              - Auto-published release milestone bundle
+              - Generated draft-monitor report artifact
+              - Activated lifecycle monitoring for draft state changes
+              `;
+
+              const comments = await github.paginate(github.rest.issues.listComments, {
+                owner,
+                repo,
+                issue_number,
+                per_page: 100
+              });
+              const existing = comments.find(
+                (c) => c.user.type === "Bot" && c.body.includes(marker)
+              );
+
+              if (existing) {
+                await github.rest.issues.updateComment({
+                  owner,
+                  repo,
+                  comment_id: existing.id,
+                  body
+                });
+              } else {
+                await github.rest.issues.createComment({
+                  owner,
+                  repo,
+                  issue_number,
+                  body
+                });
+              }
+            } catch (error) {
+              core.warning(`Skipping PR comment update: ${error.message}`);
+            }

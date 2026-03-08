@@ -1,0 +1,86 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Media Physics Capsule v1",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "capsule_type",
+    "source_model",
+    "payload",
+    "signature"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "capsule.media_physics.v1"
+    },
+    "capsule_type": {
+      "const": "media_physics.v1"
+    },
+    "source_model": {
+      "type": "string",
+      "description": "Origin model or pipeline (e.g., veo-1.0, nano-banana-v2)."
+    },
+    "payload": {
+      "type": "object",
+      "required": [
+        "media_uri",
+        "embedding",
+        "physics_state"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "media_uri": {
+          "type": "string",
+          "format": "uri",
+          "description": "Resolvable URI for the media asset."
+        },
+        "embedding": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 1,
+          "description": "Vector embedding representing the visual scene."
+        },
+        "physics_state": {
+          "type": "object",
+          "required": [
+            "gravity",
+            "friction_coefficient",
+            "visibility_range",
+            "entropy_budget"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "gravity": {
+              "type": "number",
+              "description": "Local gravity magnitude (m/s^2)."
+            },
+            "friction_coefficient": {
+              "type": "number",
+              "description": "Surface friction coefficient (0.0 - 1.0).",
+              "minimum": 0.0,
+              "maximum": 1.0
+            },
+            "visibility_range": {
+              "type": "number",
+              "description": "Visibility range in meters.",
+              "minimum": 0.0
+            },
+            "entropy_budget": {
+              "type": "number",
+              "description": "Relative entropy budget for scene volatility (0.0 - 1.0).",
+              "minimum": 0.0,
+              "maximum": 1.0
+            }
+          }
+        }
+      }
+    },
+    "signature": {
+      "type": "string",
+      "description": "Integrity signature for the capsule payload."
+    }
+  }
+}

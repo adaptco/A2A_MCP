@@ -1,0 +1,27 @@
+{
+  "title": "A2A MCP Protected Ingestion & Token Shaping",
+  "runbook": "https://runbooks.a2a.local/oncall/protected-ingestion",
+  "panels": [
+    {
+      "title": "Requests by Avatar/Client/Outcome",
+      "metric": "mcp.ingestion.requests",
+      "group_by": ["avatar", "client", "outcome"]
+    },
+    {
+      "title": "Rejection Reason Taxonomy",
+      "metric": "mcp.ingestion.rejections",
+      "group_by": ["reason"]
+    },
+    {
+      "title": "Protected Ingestion Latency p50/p95/p99",
+      "metric": "mcp.ingestion.latency_ms",
+      "quantiles": [0.50, 0.95, 0.99]
+    },
+    {
+      "title": "Token Shaping Hash Anomalies",
+      "metric": "mcp.token_shaping.hash_anomaly",
+      "group_by": ["tenant", "stage", "anomaly"],
+      "runbook": "https://runbooks.a2a.local/oncall/token-shaping"
+    }
+  ]
+}

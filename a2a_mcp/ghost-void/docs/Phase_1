@@ -1,0 +1,7 @@
+# Phase 1: Persistence Layer Initialization
+Goal: Transition from stateless execution to a durable SQLAlchemy/PostgreSQL back-end.
+
+## Core Setup
+- Establish `schemas/database.py` for ArtifactModel persistence.
+- Define `schemas/agent_artifacts.py` as the Pydantic contract for A2A communication[cite: 32].
+- Status: Established core dependencies in `requirements.txt`[cite: 232].

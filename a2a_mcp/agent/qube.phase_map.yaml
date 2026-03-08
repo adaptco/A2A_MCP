@@ -1,0 +1,44 @@
+schema: qube.phase_map.v1
+state_machine:
+  states:
+    - S0_INGEST
+    - S1_BIND
+    - S2_EVAL
+    - S3_ACTION
+    - S4_RECEIPT
+    - S5_EXPORT
+
+  transitions:
+    - from: S0_INGEST
+      to: S1_BIND
+      guard: "inputs_present && scope_allowed"
+    - from: S1_BIND
+      to: S2_EVAL
+      guard: "schemas_valid && no_new_concepts_introduced"
+    - from: S2_EVAL
+      to: S3_ACTION
+      guard: "action_required && action_registered"
+    - from: S3_ACTION
+      to: S4_RECEIPT
+      guard: "action_response_received"
+    - from: S4_RECEIPT
+      to: S5_EXPORT
+      guard: "receipt_chain_valid && replayable"
+
+offline_rl:
+  dataset_row_schema: offline_rl.row.v1
+  required_fields:
+    - trace_id
+    - user_id_hash
+    - episode_id
+    - step_index
+    - state_hash_pre
+    - action_id
+    - action_input_hash
+    - observation_hash
+    - state_hash_post
+    - reward_signal
+    - policy_version
+  hashing:
+    canonical_json: jcs_rfc8785
+    hash_alg: sha256

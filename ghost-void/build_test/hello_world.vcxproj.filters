@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP\src\simple_main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{6915ADE5-2DD9-32C9-981A-4F5B9E665544}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

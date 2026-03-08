@@ -1,0 +1,128 @@
+============================= test session starts =============================
+platform win32 -- Python 3.11.9, pytest-9.0.2, pluggy-1.6.0
+rootdir: C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP
+configfile: pytest.ini (WARNING: ignoring pytest config in pyproject.toml!)
+plugins: anyio-4.12.1, asyncio-1.3.0
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 222 items / 7 errors / 3 skipped
+
+=================================== ERRORS ====================================
+________________ ERROR collecting tests/test_agents_import.py _________________
+ImportError while importing test module 'C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP\tests\test_agents_import.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+..\..\..\AppData\Local\Programs\Python\Python311\Lib\importlib\__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests\test_agents_import.py:3: in <module>
+    from agents import TesterAgent, GatingAgent, ActionModelingAgent
+E   ImportError: cannot import name 'GatingAgent' from 'agents' (C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP\agents\__init__.py)
+_________________ ERROR collecting tests/test_drift_logic.py __________________
+ImportError while importing test module 'C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP\tests\test_drift_logic.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+..\..\..\AppData\Local\Programs\Python\Python311\Lib\importlib\__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests\test_drift_logic.py:8: in <module>
+    from wham_engine.physics.supra_drift import SupraDriftModel
+E   ModuleNotFoundError: No module named 'wham_engine.physics.supra_drift'; 'wham_engine.physics' is not a package
+__________________ ERROR collecting tests/test_mcp_agents.py __________________
+ImportError while importing test module 'C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP\tests\test_mcp_agents.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+..\..\..\AppData\Local\Programs\Python\Python311\Lib\importlib\__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests\test_mcp_agents.py:4: in <module>
+    from fastmcp import Client
+E   ModuleNotFoundError: No module named 'fastmcp'
+_____________ ERROR collecting tests/test_mlops_unity_pipeline.py _____________
+ImportError while importing test module 'C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP\tests\test_mlops_unity_pipeline.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+..\..\..\AppData\Local\Programs\Python\Python311\Lib\importlib\__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests\test_mlops_unity_pipeline.py:3: in <module>
+    from mlops_unity_pipeline import RLTrainingConfig, TrainingSchedule, TrainingScheduler, UnityAssetSpec, UnityMLOpsOrchestrator
+mlops_unity_pipeline.py:23: in <module>
+    from croniter import croniter
+E   ModuleNotFoundError: No module named 'croniter'
+___________ ERROR collecting tests/test_qube_forensics_validate.py ____________
+ImportError while importing test module 'C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP\tests\test_qube_forensics_validate.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+..\..\..\AppData\Local\Programs\Python\Python311\Lib\importlib\__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests\test_qube_forensics_validate.py:2: in <module>
+    from jsonschema.exceptions import ValidationError
+.venv\Lib\site-packages\jsonschema\__init__.py:13: in <module>
+    from jsonschema._format import FormatChecker
+.venv\Lib\site-packages\jsonschema\_format.py:11: in <module>
+    from jsonschema.exceptions import FormatError
+.venv\Lib\site-packages\jsonschema\exceptions.py:15: in <module>
+    from referencing.exceptions import Unresolvable as _Unresolvable
+.venv\Lib\site-packages\referencing\__init__.py:5: in <module>
+    from referencing._core import Anchor, Registry, Resource, Specification
+.venv\Lib\site-packages\referencing\_core.py:9: in <module>
+    from rpds import HashTrieMap, HashTrieSet, List
+.venv\Lib\site-packages\rpds\__init__.py:1: in <module>
+    from .rpds import *
+E   ModuleNotFoundError: No module named 'rpds.rpds'
+______________ ERROR collecting tests/test_runtime_mcp_server.py ______________
+ImportError while importing test module 'C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP\tests\test_runtime_mcp_server.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+runtime_mcp_server.py:13: in <module>
+    from fastmcp import FastMCP
+E   ModuleNotFoundError: No module named 'fastmcp'
+
+During handling of the above exception, another exception occurred:
+..\..\..\AppData\Local\Programs\Python\Python311\Lib\importlib\__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests\test_runtime_mcp_server.py:4: in <module>
+    import runtime_mcp_server as runtime_server
+runtime_mcp_server.py:15: in <module>
+    from mcp.server.fastmcp import FastMCP
+.venv\Lib\site-packages\mcp\__init__.py:2: in <module>
+    from .client.session_group import ClientSessionGroup
+.venv\Lib\site-packages\mcp\client\session_group.py:28: in <module>
+    from mcp.client.stdio import StdioServerParameters
+.venv\Lib\site-packages\mcp\client\stdio\__init__.py:17: in <module>
+    from mcp.os.win32.utilities import (
+.venv\Lib\site-packages\mcp\os\win32\utilities.py:22: in <module>
+    import pywintypes
+.venv\Lib\site-packages\win32\lib\pywintypes.py:124: in <module>
+    __import_pywin32_system_module__("pywintypes", globals())
+.venv\Lib\site-packages\win32\lib\pywintypes.py:50: in __import_pywin32_system_module__
+    import _win32sysloader
+E   ImportError: DLL load failed while importing _win32sysloader: The specified module could not be found.
+_____________ ERROR collecting tests/test_worldline_ingestion.py ______________
+ImportError while importing test module 'C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP\tests\test_worldline_ingestion.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+..\..\..\AppData\Local\Programs\Python\Python311\Lib\importlib\__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests\test_worldline_ingestion.py:4: in <module>
+    from fastmcp import Client
+E   ModuleNotFoundError: No module named 'fastmcp'
+============================== warnings summary ===============================
+agents\sovereign\agents.py:38
+  C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP\agents\sovereign\agents.py:38: PytestCollectionWarning: cannot collect test class 'TesterAgent' because it has a __init__ constructor (from: tests/test_phase9_merge.py)
+    class TesterAgent(BaseAgent):
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+ERROR tests/test_agents_import.py
+ERROR tests/test_drift_logic.py
+ERROR tests/test_mcp_agents.py
+ERROR tests/test_mlops_unity_pipeline.py
+ERROR tests/test_qube_forensics_validate.py
+ERROR tests/test_runtime_mcp_server.py
+ERROR tests/test_worldline_ingestion.py
+!!!!!!!!!!!!!!!!!!! Interrupted: 7 errors during collection !!!!!!!!!!!!!!!!!!!
+=================== 3 skipped, 1 warning, 7 errors in 4.01s ===================

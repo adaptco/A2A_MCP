@@ -1,0 +1,26 @@
+images:
+  mcp:
+    tag: staging
+  orchestrator:
+    tag: staging
+
+database:
+  mode: postgres
+  postgres:
+    credentials:
+      database: mcp_db_staging
+
+config:
+  environment: staging
+  oidc:
+    enforce: true
+    audience: ""
+
+ingress:
+  enabled: true
+  host: staging-a2a-mcp.example.com
+  tls:
+    enabled: true
+    secretName: staging-a2a-mcp-tls
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-staging

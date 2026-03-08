@@ -1,13 +1,25 @@
 {
-	"folders": [
-		{
-			"path": "."
-		}
-	],
-	"settings": {
-		"githubPullRequests.ignoredPullRequestBranches": [
-			"main"
-		],
-		"chatgpt.openOnStartup": true
-	}
+  "folders": [
+    {
+      "path": "."
+    }
+  ],
+  "settings": {
+    "githubPullRequests.ignoredPullRequestBranches": [
+      "main"
+    ],
+    "chatgpt.openOnStartup": true
+  },
+  "launch": {
+    "configurations": [
+      {
+        "name": "Python: Debug Current File",
+        "type": "debugpy",
+        "request": "launch",
+        "program": "${file}",
+        "console": "integratedTerminal",
+        "justMyCode": true
+      }
+    ]
+  }
 }

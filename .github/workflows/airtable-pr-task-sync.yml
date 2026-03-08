@@ -1,0 +1,189 @@
+name: Airtable PR Task Sync
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, ready_for_review, converted_to_draft, closed]
+  workflow_dispatch:
+
+jobs:
+  upsert-pr-tasks:
+    if: github.event_name == 'workflow_dispatch' || github.event.action != 'closed'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Upsert PR tasks from templates
+        env:
+          AIRTABLE_TOKEN: ${{ secrets.AIRTABLE_TOKEN }}
+          AIRTABLE_BASE: ${{ secrets.AIRTABLE_BASE }}
+          AIRTABLE_TABLE: ${{ vars.AIRTABLE_TABLE || 'Tasks' }}
+          PR_TEMPLATE_CODE: ${{ vars.PR_TEMPLATE_CODE || 'recknjdTk5mozgGkQ' }}
+          PR_TEMPLATE_REVIEW: ${{ vars.PR_TEMPLATE_REVIEW || 'recBrHgA2NRwklBAZ' }}
+          PR_TEMPLATE_QA: ${{ vars.PR_TEMPLATE_QA || 'rec2AOXRksJcwg8zQ' }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python - <<'PY'
+          import itertools
+          import json
+          import os
+          import urllib.request
+
+          token = os.environ.get("AIRTABLE_TOKEN")
+          base = os.environ.get("AIRTABLE_BASE")
+          table = os.environ.get("AIRTABLE_TABLE", "Tasks")
+          if not token or not base:
+              raise SystemExit("AIRTABLE_TOKEN and AIRTABLE_BASE are required")
+
+          templates = {
+              "CODE": os.environ["PR_TEMPLATE_CODE"],
+              "REVIEW": os.environ["PR_TEMPLATE_REVIEW"],
+              "QA": os.environ["PR_TEMPLATE_QA"],
+          }
+
+          event_path = os.environ["GITHUB_EVENT_PATH"]
+          with open(event_path, "r", encoding="utf-8") as f:
+              event = json.load(f)
+
+          if "pull_request" in event:
+              prs = [event["pull_request"]]
+          else:
+              repo = os.environ["GITHUB_REPOSITORY"]
+              token_gh = os.environ.get("GITHUB_TOKEN")
+              if not token_gh:
+                  raise SystemExit("GITHUB_TOKEN is required for workflow_dispatch")
+              req = urllib.request.Request(
+                  url=f"https://api.github.com/repos/{repo}/pulls?state=open&per_page=100",
+                  method="GET",
+                  headers={
+                      "Authorization": f"Bearer {token_gh}",
+                      "Accept": "application/vnd.github+json",
+                  },
+              )
+              with urllib.request.urlopen(req, timeout=60) as resp:
+                  prs = json.loads(resp.read().decode("utf-8"))
+
+          base_url = f"https://api.airtable.com/v0/{base}/{table}"
+          headers = {
+              "Authorization": f"Bearer {token}",
+              "Content-Type": "application/json",
+          }
+
+          def http_json(method: str, url: str, payload=None):
+              data = None
+              if payload is not None:
+                  data = json.dumps(payload).encode("utf-8")
+              req = urllib.request.Request(url=url, data=data, method=method)
+              for k, v in headers.items():
+                  req.add_header(k, v)
+              with urllib.request.urlopen(req, timeout=60) as resp:
+                  body = resp.read().decode("utf-8")
+                  return json.loads(body) if body else {}
+
+          def airtable_get_record(record_id: str):
+              out = http_json("GET", f"{base_url}/{record_id}")
+              return out.get("fields", {})
+
+          template_fields = {k: airtable_get_record(v) for k, v in templates.items()}
+
+          def chunks(iterable, size=10):
+              it = iter(iterable)
+              while True:
+                  batch = list(itertools.islice(it, size))
+                  if not batch:
+                      return
+                  yield batch
+
+          records = []
+          for pr in prs:
+              num = pr["number"]
+              pr_url = pr["html_url"]
+              author = pr["user"]["login"]
+              branch = pr["head"]["ref"]
+              status = "Draft" if pr.get("draft") else "Open"
+
+              for suffix in ["CODE", "REVIEW", "QA"]:
+                  fields = dict(template_fields[suffix])
+                  fields.update(
+                      {
+                          "Task ID": f"PR-{num}-{suffix}",
+                          "Task Name": f"PR #{num} {suffix} task",
+                          "Workstream": suffix,
+                          "PR Number": num,
+                          "PR URL": pr_url,
+                          "PR Author": author,
+                          "PR Branch": branch,
+                          "PR Status": status,
+                      }
+                  )
+                  records.append({"fields": fields})
+
+          for batch in chunks(records, 10):
+              payload = {
+                  "records": batch,
+                  "performUpsert": {"fieldsToMergeOn": ["Task ID"]},
+              }
+              out = http_json("PATCH", base_url, payload)
+              print(json.dumps(out))
+          PY
+
+  close-pr-tasks:
+    if: github.event_name == 'pull_request' && github.event.action == 'closed'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Mark PR tasks done/canceled
+        env:
+          AIRTABLE_TOKEN: ${{ secrets.AIRTABLE_TOKEN }}
+          AIRTABLE_BASE: ${{ secrets.AIRTABLE_BASE }}
+          AIRTABLE_TABLE: ${{ vars.AIRTABLE_TABLE || 'Tasks' }}
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          import urllib.request
+
+          token = os.environ.get("AIRTABLE_TOKEN")
+          base = os.environ.get("AIRTABLE_BASE")
+          table = os.environ.get("AIRTABLE_TABLE", "Tasks")
+          if not token or not base:
+              raise SystemExit("AIRTABLE_TOKEN and AIRTABLE_BASE are required")
+
+          with open(os.environ["GITHUB_EVENT_PATH"], "r", encoding="utf-8") as f:
+              event = json.load(f)
+          pr = event["pull_request"]
+
+          num = pr["number"]
+          pr_state = "Merged" if pr.get("merged") else "Closed"
+          task_status = "Done" if pr.get("merged") else "Canceled"
+
+          records = []
+          for suffix in ["CODE", "REVIEW", "QA"]:
+              records.append(
+                  {
+                      "fields": {
+                          "Task ID": f"PR-{num}-{suffix}",
+                          "PR Number": num,
+                          "PR URL": pr["html_url"],
+                          "PR Author": pr["user"]["login"],
+                          "PR Branch": pr["head"]["ref"],
+                          "PR Status": pr_state,
+                          "Status": task_status,
+                      }
+                  }
+              )
+
+          payload = {
+              "records": records,
+              "performUpsert": {"fieldsToMergeOn": ["Task ID"]},
+          }
+
+          url = f"https://api.airtable.com/v0/{base}/{table}"
+          req = urllib.request.Request(
+              url=url,
+              data=json.dumps(payload).encode("utf-8"),
+              method="PATCH",
+              headers={
+                  "Authorization": f"Bearer {token}",
+                  "Content-Type": "application/json",
+              },
+          )
+          with urllib.request.urlopen(req, timeout=60) as resp:
+              print(resp.read().decode("utf-8"))
+          PY

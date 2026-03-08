@@ -1,0 +1,29 @@
+{
+  "root": true,
+  "env": {
+    "commonjs": true,
+    "node": true,
+    "es2021": true,
+    "jest": true
+  },
+  "extends": ["eslint:recommended", "prettier"],
+  "parserOptions": {
+    "ecmaVersion": 2022
+  },
+  "rules": {},
+  "overrides": [
+    {
+      "files": ["src/bin/**/*.js"],
+      "rules": {
+        "no-restricted-properties": [
+          "error",
+          {
+            "object": "Math",
+            "property": "random",
+            "message": "Math.random is not allowed in deterministic runtime paths."
+          }
+        ]
+      }
+    }
+  ]
+}

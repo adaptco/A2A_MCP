@@ -17,6 +17,7 @@ jobs:
     permissions:
       contents: read
       id-token: write
+    if: github.event_name != 'pull_request'
     env:
       AWS_REGION: us-east-1
       # ECR repository URI and S3 bucket name should be stored in repository secrets.
@@ -24,10 +25,10 @@ jobs:
       S3_BUCKET: ${{ secrets.S3_BUCKET }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.10'
 
@@ -56,7 +57,7 @@ jobs:
           if [ -d tests ]; then pytest -q tests; fi
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v3
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-region: ${{ env.AWS_REGION }}
           role-to-assume: ${{ secrets.DEPLOY_ROLE_ARN }}

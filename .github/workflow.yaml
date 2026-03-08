@@ -1,0 +1,25 @@
+workflow:
+  states:
+    - Draft
+    - Validated
+    - Frozen
+    - Deployed
+    - Monitored
+  transitions:
+    - from: Draft
+      to: Validated
+      requires: [validation_passed]
+    - from: Validated
+      to: Frozen
+      requires: [governance_approval]
+    - from: Frozen
+      to: Deployed
+      requires: [operator_trigger]
+    - from: Deployed
+      to: Frozen
+      type: rollback
+      requires: [rollback_ready]
+rules:
+  ssot_hash_match: true
+  ledger_logging: true
+  rollback_hooks: required

@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Core Orchestrator Event Stream",
+  "description": "Schema for the canonical list of orchestrator events emitted during a CI run.",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "description": "Single event emitted by the orchestrator capsule.",
+    "properties": {
+      "id": {
+        "type": "string",
+        "description": "Stable identifier for the event instance."
+      },
+      "event": {
+        "type": "string",
+        "description": "The event name or type emitted by the orchestrator."
+      },
+      "timestamp": {
+        "type": "string",
+        "format": "date-time",
+        "description": "UTC timestamp marking when the event occurred."
+      },
+      "payload": {
+        "description": "Arbitrary event payload; structure varies per event type."
+      },
+      "meta": {
+        "type": "object",
+        "description": "Additional metadata supplied by the orchestrator.",
+        "additionalProperties": true
+      }
+    },
+    "additionalProperties": true
+  }
+}

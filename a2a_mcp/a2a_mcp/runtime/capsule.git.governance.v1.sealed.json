@@ -1,0 +1,68 @@
+{
+  "attestation": {
+    "content_hash": "sha256:3604d72484ade70713bc277359c57de20defccc1b5868b4a6914ce3ed256d1a8",
+    "sealed_at": "2025-09-25T05:37:11Z",
+    "sealed_by": "Council",
+    "status": "SEALED"
+  },
+  "author": "Earl Q Han",
+  "capsule_id": "capsule.git.governance.v1",
+  "description": "Git governance doctrine aligning commits, reviews, and seals with the sovereign scrollstream ledger.",
+  "governance": {
+    "council": "council/adaptco",
+    "oracle": "Celine",
+    "router": "Queen Boo",
+    "stabilizer": "Queen CiCi"
+  },
+  "issued_at": "2025-09-25T06:30:00Z",
+  "safeguards": {
+    "allowed_merges": [
+      "fast_forward",
+      "squash"
+    ],
+    "blocked_merges": [
+      "rebase"
+    ],
+    "ledger_guard": "scrollstream_ledger.jsonl",
+    "maker_checker": true,
+    "quorum_rule": "2-of-3"
+  },
+  "status": "SEALED",
+  "type": "GitGovernancePlaybook",
+  "version": "1.0.0",
+  "workflow": {
+    "checkpoint_ref": "qube.gitflow.v1",
+    "hud_notifications": [
+      "glyph_ping",
+      "ritual_caption"
+    ],
+    "stages": [
+      {
+        "id": "commit",
+        "ledger_event": "capsule.commit.v1",
+        "requirements": [
+          "lint_passed",
+          "tests_green",
+          "capsule_hash_recorded"
+        ]
+      },
+      {
+        "id": "review",
+        "ledger_event": "capsule.review.v1",
+        "requirements": [
+          "checker_signature",
+          "maker_checker_gap",
+          "council_ping"
+        ]
+      },
+      {
+        "id": "seal",
+        "ledger_event": "capsule.seal.v1",
+        "requirements": [
+          "attestation_updated",
+          "scrollstream_append"
+        ]
+      }
+    ]
+  }
+}

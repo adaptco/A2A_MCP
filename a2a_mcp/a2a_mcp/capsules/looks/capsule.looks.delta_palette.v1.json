@@ -1,0 +1,126 @@
+{
+  "id": "looks.delta_palette.v1",
+  "version": "1.0.0",
+  "name": "Δ Tile Executive Palette Strip",
+  "description": "Dual color systems for Δ-tile financial storytelling, ready for designer handoff or direct slide application.",
+  "created": "2025-10-17T00:00:00Z",
+  "governance": {
+    "author": "adaptco",
+    "council": "council/adaptco",
+    "policy_tag": "visual-brand-palettes"
+  },
+  "capsule": {
+    "category": "visual-system",
+    "application_surfaces": [
+      "Executive scorecard decks",
+      "Board meeting dashboards",
+      "Operational review templates"
+    ],
+    "glyph_focus": "delta",
+    "options": [
+      {
+        "id": "signature_delta",
+        "title": "Option A — Signature Δ Palette",
+        "summary": "Ownable, high-contrast palette that makes the teal Δ glyph the unmistakable brand marker.",
+        "swatches": [
+          {
+            "role": "primary_background",
+            "hex": "#0B1D3A",
+            "usage": "Title bar, canvas backgrounds, hero frames",
+            "typography": "White or Electric Teal for emphasis"
+          },
+          {
+            "role": "secondary_tile",
+            "hex": "#F4F5F7",
+            "usage": "Tile backplates, neutral data fields",
+            "typography": "Charcoal (#333333) for legibility"
+          },
+          {
+            "role": "glyph_accent",
+            "hex": "#00BFA6",
+            "usage": "Δ glyph, key deltas, bottom bar signal",
+            "typography": "Pairs with white or charcoal copy"
+          },
+          {
+            "role": "delta_positive",
+            "hex": "#2ECC71",
+            "usage": "Savings, upside metrics, positive variance badges",
+            "typography": "Charcoal text over light chips"
+          },
+          {
+            "role": "delta_negative",
+            "hex": "#E74C3C",
+            "usage": "Cost overruns, risk callouts, negative variance chips",
+            "typography": "White text when used on dark backgrounds"
+          }
+        ],
+        "layout_cues": [
+          "Anchor the Δ glyph and key numbers in Electric Teal (#00BFA6) to create an instant visual hook.",
+          "Use the Deep Navy background to frame the top banner and footer for a signature boardroom presence.",
+          "Deploy Soft Gray tiles for data tables; reserve accent colors strictly for deltas and callouts."
+        ]
+      },
+      {
+        "id": "neutral_flexible",
+        "title": "Option B — Neutral / Brand-Flexible",
+        "summary": "Adaptive framework that respects host brand palettes while keeping Δ semantics intact.",
+        "swatches": [
+          {
+            "role": "primary_background",
+            "hex": "#2C2C2C",
+            "usage": "Title bars, divider bands, high-contrast frames",
+            "typography": "White for headings, accent color for Δ"
+          },
+          {
+            "role": "secondary_tile",
+            "hex": "#EAEAEA",
+            "usage": "Tile backgrounds, content wells, chart paddles",
+            "typography": "Black (#000000) or Charcoal (#333333)"
+          },
+          {
+            "role": "accent_slot",
+            "hex": "#000000",
+            "usage": "Placeholder for host brand primary color; apply to Δ glyphs and hero numbers",
+            "notes": "Replace with company-specific hue to localize the system"
+          },
+          {
+            "role": "delta_positive",
+            "hex": "#2ECC71",
+            "usage": "Positive variance chips; adjust to brand-approved green if required",
+            "typography": "Charcoal or brand-dark text"
+          },
+          {
+            "role": "delta_negative",
+            "hex": "#E74C3C",
+            "usage": "Negative variance chips; adjust to brand-approved red if required",
+            "typography": "White or light gray text"
+          }
+        ],
+        "layout_cues": [
+          "Swap the accent slot hex with the organization’s core color to harmonize with existing guidelines.",
+          "Keep typography neutral (black or white) so the Δ framing adapts cleanly across templates.",
+          "Use light tiles against the charcoal primary to maintain clarity without committing to a bespoke brand signal."
+        ]
+      }
+    ],
+    "handoff": {
+      "palette_strip": [
+        {
+          "option": "signature_delta",
+          "order": ["#0B1D3A", "#F4F5F7", "#00BFA6", "#2ECC71", "#E74C3C"],
+          "presentation": "Arrange as horizontal chips with captioned roles for designer packets."
+        },
+        {
+          "option": "neutral_flexible",
+          "order": ["#2C2C2C", "#EAEAEA", "{brand_primary}", "#2ECC71", "#E74C3C"],
+          "presentation": "Label the third chip as \"Insert Brand Accent\" to signal customization."
+        }
+      ],
+      "designer_notes": [
+        "Provide hex plus usage cue beneath each chip when exporting to PDF or Figma components.",
+        "Include Δ glyph mockups (positive vs. negative) using the accent and variance colors for clarity.",
+        "Pair typography guidance: headings in IBM Plex Sans Bold, body in Inter Regular to match existing decks."
+      ]
+    }
+  }
+}

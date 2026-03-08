@@ -1,0 +1,52 @@
+{
+  "schema_version": "vector_direction_token_bundle.v1",
+  "kernel_control_token": {
+    "schema_version": "kernel_control_token.v1",
+    "token_id": "kct-20260305-001",
+    "session_id": "session-20260305-001",
+    "issued_at": "2026-03-05T13:00:00+00:00",
+    "physics_constraints": {
+      "gravity": 9.81,
+      "friction": 0.35,
+      "visibility_range": 120.0,
+      "entropy_budget": 0.1
+    },
+    "stability_mode": "hardened-realtime",
+    "embedding_signature": "sig-embed-001",
+    "source_capsules": [
+      "capsule.worldline.v1",
+      "capsule.rag.logic_tree.v1"
+    ]
+  },
+  "token_events": [
+    {
+      "schema_version": "TokenEvent.v1",
+      "call_id": "123e4567-e89b-12d3-a456-426614174000",
+      "seq": 0,
+      "token": "planner",
+      "token_hash": "244b8435061420f6b2887681bbe2d24b18fc8f790a75c5bf16937bb8417e651a",
+      "cumulative_hash": "d3605c21964562fc10d4e12ffc129a7b7d4459373b41dd178dbbf948b913480f"
+    },
+    {
+      "schema_version": "TokenEvent.v1",
+      "call_id": "123e4567-e89b-12d3-a456-426614174000",
+      "seq": 1,
+      "token": "coder",
+      "token_hash": "c84a9e3ad144b43da73995a5a12704f707fb34e7f30816b1a95c7b3c441fdc4a",
+      "cumulative_hash": "5b672a72be846d9a076967d19af8d8320a2d7f9d32539f785b39aaee57eed51c"
+    }
+  ],
+  "lineage": {
+    "runtime_assignment_id": "assign-20260305-001",
+    "rag_node_ids": [
+      "N0_INGRESS",
+      "N1_PLANNING"
+    ],
+    "token_event_count": 2,
+    "final_cumulative_hash": "5b672a72be846d9a076967d19af8d8320a2d7f9d32539f785b39aaee57eed51c",
+    "generated_from": [
+      "worldline_block.json",
+      "token_reconstruction.json"
+    ]
+  }
+}

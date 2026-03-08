@@ -1,0 +1,137 @@
+{
+  "attestation": {
+    "content_hash": "sha256:1a9357ee70e5b007ee1c58f1aefe365d51b50e757619d178dadedea821e790bb",
+    "sealed_at": "2025-09-25T01:42:30Z",
+    "sealed_by": "Council",
+    "status": "SEALED"
+  },
+  "author": "Scrollsmith",
+  "capsule_id": "capsule.kobe.cipher.v1",
+  "cipher_set": [
+    {
+      "id": "cipher.vow.trinity",
+      "meaning": [
+        "vow_after_crisis",
+        "renewal",
+        "divine_protection",
+        "sovereignty"
+      ],
+      "motifs": [
+        "vanessa",
+        "angel_wings",
+        "crown",
+        "butterfly"
+      ],
+      "payload": {
+        "axis": "loyalty",
+        "tone": "penitent→steadfast"
+      },
+      "title": "Vanessa + Angel Wings",
+      "year": 2003
+    },
+    {
+      "id": "cipher.faith.psalm27",
+      "meaning": [
+        "faith_under_fire",
+        "courage",
+        "trust_in_light"
+      ],
+      "motifs": [
+        "psalm_27",
+        "scripture",
+        "light_courage"
+      ],
+      "payload": {
+        "axis": "faith",
+        "tone": "quiet_fury"
+      },
+      "title": "Psalm XXVII",
+      "year": 2003
+    },
+    {
+      "id": "cipher.lineage.daughters",
+      "meaning": [
+        "lineage",
+        "legacy",
+        "continuance",
+        "italian_root"
+      ],
+      "motifs": [
+        "natalia_diamante",
+        "gianna",
+        "bianka",
+        "capri",
+        "diamond"
+      ],
+      "payload": {
+        "axis": "family",
+        "tone": "tender_resolve"
+      },
+      "title": "Daughters + Diamante",
+      "year": 2003
+    },
+    {
+      "id": "cipher.transform.butterfly_crown",
+      "meaning": [
+        "rebirth",
+        "kingship",
+        "earned_sovereignty"
+      ],
+      "motifs": [
+        "butterfly",
+        "crown"
+      ],
+      "payload": {
+        "axis": "becoming",
+        "tone": "ascendant"
+      },
+      "title": "Butterfly Crown",
+      "year": 2003
+    }
+  ],
+  "governance": {
+    "checker": "Council",
+    "enforcement": "fail-closed",
+    "maker": "Scrollsmith",
+    "quorum": [
+      "Dot",
+      "Echo",
+      "Celine"
+    ]
+  },
+  "issued_at": "2025-09-24T00:00:00Z",
+  "logline": "Body inscriptions as lineage-bound scripture: loyalty, faith, legacy.",
+  "provenance": {
+    "lineage_notes": [
+      "vow→faith→family→sovereignty forms the mission chain",
+      "cipher anchors: loyalty, courage, transformation, legacy"
+    ],
+    "method": "iconographic analysis + ritual mapping"
+  },
+  "routing": {
+    "affect": [
+      "vow_after_crisis",
+      "rebirth",
+      "faith_under_fire"
+    ],
+    "policy_guards": [
+      "capsule.policy_guard.lattice.v1",
+      "capsule.policy_guard.smearframe.v1",
+      "capsule.policy_guard.intentdiffusion.v1"
+    ],
+    "text": [
+      "psalm_27"
+    ],
+    "vision": [
+      "angel_wings",
+      "butterfly",
+      "crown",
+      "diamond"
+    ]
+  },
+  "schema": "KB8.24.P3L",
+  "status": "SEALED",
+  "subject": "Kobe Bryant",
+  "type": "CulturalCipher",
+  "version": "1.0.0"
+}

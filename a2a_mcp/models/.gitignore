@@ -1,0 +1,26 @@
+# Model binary files - not stored in git
+# Download on-demand using fetch_nvidia_models.py
+
+# Cached models
+cache/
+*.bin
+*.pt
+*.safetensors
+*.pkl
+*.pth
+
+# Training outputs
+trained/**/*.bin
+trained/**/*.pt
+trained/**/*.safetensors
+
+# Logs and checkpoints
+logs/
+checkpoints/
+*.log
+
+# But keep metadata and configs
+!*.yaml
+!*.json
+!*.md
+!*.txt

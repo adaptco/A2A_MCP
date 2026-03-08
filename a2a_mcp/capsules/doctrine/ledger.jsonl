@@ -1,0 +1,3 @@
+{"ts":"2025-09-19T04:05:05Z","type":"capsule.emitted","capsule_id":"raci.plan.v1.1","payload":{"spec_version":"V6.0.0","seal_state":"UNSEALED","parent":"raci.plan.v1","bundle_sha256":"sha256:d1f8e6c4a9b2d0a1f8e6c4a9b2d0a1f8e6c4a9b2d0a1f8e6c4a9b2d0a1f8e6c4"}}
+{"ts":"2025-09-19T04:05:06Z","type":"firewall.report","capsule_id":"raci.plan.v1.1","payload":{"status":"PASS","results":[]}}
+{"ts":"2025-09-19T04:05:07Z","type":"replay.registered","capsule_id":"raci.plan.v1.1","payload":{"replay_token":"audit:20250919:RACI.1","reviewers":["CouncilNode_03","Apprentice_AxQx"],"adjudication_status":"pending"}}

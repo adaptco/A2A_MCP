@@ -1,0 +1,55 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://adk.io/schemas/v0/gate_policy.schema.json",
+  "title": "ZKP Gate Policy",
+  "description": "Defines the Zero-Knowledge Proof requirements for accessing or modifying a directory node.",
+  "type": "object",
+  "required": [
+    "gate_id",
+    "allowed_roles",
+    "required_proofs"
+  ],
+  "properties": {
+    "gate_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique identifier for this gate instance."
+    },
+    "allowed_roles": {
+      "type": "array",
+      "description": "List of RBAC roles permitted to interact with this node.",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "required_proofs": {
+      "type": "array",
+      "description": "List of ZKP circuits that must be satisfied.",
+      "items": {
+        "type": "object",
+        "required": ["proof_type", "circuit_id"],
+        "properties": {
+          "proof_type": {
+            "type": "string",
+            "enum": ["physics_compliance", "integrity_check", "solvency", "identity"]
+          },
+          "circuit_id": {
+            "type": "string",
+            "description": "Hash of the verifying key for the circuit."
+          },
+          "parameters": {
+            "type": "object",
+            "description": "Public inputs required for the proof."
+          }
+        }
+      }
+    },
+    "enforcement_level": {
+      "type": "string",
+      "enum": ["strict", "audit", "learning"],
+      "default": "strict",
+      "description": "Behavior when proof fails: block (strict), log (audit), or allow-and-train (learning)."
+    }
+  }
+}

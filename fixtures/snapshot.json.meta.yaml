@@ -1,0 +1,7 @@
+generator: create_fixtures.sh
+schema: capsule.branch_s.snapshot.v1
+generated_at: 2024-10-07T00:00:00Z
+capsule_id: capsule.prompt.designStudio.dual.v1
+epoch: sentinel-100
+asset_count: 13
+snapshot_sha256: 69bec169544acd55446385431e6dbd9b29338a80bd68a7a8b88ca6c345264dc0

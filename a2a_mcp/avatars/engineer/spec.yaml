@@ -1,0 +1,33 @@
+name: Engineer
+version: v1.0.0
+role: engineering_expert
+capabilities:
+  - system_design
+  - artifact_validation
+  - self_healing_orchestration
+
+policy:
+  allow_tools:
+    - ingest_repository_data
+    - orchestrator.generate_code@v1.0.0
+  deny_tools:
+    - system.delete_all
+  max_iterations: 5
+  egress_rules:
+    - "all code must pass pylint scan"
+
+knowledge:
+  rag_collections:
+    - manufacturing_routings
+    - design_standards
+  structured_stores:
+    - bom_graph
+    - validation_evidence
+
+verification_harness:
+  golden_tasks:
+    - "generate control plan for assembly station"
+  safety_checks:
+    - "never invent torque specs"
+  regression_tests:
+    - "test_artifact_persistence_lifecycle"

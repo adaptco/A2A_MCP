@@ -56,6 +56,29 @@ orchestrator.register_skill(
 )
 ```
 
+## Standardized MCP Tool Integration
+
+All agents in the A2A_MCP swarm must interact with environmental tools (Filesystem, Shell, Cloud, etc.) exclusively via the **Model Context Protocol (MCP)**. This ensures cross-platform consistency and centralized security auditing.
+
+### Tool Discovery & Binding
+- **Registry**: Agents must query the `ManagingAgent` for available MCP server UIDs.
+- **Initialization**: Tools are bound at session start. Static tool definitions are prohibited.
+- **Protocol**: JSON-RPC over stdio or HTTP as specified in the ADK `contracts/mcp_schema.json`.
+
+### Canonical Skill Phases with MCP
+Every agent skill must follow this updated five-phase lifecycle:
+
+1. **SAMPLE**: Ingest objective and initialize state.
+2. **RESOLVE**: Query MCP servers for relevant tools (`list_tools`).
+3. **PLAN**: Construct a DAG of tool calls using standard MCP tool names (e.g., `run_shell_command`, `read_file`).
+4. **EXECUTE**: Invoke MCP tools synchronously or asynchronously.
+5. **VERIFY**: Use the `PINNAgent` to validate tool outputs against the WorldModel.
+
+### MCP Safety Constraints
+- **Scope**: Shell commands must be prefixed with appropriate environment constraints.
+- **Audit**: Every tool call is logged to the `VVLRecord` with the tool provider's UID and the raw response hash.
+- **Failure**: Tool errors must be parsed into `VVLRecord` as `execution_failure` events for self-healing loops.
+
 #### Guarantees (enforced by spec pack)
 - Deterministic replay via ByteSampler seed lineage + VVL
 - Explicit bifurcation logged on every call
@@ -64,3 +87,22 @@ orchestrator.register_skill(
 - 21-test harness remains green
 
 **Commit-ready.** Replace previous section with this block. Paste agent router if exact registration patch needed.
+
+### MCPEntropyTemplateRouter
+
+**Version:** 1.0  
+**Skill folder:** `skills/mcp-entropy-template-router`  
+**Purpose:** deterministic API skill-token generation + enthalpy/entropy style control + uniform dotproduct template routing.
+
+#### Runtime outputs
+- `api_skill_tokens` for avatar runtime shell API bindings
+- `style_temperature_profile` with `enthalpy`, `entropy`, and tuned `temperature`
+- `template_route` with deterministic scores and template-triggered action list
+
+#### Execution command
+```bash
+python skills/mcp-entropy-template-router/scripts/route_actions.py \
+  --prompt "Implement orchestration action chain" \
+  --risk-profile medium \
+  --changed-path-count 8
+```

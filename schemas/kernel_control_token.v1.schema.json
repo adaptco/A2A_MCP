@@ -1,0 +1,80 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Kernel Control Token v1",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "token_id",
+    "session_id",
+    "issued_at",
+    "physics_constraints",
+    "stability_mode"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "kernel_control_token.v1"
+    },
+    "token_id": {
+      "type": "string",
+      "description": "Deterministic identifier for the emitted control token."
+    },
+    "session_id": {
+      "type": "string",
+      "description": "Runtime session identifier binding the token to an agent loop."
+    },
+    "issued_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "UTC timestamp when the token was emitted."
+    },
+    "physics_constraints": {
+      "type": "object",
+      "required": [
+        "gravity",
+        "friction",
+        "visibility_range",
+        "entropy_budget"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "gravity": {
+          "type": "number",
+          "description": "Resolved gravity magnitude (m/s^2)."
+        },
+        "friction": {
+          "type": "number",
+          "description": "Resolved friction coefficient (0.0 - 1.0).",
+          "minimum": 0.0,
+          "maximum": 1.0
+        },
+        "visibility_range": {
+          "type": "number",
+          "description": "Resolved visibility range in meters.",
+          "minimum": 0.0
+        },
+        "entropy_budget": {
+          "type": "number",
+          "description": "Resolved entropy budget (0.0 - 1.0).",
+          "minimum": 0.0,
+          "maximum": 1.0
+        }
+      }
+    },
+    "stability_mode": {
+      "type": "string",
+      "description": "Deterministic stability policy applied to the runtime kernel."
+    },
+    "embedding_signature": {
+      "type": "string",
+      "description": "Optional signature or hash for the originating embedding set."
+    },
+    "source_capsules": {
+      "type": "array",
+      "description": "Optional references to capsule IDs or URIs used to derive the token.",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

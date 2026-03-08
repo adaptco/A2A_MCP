@@ -1,0 +1,186 @@
+{
+  "service_id": "content.integrity.eval.v1",
+  "title": "Content Integrity Evaluation (CIE-V1)",
+  "revision": "2025-11-07",
+  "mission": "Evaluate narrative payloads using strictly neutral perturbation models that preserve ZERO-DRIFT guarantees.",
+  "governance": {
+    "owner": "World Engine Ops",
+    "integrity_committee": ["Council Relay", "Ethics Desk"],
+    "zero_drift": {
+      "mandate": "Neutral perturbations only; no persuasive or amplifying transforms",
+      "auditable": true
+    }
+  },
+  "operational_directives": {
+    "allowed_modules": [
+      "synthetic.noise.injector.v1",
+      "synthetic.contradiction.synth.v1"
+    ],
+    "neutral_perturbation_models": [
+      "synthetic.noise.injector.v1",
+      "synthetic.contradiction.synth.v1"
+    ],
+    "module_policy": {
+      "retired": [
+        "CNE",
+        "FSV",
+        "content_noise_enricher",
+        "feature_shift_validator",
+        "fact_stream_validator"
+      ],
+      "replacement_map": {
+        "CNE": "synthetic.noise.injector.v1",
+        "FSV": "synthetic.noise.injector.v1",
+        "content_noise_enricher": "synthetic.noise.injector.v1",
+        "feature_shift_validator": "synthetic.noise.injector.v1",
+        "fact_stream_validator": "synthetic.contradiction.synth.v1"
+      }
+    },
+    "ingress": {
+      "artifact_only": true,
+      "requires_council_attestation": true,
+      "dk_1_isolation": "required",
+      "miap_telemetry_minimization": "enforced"
+    },
+    "egress": {
+      "aggregate_metrics_only": true,
+      "ledger_append_only": true,
+      "no_per_agent_traces": true
+    },
+    "module_policy": {
+      "retired_modules": [
+        "CNE",
+        "FSV",
+        "content_noise_enricher",
+        "feature_shift_validator",
+        "fact_stream_validator"
+      ],
+      "replacement_map": {
+        "CNE": "synthetic.noise.injector.v1",
+        "FSV": "synthetic.noise.injector.v1",
+        "content_noise_enricher": "synthetic.noise.injector.v1",
+        "feature_shift_validator": "synthetic.noise.injector.v1",
+        "fact_stream_validator": "synthetic.contradiction.synth.v1"
+      },
+      "neutral_perturbation_models": [
+        "synthetic.noise.injector.v1",
+        "synthetic.contradiction.synth.v1"
+      ]
+    }
+  },
+  "modules": [
+    {
+      "id": "synthetic.noise.injector.v1",
+      "role": "neutral_perturbation",
+      "replaces": ["content_noise_enricher", "feature_shift_validator"],
+      "description": "Applies calibrated, distribution-preserving noise to submitted payloads for robustness scoring without directional drift.",
+      "inputs": {
+        "payload": "application/json",
+        "noise_seed": "uint64",
+        "perturbation_budget": "float" 
+      },
+      "outputs": {
+        "samples": "jsonl",
+        "variance_report": "application/json"
+      },
+      "controls": {
+        "clamp_sigma": 1.0,
+        "max_batches": 5,
+        "neutrality_score_threshold": 0.97
+      },
+      "validation": {
+        "canonical_hash": "sha256",
+        "deterministic_key_schedule": true
+      }
+    },
+    {
+      "id": "synthetic.contradiction.synth.v1",
+      "role": "counterfactual_generation",
+      "replaces": ["fact_stream_validator"],
+      "description": "Synthesizes minimally divergent contradiction narratives to test claim resilience while honoring neutral stance requirements.",
+      "inputs": {
+        "payload": "application/json",
+        "knowledge_refs": "array<string>",
+        "nonce": "uuid"
+      },
+      "outputs": {
+        "contradiction_set": "jsonl",
+        "consistency_metrics": "application/json"
+      },
+      "controls": {
+        "max_contradictions": 8,
+        "neutrality_floor": 0.95,
+        "drift_monitor": "zero_drift.monitor.v1"
+      },
+      "validation": {
+        "semantic_symmetry_check": true,
+        "hash_chain_enforced": true
+      }
+    }
+  ],
+  "input_profile": {
+    "perturbation_defaults": {
+      "synthetic.noise.injector.v1": {
+        "ocr_blur": 0.1,
+        "token_drop": 0.02,
+        "translation_rounds": 2,
+        "synonym_swap": 0.05
+      },
+      "synthetic.contradiction.synth.v1": {
+        "max_contradictions": 5,
+        "trusted_uri_minimum": 1,
+        "citation_traceability_floor": 0.9
+      }
+    },
+    "acceptance_gates": {
+      "semantic_similarity_min": 0.85,
+      "readability_delta_max": 6.5,
+      "citation_traceability_min": 0.9,
+      "confidence_consistency_min": 0.9
+    },
+    "routing": [
+      "synthetic.noise.injector.v1",
+      "synthetic.contradiction.synth.v1"
+    ],
+    "input_contract": {
+      "required_blocks": [
+        "noise_request",
+        "contradiction_request",
+        "metadata"
+      ],
+      "metadata_fields": [
+        "content_id",
+        "source_registry",
+        "sha256_payload",
+        "council_attestation_id",
+        "run_id"
+      ],
+      "constraints": {
+        "noise_request_module": "synthetic.noise.injector.v1",
+        "contradiction_request_module": "synthetic.contradiction.synth.v1",
+        "source_registry_allowlist": [
+          "ssot://registry/truthful_inputs",
+          "ssot://registry/trusted_uris"
+        ]
+      }
+    }
+  },
+  "runtime": {
+    "queue": "cie.neutral.audit",
+    "max_parallel_jobs": 3,
+    "retry_policy": {
+      "max_attempts": 2,
+      "backoff": "exponential"
+    },
+    "metrics": [
+      "entropy_ldi",
+      "coherence_chrono_mi",
+      "yield_kl_gain"
+    ]
+  },
+  "attestation": {
+    "signing_key": "ecdsa-secp256k1",
+    "anchor_ledger": "ledger/content_integrity_eval",
+    "hash_algorithm": "sha256"
+  }
+}

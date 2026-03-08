@@ -3,13 +3,18 @@ from __future__ import annotations
 import hashlib
 import hmac
 from dataclasses import dataclass
-from typing import Any, Protocol
+from typing import Any, Dict, Protocol
 from uuid import uuid4
 
 import numpy as np
 from app.mcp_tooling import TELEMETRY
 
 from drift_suite.drift_metrics import ks_statistic
+
+try:  # pragma: no cover - import guarded for lightweight test environments
+    import torch
+except ModuleNotFoundError:  # pragma: no cover
+    torch = None
 
 
 class ClientNotFound(KeyError):
@@ -71,10 +76,11 @@ class InMemoryEventStore:
 class ClientTokenPipe:
     """Bifurcated pipeline that isolates token transformations per tenant."""
 
-    def __init__(self, store: EventStore, ctx: ClientContext, drift_threshold: float = 0.10) -> None:
+    CONTAMINATION_THRESHOLD = 0.10
+
+    def __init__(self, store: EventStore, ctx: ClientContext) -> None:
         self.store = store
         self.ctx = ctx
-        self.drift_threshold = drift_threshold
         self._tokens_processed = 0
         self._seen_hash_fingerprints: dict[str, tuple[int, float]] = {}
 
@@ -99,29 +105,54 @@ class ClientTokenPipe:
         )
         return namespaced
 
-    async def egress(self, mcp_result: np.ndarray) -> dict[str, Any]:
-        mcp_result = np.asarray(mcp_result, dtype=float)
-        baseline = await self._load_client_baseline()
-        drift = self._compute_drift(baseline, mcp_result)
-        if drift > self.drift_threshold:
-            raise ContaminationError(
-                f"Drift {drift:.3f} > threshold {self.drift_threshold:.3f} for tenant {self.ctx.tenant_id}"
-            )
+    async def egress(self, mcp_result: Any) -> Dict[str, Any]:
+        """Client-specific formatting + contamination verification"""
+        processed_embedding_np = mcp_result.processed_embedding.squeeze(0).detach().cpu().numpy()
+        embedding_hash = _array_hash(processed_embedding_np)
 
         TELEMETRY.record_token_shaping_stage(
             stage="drift_gate",
             tenant_id=self.ctx.tenant_id,
-            token_count=int(mcp_result.size),
-            embedding_hash=_array_hash(mcp_result),
+            token_count=int(processed_embedding_np.size),
+            embedding_hash=embedding_hash,
         )
 
-        witness_hash = await self._witness_result(mcp_result)
-        return {
+        # 1. DRIFT VERIFICATION (client baseline)
+        baseline = await self._load_client_baseline()
+        drift = self._compute_drift(baseline, processed_embedding_np)
+
+        if drift > ClientTokenPipe.CONTAMINATION_THRESHOLD:
+            await self._quarantine_pipeline(drift)
+            raise ContaminationError(f"Drift violation: {drift:.4f}")
+
+        # 2. WITNESSING AND SIGNING
+        witness_hash = await self._witness_result(processed_embedding_np)
+
+        # 3. CLIENT-SPECIFIC FORMATING
+        client_result = {
             "client_ctx": self.ctx,
-            "result": mcp_result,
+            "tenant_id": self.ctx.tenant_id,
+            "result": processed_embedding_np,
+            "mcp_tensor": processed_embedding_np.tolist(),
+            "middleware_roles": mcp_result.arbitration_scores.topk(5).indices.tolist() if hasattr(mcp_result.arbitration_scores, 'topk') else [],
+            "protocol_features": mcp_result.protocol_features,
             "drift": drift,
             "sovereignty_hash": witness_hash,
         }
+
+        # 4. EVENT STORE COMMIT (client namespace)
+        await self.store.append_event(
+            tenant_id=self.ctx.tenant_id,
+            execution_id=f"mcp-{uuid4().hex[:8]}",
+            state="MCP_PROCESSED",
+            payload={
+                "mcp_result_hash": mcp_result.execution_hash,
+                "drift_score": float(drift),
+                "witness_hash": witness_hash,
+            },
+        )
+
+        return client_result
 
     def _namespace_embedding(self, embedding: np.ndarray) -> np.ndarray:
         projection = _tenant_projection(self.ctx.tenant_id, embedding.shape)
@@ -172,6 +203,10 @@ class ClientTokenPipe:
         )
         return digest
 
+    async def _quarantine_pipeline(self, drift: float) -> None:
+        # Placeholder for quarantine logic
+        print(f"QUARANTINE TRIGGERED for tenant {self.ctx.tenant_id} with drift {drift}")
+
     def _check_hash_anomaly(self, *, stage: str, embedding: np.ndarray, embedding_hash: str) -> None:
         if not np.all(np.isfinite(embedding)):
             TELEMETRY.record_hash_anomaly(
@@ -201,6 +236,15 @@ class MultiClientMCPRouter:
     def __init__(self, store: EventStore) -> None:
         self.store = store
         self.pipelines: dict[str, ClientTokenPipe] = {}
+        self.handshake_registry: dict[str, dict[str, Any]] = {}
+        self.mcp_core: Any | None = None
+
+    def _get_mcp_core(self) -> Any:
+        if self.mcp_core is None:
+            from mcp_core import MCPCore
+
+            self.mcp_core = MCPCore()
+        return self.mcp_core
 
     async def register_client(self, api_key: str, quota: int = 1_000_000) -> str:
         api_digest = hashlib.sha256(api_key.encode("utf-8")).hexdigest()
@@ -232,16 +276,54 @@ class MultiClientMCPRouter:
         pipe = self.pipelines.get(client_key)
         if pipe is None:
             raise ClientNotFound(f"Client {client_key} not registered")
+        if torch is None:
+            raise RuntimeError("torch is required to process MCP requests in multi-client router")
 
         mcp_token = await pipe.ingress(np.asarray(tokens, dtype=float))
-        mcp_result = await self._mcp_core(mcp_token)
+        mcp_core = self._get_mcp_core()
+
+        # Reshape to (1, 4096) for the MCPCore model
+        mcp_token_tensor = torch.from_numpy(mcp_token.reshape(1, -1)).float()
+        mcp_result = mcp_core(mcp_token_tensor)
         return await pipe.egress(mcp_result)
 
-    async def _mcp_core(self, token: np.ndarray) -> np.ndarray:
-        # Shared MCP core placeholder: deterministic normalization + tanh activation.
-        scale = max(float(np.linalg.norm(token)), 1.0)
-        normalized = token / scale
-        return np.tanh(normalized)
+    def register_handshake(
+        self,
+        *,
+        handshake_id: str,
+        client_id: str,
+        tenant_id: str,
+        status: str,
+        metadata: dict[str, Any] | None = None,
+    ) -> None:
+        """Track handshake state in the router layer for API routing visibility."""
+
+        self.handshake_registry[handshake_id] = {
+            "handshake_id": handshake_id,
+            "client_id": client_id,
+            "tenant_id": tenant_id,
+            "status": status,
+            "metadata": dict(metadata or {}),
+        }
+
+    def update_handshake_status(
+        self,
+        *,
+        handshake_id: str,
+        status: str,
+        metadata: dict[str, Any] | None = None,
+    ) -> None:
+        if handshake_id not in self.handshake_registry:
+            raise ClientNotFound(f"Handshake {handshake_id} not registered")
+        entry = self.handshake_registry[handshake_id]
+        entry["status"] = status
+        if metadata:
+            entry["metadata"] = {**entry.get("metadata", {}), **metadata}
+
+    def get_handshake(self, handshake_id: str) -> dict[str, Any]:
+        if handshake_id not in self.handshake_registry:
+            raise ClientNotFound(f"Handshake {handshake_id} not registered")
+        return dict(self.handshake_registry[handshake_id])
 
 
 def _tenant_projection(tenant_id: str, shape: tuple[int, ...]) -> np.ndarray:

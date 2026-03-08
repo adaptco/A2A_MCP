@@ -1,0 +1,153 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "runtime/frozen/encapsulated.runtime.block.v1.schema.json",
+  "title": "Encapsulated Runtime Block v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "v",
+    "block_id",
+    "preface",
+    "source_cid",
+    "input_binding",
+    "tensor_spec",
+    "agent_field",
+    "runtime_calls",
+    "receipts"
+  ],
+  "properties": {
+    "v": { "type": "integer", "const": 1 },
+    "block_id": {
+      "type": "string",
+      "pattern": "^[A-Z0-9_\\-]{8,64}$"
+    },
+    "preface": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["preface_id", "preface_sha256"],
+      "properties": {
+        "preface_id": { "type": "string", "minLength": 1 },
+        "preface_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      }
+    },
+    "source_cid": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["cid", "cidv", "base", "codec", "multihash"],
+      "properties": {
+        "cid": { "type": "string", "minLength": 10 },
+        "cidv": { "type": "integer", "enum": [0, 1] },
+        "base": { "type": "string", "enum": ["base32", "base58btc"] },
+        "codec": { "type": "string", "minLength": 1 },
+        "multihash": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["name", "bits", "digest_hex"],
+          "properties": {
+            "name": { "type": "string", "minLength": 1 },
+            "bits": { "type": "integer", "minimum": 64 },
+            "digest_hex": {
+              "type": "string",
+              "pattern": "^0x[0-9a-fA-F]+$"
+            }
+          }
+        }
+      }
+    },
+    "input_binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["external_config_sha256", "normalization"],
+      "properties": {
+        "external_config_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "normalization": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["json", "unicode"],
+          "properties": {
+            "json": { "type": "string", "enum": ["JCS"] },
+            "unicode": { "type": "string", "enum": ["NFC"] }
+          }
+        }
+      }
+    },
+    "tensor_spec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "dims", "dtype", "layout"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "dims": { "type": "integer", "minimum": 4, "maximum": 65536 },
+        "dtype": { "type": "string", "enum": ["f32", "f16", "i32"] },
+        "layout": { "type": "string", "enum": ["row_major"] }
+      }
+    },
+    "agent_field": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["agent_id", "role", "state_machine_protocol"],
+      "properties": {
+        "agent_id": { "type": "string", "minLength": 1 },
+        "role": { "type": "string", "minLength": 1 },
+        "state_machine_protocol": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["protocol_id", "embedding_gate"],
+          "properties": {
+            "protocol_id": { "type": "string", "minLength": 1 },
+            "embedding_gate": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["gate_id", "policy"],
+              "properties": {
+                "gate_id": { "type": "string", "minLength": 1 },
+                "policy": { "type": "string", "enum": ["fail_closed"] }
+              }
+            }
+          }
+        }
+      }
+    },
+    "runtime_calls": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["method", "path", "request_sha256", "response_sha256"],
+        "properties": {
+          "method": { "type": "string", "enum": ["POST"] },
+          "path": { "type": "string", "minLength": 1 },
+          "request_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+          "response_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+        }
+      }
+    },
+    "receipts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ledger_chain", "qube_digest"],
+      "properties": {
+        "ledger_chain": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["prev_hash", "hash"],
+          "properties": {
+            "prev_hash": { "type": "string", "minLength": 1 },
+            "hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+          }
+        },
+        "qube_digest": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      }
+    }
+  }
+}

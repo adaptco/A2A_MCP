@@ -1,0 +1,10 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["title", "body", "invariants"],
+  "properties": {
+    "title": {"type": "string"},
+    "body": {"type": "string"},
+    "invariants": {"type": "array", "items": {"type": "string"}}
+  }
+}

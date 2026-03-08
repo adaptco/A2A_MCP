@@ -1,0 +1,304 @@
+name: lint-diff-build-test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+  IMAGE_TAG: ${{ github.sha }}
+  REGISTRY_IMAGE: ghcr.io/${{ github.repository }}
+  LOCAL_IMAGE: ghcr.io/${{ github.repository }}:${{ github.sha }}
+  OPENAPI_DIFF_VERSION: 2.1.3
+
+jobs:
+  lint-diff-build-test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Cache global npm directory
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-
+
+      - name: Install Spectral CLI
+        run: npm install -g @stoplight/spectral-cli
+
+      - name: Set up Java runtime for OpenAPI diffing
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Cache OpenAPI Diff CLI
+        id: cache-openapi-diff
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/openapi-diff
+          key: openapi-diff-${{ env.OPENAPI_DIFF_VERSION }}
+
+      - name: Download OpenAPI Diff CLI
+        if: steps.cache-openapi-diff.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p ~/.cache/openapi-diff
+          curl -sSL "https://repo1.maven.org/maven2/org/openapitools/openapidiff/openapi-diff-cli/${OPENAPI_DIFF_VERSION}/openapi-diff-cli-${OPENAPI_DIFF_VERSION}-all.jar" -o ~/.cache/openapi-diff/openapi-diff-cli.jar
+
+      - name: Detect OpenAPI specification
+        id: spec
+        run: |
+          set -eo pipefail
+          spec=$(git ls-files '*openapi*.yml' '*openapi*.yaml' | head -n 1 || true)
+          if [ -n "$spec" ]; then
+            echo "spec=$spec" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Initialize artifact workspace
+        run: mkdir -p artifacts
+
+      - name: Lint OpenAPI specification
+        if: steps.spec.outputs.spec != ''
+        run: spectral lint "${{ steps.spec.outputs.spec }}"
+
+      - name: Compare OpenAPI specification changes
+        if: steps.spec.outputs.spec != ''
+        run: |
+          set -eo pipefail
+          base_file=""
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            git fetch origin main --depth=1
+            if git cat-file -e origin/main:${{ steps.spec.outputs.spec }} 2>/dev/null; then
+              git show origin/main:${{ steps.spec.outputs.spec }} > /tmp/openapi-base.yaml
+              base_file=/tmp/openapi-base.yaml
+            fi
+          else
+            if git rev-parse HEAD^ >/dev/null 2>&1 && git cat-file -e HEAD^:${{ steps.spec.outputs.spec }} 2>/dev/null; then
+              git show HEAD^:${{ steps.spec.outputs.spec }} > /tmp/openapi-base.yaml
+              base_file=/tmp/openapi-base.yaml
+            fi
+          fi
+
+          if [ -n "$base_file" ]; then
+            java -jar ~/.cache/openapi-diff/openapi-diff-cli.jar --fail-on-incompatible "$base_file" "${{ steps.spec.outputs.spec }}" > artifacts/openapi-diff.txt
+          else
+            echo "No baseline specification available; skipping diff." | tee artifacts/openapi-diff.txt
+          fi
+
+      - name: Detect Dockerfile
+        id: dockerfile
+        run: |
+          set -eo pipefail
+          file=$(git ls-files 'Dockerfile' 'docker/Dockerfile' | head -n 1 || true)
+          if [ -n "$file" ]; then
+            echo "file=$file" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Set up Docker Buildx
+        if: steps.dockerfile.outputs.file != ''
+        uses: docker/setup-buildx-action@v3
+
+      - name: Cache Docker layers
+        if: steps.dockerfile.outputs.file != ''
+        uses: actions/cache@v4
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+
+      - name: Log in to GitHub Container Registry
+        if: steps.dockerfile.outputs.file != '' && github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build (and optionally push) container image
+        if: steps.dockerfile.outputs.file != ''
+        id: build-image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ${{ steps.dockerfile.outputs.file }}
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: |
+            ${{ env.LOCAL_IMAGE }}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
+
+      - name: Finalize Docker layer cache
+        if: steps.dockerfile.outputs.file != ''
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+
+      - name: Execute smoke tests
+        if: steps.dockerfile.outputs.file != '' && hashFiles('.github/scripts/smoke-test.sh') != ''
+        run: bash .github/scripts/smoke-test.sh "${{ env.LOCAL_IMAGE }}"
+
+      - name: Generate SBOM with Syft
+        if: steps.dockerfile.outputs.file != ''
+        uses: anchore/sbom-action@v0
+        with:
+          image: ${{ env.LOCAL_IMAGE }}
+          format: spdx-json
+          output-file: sbom.spdx.json
+
+      - name: Install Cosign
+        if: steps.dockerfile.outputs.file != '' && github.event_name != 'pull_request'
+        uses: sigstore/cosign-installer@v3
+
+      - name: Sign image with Cosign
+        if: steps.dockerfile.outputs.file != '' && github.event_name == 'push' && github.ref == 'refs/heads/main' && steps.build-image.outputs.digest != ''
+        env:
+          COSIGN_EXPERIMENTAL: '1'
+          COSIGN_YES: 'true'
+        run: |
+          cosign sign \
+            --keyless \
+            --yes \
+            --output-signature cosign.sig \
+            --output-certificate cosign.cert \
+            ${{ env.REGISTRY_IMAGE }}@${{ steps.build-image.outputs.digest }}
+
+      - name: Prepare verification artifacts
+        id: verification
+        run: |
+          set -eo pipefail
+          mkdir -p verification
+          has_any=false
+
+          if [ -n "${{ steps.spec.outputs.spec }}" ] && [ -f "${{ steps.spec.outputs.spec }}" ]; then
+            spec_basename=$(basename "${{ steps.spec.outputs.spec }}")
+            cp "${{ steps.spec.outputs.spec }}" "verification/${spec_basename}"
+            echo "spec_path=verification/${spec_basename}" >> "$GITHUB_OUTPUT"
+            echo "spec_name=${spec_basename}" >> "$GITHUB_OUTPUT"
+            has_any=true
+          fi
+
+          if [ -f artifacts/openapi-diff.txt ]; then
+            cp artifacts/openapi-diff.txt verification/openapi-diff.txt
+            echo "diff_path=verification/openapi-diff.txt" >> "$GITHUB_OUTPUT"
+            echo "diff_name=openapi-diff.txt" >> "$GITHUB_OUTPUT"
+            has_any=true
+          fi
+
+          if [ -f sbom.spdx.json ]; then
+            cp sbom.spdx.json verification/sbom.spdx.json
+            echo "sbom_path=verification/sbom.spdx.json" >> "$GITHUB_OUTPUT"
+            echo "sbom_name=sbom.spdx.json" >> "$GITHUB_OUTPUT"
+            has_any=true
+          fi
+
+          if [ -f cosign.sig ]; then
+            cp cosign.sig verification/image.sig
+            echo "signature_path=verification/image.sig" >> "$GITHUB_OUTPUT"
+            echo "signature_name=image.sig" >> "$GITHUB_OUTPUT"
+            has_any=true
+          fi
+
+          if [ -f cosign.cert ]; then
+            cp cosign.cert verification/image.pem
+            echo "certificate_path=verification/image.pem" >> "$GITHUB_OUTPUT"
+            echo "certificate_name=image.pem" >> "$GITHUB_OUTPUT"
+            has_any=true
+          fi
+
+          echo "has_artifacts=$has_any" >> "$GITHUB_OUTPUT"
+
+      - name: Upload verification artifacts
+        if: steps.verification.outputs.has_artifacts == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: verification-artifacts
+          path: verification
+
+      - name: Create GitHub release
+        id: create_release
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && steps.verification.outputs.has_artifacts == 'true'
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: release-${{ github.run_number }}
+          release_name: Release ${{ github.run_number }}
+          body: |
+            Automated release for commit ${{ github.sha }}.
+            - Container image digest: ${{ steps.build-image.outputs.digest || 'not-built' }}
+          draft: false
+          prerelease: false
+
+      - name: Upload OpenAPI spec to release
+        if: steps.create_release.outputs.upload_url != '' && steps.verification.outputs.spec_path != ''
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ${{ steps.verification.outputs.spec_path }}
+          asset_name: ${{ steps.verification.outputs.spec_name }}
+          asset_content_type: application/yaml
+
+      - name: Upload OpenAPI diff to release
+        if: steps.create_release.outputs.upload_url != '' && steps.verification.outputs.diff_path != ''
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ${{ steps.verification.outputs.diff_path }}
+          asset_name: ${{ steps.verification.outputs.diff_name }}
+          asset_content_type: text/plain
+
+      - name: Upload SBOM to release
+        if: steps.create_release.outputs.upload_url != '' && steps.verification.outputs.sbom_path != ''
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ${{ steps.verification.outputs.sbom_path }}
+          asset_name: ${{ steps.verification.outputs.sbom_name }}
+          asset_content_type: application/json
+
+      - name: Upload Cosign signature to release
+        if: steps.create_release.outputs.upload_url != '' && steps.verification.outputs.signature_path != ''
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ${{ steps.verification.outputs.signature_path }}
+          asset_name: ${{ steps.verification.outputs.signature_name }}
+          asset_content_type: application/vnd.dev.cosign.sig
+
+      - name: Upload Cosign certificate to release
+        if: steps.create_release.outputs.upload_url != '' && steps.verification.outputs.certificate_path != ''
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ${{ steps.verification.outputs.certificate_path }}
+          asset_name: ${{ steps.verification.outputs.certificate_name }}
+          asset_content_type: application/pem-certificate-chain

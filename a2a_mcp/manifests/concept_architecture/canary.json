@@ -1,0 +1,13 @@
+{
+  "proposal_id": "proposal.alpha",
+  "canary_size": 0.08,
+  "delta_phi_e_samples": {
+    "1s": 0.0,
+    "10s": 0.0,
+    "60s": 0.0
+  },
+  "delta_phi_c_samples": [0.0020, 0.0028, 0.0024],
+  "delta_phi_m_samples": [0.0012, 0.0018, 0.0016],
+  "reversibility": 0.81,
+  "notes": "GuardLaw monitors report zero ΔΦe across sampling windows."
+}

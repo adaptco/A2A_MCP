@@ -1,0 +1,56 @@
+{
+  "capsule_id": "capsule.rehearsal.scrollstream.v1",
+  "type": "ScrollstreamCapsule",
+  "version": "1.0.0",
+  "purpose": "Stage the rehearsal loop lifecycle for scrollstream contributors.",
+  "cycle": [
+    {
+      "stage": "audit.summary",
+      "agent": { "name": "Celine", "role": "Architect" },
+      "handoff": "Architect threads capsule brief into braid"
+    },
+    {
+      "stage": "audit.proof",
+      "agent": { "name": "Luma", "role": "Sentinel" },
+      "handoff": "Sentinel validates proof lattice"
+    },
+    {
+      "stage": "audit.execution",
+      "agent": { "name": "Dot", "role": "Guardian" },
+      "handoff": "Guardian confirms execution trace"
+    }
+  ],
+  "ledger": {
+    "channel": "scrollstream_ledger",
+    "emission_policy": "deterministic",
+    "emotive_payloads": ["irony shimmer", "spark trace", "glyph fidelity"],
+    "training_mode": true
+  },
+  "visual_feedback": {
+    "hud_shimmer": "engaged on emission",
+    "replay_glyph": "pulse on each stage",
+    "notes": "Sample scaffold for rehearsal loop walkthrough"
+  },
+  "attestation": {
+    "status": "STAGED",
+    "sealed_by": "Boo Council",
+    "sealed_at": null
+  "id": "capsule.rehearsal.scrollstream.v1",
+  "version": "1.0.0",
+  "name": "Scrollstream Rehearsal Capsule",
+  "description": "Emits the Celine → Luma → Dot rehearsal loop with deterministic training overlays.",
+  "cycle": [
+    "audit.summary",
+    "audit.proof",
+    "audit.execution"
+  ],
+  "agents": {
+    "audit.summary": "Celine/Architect",
+    "audit.proof": "Luma/Sentinel",
+    "audit.execution": "Dot/Guardian"
+  },
+  "signals": {
+    "hud_shimmer": "emission-confirmed",
+    "replay_glyph": "pulse"
+  }
+}

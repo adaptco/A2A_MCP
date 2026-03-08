@@ -1,0 +1,36 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          # Remove hardcoded version to sync with package.json
+          run_install: false 
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        # Use --frozen-lockfile to ensure CI matches your local pnpm-lock.yaml
+        run: pnpm install --frozen-lockfile
+
+      - name: Build and Test
+        # Combine tasks into a single job flow for end-to-end validation
+        run: |
+          pnpm run build
+          pnpm run test

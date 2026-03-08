@@ -1,0 +1,169 @@
+name: Worldline Hardened Pipeline
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, ready_for_review]
+  push:
+    branches: [worldline]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: worldline-hardened-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  contract-gate:
+    name: Contract gate
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.head_ref == 'worldline')
+    permissions:
+      contents: read
+    outputs:
+      source_ok: ${{ steps.branch_contract.outputs.source_ok }}
+      target_ok: ${{ steps.branch_contract.outputs.target_ok }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate branch contract
+        id: branch_contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          SOURCE_REF="${GITHUB_HEAD_REF:-${GITHUB_REF_NAME}}"
+          TARGET_REF="${GITHUB_BASE_REF:-main}"
+
+          source_ok=false
+          target_ok=false
+          [[ "$SOURCE_REF" == worldline* ]] && source_ok=true
+          [[ "$TARGET_REF" == "main" ]] && target_ok=true
+
+          echo "source_ok=$source_ok" >> "$GITHUB_OUTPUT"
+          echo "target_ok=$target_ok" >> "$GITHUB_OUTPUT"
+
+          if [[ "$source_ok" != "true" || "$target_ok" != "true" ]]; then
+            echo "Expected source=worldline and target=main, got source=$SOURCE_REF target=$TARGET_REF"
+            exit 1
+          fi
+
+      - name: Validate CI/CD schema presence
+        run: test -f specs/worldline_hardened_cicd.yaml
+
+  quality-gate:
+    name: Quality gate
+    runs-on: ubuntu-latest
+    needs: contract-gate
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          pip install pytest
+
+      - name: Lint workflows for merge markers
+        run: |
+          if rg -n "^(<<<<<<<|=======|>>>>>>>)" .github/workflows; then
+            echo "Found unresolved merge markers"
+            exit 1
+          fi
+
+      - name: Run tests
+        env:
+          PYTHONPATH: .
+        run: |
+          if [ -d tests ]; then pytest -q tests; else echo "No tests directory found"; fi
+
+  supply-chain-gate:
+    name: Supply-chain gate
+    runs-on: ubuntu-latest
+    needs: quality-gate
+    permissions:
+      contents: read
+      security-events: write
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Generate SBOM placeholder
+        run: |
+          mkdir -p build/worldline
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          Path("build/worldline").mkdir(parents=True, exist_ok=True)
+          data = {
+              "format": "cyclonedx",
+              "note": "Replace with syft/cyclonedx tool output in production"
+          }
+          Path("build/worldline/sbom.json").write_text(json.dumps(data, indent=2), encoding="utf-8")
+          PY
+
+      - name: Generate provenance placeholder
+        run: |
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          data = {
+              "repo": os.environ.get("GITHUB_REPOSITORY"),
+              "sha": os.environ.get("GITHUB_SHA"),
+              "workflow": os.environ.get("GITHUB_WORKFLOW"),
+              "run_id": os.environ.get("GITHUB_RUN_ID")
+          }
+          Path("build/worldline/provenance.json").write_text(json.dumps(data, indent=2), encoding="utf-8")
+          PY
+
+      - name: Publish worldline artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: worldline-hardened-artifacts
+          path: build/worldline
+
+  release-readiness:
+    name: Release readiness
+    runs-on: ubuntu-latest
+    needs: supply-chain-gate
+    if: github.event_name == 'pull_request'
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Assemble release summary
+        run: |
+          mkdir -p build/worldline
+          cat > build/worldline/check-summary.json <<'JSON'
+          {
+            "source_branch": "worldline",
+            "target_branch": "main",
+            "strategy": "blue_green",
+            "status": "ready_for_review"
+          }
+          JSON
+          echo "worldline->main hardened checks completed" > build/worldline/deploy-smoke.txt
+
+      - name: Upload release summary
+        uses: actions/upload-artifact@v4
+        with:
+          name: worldline-release-summary
+          path: build/worldline

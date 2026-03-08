@@ -1,0 +1,37 @@
+# C++ Build Artifacts
+bin/
+build/
+*.o
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Node.js
+node_modules/
+npm-debug.log
+
+# React Build
+server/public/
+server/react-client/dist/
+server/react-client/node_modules/
+
+# OS Specific
+.DS_Store
+Thumbs.db
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+*.egg-info/
+dist/
+.eggs/
+
+# Pytest / test artifacts
+.pytest_cache/
+*.db
+test_*.db
+test_output*.txt
+test_result*.txt

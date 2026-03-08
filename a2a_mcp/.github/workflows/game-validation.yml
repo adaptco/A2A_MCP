@@ -1,0 +1,357 @@
+# ─────────────────────────────────────────────────────────────────────
+# Ghost Void Engine — Automated Game Validation Pipeline
+# Triggered after agent coding sessions to validate game integrity.
+# ─────────────────────────────────────────────────────────────────────
+name: "🎮 Game Validation Agent"
+
+on:
+  push:
+    branches: [main, master, develop]
+    paths:
+      - "src/**"
+      - "include/**"
+      - "tests/**"
+      - "server/**"
+      - "Makefile"
+      - "CMakeLists.txt"
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+    inputs:
+      validation_level:
+        description: "Validation depth"
+        required: true
+        default: "standard"
+        type: choice
+        options:
+          - quick      # Build + unit tests only
+          - standard   # Build + unit + integration + lint
+          - full       # All of the above + performance + browser
+
+permissions:
+  contents: read
+  checks: write
+  pull-requests: write
+
+env:
+  BUILD_DIR: build
+  BIN_DIR: bin
+  CXX: g++
+  CXXFLAGS: "-I./include -std=c++17 -Wall -Wextra -Werror"
+  NODE_VERSION: "20"
+
+jobs:
+  # ═══════════════════════════════════════════════════════════════════
+  #  Stage 1: Engine Build Validation
+  # ═══════════════════════════════════════════════════════════════════
+  engine-build:
+    name: "🔧 Engine Build"
+    runs-on: ubuntu-latest
+    outputs:
+      build_status: ${{ steps.build.outcome }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Cache build artifacts
+        uses: actions/cache@v4
+        with:
+          path: |
+            build/
+          key: engine-build-${{ hashFiles('src/**', 'include/**', 'Makefile') }}
+          restore-keys: |
+            engine-build-
+
+      - name: Build Ghost Void Engine
+        id: build
+        run: |
+          echo "::group::Compiling engine..."
+          if [ -f Makefile ]; then
+            make all 2>&1 | tee build.log
+          else
+            echo "No Makefile found; skipping engine build." | tee build.log
+          fi
+          echo "::endgroup::"
+          echo "binary_size=$(stat -c%s bin/ghost-void_engine 2>/dev/null || echo 0)" >> $GITHUB_OUTPUT
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: engine-binaries
+          path: |
+            bin/
+            build.log
+          retention-days: 7
+
+      - name: Build sanity check
+        run: |
+          echo "📊 Build Summary"
+          echo "───────────────────────────"
+          if [ -f bin/ghost-void_engine ]; then
+            ls -lh bin/
+            echo "Binary size: $(stat -c%s bin/ghost-void_engine) bytes"
+          else
+            echo "No engine binary found; skipping size report."
+          fi
+
+  # ═══════════════════════════════════════════════════════════════════
+  #  Stage 2: C++ Unit Tests
+  # ═══════════════════════════════════════════════════════════════════
+  engine-tests:
+    name: "🧪 Engine Tests"
+    runs-on: ubuntu-latest
+    needs: engine-build
+    strategy:
+      fail-fast: false
+      matrix:
+        test:
+          - name: safety
+            target: test
+            description: "SafetyLayer boundary/NaN validation"
+          - name: engine
+            target: test_engine
+            description: "Orchestrator + WorldModel verification"
+          - name: jurassic
+            target: test_jurassic
+            description: "Jurassic Pixels HUB + Synthesis pipeline"
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build & run ${{ matrix.test.name }} tests
+        id: run_tests
+        run: |
+          echo "::group::🧪 ${{ matrix.test.description }}"
+          if [ -f Makefile ]; then
+            make ${{ matrix.test.target }} 2>&1 | tee test-${{ matrix.test.name }}.log
+          else
+            echo "No Makefile found; skipping ${{ matrix.test.name }} test target." | tee test-${{ matrix.test.name }}.log
+          fi
+          echo "::endgroup::"
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ matrix.test.name }}
+          path: test-${{ matrix.test.name }}.log
+          retention-days: 7
+
+  # ═══════════════════════════════════════════════════════════════════
+  #  Stage 3: Frontend Build Validation
+  # ═══════════════════════════════════════════════════════════════════
+  frontend-build:
+    name: "🌐 Frontend Build"
+    runs-on: ubuntu-latest
+    if: >-
+      github.event.inputs.validation_level != 'quick'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check frontend path
+        id: frontend_path
+        run: |
+          if [ -d server/react-client ]; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+            echo "server/react-client not present; skipping frontend build"
+          fi
+
+      - name: Setup Node.js
+        if: steps.frontend_path.outputs.exists == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+          cache-dependency-path: server/react-client/package-lock.json
+
+      - name: Configure npm registry
+        if: steps.frontend_path.outputs.exists == 'true'
+        working-directory: server/react-client
+        run: |
+          npm config set registry https://registry.npmjs.org/
+
+      - name: Install frontend dependencies
+        if: steps.frontend_path.outputs.exists == 'true'
+        working-directory: server/react-client
+        run: npm ci --no-audit --fund=false
+
+      - name: Build frontend
+        if: steps.frontend_path.outputs.exists == 'true'
+        working-directory: server/react-client
+        run: npm run build 2>&1 | tee ../../frontend-build.log
+
+      - name: Upload frontend artifacts
+        if: steps.frontend_path.outputs.exists == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-build
+          path: |
+            server/react-client/build/
+            frontend-build.log
+          retention-days: 7
+
+  # ═══════════════════════════════════════════════════════════════════
+  #  Stage 4: Integration Tests (Server ↔ Engine)
+  # ═══════════════════════════════════════════════════════════════════
+  integration-tests:
+    name: "🔗 Integration Tests"
+    runs-on: ubuntu-latest
+    needs: [engine-build, frontend-build]
+    if: >-
+      github.event.inputs.validation_level != 'quick'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check server path
+        id: server_path
+        run: |
+          if [ -d server ]; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+            echo "server directory not present; skipping integration tests"
+          fi
+
+      - name: Setup Node.js
+        if: steps.server_path.outputs.exists == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Download engine binaries
+        if: steps.server_path.outputs.exists == 'true'
+        uses: actions/download-artifact@v4
+        with:
+          name: engine-binaries
+          path: bin/
+
+      - name: Make engine executable
+        if: steps.server_path.outputs.exists == 'true'
+        run: chmod +x bin/ghost-void_engine
+
+      - name: Configure npm registry
+        if: steps.server_path.outputs.exists == 'true'
+        working-directory: server
+        run: npm config set registry https://registry.npmjs.org/
+
+      - name: Install server dependencies
+        if: steps.server_path.outputs.exists == 'true'
+        working-directory: server
+        run: npm ci --no-audit --fund=false
+
+      - name: Run integration validation
+        if: steps.server_path.outputs.exists == 'true'
+        run: node .github/scripts/validate-game.mjs
+        timeout-minutes: 5
+        env:
+          ENGINE_BIN: ./bin/ghost-void_engine
+          SERVER_PORT: 8080
+          VALIDATION_TIMEOUT: 30000
+
+  # ═══════════════════════════════════════════════════════════════════
+  #  Stage 5: Code Quality & Linting
+  # ═══════════════════════════════════════════════════════════════════
+  code-quality:
+    name: "🔍 Code Quality"
+    runs-on: ubuntu-latest
+    if: >-
+      github.event.inputs.validation_level != 'quick'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: C++ Static Analysis (cppcheck)
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq cppcheck
+          cppcheck --enable=warning,performance,portability \
+                   --suppress=missingInclude \
+                   --error-exitcode=1 \
+                   --inline-suppr \
+                   -I include/ \
+                   src/ 2>&1 | tee cppcheck.log
+
+      - name: Check for TODO/FIXME/HACK markers
+        run: |
+          echo "📝 Code markers found:"
+          grep -rn "TODO\|FIXME\|HACK\|XXX" src/ include/ --include="*.cpp" --include="*.hpp" || echo "None found — clean!"
+
+      - name: Upload quality report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: quality-report
+          path: cppcheck.log
+          retention-days: 7
+
+  # ═══════════════════════════════════════════════════════════════════
+  #  Stage 6: Determinism Verification
+  # ═══════════════════════════════════════════════════════════════════
+  determinism-check:
+    name: "🔁 Determinism Verification"
+    runs-on: ubuntu-latest
+    needs: engine-build
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build determinism test
+        run: |
+          if [ -f Makefile ]; then
+            make all
+            node .github/scripts/determinism-check.mjs
+          else
+            echo "No Makefile found; skipping determinism check."
+          fi
+        env:
+          ENGINE_BIN: ./bin/ghost-void_engine
+          ITERATIONS: 5
+
+  # ═══════════════════════════════════════════════════════════════════
+  #  Stage 7: Validation Report
+  # ═══════════════════════════════════════════════════════════════════
+  report:
+    name: "📊 Validation Report"
+    runs-on: ubuntu-latest
+    needs: [engine-tests, integration-tests, code-quality, determinism-check]
+    if: always()
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts/
+
+      - name: Generate validation report
+        run: node .github/scripts/generate-report.mjs
+        env:
+          ENGINE_TESTS: ${{ needs.engine-tests.result }}
+          INTEGRATION_TESTS: ${{ needs.integration-tests.result }}
+          CODE_QUALITY: ${{ needs.code-quality.result }}
+          DETERMINISM: ${{ needs.determinism-check.result }}
+
+      - name: Upload final report
+        uses: actions/upload-artifact@v4
+        with:
+          name: validation-report
+          path: validation-report.md
+          retention-days: 30
+
+      - name: Comment on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const report = fs.readFileSync('validation-report.md', 'utf8');
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: report
+            });

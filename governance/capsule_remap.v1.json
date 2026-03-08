@@ -1,0 +1,36 @@
+{
+  "manifest_id": "capsule_remap.v1",
+  "version": 1,
+  "event": {
+    "id": "remap-2024-07-15",
+    "timestamp": "2024-07-15T11:30:00Z",
+    "description": "Pilot capsule remap aligning avatars to updated vessel capsules",
+    "mappings": [
+      {
+        "avatar": "Celine",
+        "previous_capsule": "Solace",
+        "new_capsule": "Luma"
+      },
+      {
+        "avatar": "Spryte",
+        "previous_capsule": "Nova",
+        "new_capsule": "Dot"
+      },
+      {
+        "avatar": "Gloh",
+        "previous_capsule": "Quill",
+        "new_capsule": "Echo"
+      }
+    ]
+  },
+  "signatures": {
+    "maker": {
+      "kid": "Sol.F1",
+      "signature": "PENDING_MAKER_SIGNATURE"
+    },
+    "checker": {
+      "kid": "BR9ID",
+      "signature": "PENDING_CHECKER_SIGNATURE"
+    }
+  }
+}

@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DB5 MCC: Sentinel-Class Chronal-Stabilizer Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Brilliant Blues (Adapted for dark, technical environment) -->
+    <!-- Application Structure Plan: The infographic uses a dashboard approach with strong separation. It focuses on: 1. Status Overview (KPIs), 2. Redundancy Core (Triple-Lock Graph), 3. Diplomacy Mandate (Mission Brief), and 4. Chronal Stability Metrics. This structure ensures operators immediately grasp the platform's readiness, its critical redundancy safeguards, and its external purpose, prioritizing the most mission-critical information upfront. -->
+    <!-- Visualization & Content Choices: 
+        - Report Info: Zero-Drift/Triple Redundancy -> Goal: Compare/Inform -> Viz: Stacked Bar Chart (Triple Lock) -> Justification: Clearly shows the percentage contribution of the three redundant systems to total stability. Library: Chart.js.
+        - Report Info: Chronal Stability Metrics -> Goal: Inform/Change -> Viz: Line Chart -> Justification: A line chart is the ideal way to demonstrate the historical performance and stabilization trends of chronal metrics. Library: Chart.js.
+        - Report Info: System Status/Mission Mandate -> Goal: Inform/Organize -> Viz: Large, colored status cards and stylized text blocks -> Justification: Uses strong visual hierarchy and clear text to convey the platform's upgraded status and diplomatic role. Method: HTML/CSS.
+        - Report Info: New Capabilities -> Goal: Inform -> Viz: List with stylized checkmarks -> Justification: A list is the clearest way to present enhanced, binary capabilities. Method: HTML/CSS.
+        CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        :root {
+            --slate-900: #0F172A;
+            --slate-800: #1E293B;
+            --slate-700: #334155;
+            --slate-600: #475569;
+            --slate-200: #E2E8F0;
+            --cyan-400: #38bdf8;
+            --cyan-500: #0EA5E9;
+            --emerald-500: #10B981;
+            --emerald-300: #6EE7B7;
+            --emerald-900: #064E3B;
+            --violet-400: #a78bfa;
+            --gold-400: #FFD700;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: radial-gradient(circle at 20% 20%, rgba(56, 189, 248, 0.15), transparent 60%),
+                        radial-gradient(circle at 80% 0%, rgba(167, 139, 250, 0.12), transparent 55%),
+                        var(--slate-900);
+            color: var(--slate-200);
+        }
+        .font-mono {
+            font-family: 'Roboto Mono', monospace;
+        }
+        .card {
+            background: linear-gradient(145deg, rgba(30, 41, 59, 0.96), rgba(15, 23, 42, 0.8));
+            border: 1px solid rgba(148, 163, 184, 0.08);
+            border-radius: 0.75rem;
+            box-shadow: 0 18px 45px -25px rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(6px);
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 640px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 350px;
+        }
+        .kpi-value {
+            font-size: 2.5rem; 
+            font-weight: 700;
+        }
+        .diplomacy-chip {
+            background: linear-gradient(135deg, rgba(6, 78, 59, 0.9), rgba(14, 165, 233, 0.15));
+            color: var(--emerald-300);
+            border: 1px solid rgba(16, 185, 129, 0.4);
+        }
+        .triple-lock-bg {
+            background-color: #334155;
+        }
+
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.375rem 0.75rem;
+            border-radius: 9999px;
+            background: rgba(15, 118, 110, 0.18);
+            color: var(--emerald-500);
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+
+        .mission-grid {
+            display: grid;
+            gap: 1rem;
+        }
+
+        @media (min-width: 1024px) {
+            .mission-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        .timeline {
+            position: relative;
+            padding-left: 1.5rem;
+        }
+
+        .timeline::before {
+            content: "";
+            position: absolute;
+            left: 0.45rem;
+            top: 0.25rem;
+            bottom: 0.25rem;
+            width: 2px;
+            background: linear-gradient(to bottom, rgba(56, 189, 248, 0.35), rgba(14, 165, 233, 0));
+        }
+
+        .timeline-step {
+            position: relative;
+            padding-bottom: 1rem;
+        }
+
+        .timeline-step:last-child {
+            padding-bottom: 0;
+        }
+
+        .timeline-step::before {
+            content: "";
+            position: absolute;
+            left: -0.9rem;
+            top: 0.35rem;
+            width: 10px;
+            height: 10px;
+            border-radius: 9999px;
+            background: var(--cyan-500);
+            box-shadow: 0 0 0 6px rgba(14, 165, 233, 0.15);
+        }
+
+        .metric-bar {
+            position: relative;
+            width: 100%;
+            height: 0.75rem;
+            border-radius: 9999px;
+            background: rgba(148, 163, 184, 0.15);
+            overflow: hidden;
+        }
+
+        .metric-bar span {
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            background: linear-gradient(90deg, rgba(14, 165, 233, 0.2), rgba(56, 189, 248, 0.85));
+        }
+
+        .metric-bar[data-width="92"] span { width: 92%; }
+        .metric-bar[data-width="87"] span { width: 87%; }
+        .metric-bar[data-width="78"] span { width: 78%; }
+
+        .metric-footnote {
+            font-size: 0.7rem;
+            letter-spacing: 0.04em;
+            color: rgba(148, 163, 184, 0.7);
+        }
+    </style>
+</head>
+<body>
+    <main class="max-w-7xl mx-auto p-4 sm:p-8">
+
+        <header class="text-center mb-12">
+            <h1 class="text-4xl md:text-5xl font-bold text-[#0EA5E9] mb-2">DB5 MCC: Sentinel-Class Platform</h1>
+            <p class="text-lg text-slate-400 font-mono">Chronal Stabilization System — External Diplomacy Mandate</p>
+        </header>
+
+        <section id="status-overview" class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+            <div class="card p-6 text-center">
+                <span class="text-sm font-semibold text-slate-400 block mb-2">OPERATIONAL CLASSIFICATION</span>
+                <p class="kpi-value text-green-400">SENTINEL-CLASS</p>
+            </div>
+            <div class="card p-6 text-center">
+                <span class="text-sm font-semibold text-slate-400 block mb-2">CHRONO-DRIFT ACCURACY</span>
+                <p class="kpi-value text-cyan-400">± 0.0000%</p>
+                <p class="text-xs font-mono text-gray-500">ZERO-DRIFT PROTOCOL ACTIVE</p>
+            </div>
+            <div class="card p-6 text-center diplomacy-chip">
+                <span class="text-sm font-semibold block mb-2">MISSION MANDATE</span>
+                <p class="kpi-value text-emerald-300">EXTERNAL DIPLOMACY</p>
+            </div>
+        </section>
+
+        <section id="redundancy-core" class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-12">
+            <!-- Triple Lock Chart -->
+            <div class="lg:col-span-2 card p-6">
+                <h2 class="text-2xl font-bold text-slate-200 mb-4">Triple-Redundancy Core (Zero-Drift)</h2>
+                <p class="text-sm text-slate-400 mb-4">Stability is maintained by three distinct, redundant systems, preventing systemic failure and guaranteeing zero chronological drift.</p>
+                <div class="chart-container">
+                    <canvas id="redundancy-chart"></canvas>
+                </div>
+            </div>
+            
+            <!-- New Capabilities List -->
+            <div class="card p-6">
+                <h2 class="text-2xl font-bold text-slate-200 mb-4">Platform Genesis Upgrades</h2>
+                <ul class="space-y-3">
+                    <li class="flex items-start">
+                        <span class="text-green-500 mr-2 text-xl" aria-hidden="true">✔</span>
+                        <div class="text-sm">
+                            <strong class="text-slate-200">Quad-Lock Sealing:</strong> Enforced by Protocol 8B694L5.
+                        </div>
+                    </li>
+                    <li class="flex items-start">
+                        <span class="text-green-500 mr-2 text-xl" aria-hidden="true">✔</span>
+                        <div class="text-sm">
+                            <strong class="text-slate-200">Sovereign Data Split:</strong> LOCK/KEY authority transfer enabled.
+                        </div>
+                    </li>
+                    <li class="flex items-start">
+                        <span class="text-green-500 mr-2 text-xl" aria-hidden="true">✔</span>
+                        <div class="text-sm">
+                            <strong class="text-slate-200">Mesh Federation Ready:</strong> Scalable relay via Redis/Socket.IO.
+                        </div>
+                    </li>
+                    <li class="flex items-start">
+                        <span class="text-green-500 mr-2 text-xl" aria-hidden="true">✔</span>
+                        <div class="text-sm">
+                            <strong class="text-slate-200">Zero-Trust Credentialing:</strong> JWKS-backed SSOT verification.
+                        </div>
+                    </li>
+                    <li class="flex items-start">
+                        <span class="text-green-500 mr-2 text-xl" aria-hidden="true">✔</span>
+                        <div class="text-sm">
+                            <strong class="text-slate-200">CRDT Terrain Sync:</strong> Yjs-powered deterministic state.
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </section>
+
+        <section id="chronal-metrics" class="mb-12">
+            <div class="card p-6">
+                <h2 class="text-2xl font-bold text-slate-200 mb-4">Chronal Stabilization Trace</h2>
+                <p class="text-sm text-slate-400 mb-4">Historical analysis of chronological drift shows full convergence achieved 12 cycles ago, validating Sentinel-Class readiness.</p>
+                <div class="chart-container">
+                    <canvas id="chronal-chart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <section id="mission-brief" class="mission-grid mb-12">
+            <div class="card p-6">
+                <div class="status-pill mb-4" aria-live="polite">Envoy Clearance: Tier VII</div>
+                <h2 class="text-2xl font-bold text-slate-200 mb-4">External Diplomacy Mandate</h2>
+                <p class="text-sm text-slate-400 mb-4">Sentinel-class authorization empowers the DB5 MCC to negotiate chrono-relief corridors while preserving sovereign timelines. Focus remains on conflict de-escalation, data sanctity, and multi-vector stabilization cues.</p>
+                <dl class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <dt class="text-xs text-slate-400 uppercase tracking-widest mb-1">Primary Theatre</dt>
+                        <dd class="text-base text-slate-100">Outer Continuum Verge</dd>
+                    </div>
+                    <div>
+                        <dt class="text-xs text-slate-400 uppercase tracking-widest mb-1">Envoy Status</dt>
+                        <dd class="text-base text-slate-100">Active — Dual Delegate</dd>
+                    </div>
+                    <div>
+                        <dt class="text-xs text-slate-400 uppercase tracking-widest mb-1">Last Accord Sync</dt>
+                        <dd class="text-base text-slate-100">04 cycles prior</dd>
+                    </div>
+                    <div>
+                        <dt class="text-xs text-slate-400 uppercase tracking-widest mb-1">Fallback Channel</dt>
+                        <dd class="text-base text-slate-100">Quantum Treaty Layer</dd>
+                    </div>
+                </dl>
+            </div>
+            <div class="card p-6">
+                <h2 class="text-2xl font-bold text-slate-200 mb-4">Safeguard & Response Cadence</h2>
+                <div class="timeline mb-6">
+                    <div class="timeline-step">
+                        <p class="text-sm font-semibold text-slate-100">00:00 – Chronal Drift Ping</p>
+                        <p class="text-xs text-slate-400">Sentinel triage routines validate zero-drift tolerance within 1.5 seconds.</p>
+                    </div>
+                    <div class="timeline-step">
+                        <p class="text-sm font-semibold text-slate-100">00:12 – Diplomatic Relay Sync</p>
+                        <p class="text-xs text-slate-400">Envoy mesh receives synchronized time-lock tokens for negotiation corridor.</p>
+                    </div>
+                    <div class="timeline-step">
+                        <p class="text-sm font-semibold text-slate-100">00:27 – Containment Seal</p>
+                        <p class="text-xs text-slate-400">Quad-lock sealing enforces transport parity and prevents external bleed.</p>
+                    </div>
+                </div>
+                <ul class="space-y-4">
+                    <li>
+                        <div class="flex items-center justify-between text-sm font-semibold text-slate-100 mb-1">
+                            <span>Intervention Capacity</span>
+                            <span>92%</span>
+                        </div>
+                        <div class="metric-bar" data-width="92" role="presentation"><span aria-hidden="true"></span></div>
+                        <p class="metric-footnote mt-1">Updated with cross-federation CRDT consensus.</p>
+                    </li>
+                    <li>
+                        <div class="flex items-center justify-between text-sm font-semibold text-slate-100 mb-1">
+                            <span>Signal Integrity</span>
+                            <span>87%</span>
+                        </div>
+                        <div class="metric-bar" data-width="87" role="presentation"><span aria-hidden="true"></span></div>
+                        <p class="metric-footnote mt-1">Sovereign data split ensures channel hardening.</p>
+                    </li>
+                    <li>
+                        <div class="flex items-center justify-between text-sm font-semibold text-slate-100 mb-1">
+                            <span>Envoy Synchrony</span>
+                            <span>78%</span>
+                        </div>
+                        <div class="metric-bar" data-width="78" role="presentation"><span aria-hidden="true"></span></div>
+                        <p class="metric-footnote mt-1">Dynamic mesh handshakes forecasted to reach 85% within 2 cycles.</p>
+                    </li>
+                </ul>
+            </div>
+        </section>
+        
+        <footer class="text-center text-xs text-slate-500 pt-6 border-t border-slate-700">
+            Protocol: DB5 MCC Genesis Script | Constraint: MAX_EMOTIONAL_PAYLOAD
+        </footer>
+
+    </main>
+    <script>
+        const tripleLockData = [
+            { system: 'Primary Chron-Engine (PCE)', stability: 45, color: '#38bdf8' }, // Sky 400
+            { system: 'Quantum Backup Array (QBA)', stability: 35, color: '#22c55e' }, // Emerald 500
+            { system: 'Auditory Temporal Sync (ATS)', stability: 20, color: '#a78bfa' }  // Violet 400
+        ];
+
+        const chronalHistoryData = {
+            labels: ['-30 Cycles', '-20 Cycles', '-10 Cycles', 'Genesis', 'Current'],
+            drift: [0.005, 0.002, 0.0005, 0.0001, 0.0000],
+            variance: [0.001, 0.0008, 0.0003, 0.0001, 0.0000]
+        };
+
+        function wrapLabel(label, max = 16) {
+            if (Array.isArray(label)) return label;
+            const out = [];
+            let line = "";
+            for (const w of String(label).split(" ")) {
+                if ((line + " " + w).trim().length > max) {
+                    out.push(line);
+                    line = w;
+                } else {
+                    line = (line ? line + " " : "") + w;
+                }
+            }
+            if (line) out.push(line);
+            return out;
+        }
+
+        const createTooltipCallbacks = () => ({
+            title: function(tooltipItems) {
+                const item = tooltipItems[0];
+                let label = item.chart.data.labels[item.dataIndex];
+                if (Array.isArray(label)) {
+                    return label.join(' ');
+                }
+                return label;
+            }
+        });
+
+        // 1. Triple Redundancy Chart (Stacked Bar)
+        const redundancyCtx = document.getElementById('redundancy-chart').getContext('2d');
+        new Chart(redundancyCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Total Chronal Stability (%)'],
+                datasets: tripleLockData.map(d => ({
+                    label: d.system,
+                    data: [d.stability],
+                    backgroundColor: d.color
+                }))
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        stacked: true,
+                        max: 100,
+                        title: { display: true, text: 'Stability Contribution (%)', color: '#94A3B8' },
+                        grid: { color: '#334155' },
+                        ticks: { color: '#94A3B8' }
+                    },
+                    y: {
+                        stacked: true,
+                        grid: { display: false },
+                        ticks: { color: '#94A3B8' }
+                    }
+                },
+                plugins: {
+                    legend: { labels: { color: '#E2E8F0' } },
+                    tooltip: { callbacks: createTooltipCallbacks() }
+                }
+            }
+        });
+
+        // 2. Chronal Stabilization Trace (Line Chart)
+        const chronalCtx = document.getElementById('chronal-chart').getContext('2d');
+        new Chart(chronalCtx, {
+            type: 'line',
+            data: {
+                labels: chronalHistoryData.labels.map(l => wrapLabel(l, 10)),
+                datasets: [
+                    {
+                        label: 'Chrono-Drift (Deviation from Target)',
+                        data: chronalHistoryData.drift,
+                        borderColor: '#0EA5E9',
+                        backgroundColor: 'rgba(14, 165, 233, 0.2)',
+                        tension: 0.3,
+                        pointRadius: 5
+                    },
+                    {
+                        label: 'Temporal Variance (Noise)',
+                        data: chronalHistoryData.variance,
+                        borderColor: '#FFD700',
+                        backgroundColor: 'rgba(255, 215, 0, 0.1)',
+                        tension: 0.3,
+                        pointRadius: 5
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        title: { display: true, text: 'Time Cycles', color: '#94A3B8' },
+                        grid: { color: '#334155' },
+                        ticks: {
+                            color: '#94A3B8',
+                            callback: function(val) {
+                                return this.getLabelForValue(val);
+                            }
+                        }
+                    },
+                    y: {
+                        title: { display: true, text: 'Error (%)', color: '#94A3B8' },
+                        grid: { color: '#334155' },
+                        ticks: { color: '#94A3B8', precision: 5 }
+                    }
+                },
+                plugins: {
+                    legend: { labels: { color: '#E2E8F0' } },
+                    tooltip: { callbacks: createTooltipCallbacks() }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

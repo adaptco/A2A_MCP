@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<UnifiedCodingAgent version="1.0" name="Unified-Coding-Agent">
+  <Metadata>
+    <Owner>Platform-AI</Owner>
+    <Purpose>
+      Merge specialized coding models into a single routed coding agent with reusable
+      global variables for environment, policy, observability, and deployment.
+    </Purpose>
+  </Metadata>
+
+  <GlobalVariables>
+    <Var name="ORG" value="acme-enterprise"/>
+    <Var name="PROJECT" value="unified-coding-agent"/>
+    <Var name="PRIMARY_CLOUD" value="gcp"/>
+    <Var name="MODEL_REGISTRY" value="vertex-ai"/>
+    <Var name="ARTIFACT_REGISTRY" value="ghcr.io/${ORG}/${PROJECT}"/>
+
+    <Var name="DEFAULT_PROVIDER" value="openai"/>
+    <Var name="DEFAULT_MODEL" value="gpt-5.2-codex"/>
+    <Var name="FALLBACK_MODEL" value="gpt-4.1"/>
+
+    <Var name="MAX_CONTEXT_TOKENS" value="131072"/>
+    <Var name="RETRY_BUDGET" value="3"/>
+    <Var name="TIMEOUT_SECONDS" value="120"/>
+
+    <Var name="RL_TRAINING_ENABLED" value="true"/>
+    <Var name="UNITY_HEADLESS" value="true"/>
+    <Var name="TRAINING_SCHEDULE_CRON" value="0 2 * * *"/>
+
+    <Var name="LOG_LEVEL" value="INFO"/>
+    <Var name="TRACE_EXPORTER" value="otlp"/>
+    <Var name="SECRETS_BACKEND" value="secret-manager"/>
+  </GlobalVariables>
+
+  <ModelCatalog>
+    <Model id="planner" provider="${DEFAULT_PROVIDER}" model="${DEFAULT_MODEL}" role="task-planning" weight="0.25"/>
+    <Model id="coder" provider="${DEFAULT_PROVIDER}" model="${DEFAULT_MODEL}" role="code-generation" weight="0.35"/>
+    <Model id="reviewer" provider="${DEFAULT_PROVIDER}" model="${DEFAULT_MODEL}" role="static-review" weight="0.20"/>
+    <Model id="runner" provider="${DEFAULT_PROVIDER}" model="${DEFAULT_MODEL}" role="test-debug" weight="0.20"/>
+  </ModelCatalog>
+
+  <MergePolicy strategy="mixture-of-experts">
+    <Routing>
+      <Rule when="intent=design" target="planner"/>
+      <Rule when="intent=implementation" target="coder"/>
+      <Rule when="intent=quality" target="reviewer"/>
+      <Rule when="intent=runtime" target="runner"/>
+      <Rule when="confidence&lt;0.55" target="${FALLBACK_MODEL}"/>
+    </Routing>
+
+    <Aggregation>
+      <Method type="weighted-vote" normalize="true"/>
+      <Constraint name="require_tests" value="true"/>
+      <Constraint name="security_scan" value="true"/>
+      <Constraint name="cite_changed_files" value="true"/>
+    </Aggregation>
+  </MergePolicy>
+
+  <ReusableContexts>
+    <Context id="enterprise-default">
+      <Set var="PRIMARY_CLOUD" value="gcp"/>
+      <Set var="MODEL_REGISTRY" value="vertex-ai"/>
+      <Set var="TRACE_EXPORTER" value="otlp"/>
+    </Context>
+
+    <Context id="unity-mlops">
+      <Set var="RL_TRAINING_ENABLED" value="true"/>
+      <Set var="UNITY_HEADLESS" value="true"/>
+      <Set var="TRAINING_SCHEDULE_CRON" value="0 2 * * *"/>
+      <Set var="MODEL_REGISTRY" value="vertex-ai"/>
+    </Context>
+
+    <Context id="cost-optimized">
+      <Set var="DEFAULT_MODEL" value="${FALLBACK_MODEL}"/>
+      <Set var="MAX_CONTEXT_TOKENS" value="65536"/>
+      <Set var="RETRY_BUDGET" value="2"/>
+    </Context>
+  </ReusableContexts>
+
+  <Pipeline>
+    <Step order="1" name="ingest-request"/>
+    <Step order="2" name="classify-intent"/>
+    <Step order="3" name="route-to-expert"/>
+    <Step order="4" name="aggregate-candidates"/>
+    <Step order="5" name="run-validation"/>
+    <Step order="6" name="publish-artifacts" registry="${ARTIFACT_REGISTRY}"/>
+    <Step order="7" name="register-model" registry="${MODEL_REGISTRY}"/>
+  </Pipeline>
+
+  <ActionsWiring>
+    <Workflow name="ci-validate-and-build" trigger="pull_request,push">
+      <Job id="lint"/>
+      <Job id="test"/>
+      <Job id="policy-check"/>
+      <Job id="container-build" publishTo="${ARTIFACT_REGISTRY}"/>
+    </Workflow>
+
+    <Workflow name="nightly-unity-training" trigger="schedule:${TRAINING_SCHEDULE_CRON}">
+      <Job id="generate-unity-agent"/>
+      <Job id="unity-headless-build" enabled="${UNITY_HEADLESS}"/>
+      <Job id="offline-rl-train" enabled="${RL_TRAINING_ENABLED}"/>
+      <Job id="register-trained-policy" publishTo="${MODEL_REGISTRY}"/>
+    </Workflow>
+  </ActionsWiring>
+
+  <Governance>
+    <Policy id="security">
+      <Require>dependency-scan-pass</Require>
+      <Require>secret-scan-pass</Require>
+      <Require>container-signature</Require>
+    </Policy>
+    <Policy id="quality">
+      <Require>unit-tests-pass</Require>
+      <Require>integration-tests-pass</Require>
+      <Require>coverage-gte:80</Require>
+    </Policy>
+  </Governance>
+</UnifiedCodingAgent>

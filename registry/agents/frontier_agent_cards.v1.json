@@ -1,0 +1,190 @@
+{
+  "version": "v1",
+  "generated_at": "2026-03-05T13:48:18Z",
+  "cards": [
+    {
+      "card_id": "card:agent-frontier-endpoint-gpt",
+      "agent_id": "agent:frontier.endpoint.gpt",
+      "display_name": "Endpoint GPT Operator",
+      "llm": {
+        "provider": "endpoint",
+        "model_family": "gpt",
+        "default_model": "gpt-4o-mini"
+      },
+      "role": "pipeline_operator",
+      "embedded_skills": [
+        "planning",
+        "implementation",
+        "integration",
+        "artifact_management",
+        "code_generation",
+        "task_planning"
+      ],
+      "mcp_tool_scope": [
+        "embed_dispatch_batch",
+        "embed_lookup",
+        "embed_status",
+        "embed_submit",
+        "get_runtime_assignment",
+        "ingest_avatar_token_stream",
+        "ingest_repository_data",
+        "list_runtime_assignments",
+        "route_a2a_intent",
+        "submit_runtime_assignment"
+      ],
+      "rbac": {
+        "allowed_actions": [
+          "run_pipeline",
+          "view_artifacts"
+        ],
+        "allowed_transitions": [
+          "EMBEDDING\u2192RAG_QUERY",
+          "HEALING\u2192CONVERGED",
+          "HEALING\u2192LORA_ADAPT",
+          "INIT\u2192EMBEDDING",
+          "LORA_ADAPT\u2192HEALING",
+          "RAG_QUERY\u2192LORA_ADAPT"
+        ],
+        "token_ref": "runtime/rbac/frontier_rbac_tokens.local.json#agent:frontier.endpoint.gpt"
+      }
+    },
+    {
+      "card_id": "card:agent-frontier-anthropic-claude",
+      "agent_id": "agent:frontier.anthropic.claude",
+      "display_name": "Claude Governance Lead",
+      "llm": {
+        "provider": "anthropic",
+        "model_family": "claude",
+        "default_model": "claude-3-5-sonnet-latest"
+      },
+      "role": "admin",
+      "embedded_skills": [
+        "governance",
+        "policy_enforcement",
+        "orchestration",
+        "tool_routing",
+        "policy_adjudication",
+        "release_governance"
+      ],
+      "mcp_tool_scope": [
+        "embed_dispatch_batch",
+        "embed_lookup",
+        "embed_status",
+        "embed_submit",
+        "get_runtime_assignment",
+        "ingest_avatar_token_stream",
+        "ingest_repository_data",
+        "list_runtime_assignments",
+        "route_a2a_intent",
+        "submit_runtime_assignment"
+      ],
+      "rbac": {
+        "allowed_actions": [
+          "manage_roles",
+          "onboard_agent",
+          "run_pipeline",
+          "view_artifacts"
+        ],
+        "allowed_transitions": [
+          "EMBEDDING\u2192FAILED",
+          "EMBEDDING\u2192RAG_QUERY",
+          "FAILED\u2192INIT",
+          "HEALING\u2192CONVERGED",
+          "HEALING\u2192FAILED",
+          "HEALING\u2192LORA_ADAPT",
+          "INIT\u2192EMBEDDING",
+          "LORA_ADAPT\u2192FAILED",
+          "LORA_ADAPT\u2192HEALING",
+          "RAG_QUERY\u2192FAILED",
+          "RAG_QUERY\u2192LORA_ADAPT"
+        ],
+        "token_ref": "runtime/rbac/frontier_rbac_tokens.local.json#agent:frontier.anthropic.claude"
+      }
+    },
+    {
+      "card_id": "card:agent-frontier-vertex-gemini",
+      "agent_id": "agent:frontier.vertex.gemini",
+      "display_name": "Gemini Architecture Mapper",
+      "llm": {
+        "provider": "vertex",
+        "model_family": "gemini",
+        "default_model": "gemini-1.5-pro"
+      },
+      "role": "pipeline_operator",
+      "embedded_skills": [
+        "planning",
+        "implementation",
+        "integration",
+        "artifact_management",
+        "architecture_mapping",
+        "context_synthesis"
+      ],
+      "mcp_tool_scope": [
+        "embed_dispatch_batch",
+        "embed_lookup",
+        "embed_status",
+        "embed_submit",
+        "get_runtime_assignment",
+        "ingest_avatar_token_stream",
+        "ingest_repository_data",
+        "list_runtime_assignments",
+        "route_a2a_intent",
+        "submit_runtime_assignment"
+      ],
+      "rbac": {
+        "allowed_actions": [
+          "run_pipeline",
+          "view_artifacts"
+        ],
+        "allowed_transitions": [
+          "EMBEDDING\u2192RAG_QUERY",
+          "HEALING\u2192CONVERGED",
+          "HEALING\u2192LORA_ADAPT",
+          "INIT\u2192EMBEDDING",
+          "LORA_ADAPT\u2192HEALING",
+          "RAG_QUERY\u2192LORA_ADAPT"
+        ],
+        "token_ref": "runtime/rbac/frontier_rbac_tokens.local.json#agent:frontier.vertex.gemini"
+      }
+    },
+    {
+      "card_id": "card:agent-frontier-ollama-llama",
+      "agent_id": "agent:frontier.ollama.llama",
+      "display_name": "Llama Healer",
+      "llm": {
+        "provider": "ollama",
+        "model_family": "llama",
+        "default_model": "llama3.1"
+      },
+      "role": "healer",
+      "embedded_skills": [
+        "failure_recovery",
+        "patch_synthesis",
+        "verification",
+        "regression_triage",
+        "self_healing"
+      ],
+      "mcp_tool_scope": [
+        "embed_dispatch_batch",
+        "embed_lookup",
+        "embed_status",
+        "get_runtime_assignment",
+        "ingest_avatar_token_stream",
+        "list_runtime_assignments",
+        "route_a2a_intent"
+      ],
+      "rbac": {
+        "allowed_actions": [
+          "run_healing",
+          "view_artifacts"
+        ],
+        "allowed_transitions": [
+          "HEALING\u2192CONVERGED",
+          "HEALING\u2192LORA_ADAPT",
+          "LORA_ADAPT\u2192HEALING"
+        ],
+        "token_ref": "runtime/rbac/frontier_rbac_tokens.local.json#agent:frontier.ollama.llama"
+      }
+    }
+  ]
+}

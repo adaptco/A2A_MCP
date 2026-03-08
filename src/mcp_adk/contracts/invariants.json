@@ -1,0 +1,16 @@
+{
+  "determinism": [
+    "pinned_toolchain",
+    "lockfile_consistency",
+    "stable_receipts"
+  ],
+  "governance": [
+    "maker_checker_boundary",
+    "policy_zoning",
+    "structured_PR_metadata"
+  ],
+  "safety": [
+    "no_secret_exfil",
+    "no_network_in_hermetic_mode"
+  ]
+}

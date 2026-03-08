@@ -1,0 +1,7 @@
+{
+  "proposal_id": "proposal.alpha",
+  "trigger_guard": "GL-1",
+  "delta_phi_e": 0.0004,
+  "elapsed_sec": 420,
+  "notes": "Rollback drill scenario when ΔΦe spike detected in 1s window."
+}

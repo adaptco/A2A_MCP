@@ -1,0 +1,54 @@
+{{- if .Values.ingress.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "a2a-mcp.fullname" . }}
+  labels:
+    {{- include "a2a-mcp.labels" . | nindent 4 }}
+  annotations:
+    {{- range $key, $value := .Values.ingress.annotations }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
+spec:
+  {{- if .Values.ingress.className }}
+  ingressClassName: {{ .Values.ingress.className }}
+  {{- end }}
+  rules:
+    - host: {{ .Values.ingress.host }}
+      http:
+        paths:
+          - path: /mcp
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "a2a-mcp.mcpServiceName" . }}
+                port:
+                  number: {{ .Values.mcp.service.port }}
+          - path: /tools/call
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "a2a-mcp.mcpServiceName" . }}
+                port:
+                  number: {{ .Values.mcp.service.port }}
+          - path: /orchestrate
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "a2a-mcp.orchestratorServiceName" . }}
+                port:
+                  number: {{ .Values.orchestrator.service.port }}
+          - path: /plans
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "a2a-mcp.orchestratorServiceName" . }}
+                port:
+                  number: {{ .Values.orchestrator.service.port }}
+  {{- if .Values.ingress.tls.enabled }}
+  tls:
+    - hosts:
+        - {{ .Values.ingress.host }}
+      secretName: {{ .Values.ingress.tls.secretName }}
+  {{- end }}
+{{- end }}

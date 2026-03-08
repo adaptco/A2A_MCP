@@ -1,0 +1,14 @@
+target_engine: Unity 6
+pipeline: HDRP
+biome: Standard
+generated_features:
+- Floating_Platforms
+- Ancient_Ruins
+terrain_shader: ShaderGraphs/Standard_Base
+physics_material: PhysicMaterials/Standard_Friction
+vector_signature:
+- 0.8838875529987122
+- -0.29767786611209957
+- 0.29394537571137525
+- 0.6968375730857308
+- 0.6145213502131719

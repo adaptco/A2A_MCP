@@ -1,0 +1,266 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Multimodal RAG Bundle v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "worldline_block",
+    "multimodal_rag_logic_tree",
+    "token_reconstruction",
+    "workflow_actions"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "multimodal_rag_bundle.v1"
+    },
+    "worldline_block": {
+      "type": "object",
+      "required": [
+        "pipeline",
+        "prompt",
+        "repository",
+        "commit_sha",
+        "actor",
+        "infrastructure_agent"
+      ],
+      "properties": {
+        "pipeline": {
+          "type": "string"
+        },
+        "prompt": {
+          "type": "string",
+          "minLength": 1
+        },
+        "repository": {
+          "type": "string",
+          "minLength": 1
+        },
+        "commit_sha": {
+          "type": "string",
+          "minLength": 7
+        },
+        "actor": {
+          "type": "string",
+          "minLength": 1
+        },
+        "infrastructure_agent": {
+          "type": "object",
+          "required": [
+            "embedding_vector",
+            "token_stream",
+            "artifact_clusters",
+            "lora_attention_weights"
+          ],
+          "properties": {
+            "embedding_vector": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "number"
+              }
+            },
+            "token_stream": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "required": [
+                  "token",
+                  "token_id"
+                ],
+                "properties": {
+                  "token": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "token_id": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "additionalProperties": true
+              }
+            },
+            "artifact_clusters": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "lora_attention_weights": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "number"
+              }
+            }
+          },
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": true
+    },
+    "multimodal_rag_logic_tree": {
+      "type": "object",
+      "required": [
+        "logic_tree"
+      ],
+      "properties": {
+        "logic_tree": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": [
+              "node_id",
+              "phase",
+              "query",
+              "allowed_actions"
+            ],
+            "properties": {
+              "node_id": {
+                "type": "string"
+              },
+              "phase": {
+                "type": "string"
+              },
+              "query": {
+                "type": "string"
+              },
+              "allowed_actions": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "token_reconstruction": {
+      "type": "object",
+      "required": [
+        "pipeline",
+        "repository",
+        "commit_sha",
+        "vector_store_size",
+        "nodes"
+      ],
+      "properties": {
+        "pipeline": {
+          "type": "string"
+        },
+        "repository": {
+          "type": "string"
+        },
+        "commit_sha": {
+          "type": "string"
+        },
+        "vector_store_size": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "nodes": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": [
+              "node_id",
+              "phase",
+              "gate_open",
+              "selected_action"
+            ],
+            "properties": {
+              "node_id": {
+                "type": "string"
+              },
+              "phase": {
+                "type": "string"
+              },
+              "gate_open": {
+                "type": "boolean"
+              },
+              "selected_action": {
+                "type": "string"
+              },
+              "matches": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "token_id",
+                    "token",
+                    "cluster",
+                    "score"
+                  ],
+                  "properties": {
+                    "token_id": {
+                      "type": "string"
+                    },
+                    "token": {
+                      "type": "string"
+                    },
+                    "cluster": {
+                      "type": "string"
+                    },
+                    "score": {
+                      "type": "number"
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              }
+            },
+            "additionalProperties": true
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "workflow_actions": {
+      "type": "object",
+      "required": [
+        "workflow_actions"
+      ],
+      "properties": {
+        "workflow_actions": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": [
+              "node_id",
+              "phase",
+              "action",
+              "gate_open"
+            ],
+            "properties": {
+              "node_id": {
+                "type": "string"
+              },
+              "phase": {
+                "type": "string"
+              },
+              "action": {
+                "type": "string"
+              },
+              "gate_open": {
+                "type": "boolean"
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

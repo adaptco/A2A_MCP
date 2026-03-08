@@ -1,0 +1,81 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "invariant_set.v1.schema.json",
+  "title": "InvariantSetV1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "world_id",
+    "capsule_digest",
+    "merkle_root",
+    "tick_count",
+    "invariants",
+    "attestation"
+  ],
+  "properties": {
+    "schema_version": { "const": "invariant_set.v1" },
+    "world_id": { "type": "string" },
+    "capsule_digest": { "type": "string" },
+    "merkle_root": { "type": "string" },
+    "tick_count": { "type": "integer", "minimum": 0 },
+    "invariants": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kinematics", "stability", "control", "boundary", "energy"],
+      "properties": {
+        "kinematics": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["max_velocity", "mean_velocity"],
+          "properties": {
+            "max_velocity": { "type": "number" },
+            "mean_velocity": { "type": "number" }
+          }
+        },
+        "stability": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["slip_variance", "stability_score"],
+          "properties": {
+            "slip_variance": { "type": "number" },
+            "stability_score": { "type": "number" }
+          }
+        },
+        "control": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["input_entropy"],
+          "properties": {
+            "input_entropy": { "type": "number" }
+          }
+        },
+        "boundary": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["min_track_clearance"],
+          "properties": {
+            "min_track_clearance": { "type": "number" }
+          }
+        },
+        "energy": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["total_joules"],
+          "properties": {
+            "total_joules": { "type": "number" }
+          }
+        }
+      }
+    },
+    "attestation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["extractor_version", "timestamp"],
+      "properties": {
+        "extractor_version": { "type": "string" },
+        "timestamp": { "type": "integer" }
+      }
+    }
+  }
+}

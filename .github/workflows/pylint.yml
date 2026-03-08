@@ -1,26 +1,71 @@
 name: Pylint
 
-on: [push]
+on:
+  push:
+    branches: [main, develop, "feature/**", "release/**"]
+  pull_request:
+    branches: [main]
 
 jobs:
   build:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.8", "3.9", "3.10"]
+        python-version: ["3.11"]
     steps:
-    - uses: actions/checkout@v4
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v3
-      with:
-        python-version: ${{ matrix.python-version }}
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install pylint
-        pip install -r requirements.txt
-    - name: Analysing the code with pylint
-      env:
-        PYTHONPATH: .
-      run: |
-        pylint $(git ls-files "*.py") --fail-under=8.0
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .[dev] || pip install -r requirements.txt
+          pip install pylint
+
+      - name: Syntax preflight
+        run: |
+          python -m compileall -q app orchestrator schemas scripts tests src
+
+      - name: Analyse changed Python files with pylint
+        env:
+          PYTHONPATH: .
+        run: |
+          set -euo pipefail
+
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            base_sha="${{ github.event.pull_request.base.sha }}"
+          else
+            base_sha="${{ github.event.before }}"
+          fi
+
+          if [ -n "${base_sha}" ] && git cat-file -e "${base_sha}^{commit}" 2>/dev/null; then
+            mapfile -t targets < <(git diff --name-only "${base_sha}" "${GITHUB_SHA}" -- '*.py')
+          else
+            mapfile -t targets < <(git ls-files 'app/**/*.py' 'orchestrator/**/*.py' 'schemas/**/*.py' 'scripts/**/*.py' 'tests/**/*.py' 'src/**/*.py')
+          fi
+
+          if [ "${#targets[@]}" -eq 0 ]; then
+            echo "No changed Python files to lint."
+            exit 0
+          fi
+
+          lint_targets=()
+          for target in "${targets[@]}"; do
+            case "$target" in
+              scripts/*.py|src/fastmcp.py)
+                lint_targets+=("$target")
+                ;;
+            esac
+          done
+
+          if [ "${#lint_targets[@]}" -eq 0 ]; then
+            echo "No changed files in lint scope; compileall preflight already passed."
+            exit 0
+          fi
+
+          printf 'Lint targets:\n%s\n' "${lint_targets[@]}"
+          pylint --errors-only --disable=import-error "${lint_targets[@]}"

@@ -1,0 +1,58 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://adk.io/schemas/v0/feature_attractor.schema.json",
+  "title": "Feature Attractor",
+  "description": "Defines a high-gravity feature request from Marketing that reorganizes the vector space.",
+  "type": "object",
+  "required": [
+    "id",
+    "name",
+    "description",
+    "vector_queries",
+    "priority"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique identifier for the attractor."
+    },
+    "name": {
+      "type": "string",
+      "description": "Marketing name of the feature (e.g., 'Supra Drift Mode')."
+    },
+    "description": {
+      "type": "string",
+      "description": "Detailed description of the desired user experience."
+    },
+    "vector_queries": {
+      "type": "array",
+      "description": "List of semantic keywords/phrases to re-rank the vector vault.",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "target_personalities": {
+      "type": "array",
+      "description": "List of Avatar styles this feature targets.",
+      "items": {
+        "type": "string",
+        "enum": ["Driver", "Engineer", "Designer", "Mechanic", "Racer"]
+      }
+    },
+    "physics_bounds": {
+      "type": "object",
+      "description": "Physical constraints that ground this feature in reality.",
+      "additionalProperties": {
+        "type": "number"
+      }
+    },
+    "priority": {
+      "type": "number",
+      "description": "Importance weight (0.0 to 1.0).",
+      "minimum": 0,
+      "maximum": 1
+    }
+  }
+}

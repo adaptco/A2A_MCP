@@ -1,0 +1,27 @@
+[project]
+name = "a2a-mcp"
+version = "0.2.0"
+description = "Multi-agent orchestrator with MCP tooling, stateflow FSM, and self-healing pipelines"
+requires-python = ">=3.11"
+dependencies = [
+    "sqlalchemy",
+    "psycopg2-binary",
+    "pydantic",
+    "python-dotenv",
+    "fastapi",
+    "uvicorn",
+    "httpx",
+    "requests",
+    "mcp[cli]",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-asyncio",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+pythonpath = ["."]

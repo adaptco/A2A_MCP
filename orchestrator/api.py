@@ -4,7 +4,9 @@ from __future__ import annotations
 
 import logging
 import os
-from typing import Any, Optional
+import time
+from collections import OrderedDict
+from typing import Any, Callable, Optional
 from uuid import uuid4
 
 from fastapi import FastAPI, HTTPException, Query, Depends, Header, Request
@@ -37,7 +39,64 @@ def validate_orchestrator_config():
 validate_orchestrator_config()
 
 logger = logging.getLogger(__name__)
-_IDEMPOTENCY_CACHE: dict[str, dict[str, Any]] = {}
+
+
+class _IdempotencyCache:
+    """Bounded in-memory idempotency cache with TTL and LRU eviction."""
+
+    def __init__(
+        self,
+        *,
+        ttl_seconds: int,
+        max_entries: int,
+        now_fn: Callable[[], float] = time.time,
+    ) -> None:
+        self.ttl_seconds = ttl_seconds
+        self.max_entries = max_entries
+        self.now_fn = now_fn
+        self._entries: OrderedDict[tuple[str, str], dict[str, Any]] = OrderedDict()
+
+    def _evict_expired(self, now: float) -> None:
+        expired_keys = [
+            key for key, item in self._entries.items() if item["expires_at"] <= now
+        ]
+        for key in expired_keys:
+            self._entries.pop(key, None)
+
+    def get(self, *, idempotency_key: str, actor: str) -> dict[str, Any] | None:
+        now = self.now_fn()
+        self._evict_expired(now)
+        key = (idempotency_key, actor)
+        item = self._entries.get(key)
+        if item is None:
+            return None
+        self._entries.move_to_end(key)
+        return item["response"]
+
+    def set(self, *, idempotency_key: str, actor: str, response: dict[str, Any]) -> None:
+        now = self.now_fn()
+        self._evict_expired(now)
+        key = (idempotency_key, actor)
+        if key in self._entries:
+            self._entries.pop(key, None)
+        self._entries[key] = {
+            "response": response,
+            "cached_at": now,
+            "expires_at": now + self.ttl_seconds,
+            "actor": actor,
+            "idempotency_key": idempotency_key,
+        }
+        while len(self._entries) > self.max_entries:
+            self._entries.popitem(last=False)
+
+    def clear(self) -> None:
+        self._entries.clear()
+
+
+_IDEMPOTENCY_CACHE = _IdempotencyCache(
+    ttl_seconds=int(os.getenv("ORCHESTRATOR_IDEMPOTENCY_TTL_SECONDS", "300")),
+    max_entries=int(os.getenv("ORCHESTRATOR_IDEMPOTENCY_MAX_ENTRIES", "1024")),
+)
 
 app = FastAPI(title="A2A Orchestrator API", version="1.0.0")
 app.include_router(ingress_router)
@@ -112,11 +171,16 @@ async def orchestrate(
     auth: dict = Depends(authenticate_user),
 ) -> dict[str, Any]:
     """Run the full multi-agent pipeline for a user query."""
-    if x_idempotency_key and x_idempotency_key in _IDEMPOTENCY_CACHE:
-        return _IDEMPOTENCY_CACHE[x_idempotency_key]
-
     trace_id = str(request.headers.get("x-request-id") or request.headers.get("x-correlation-id") or uuid4())
     resolved_requester = _resolve_requester(auth, requester)
+
+    if x_idempotency_key:
+        cached_response = _IDEMPOTENCY_CACHE.get(
+            idempotency_key=x_idempotency_key,
+            actor=resolved_requester,
+        )
+        if cached_response is not None:
+            return cached_response
 
     optionb_service: OptionBService | None = None
     run_id: str | None = None
@@ -206,7 +270,11 @@ async def orchestrate(
             )
 
         if x_idempotency_key:
-            _IDEMPOTENCY_CACHE[x_idempotency_key] = response
+            _IDEMPOTENCY_CACHE.set(
+                idempotency_key=x_idempotency_key,
+                actor=resolved_requester,
+                response=response,
+            )
         return response
     except (OptionBConfigError, OptionBRemoteError) as exc:
         logger.exception("option-b orchestration failure")

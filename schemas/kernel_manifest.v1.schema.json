@@ -1,0 +1,98 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Kernel Manifest v1",
+  "type": "object",
+  "required": [
+    "schema",
+    "kernel_id",
+    "kernel_version",
+    "phase_map",
+    "origin_anchoring",
+    "tooling_policy",
+    "output_contract"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema": {
+      "const": "agent.kernel.manifest.v1"
+    },
+    "kernel_id": {
+      "type": "string"
+    },
+    "kernel_version": {
+      "type": "string"
+    },
+    "aesthetic": {
+      "type": "string"
+    },
+    "integrity_level": {
+      "type": "string"
+    },
+    "hierarchy": {
+      "type": "array",
+      "items": { "type": "string" },
+      "minItems": 1
+    },
+    "core_definitions": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "phase_map": {
+      "type": "object",
+      "required": ["phases", "rule"],
+      "additionalProperties": false,
+      "properties": {
+        "phases": {
+          "type": "array",
+          "items": { "type": "string" },
+          "minItems": 1
+        },
+        "rule": {
+          "type": "string"
+        }
+      }
+    },
+    "origin_anchoring": {
+      "type": "object",
+      "required": [
+        "origin_point_policy",
+        "origin_point_hash_alg",
+        "origin_point_hash",
+        "return_to_origin_rule"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "origin_point_policy": { "type": "string" },
+        "origin_point_hash_alg": { "type": "string" },
+        "origin_point_hash": { "type": "string" },
+        "return_to_origin_rule": { "type": "string" }
+      }
+    },
+    "attribution_policy": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "tooling_policy": {
+      "type": "object",
+      "required": ["default", "allowed_tools"],
+      "additionalProperties": false,
+      "properties": {
+        "default": { "type": "string" },
+        "allowed_tools": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "public_actions_require_privacy_policy_url": { "type": "boolean" }
+      }
+    },
+    "output_contract": {
+      "type": "object",
+      "required": ["must_emit_rl_block", "rl_block_schema"],
+      "additionalProperties": false,
+      "properties": {
+        "must_emit_rl_block": { "type": "boolean" },
+        "rl_block_schema": { "type": "string" }
+      }
+    }
+  }
+}

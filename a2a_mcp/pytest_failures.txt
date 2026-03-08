@@ -1,0 +1,349 @@
+============================= test session starts =============================
+platform win32 -- Python 3.11.9, pytest-9.0.2, pluggy-1.6.0
+rootdir: C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP
+configfile: pytest.ini (WARNING: ignoring pytest config in pyproject.toml!)
+plugins: anyio-4.12.1, asyncio-1.3.0
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 229 items / 7 skipped
+
+tests\prime_directive\test_pipeline_engine.py .                          [  0%]
+tests\test_0path.py .                                                    [  0%]
+tests\test_agent_context_tokens.py ..                                    [  1%]
+tests\test_agents_import.py .                                            [  2%]
+tests\test_avatar_integration.py ......                                  [  4%]
+tests\test_base44.py ......                                              [  7%]
+tests\test_base44_standalone.py ......                                   [ 10%]
+tests\test_canonical_json.py ....                                        [ 11%]
+tests\test_cicd_pipeline.py ........                                     [ 15%]
+tests\test_cmake_setup.py ...                                            [ 16%]
+tests\test_decision_engine.py ..                                         [ 17%]
+tests\test_docker_mcp_catalog.py .......                                 [ 20%]
+tests\test_drift_logic.py FFFF                                           [ 22%]
+tests\test_fim.py .                                                      [ 22%]
+tests\test_full_pipeline.py .....                                        [ 24%]
+tests\test_game_launcher.py ..                                           [ 25%]
+tests\test_game_loop.py s                                                [ 26%]
+tests\test_game_model.py ...                                             [ 27%]
+tests\test_gemini_agent_e2e.py .F.                                       [ 28%]
+tests\test_genie_scaffolding.py ..                                       [ 29%]
+tests\test_ghost_void_integration.py .                                   [ 30%]
+tests\test_ghost_void_spoke.py F...F.F..                                 [ 34%]
+tests\test_handshake_flow.py F.                                          [ 34%]
+tests\test_healing_loop.py .                                             [ 35%]
+tests\test_ingestion_api.py ..                                           [ 36%]
+tests\test_intent_engine.py .FF                                          [ 37%]
+tests\test_llm_util.py ..                                                [ 38%]
+tests\test_locomotion_model.py FF.                                       [ 39%]
+tests\test_lora_harness.py ........                                      [ 43%]
+tests\test_middleware_runtime.py .F.                                     [ 44%]
+tests\test_mlops_ticker.py ...                                           [ 45%]
+tests\test_mlops_unity_pipeline.py ..                                    [ 46%]
+tests\test_multimodal_rag_workflow.py ....                               [ 48%]
+tests\test_multimodal_worldline.py ...                                   [ 49%]
+tests\test_normalize.py ........                                         [ 53%]
+tests\test_notification_agent.py ..                                      [ 54%]
+tests\test_notification_app.py .                                         [ 54%]
+tests\test_notifier.py ....                                              [ 56%]
+tests\test_phase9_merge.py ...........                                   [ 61%]
+tests\test_plan_state_persistence.py .                                   [ 61%]
+tests\test_rag_pipeline.py ......                                        [ 64%]
+tests\test_rbac.py ..........................                            [ 75%]
+tests\test_release_orchestrator.py .......                               [ 78%]
+tests\test_release_webhook.py FFF                                        [ 79%]
+tests\test_runtime_bridge_contract.py .                                  [ 80%]
+tests\test_state_space.py ...........                                    [ 85%]
+tests\test_stateflow.py ...                                              [ 86%]
+tests\test_storage.py .                                                  [ 86%]
+tests\test_tetris_aggregation.py F..                                     [ 88%]
+tests\test_tetris_observer.py F.                                         [ 89%]
+tests\test_vector_gate.py ....F                                          [ 91%]
+tests\test_webgl_integration.py ......                                   [ 93%]
+tests\test_webhook_cicd_monitor.py FFFFF                                 [ 96%]
+tests\test_webhook_handshake.py ..                                       [ 96%]
+tests\test_workflow_actions.py FFFFF..                                   [100%]
+
+================================== FAILURES ===================================
+________________________ TestSupraDrift.test_grip_mode ________________________
+tests\test_drift_logic.py:14: in test_grip_mode
+    state = model.calculate_drift(velocity=10.0, steering_angle=0.05)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   TypeError: SupraDriftModel.calculate_drift() got an unexpected keyword argument 'steering_angle'
+____________________ TestSupraDrift.test_drift_initiation _____________________
+tests\test_drift_logic.py:24: in test_drift_initiation
+    state = model.calculate_drift(velocity=30.0, steering_angle=0.5)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   TypeError: SupraDriftModel.calculate_drift() got an unexpected keyword argument 'steering_angle'
+_____________________ TestSupraDrift.test_slip_transition _____________________
+tests\test_drift_logic.py:35: in test_slip_transition
+    state = model.calculate_drift(velocity=20.0, steering_angle=0.2)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   TypeError: SupraDriftModel.calculate_drift() got an unexpected keyword argument 'steering_angle'
+______________________ TestSupraDrift.test_zero_velocity ______________________
+tests\test_drift_logic.py:44: in test_zero_velocity
+    state = model.calculate_drift(velocity=0.0, steering_angle=1.0)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   TypeError: SupraDriftModel.calculate_drift() got an unexpected keyword argument 'steering_angle'
+________________ TestGeminiAgentE2E.test_rag_distillation_flow ________________
+tests\test_gemini_agent_e2e.py:36: in test_rag_distillation_flow
+    artifact = await agent.distill_context_for_lora(task_goal, query_vector, knowledge_base)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+agents\gemini_agent.py:40: in distill_context_for_lora
+    artifact = ModelArtifact(
+E   pydantic_core._pydantic_core.ValidationError: 1 validation error for ModelArtifact
+E   artifact_id
+E     Field required [type=missing, input_value={'model_id': 'gemini-1.5-...': 'GeminiClusterAgent'}, input_type=dict]
+E       For further information visit https://errors.pydantic.dev/2.12/v/missing
+____ TestGhostVoidSpokeSimulationMode.test_initialization_simulation_mode _____
+tests\test_ghost_void_spoke.py:24: in test_initialization_simulation_mode
+    assert "Connected to PhaseSpaceTick" in sim_spoke.__str__() # A bit of a hack, but checks constructor print
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AssertionError: assert 'Connected to PhaseSpaceTick' in '<agency_hub.spokes.ghost_void_spoke.GhostVoidSpoke object at 0x000002250C5C82D0>'
+E    +  where '<agency_hub.spokes.ghost_void_spoke.GhostVoidSpoke object at 0x000002250C5C82D0>' = <method-wrapper '__str__' of GhostVoidSpoke object at 0x000002250C5C82D0>()
+E    +    where <method-wrapper '__str__' of GhostVoidSpoke object at 0x000002250C5C82D0> = <agency_hub.spokes.ghost_void_spoke.GhostVoidSpoke object at 0x000002250C5C82D0>.__str__
+---------------------------- Captured stdout setup ----------------------------
+GhostVoidSpoke: Initialized. Connected to PhaseSpaceTick (Python Simulation).
+________ TestGhostVoidSpokeSimulationMode.test_act_reset_resets_state _________
+tests\test_ghost_void_spoke.py:59: in test_act_reset_resets_state
+    assert sim_spoke.observe()["grid_pos"] != (5, 5)
+E   assert (5, 5) != (5, 5)
+---------------------------- Captured stdout setup ----------------------------
+GhostVoidSpoke: Initialized. Connected to PhaseSpaceTick (Python Simulation).
+________ TestGhostVoidSpokeEngineMode.test_initialization_engine_mode _________
+tests\test_ghost_void_spoke.py:96: in test_initialization_engine_mode
+    stdin=subprocess.PIPE,
+          ^^^^^^^^^^
+E   NameError: name 'subprocess' is not defined
+---------------------------- Captured stdout call -----------------------------
+GhostVoidSpoke: Connected to Engine at dummy_engine.exe
+Engine Output: Engine Ready
+Engine Output: Engine Ready
+__________________ test_handshake_initiation_and_transition ___________________
+tests\test_handshake_flow.py:18: in test_handshake_initiation_and_transition
+    handshake_art = await runtime.initiate_handshake(
+middleware\runtime.py:27: in initiate_handshake
+    state=AgentLifecycleState.HANDSHAKE,
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Programs\Python\Python311\Lib\enum.py:786: in __getattr__
+    raise AttributeError(name) from None
+E   AttributeError: HANDSHAKE
+______________________ test_intent_engine_executes_plan _______________________
+tests\test_intent_engine.py:58: in test_intent_engine_executes_plan
+    artifact_ids = asyncio.run(engine.execute_plan(plan))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Programs\Python\Python311\Lib\asyncio\runners.py:190: in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Programs\Python\Python311\Lib\asyncio\runners.py:118: in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Programs\Python\Python311\Lib\asyncio\base_events.py:654: in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+orchestrator\intent_engine.py:192: in execute_plan
+    artifact = await self._generate_with_gate(
+orchestrator\intent_engine.py:279: in _generate_with_gate
+    return await self.coder.generate_solution(
+E   TypeError: test_intent_engine_executes_plan.<locals>.fake_generate_solution() got an unexpected keyword argument 'context_tokens'
+______________ test_intent_engine_sends_completion_notification _______________
+tests\test_intent_engine.py:96: in test_intent_engine_sends_completion_notification
+    asyncio.run(engine.execute_plan(plan))
+..\..\..\AppData\Local\Programs\Python\Python311\Lib\asyncio\runners.py:190: in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Programs\Python\Python311\Lib\asyncio\runners.py:118: in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Programs\Python\Python311\Lib\asyncio\base_events.py:654: in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+orchestrator\intent_engine.py:192: in execute_plan
+    artifact = await self._generate_with_gate(
+orchestrator\intent_engine.py:279: in _generate_with_gate
+    return await self.coder.generate_solution(
+E   TypeError: test_intent_engine_sends_completion_notification.<locals>.fake_generate_solution() got an unexpected keyword argument 'context_tokens'
+______________ TestLocomotionModel.test_kinematic_step_telemetry ______________
+tests\test_locomotion_model.py:29: in test_kinematic_step_telemetry
+    success, state = await controller.kinematic_step(action, mock_runtime)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+agency_hub\architect\locomotion.py:71: in kinematic_step
+    telemetry = ModelArtifact(
+E   pydantic_core._pydantic_core.ValidationError: 1 validation error for ModelArtifact
+E   artifact_id
+E     Field required [type=missing, input_value={'model_id': 'locomotion-...IP', 'similarity': 0.1}}, input_type=dict]
+E       For further information visit https://errors.pydantic.dev/2.12/v/missing
+________________ TestLocomotionModel.test_move_to_convergence _________________
+tests\test_locomotion_model.py:60: in test_move_to_convergence
+    success = await controller.move_to((10, 5), mock_runtime)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+agency_hub\architect\locomotion.py:38: in move_to
+    success, state = await self.kinematic_step(action, runtime)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+agency_hub\architect\locomotion.py:71: in kinematic_step
+    telemetry = ModelArtifact(
+E   pydantic_core._pydantic_core.ValidationError: 1 validation error for ModelArtifact
+E   artifact_id
+E     Field required [type=missing, input_value={'model_id': 'locomotion-...ne, 'similarity': None}}, input_type=dict]
+E       For further information visit https://errors.pydantic.dev/2.12/v/missing
+___________ TestMiddlewareRuntime.test_runtime_transition_and_emit ____________
+tests\test_middleware_runtime.py:43: in test_runtime_transition_and_emit
+    state=AgentLifecycleState.HANDSHAKE,
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Programs\Python\Python311\Lib\enum.py:786: in __getattr__
+    raise AttributeError(name) from None
+E   AttributeError: HANDSHAKE
+_______________ test_release_webhook_accepts_and_completes_job ________________
+tests\test_release_webhook.py:29: in test_release_webhook_accepts_and_completes_job
+    webhook.RELEASE_JOBS.clear()
+    ^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'orchestrator.webhook' has no attribute 'RELEASE_JOBS'
+_____________ test_release_webhook_enforces_token_when_configured _____________
+tests\test_release_webhook.py:57: in test_release_webhook_enforces_token_when_configured
+    webhook.RELEASE_JOBS.clear()
+    ^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'orchestrator.webhook' has no attribute 'RELEASE_JOBS'
+_________________ test_release_webhook_records_failure_status _________________
+tests\test_release_webhook.py:73: in test_release_webhook_records_failure_status
+    webhook.RELEASE_JOBS.clear()
+    ^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'orchestrator.webhook' has no attribute 'RELEASE_JOBS'
+_________________ test_tetris_aggregator_buffers_and_flushes __________________
+tests\test_tetris_aggregation.py:48: in test_tetris_aggregator_buffers_and_flushes
+    asyncio.run(_test_logic())
+..\..\..\AppData\Local\Programs\Python\Python311\Lib\asyncio\runners.py:190: in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Programs\Python\Python311\Lib\asyncio\runners.py:118: in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Programs\Python\Python311\Lib\asyncio\base_events.py:654: in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+tests\test_tetris_aggregation.py:19: in _test_logic
+    ModelArtifact(artifact_id="t1", model_id="tetris", weights_hash="h1", embedding_dim=1, category="gaming", state="SCORE_FINALIZED", content="score event", metadata={"score": 100}),
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   pydantic_core._pydantic_core.ValidationError: 1 validation error for ModelArtifact
+E   state
+E     Input should be 'INIT', 'EMBEDDING', 'RAG_QUERY', 'LORA_ADAPT', 'HEALING', 'CONVERGED' or 'FAILED' [type=enum, input_value='SCORE_FINALIZED', input_type=str]
+E       For further information visit https://errors.pydantic.dev/2.12/v/enum
+__________________ TestTetrisObserver.test_aggregation_logic __________________
+tests\test_tetris_observer.py:24: in test_aggregation_logic
+    state=AgentLifecycleState.SCORE_FINALIZED,
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Programs\Python\Python311\Lib\enum.py:786: in __getattr__
+    raise AttributeError(name) from None
+E   AttributeError: SCORE_FINALIZED
+_______________ test_intent_engine_injects_vector_gate_context ________________
+tests\test_vector_gate.py:173: in test_intent_engine_injects_vector_gate_context
+    asyncio.run(engine.execute_plan(plan))
+..\..\..\AppData\Local\Programs\Python\Python311\Lib\asyncio\runners.py:190: in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Programs\Python\Python311\Lib\asyncio\runners.py:118: in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Programs\Python\Python311\Lib\asyncio\base_events.py:654: in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+orchestrator\intent_engine.py:192: in execute_plan
+    artifact = await self._generate_with_gate(
+orchestrator\intent_engine.py:279: in _generate_with_gate
+    return await self.coder.generate_solution(
+E   TypeError: test_intent_engine_injects_vector_gate_context.<locals>.fake_generate_solution() got an unexpected keyword argument 'context_tokens'
+________________ test_github_actions_webhook_ingest_and_status ________________
+tests\test_webhook_cicd_monitor.py:29: in test_github_actions_webhook_ingest_and_status
+    monkeypatch.setattr(webhook, "CI_CD_MONITOR", monitor)
+E   AttributeError: <module 'orchestrator.webhook' from 'C:\\Users\\eqhsp\\.antigravity\\A2A_MCP\\A2A_MCP\\orchestrator\\webhook.py'> has no attribute 'CI_CD_MONITOR'
+______________ test_github_actions_webhook_rejects_invalid_token ______________
+tests\test_webhook_cicd_monitor.py:49: in test_github_actions_webhook_rejects_invalid_token
+    monkeypatch.setattr(webhook, "CI_CD_MONITOR", CICDMonitorAgent())
+E   AttributeError: <module 'orchestrator.webhook' from 'C:\\Users\\eqhsp\\.antigravity\\A2A_MCP\\A2A_MCP\\orchestrator\\webhook.py'> has no attribute 'CI_CD_MONITOR'
+____________________ test_ingress_compat_route_still_works ____________________
+tests\test_webhook_cicd_monitor.py:66: in test_ingress_compat_route_still_works
+    assert response.status_code == 200
+E   assert 404 == 200
+E    +  where 404 = <Response [404 Not Found]>.status_code
+_____ test_github_actions_webhook_accepts_valid_signature_when_configured _____
+tests\test_webhook_cicd_monitor.py:72: in test_github_actions_webhook_accepts_valid_signature_when_configured
+    monkeypatch.setattr(webhook, "CI_CD_MONITOR", monitor)
+E   AttributeError: <module 'orchestrator.webhook' from 'C:\\Users\\eqhsp\\.antigravity\\A2A_MCP\\A2A_MCP\\orchestrator\\webhook.py'> has no attribute 'CI_CD_MONITOR'
+____ test_github_actions_webhook_rejects_invalid_signature_when_configured ____
+tests\test_webhook_cicd_monitor.py:95: in test_github_actions_webhook_rejects_invalid_signature_when_configured
+    monkeypatch.setattr(webhook, "CI_CD_MONITOR", CICDMonitorAgent())
+E   AttributeError: <module 'orchestrator.webhook' from 'C:\\Users\\eqhsp\\.antigravity\\A2A_MCP\\A2A_MCP\\orchestrator\\webhook.py'> has no attribute 'CI_CD_MONITOR'
+____________ test_agents_ci_cd_release_upload_has_write_permission ____________
+tests\test_workflow_actions.py:16: in test_agents_ci_cd_release_upload_has_write_permission
+    assert workflow['permissions']['contents'] == 'read'
+           ^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'permissions'
+__________________ test_main_workflow_can_comment_on_issues ___________________
+tests\test_workflow_actions.py:23: in test_main_workflow_can_comment_on_issues
+    assert workflow['permissions']['contents'] == 'read'
+           ^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'permissions'
+____ test_push_knowledge_comment_step_is_guarded_and_uses_issue_permission ____
+tests\test_workflow_actions.py:37: in test_push_knowledge_comment_step_is_guarded_and_uses_issue_permission
+    assert workflow['jobs']['ingest-and-embed']['permissions']['issues'] == 'write'
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'issues'
+___________________ test_agents_ci_cd_notifies_cicd_monitor ___________________
+tests\test_workflow_actions.py:45: in test_agents_ci_cd_notifies_cicd_monitor
+    monitor_job = workflow['jobs']['notify-cicd-monitor']
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'notify-cicd-monitor'
+______ test_integration_workflow_is_valid_and_runs_postgres_backed_tests ______
+tests\test_workflow_actions.py:57: in test_integration_workflow_is_valid_and_runs_postgres_backed_tests
+    assert workflow['permissions']['contents'] == 'read'
+           ^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'permissions'
+============================== warnings summary ===============================
+agents\sovereign\agents.py:38
+  C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP\agents\sovereign\agents.py:38: PytestCollectionWarning: cannot collect test class 'TesterAgent' because it has a __init__ constructor (from: tests/test_phase9_merge.py)
+    class TesterAgent(BaseAgent):
+
+tests/test_gemini_agent_e2e.py::TestGeminiAgentE2E::test_context_wrapper_formatting
+  tests\test_gemini_agent_e2e.py:48: PytestWarning: The test <Function test_context_wrapper_formatting> is marked with '@pytest.mark.asyncio' but it is not an async function. Please remove the asyncio mark. If the test is not marked explicitly, check for global marks applied via 'pytestmark'.
+    def test_context_wrapper_formatting(self):
+
+tests/test_ghost_void_integration.py::test_integration
+  c:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP\tests\test_ghost_void_integration.py:24: RuntimeWarning: coroutine 'DockingShell.dock' was never awaited
+    shell.dock(spoke)
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_locomotion_model.py::TestLocomotionModel::test_calculate_next_action
+  tests\test_locomotion_model.py:66: PytestWarning: The test <Function test_calculate_next_action> is marked with '@pytest.mark.asyncio' but it is not an async function. Please remove the asyncio mark. If the test is not marked explicitly, check for global marks applied via 'pytestmark'.
+    def test_calculate_next_action(self):
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/test_drift_logic.py::TestSupraDrift::test_grip_mode - TypeError:...
+FAILED tests/test_drift_logic.py::TestSupraDrift::test_drift_initiation - Typ...
+FAILED tests/test_drift_logic.py::TestSupraDrift::test_slip_transition - Type...
+FAILED tests/test_drift_logic.py::TestSupraDrift::test_zero_velocity - TypeEr...
+FAILED tests/test_gemini_agent_e2e.py::TestGeminiAgentE2E::test_rag_distillation_flow
+FAILED tests/test_ghost_void_spoke.py::TestGhostVoidSpokeSimulationMode::test_initialization_simulation_mode
+FAILED tests/test_ghost_void_spoke.py::TestGhostVoidSpokeSimulationMode::test_act_reset_resets_state
+FAILED tests/test_ghost_void_spoke.py::TestGhostVoidSpokeEngineMode::test_initialization_engine_mode
+FAILED tests/test_handshake_flow.py::test_handshake_initiation_and_transition
+FAILED tests/test_intent_engine.py::test_intent_engine_executes_plan - TypeEr...
+FAILED tests/test_intent_engine.py::test_intent_engine_sends_completion_notification
+FAILED tests/test_locomotion_model.py::TestLocomotionModel::test_kinematic_step_telemetry
+FAILED tests/test_locomotion_model.py::TestLocomotionModel::test_move_to_convergence
+FAILED tests/test_middleware_runtime.py::TestMiddlewareRuntime::test_runtime_transition_and_emit
+FAILED tests/test_release_webhook.py::test_release_webhook_accepts_and_completes_job
+FAILED tests/test_release_webhook.py::test_release_webhook_enforces_token_when_configured
+FAILED tests/test_release_webhook.py::test_release_webhook_records_failure_status
+FAILED tests/test_tetris_aggregation.py::test_tetris_aggregator_buffers_and_flushes
+FAILED tests/test_tetris_observer.py::TestTetrisObserver::test_aggregation_logic
+FAILED tests/test_vector_gate.py::test_intent_engine_injects_vector_gate_context
+FAILED tests/test_webhook_cicd_monitor.py::test_github_actions_webhook_ingest_and_status
+FAILED tests/test_webhook_cicd_monitor.py::test_github_actions_webhook_rejects_invalid_token
+FAILED tests/test_webhook_cicd_monitor.py::test_ingress_compat_route_still_works
+FAILED tests/test_webhook_cicd_monitor.py::test_github_actions_webhook_accepts_valid_signature_when_configured
+FAILED tests/test_webhook_cicd_monitor.py::test_github_actions_webhook_rejects_invalid_signature_when_configured
+FAILED tests/test_workflow_actions.py::test_agents_ci_cd_release_upload_has_write_permission
+FAILED tests/test_workflow_actions.py::test_main_workflow_can_comment_on_issues
+FAILED tests/test_workflow_actions.py::test_push_knowledge_comment_step_is_guarded_and_uses_issue_permission
+FAILED tests/test_workflow_actions.py::test_agents_ci_cd_notifies_cicd_monitor
+FAILED tests/test_workflow_actions.py::test_integration_workflow_is_valid_and_runs_postgres_backed_tests
+====== 30 failed, 198 passed, 8 skipped, 4 warnings in 89.26s (0:01:29) =======

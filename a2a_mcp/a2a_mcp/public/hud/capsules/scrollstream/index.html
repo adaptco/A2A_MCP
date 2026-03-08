@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Scrollstream Rehearsal Loop</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      background: #05070d;
+      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      color: #e5e7eb;
+      min-height: 100vh;
+    }
+    .hud-shimmer {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0;
+      background: radial-gradient(circle at center, rgba(14,165,233,0.25), transparent 70%);
+      mix-blend-mode: screen;
+      transition: opacity 200ms ease-out;
+    }
+    .hud-shimmer.active {
+      opacity: 1;
+      animation: shimmer 800ms ease-out forwards;
+    }
+    @keyframes shimmer {
+      from {
+        transform: scale(0.96);
+        opacity: 0.85;
+      }
+      40% {
+        transform: scale(1.02);
+        opacity: 1;
+      }
+      to {
+        transform: scale(1);
+        opacity: 0;
+      }
+    }
+    .replay-rail button {
+      transition: transform 160ms ease, box-shadow 160ms ease;
+    }
+    .replay-rail button.pulse {
+      transform: translateY(-4px) scale(1.05);
+      box-shadow: 0 0 22px rgba(234, 179, 8, 0.45);
+    }
+    .ledger-entry {
+      background: rgba(17, 24, 39, 0.68);
+      border: 1px solid rgba(148, 163, 184, 0.28);
+      border-radius: 1rem;
+      padding: 1.25rem;
+      box-shadow: 0 18px 40px -24px rgba(14, 165, 233, 0.45);
+    }
+    .ledger-entry + .ledger-entry {
+      margin-top: 1rem;
+    }
+    .glyph-badge {
+      font-feature-settings: 'tnum';
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0.08em;
+    }
+    .spark-pass {
+      background: linear-gradient(90deg, rgba(56,189,248,0.9), rgba(244,114,182,0.75));
+      -webkit-background-clip: text;
+      color: transparent;
+      font-weight: 700;
+    }
+    .toggle {
+      position: relative;
+      width: 3.25rem;
+      height: 1.5rem;
+      border-radius: 9999px;
+      background: rgba(148, 163, 184, 0.35);
+      transition: background 200ms ease;
+    }
+    .toggle::after {
+      content: '';
+      position: absolute;
+      top: 0.25rem;
+      left: 0.25rem;
+      width: 1rem;
+      height: 1rem;
+      border-radius: 9999px;
+      background: #fff;
+      transition: transform 200ms ease;
+    }
+    .toggle.active {
+      background: rgba(94, 234, 212, 0.55);
+    }
+    .toggle.active::after {
+      transform: translateX(1.75rem);
+      background: #0f172a;
+    }
+  </style>
+</head>
+<body>
+  <div class="hud-shimmer" aria-hidden="true"></div>
+  <main class="mx-auto max-w-5xl px-6 py-12 space-y-12">
+    <header class="space-y-3 text-center">
+      <p class="text-sky-400 uppercase tracking-[0.35em] text-xs md:text-sm">capsule.rehearsal.scrollstream.v1</p>
+      <h1 class="text-3xl md:text-4xl font-black text-slate-100">Scrollstream Rehearsal Loop</h1>
+      <p class="text-slate-400 max-w-3xl mx-auto">Simulate the audit braid in one click. Celine leads the summary, Luma seals the proof, and Dot executes the guardianship. Ledger writes and HUD feedback ensure contributors witness the complete emission.</p>
+    </header>
+
+    <section class="bg-slate-900/70 border border-slate-700/50 rounded-3xl p-8 space-y-6 shadow-2xl">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+        <div>
+          <h2 class="text-2xl font-semibold text-slate-100">Rehearsal Controls</h2>
+          <p class="text-sm text-slate-400">Training mode emits deterministic payloads for CI smoke tests and rehearsal scoring.</p>
+        </div>
+        <div class="flex items-center gap-4">
+          <span class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">Training Mode</span>
+          <button id="trainingToggle" class="toggle active" type="button" role="switch" aria-checked="true" aria-label="Toggle training mode"></button>
+        </div>
+      </div>
+      <div class="replay-rail grid grid-cols-1 md:grid-cols-3 gap-4">
+        <button data-stage="audit.summary" class="rounded-2xl border border-sky-600/60 bg-slate-800/70 px-6 py-5 text-left shadow-lg transition" type="button" aria-label="Replay audit summary">
+          <p class="text-xs uppercase tracking-[0.3em] text-sky-300">Stage 01</p>
+          <p class="text-lg font-semibold text-slate-100">Celine · Architect</p>
+          <p class="text-sm text-slate-400">audit.summary</p>
+        </button>
+        <button data-stage="audit.proof" class="rounded-2xl border border-emerald-600/60 bg-slate-800/70 px-6 py-5 text-left shadow-lg transition" type="button" aria-label="Replay audit proof">
+          <p class="text-xs uppercase tracking-[0.3em] text-emerald-300">Stage 02</p>
+          <p class="text-lg font-semibold text-slate-100">Luma · Sentinel</p>
+          <p class="text-sm text-slate-400">audit.proof</p>
+        </button>
+        <button data-stage="audit.execution" class="rounded-2xl border border-amber-600/60 bg-slate-800/70 px-6 py-5 text-left shadow-lg transition" type="button" aria-label="Replay audit execution">
+          <p class="text-xs uppercase tracking-[0.3em] text-amber-300">Stage 03</p>
+          <p class="text-lg font-semibold text-slate-100">Dot · Guardian</p>
+          <p class="text-sm text-slate-400">audit.execution</p>
+        </button>
+      </div>
+      <div class="flex flex-col md:flex-row gap-4 md:items-center md:justify-between">
+        <button id="emitLoop" class="inline-flex items-center justify-center gap-2 rounded-full bg-sky-500 px-6 py-3 text-base font-semibold text-slate-900 shadow-2xl transition hover:bg-sky-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-300" type="button">
+          <span class="text-xl">▶</span>
+          <span>Emit Full Rehearsal Loop</span>
+        </button>
+        <p class="text-xs text-slate-400 md:text-right">
+          HUD shimmer confirms emission · Replay glyph pulses track the braid · Sabrina Spark Test runs on each capsule glyph.
+        </p>
+      </div>
+    </section>
+
+    <section aria-live="polite" class="space-y-4">
+      <header>
+        <h2 class="text-2xl font-semibold text-slate-100">Scrollstream Ledger</h2>
+        <p class="text-sm text-slate-400">Each emission appends an ISO timestamp, capsule ID, agent, and output to the rehearsal ledger.</p>
+      </header>
+      <div id="ledgerContainer" class="space-y-4"></div>
+    </section>
+  </main>
+
+  <template id="ledgerEntryTemplate">
+    <article class="ledger-entry">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <div class="space-y-1">
+          <p class="text-xs tracking-[0.3em] uppercase text-slate-400">Stage <span class="stage-index"></span> · <span class="stage-id"></span></p>
+          <h3 class="text-lg font-semibold text-slate-100"><span class="agent"></span> <span class="agent-role text-slate-400 font-medium"></span></h3>
+        </div>
+        <div class="text-right text-sm text-slate-400">
+          <p class="glyph-badge"><span class="glyph"></span></p>
+          <p class="timestamp text-xs"></p>
+        </div>
+      </div>
+      <p class="mt-4 text-sm text-slate-300 leading-6 output"></p>
+      <div class="mt-4 flex flex-wrap items-center gap-2 text-xs text-slate-400">
+        <span class="rounded-full border border-slate-600/60 px-3 py-1">capsule: <span class="capsule-id text-slate-200"></span></span>
+        <span class="rounded-full border border-slate-600/60 px-3 py-1">payload: <span class="payload text-slate-200"></span></span>
+        <span class="spark-pass uppercase tracking-[0.25em] text-xs">Sabrina Spark ✓</span>
+      </div>
+    </article>
+  </template>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const capsuleId = 'capsule.rehearsal.scrollstream.v1';
+      const ledgerKey = 'scrollstream_ledger';
+      const shimmer = document.querySelector('.hud-shimmer');
+      const emitButton = document.getElementById('emitLoop');
+      const ledgerContainer = document.getElementById('ledgerContainer');
+      const trainingToggle = document.getElementById('trainingToggle');
+      const replayButtons = Array.from(document.querySelectorAll('.replay-rail button'));
+      const ledgerTemplate = document.getElementById('ledgerEntryTemplate');
+
+      const steps = [
+        {
+          stage: 'audit.summary',
+          agent: 'Celine',
+          role: 'Architect',
+          glyph: 'E1',
+          payload: 'irony shimmer · spark trace',
+          output: 'Celine compiles the fleet audit summary, reconciling capsule bindings across Celine → Luma → Dot with a cool blue resolve.',
+          emotional: 'Resolve:72 | Spark:Silver'
+        },
+        {
+          stage: 'audit.proof',
+          agent: 'Luma',
+          role: 'Sentinel',
+          glyph: 'L3',
+          payload: 'breath sync · glyph fidelity',
+          output: 'Luma stabilizes the sentinel proof lattice, aligning HUD telemetry and glyph fidelity for deterministic validation.',
+          emotional: 'Calm:65 | Spark:Teal'
+        },
+        {
+          stage: 'audit.execution',
+          agent: 'Dot',
+          role: 'Guardian',
+          glyph: 'D4',
+          payload: 'empathy shimmer · echo match',
+          output: 'Dot executes the guardian sequence, routing attest.scroll signatures and echo-matching ledger state before release.',
+          emotional: 'Focus:78 | Spark:Amber'
+        }
+      ];
+
+      let trainingMode = true;
+      let ledger = [];
+
+      async function hydrateFromStatic() {
+        try {
+          const response = await fetch('../../../data/scrollstream_ledger.json', { cache: 'no-store' });
+          if (!response.ok) {
+            return;
+          }
+          const payload = await response.json();
+          if (payload && Array.isArray(payload.events)) {
+            ledger = payload.events.map(event => ({ ...event }));
+          }
+        } catch (error) {
+          console.warn('Unable to hydrate scrollstream ledger from static payload', error);
+        }
+      }
+
+      async function loadLedger() {
+        let restored = false;
+        try {
+          const stored = localStorage.getItem(ledgerKey);
+          if (stored) {
+            ledger = JSON.parse(stored);
+            restored = true;
+          }
+        } catch (error) {
+          console.warn('Unable to restore scrollstream ledger from storage', error);
+          ledger = [];
+        }
+
+        if (!restored) {
+          await hydrateFromStatic();
+        }
+
+        renderLedger();
+      }
+
+      function persistLedger() {
+        try {
+          localStorage.setItem(ledgerKey, JSON.stringify(ledger));
+        } catch (error) {
+          console.warn('Unable to persist scrollstream ledger', error);
+        }
+      }
+
+      function isoTimestamp(offsetSeconds = 0) {
+        if (!trainingMode) {
+          const now = new Date();
+          return new Date(now.getTime() + offsetSeconds * 1000).toISOString();
+        }
+        const anchor = new Date('2025-03-01T12:00:00.000Z');
+        return new Date(anchor.getTime() + offsetSeconds * 1000).toISOString();
+      }
+
+      function shimmerOnce() {
+        shimmer.classList.remove('active');
+        void shimmer.offsetWidth;
+        shimmer.classList.add('active');
+        setTimeout(() => shimmer.classList.remove('active'), 900);
+      }
+
+      function pulseReplay(stage) {
+        const button = replayButtons.find(btn => btn.dataset.stage === stage);
+        if (!button) return;
+        button.classList.remove('pulse');
+        void button.offsetWidth;
+        button.classList.add('pulse');
+        setTimeout(() => button.classList.remove('pulse'), 1000);
+      }
+
+      function appendEvent(step, index) {
+        const event = {
+          timestamp: isoTimestamp(index * 9),
+          capsule_id: capsuleId,
+          stage: step.stage,
+          agent: step.agent,
+          role: step.role,
+          glyph: step.glyph,
+          payload: step.payload,
+          output: step.output,
+          emotional: step.emotional,
+          spark_test: 'sabrina/pass'
+        };
+        ledger.push(event);
+        persistLedger();
+        renderLedger();
+        shimmerOnce();
+        pulseReplay(step.stage);
+      }
+
+      function clearLedgerDisplay() {
+        ledgerContainer.innerHTML = '';
+      }
+
+      function renderLedger() {
+        clearLedgerDisplay();
+        if (!ledger.length) {
+          const emptyState = document.createElement('p');
+          emptyState.className = 'text-sm text-slate-500 italic';
+          emptyState.textContent = 'Scrollstream ledger awaiting emission. Launch the rehearsal loop to generate the braid.';
+          ledgerContainer.appendChild(emptyState);
+          return;
+        }
+
+        ledger.forEach((event, idx) => {
+          const instance = ledgerTemplate.content.firstElementChild.cloneNode(true);
+          instance.querySelector('.stage-index').textContent = (idx + 1).toString().padStart(2, '0');
+          instance.querySelector('.stage-id').textContent = event.stage;
+          instance.querySelector('.agent').textContent = event.agent;
+          instance.querySelector('.agent-role').textContent = `· ${event.role}`;
+          instance.querySelector('.glyph').textContent = event.glyph;
+          instance.querySelector('.timestamp').textContent = new Date(event.timestamp).toUTCString();
+          instance.querySelector('.output').textContent = `${event.output} [${event.emotional}]`;
+          instance.querySelector('.capsule-id').textContent = event.capsule_id;
+          instance.querySelector('.payload').textContent = event.payload;
+          ledgerContainer.appendChild(instance);
+        });
+      }
+
+      async function emitLoop() {
+        emitButton.disabled = true;
+        emitButton.classList.add('opacity-60');
+        for (let i = 0; i < steps.length; i += 1) {
+          const step = steps[i];
+          appendEvent(step, i);
+          // ensure deterministic pacing in training mode
+          const delay = trainingMode ? 320 : 520;
+          await new Promise(resolve => setTimeout(resolve, delay));
+        }
+        emitButton.disabled = false;
+        emitButton.classList.remove('opacity-60');
+      }
+
+      emitButton.addEventListener('click', emitLoop);
+
+      trainingToggle.addEventListener('click', () => {
+        trainingMode = !trainingMode;
+        trainingToggle.classList.toggle('active', trainingMode);
+        trainingToggle.setAttribute('aria-checked', String(trainingMode));
+      });
+
+      replayButtons.forEach(button => {
+        button.addEventListener('click', () => {
+          const stage = button.dataset.stage;
+          const entry = ledger.find(item => item.stage === stage);
+          if (!entry) {
+            pulseReplay(stage);
+            return;
+          }
+          shimmerOnce();
+          pulseReplay(stage);
+          const message = `${entry.agent} · ${stage} — ${entry.output}`;
+          const toast = document.createElement('div');
+          toast.setAttribute('role', 'status');
+          toast.setAttribute('aria-live', 'polite');
+          toast.className = 'fixed bottom-8 right-8 max-w-sm rounded-2xl border border-slate-700/70 bg-slate-900/90 px-5 py-4 text-sm text-slate-200 shadow-2xl';
+          toast.textContent = message;
+          document.body.appendChild(toast);
+          setTimeout(() => toast.remove(), 2400);
+        });
+      });
+
+      loadLedger();
+    });
+  </script>
+</body>
+</html>

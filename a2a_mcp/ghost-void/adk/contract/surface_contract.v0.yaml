@@ -1,0 +1,40 @@
+apiVersion: adk.io/v0
+kind: SurfaceContract
+metadata:
+  name: surface_contract
+  version: v0
+
+tooling_requirements:
+  purpose: >
+    Define the mandatory IDE and tooling control surfaces required
+    to safely author, validate, and release ADK artifacts.
+
+  applies_to_pr_scope:
+    - surface_contract
+    - schemas
+    - agent_orchestration
+    - runtime
+    - replay_court
+
+  normative_references:
+    - adk://policy/ide.compliance_checklist.v1
+    - adk://env/devcontainer.ide_control_surface.v1
+    - adk://policy/precommit.bundle.v1
+    - adk://runbook/ci_parity.v1
+
+  enforcement_model:
+    human_attestation:
+      required: true
+      artifact: adk://policy/ide.compliance_checklist.v1
+
+    machine_enforcement:
+      pre_commit: adk://policy/precommit.bundle.v1
+      ci_parity: adk://runbook/ci_parity.v1
+
+  invariants:
+    - >
+      No artifact in scope may be merged unless tooling compliance
+      is attested and machine checks pass.
+    - >
+      Tooling policy violations are merge-blocking defects, not
+      documentation issues.

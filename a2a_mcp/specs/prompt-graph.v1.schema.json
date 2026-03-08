@@ -1,0 +1,298 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://adaptco.dev/schemas/prompt-graph.v1.schema.json",
+  "title": "Prompt Graph Capsule v1",
+  "description": "Schema describing sovereign prompt graph capsules that bind scene beats, continuity tokens, and LoRA overlays to runtime governance anchors.",
+  "type": "object",
+  "required": [
+    "capsule_id",
+    "version",
+    "type",
+    "issued_at",
+    "description",
+    "subject",
+    "runtime",
+    "global_style",
+    "continuity",
+    "beats",
+    "post_processing",
+    "quality",
+    "bindings",
+    "attestation"
+  ],
+  "properties": {
+    "capsule_id": {
+      "type": "string",
+      "pattern": "^capsule\\.prompt\\.graph\\.[a-z0-9_.-]+\\.v[0-9]+$"
+    },
+    "author": {
+      "type": "string"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "type": {
+      "const": "PromptGraph"
+    },
+    "issued_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "description": {
+      "type": "string"
+    },
+    "subject": {
+      "type": "object",
+      "required": [
+        "title",
+        "runtime_context",
+        "liveries"
+      ],
+      "properties": {
+        "title": {"type": "string"},
+        "runtime_context": {
+          "type": "object",
+          "required": ["runtime_label", "beats"],
+          "properties": {
+            "runtime_label": {"type": "string"},
+            "beats": {
+              "type": "array",
+              "items": {"type": "string"},
+              "minItems": 1
+            },
+            "target_duration_s": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          "additionalProperties": false
+        },
+        "liveries": {
+          "type": "object",
+          "patternProperties": {
+            "^[a-z0-9_.-]+$": {
+              "type": "object",
+              "required": ["palette", "iconics"],
+              "properties": {
+                "palette": {
+                  "type": "array",
+                  "items": {"type": "string"},
+                  "minItems": 1
+                },
+                "iconics": {
+                  "type": "array",
+                  "items": {"type": "string"},
+                  "minItems": 1
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "minProperties": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "runtime": {
+      "type": "object",
+      "required": ["total_seconds", "nominal_fps", "beats"],
+      "properties": {
+        "total_seconds": {"type": "integer", "minimum": 1},
+        "nominal_fps": {"type": "number", "exclusiveMinimum": 0},
+        "beats": {
+          "type": "array",
+          "items": {"type": "string"},
+          "minItems": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "global_style": {
+      "type": "object",
+      "required": ["cadence", "material", "lighting", "camera"],
+      "properties": {
+        "cadence": {"type": "string"},
+        "material": {"type": "string"},
+        "lighting": {"type": "string"},
+        "camera": {"type": "string"}
+      },
+      "additionalProperties": false
+    },
+    "continuity": {
+      "type": "object",
+      "required": ["tokens", "overlays"],
+      "properties": {
+        "tokens": {
+          "type": "array",
+          "items": {"type": "string"},
+          "minItems": 1
+        },
+        "overlays": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "array",
+            "items": {"type": "string"},
+            "minItems": 1
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "beats": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "sequence",
+          "duration_s",
+          "prompt",
+          "lora_context",
+          "policy",
+          "telemetry"
+        ],
+        "properties": {
+          "id": {"type": "string"},
+          "title": {"type": "string"},
+          "sequence": {"type": "integer", "minimum": 0},
+          "duration_s": {"type": "integer", "minimum": 1},
+          "prompt": {
+            "type": "object",
+            "required": ["primary"],
+            "properties": {
+              "primary": {"type": "string"},
+              "alternates": {
+                "type": "array",
+                "items": {"type": "string"}
+              },
+              "camera_notes": {"type": "string"},
+              "continuity": {"type": "array", "items": {"type": "string"}}
+            },
+            "additionalProperties": false
+          },
+          "lora_context": {
+            "type": "object",
+            "required": ["slots"],
+            "properties": {
+              "slots": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "object",
+                  "required": ["slot", "binding"],
+                  "properties": {
+                    "slot": {"type": "string"},
+                    "binding": {"type": "string"},
+                    "overlays": {
+                      "type": "array",
+                      "items": {"type": "string"}
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              }
+            },
+            "additionalProperties": false
+          },
+          "policy": {
+            "type": "object",
+            "required": ["guards", "maker_checker"],
+            "properties": {
+              "guards": {
+                "type": "array",
+                "items": {"type": "string"}
+              },
+              "maker_checker": {"type": "string"}
+            },
+            "additionalProperties": false
+          },
+          "telemetry": {
+            "type": "object",
+            "required": ["checkpoints", "hud"],
+            "properties": {
+              "checkpoints": {
+                "type": "array",
+                "items": {"type": "string"}
+              },
+              "hud": {
+                "type": "array",
+                "items": {"type": "string"}
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "post_processing": {
+      "type": "object",
+      "required": ["cadence", "jitter_px", "flicker"],
+      "properties": {
+        "cadence": {"type": "string"},
+        "jitter_px": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {"type": "number"}
+        },
+        "flicker": {"type": "string"},
+        "audio": {"type": "string"}
+      },
+      "additionalProperties": false
+    },
+    "quality": {
+      "type": "object",
+      "required": ["checks"],
+      "properties": {
+        "checks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "description"],
+            "properties": {
+              "id": {"type": "string"},
+              "description": {"type": "string"},
+              "tolerance": {"type": "string"}
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "bindings": {
+      "type": "object",
+      "required": [
+        "wrapper",
+        "routing_policy",
+        "lora_map",
+        "registry",
+        "vault"
+      ],
+      "properties": {
+        "wrapper": {"type": "string"},
+        "routing_policy": {"type": "string"},
+        "lora_map": {"type": "string"},
+        "registry": {"type": "string"},
+        "vault": {"type": "string"},
+        "previz": {"type": "string"}
+      },
+      "additionalProperties": false
+    },
+    "attestation": {
+      "type": "object",
+      "required": ["status"],
+      "properties": {
+        "status": {"type": "string"},
+        "sealed_at": {"type": ["string", "null"], "format": "date-time"},
+        "content_hash": {"type": ["string", "null"]}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

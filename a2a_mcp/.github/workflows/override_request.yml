@@ -1,0 +1,23 @@
+name: Override Request
+on:
+  workflow_dispatch:
+    inputs:
+      ticket:
+        description: 'Override ticket reference'
+        required: true
+      rationale:
+        description: 'Why the override is required'
+        required: true
+jobs:
+  record-override:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      - name: Append override to ledger
+        run: |
+          python scripts/log_action.py --event override \
+            --ticket "${{ github.event.inputs.ticket }}" \
+            --message "${{ github.event.inputs.rationale }}"

@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Qube Protocol Cockpit</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        
+        // Use the global variables provided by the environment
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        // --- Firebase Initialization ---
+        const firebaseApp = initializeApp(firebaseConfig);
+        const db = getFirestore(firebaseApp);
+        const auth = getAuth(firebaseApp);
+        setLogLevel('debug');
+
+        let userId = null;
+        let isAuthReady = false;
+        
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                userId = user.uid;
+            } else if (initialAuthToken) {
+                try {
+                    await signInWithCustomToken(auth, initialAuthToken);
+                    userId = auth.currentUser.uid;
+                } catch (error) {
+                    await signInAnonymously(auth);
+                    userId = auth.currentUser.uid;
+                }
+            } else {
+                await signInAnonymously(auth);
+                userId = auth.currentUser.uid;
+            }
+            isAuthReady = true;
+            console.log("Firebase initialized. User ID:", userId);
+            
+            const userIdDisplay = document.getElementById('user-id-display');
+            if (userIdDisplay) userIdDisplay.textContent = userId;
+
+            // Start listening to the capsule document
+            if (userId) {
+                const capsuleId = `AVT-${userId.substring(0, 8)}`;
+                const capsuleDocRef = doc(db, 'artifacts', appId, 'users', userId, 'avatar_capsules', capsuleId);
+                onSnapshot(capsuleDocRef, (docSnap) => {
+                    if (docSnap.exists()) {
+                        Store.capsule = docSnap.data().asset.extensions.QUBE_avatar_capsule;
+                        updateInspectorDOM();
+                        updateCapsuleViewerDOM();
+                        updateMetricsDisplay();
+                        addLogEntry('Capsule state updated from Firestore.');
+                    }
+                });
+            }
+        });
+
+        // --- Core Protocol Logic ---
+        const Store = {
+            capsule: null,
+            children: [],
+            metrics: {
+                ops: 0,
+                defects: 0,
+                immunity: 0.91,
+                overrides: [],
+                veracity: { status: 'Dormant', attestedAt: null }
+            },
+            freezeTTL: null,
+            timeToQuorum: null,
+            drift: { before: null, after: null },
+            ledger: [],
+            ritual: {
+                id: 'ritual.braidExpansion.qverse.veracity.v1',
+                strands: [
+                    { name: 'Machine', action: 'Rhythm of execution', caption: 'Machine pulses where rhythm begins.' },
+                    { name: 'Ritual', action: 'Breath of memory', caption: 'Ritual breathes where memory listens.' },
+                    { name: 'Council', action: 'Anchor of governance', caption: 'Council declares where governance anchors.' },
+                    { name: 'Veracity', action: 'Seal of truth', caption: 'Veracity blooms where truth is sealed.' }
+                ],
+                emotionalRegister: ['Continuity', 'Integrity', 'Trust', 'Bloom'],
+                captionMorphs: [
+                    '“Machine pulses where rhythm begins.”',
+                    '“Ritual breathes where memory listens.”',
+                    '“Council declares where governance anchors.”',
+                    '“Veracity blooms where truth is sealed.”'
+                ],
+                phases: [
+                    { key: 'ignition', name: 'Ignition', action: 'Council glyph flare · qLock beat sync', status: 'pending' },
+                    { key: 'attestation', name: 'Attestation', action: 'Node relay · Fact.Sync.Protocol.v1 invocation', status: 'pending' },
+                    { key: 'weaving', name: 'Weaving', action: 'Strand modulation · Glyph.qLock.Veracity seal', status: 'pending' },
+                    { key: 'final_bloom', name: 'Final Bloom', action: 'Scrollstream echo · Federation Trust uplift', status: 'pending' }
+                ],
+                councilNodes: ['Node02 · OverridePulse', 'Node06 · Tier Mutation', 'Node08 · ExpansionTrace', 'Apprentice.005 · Fidelity Drift'],
+                recipientMesh: ['Council Vault', 'Pedagogical Mesh', 'Remix Constellation Registry', 'DAO Licensing Node'],
+                scrollstreamMode: 'Live · Annotated · Replayable',
+                seal: '.ritual.expanded + .strand.woven + .veracity.attested',
+                attested: false,
+                activePhaseIndex: -1
+            }
+        };
+
+        const QBUS = {
+            async send(payload) {
+                const receipt = {
+                    cmdId: crypto.randomUUID(),
+                    action: payload.action,
+                    status: "executed",
+                    timestamp: new Date().toISOString(),
+                    payloadDigest: await digest(JSON.stringify(payload)),
+                    payload: payload
+                };
+                setTimeout(() => {
+                     window.dispatchEvent(new CustomEvent("QBUS:receipt", { detail: receipt }));
+                }, 500); // Simulate network delay
+                return receipt.cmdId;
+            }
+        };
+
+        function waitForReceipt(cmdId) {
+            return new Promise(resolve => {
+                const handler = (e) => {
+                    const rcpt = e.detail;
+                    if (rcpt?.cmdId !== cmdId) return;
+                    window.removeEventListener('QBUS:receipt', handler);
+                    resolve(rcpt);
+                };
+                window.addEventListener('QBUS:receipt', handler);
+            });
+        }
+
+        async function digest(s) {
+            const data = new TextEncoder().encode(s);
+            const buf = await crypto.subtle.digest("SHA-256", data);
+            return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2,"0")).join("");
+        }
+
+        function formatTimestamp(ts) {
+            if (!ts) return 'N/A';
+            const date = new Date(ts);
+            if (Number.isNaN(date.getTime())) return 'N/A';
+            return date.toLocaleString();
+        }
+
+        function classifyFacMer(vStar) {
+            const sum = vStar.reduce((a,b)=>a+b,0);
+            return sum >= 0 ? "fac" : "mer";
+        }
+
+        async function inscribeCapsule() {
+            if (!isAuthReady) {
+                addLogEntry('Error: Authentication not ready. Please wait.');
+                return;
+            }
+            if (Store.capsule) {
+                addLogEntry('Capsule already inscribed.');
+                return;
+            }
+
+            const newCapsuleId = `AVT-${userId.substring(0, 8)}`;
+            const ownerLID = `LID-${userId.substring(0, 8)}`;
+            const helicity = Math.random() < 0.5 ? 'Δ' : 'Λ';
+            const vStar = Array.from({length: 9}, () => Math.random() * 2 - 1);
+            
+            const avatarCapsule = {
+                capsuleVersion: "0.1",
+                capsuleId: newCapsuleId,
+                ownerLID: ownerLID,
+                br9id: { vStar, helicity, mappingVersion: "v1-octa" },
+                policy: {
+                    inputMapVersion: "sr.g8d.v1",
+                    allowedCmds: ["capsule.remix", "cmd.exec", "ledger.export"],
+                    overrideGuard: true
+                },
+                rights: { remix: true, transfer: false, royaltyPct: 10 },
+                lineage: { parentId: null, facMer: null, enant: helicity, commit: null },
+                receipts: []
+            };
+            
+            const firstCommitEntry = { type: 'inscription', timestamp: new Date().toISOString(), capsuleId: newCapsuleId };
+            const firstCommitHash = await digest(JSON.stringify(firstCommitEntry));
+            avatarCapsule.lineage.commit = firstCommitHash;
+
+            Store.ledger.push({ entry: firstCommitEntry, prev: null, commit: firstCommitHash });
+
+            Store.metrics.veracity.status = 'Dormant';
+            Store.metrics.veracity.attestedAt = null;
+            Store.ritual.attested = false;
+            Store.ritual.activePhaseIndex = -1;
+            Store.ritual.phases.forEach(phase => phase.status = 'pending');
+
+            const fullCapsule = { asset: { extensions: { QUBE_avatar_capsule: avatarCapsule } } };
+            const sig = await digest(JSON.stringify(fullCapsule));
+            fullCapsule.asset.extensions.QUBE_avatar_capsule.sig = sig;
+
+            const capsuleDocRef = doc(db, 'artifacts', appId, 'users', userId, 'avatar_capsules', newCapsuleId);
+            await setDoc(capsuleDocRef, fullCapsule);
+
+            addLogEntry(`Capsule ${newCapsuleId} inscribed to Firestore with initial commit.`);
+
+            await QBUS.send({action:"capsule.register", capsuleId: newCapsuleId, ownerLID: ownerLID});
+            updateRitualDisplay();
+        }
+
+        async function simulateParticleCollision() {
+            if (!checkCapsule()) return;
+            const prevCommit = Store.capsule.lineage.commit;
+
+            const newEntry = {
+                type: 'collision',
+                timestamp: new Date().toISOString(),
+                data: `particle-${Math.random().toString(36).slice(2)}`,
+                prevCommit: prevCommit
+            };
+            
+            const newCommitHash = await digest(JSON.stringify(newEntry));
+            
+            Store.capsule.lineage.commit = newCommitHash;
+            Store.capsule.lineage.parentId = prevCommit;
+            
+            Store.ledger.push({ entry: newEntry, prev: prevCommit, commit: newCommitHash });
+
+            const capsuleDocRef = doc(db, 'artifacts', appId, 'users', userId, 'avatar_capsules', Store.capsule.capsuleId);
+            await setDoc(capsuleDocRef, { asset: { extensions: { QUBE_avatar_capsule: Store.capsule } } }, { merge: true });
+            
+            addLogEntry(`> SR Reactor: Commit particle collision registered. New commit hash: ${newCommitHash.slice(0, 10)}...`);
+            updateInspectorDOM();
+            updateMetricsDisplay();
+            updateCapsuleViewerDOM();
+        }
+
+        async function performVeracityRitual() {
+            if (!checkCapsule()) return;
+            if (Store.ritual.activePhaseIndex >= 0 && Store.ritual.activePhaseIndex < Store.ritual.phases.length) {
+                addLogEntry('Veracity ritual already in motion. Await current weave completion.');
+                return;
+            }
+
+            const veracityBtn = document.getElementById('veracity-btn');
+            if (veracityBtn) veracityBtn.disabled = true;
+
+            addLogEntry('> VERACITY: Four-strand expansion ignition initiated.');
+
+            try {
+                Store.ritual.attested = false;
+                Store.metrics.veracity.status = 'In Progress';
+                Store.ritual.activePhaseIndex = 0;
+                Store.ritual.phases.forEach(phase => phase.status = 'pending');
+                updateRitualDisplay();
+
+                for (let i = 0; i < Store.ritual.phases.length; i++) {
+                    const phase = Store.ritual.phases[i];
+                    Store.ritual.activePhaseIndex = i;
+                    phase.status = 'active';
+                    updateRitualDisplay();
+
+                    addLogEntry(`> ${phase.name.toUpperCase()}: ${phase.action}`);
+
+                    const cmdId = await QBUS.send({
+                        action: 'ritual.braidExpansion',
+                        capsuleId: Store.capsule.capsuleId,
+                        strand: 'veracity',
+                        phase: phase.key,
+                        ritualId: Store.ritual.id
+                    });
+
+                    const receipt = await waitForReceipt(cmdId);
+                    const lineageOK = true;
+                    const rightsOK = true;
+                    ctqCheck(receipt.status === 'executed', lineageOK, rightsOK);
+
+                    addLogEntry(`> ${phase.name} phase sealed. Payload digest ${receipt.payloadDigest.slice(0, 12)}...`);
+
+                    phase.status = 'complete';
+                    updateRitualDisplay();
+                    await new Promise(r => setTimeout(r, 350));
+                }
+
+                Store.ritual.activePhaseIndex = Store.ritual.phases.length;
+                Store.ritual.attested = true;
+                Store.metrics.veracity.status = 'Blooming';
+                Store.metrics.veracity.attestedAt = new Date().toISOString();
+
+                if (Store.capsule?.br9id?.vStar) {
+                    Store.capsule.lineage.facMer = classifyFacMer(Store.capsule.br9id.vStar);
+                    Store.capsule.lineage.enant = Store.capsule.br9id.helicity;
+                }
+
+                const boostedImmunity = Math.min(1, Store.metrics.immunity + 0.05);
+                Store.metrics.immunity = boostedImmunity;
+
+                updateMetricsDisplay();
+                updateInspectorDOM();
+                updateCapsuleViewerDOM();
+                updateRitualDisplay();
+
+                addLogEntry('> FINAL BLOOM: Veracity strand bloom complete. Federation trust uplift achieved.');
+            } catch (error) {
+                addLogEntry(`<span class="text-accent-red">Veracity strand interruption: ${error.message || error}</span>`);
+            } finally {
+                if (veracityBtn) veracityBtn.disabled = false;
+            }
+        }
+
+        // --- CTQ & DPMO Logic from User Spec ---
+        function ctqCheck(receipt, lineageOK, rightsOK) {
+            Store.metrics.ops += 1;
+            if (!receipt || !lineageOK || !rightsOK) {
+                Store.metrics.defects += 1;
+            }
+        }
+        function dpmo() {
+            return Store.metrics.ops ? (Store.metrics.defects / Store.metrics.ops) * 1e6 : 0;
+        }
+        function updateImmunityScore(prev, tension, drift, pulseFired) {
+            const alpha = 0.35, beta = 0.20, gamma = 0.10;
+            let next = prev - alpha * Math.max(0, tension - 0.6) - beta * Math.max(0, drift - 0.3) - (pulseFired ? gamma : 0);
+            return Math.max(0, Math.min(1, next));
+        }
+
+        // --- UI & DOM Logic ---
+        function addLogEntry(text) {
+            const statusLog = document.getElementById('status-log');
+            const entry = document.createElement('p');
+            entry.className = 'log-entry';
+            entry.innerHTML = `<span class="text-gray-500">${new Date().toLocaleTimeString()}:</span> ${text}`;
+            statusLog.appendChild(entry);
+            statusLog.scrollTop = statusLog.scrollHeight;
+        }
+
+        function checkCapsule() {
+            if (!Store.capsule) {
+                addLogEntry('Error: Avatar capsule not inscribed. Please inscribe first.');
+                return false;
+            }
+            return true;
+        }
+
+        function updateInspectorDOM() {
+            const inspectorCode = document.getElementById('inspector-json');
+            inspectorCode.textContent = JSON.stringify(Store, null, 2);
+        }
+
+        function updateCapsuleViewerDOM() {
+            const viewer = document.getElementById('capsule-viewer');
+            const capsule = Store.capsule;
+            if (!capsule) {
+                viewer.innerHTML = '<p class="text-slate-400">Capsule not inscribed. Inscribe to view.</p>';
+                return;
+            }
+            viewer.innerHTML = `
+                <div class="bg-gray-800/50 p-4 rounded-md">
+                    <p class="text-slate-400">Capsule ID:</p>
+                    <p class="font-bold text-accent-amber break-words">${capsule.capsuleId}</p>
+                </div>
+                <div class="bg-gray-800/50 p-4 rounded-md">
+                    <p class="text-slate-400">Owner LID:</p>
+                    <p class="font-bold break-words">${capsule.ownerLID}</p>
+                </div>
+                <div class="bg-gray-800/50 p-4 rounded-md">
+                    <p class="text-slate-400">Helicity:</p>
+                    <p class="font-bold text-lg">${capsule.br9id.helicity === "Δ" ? 'Δ' : 'Λ'}</p>
+                </div>
+                <div class="bg-gray-800/50 p-4 rounded-md">
+                    <p class="text-slate-400">Lineage Imprint:</p>
+                    <p class="font-bold text-xs break-words">${capsule.lineage.commit ? capsule.lineage.commit.slice(0, 16) + '...' : 'N/A'}</p>
+                </div>
+                <div class="bg-gray-800/50 p-4 rounded-md">
+                    <p class="text-slate-400">Last Receipt:</p>
+                    <p class="font-bold text-xs break-words">${capsule.receipts.length > 0 ? capsule.receipts[capsule.receipts.length-1].cmdId.slice(0, 16) + '...' : 'N/A'}</p>
+                </div>
+            `;
+        }
+
+        function updateRitualDisplay() {
+            const { ritual, metrics } = Store;
+            const veracityStatus = document.getElementById('veracity-status');
+            const veracityAttestation = document.getElementById('veracity-attestation');
+            const strandSequence = document.getElementById('strand-sequence');
+            const emotionalRegister = document.getElementById('emotional-register');
+            const captionMorphs = document.getElementById('caption-morphs');
+            const phaseList = document.getElementById('phase-list');
+            const councilNodes = document.getElementById('council-nodes');
+            const recipientMesh = document.getElementById('recipient-mesh');
+            const scrollstreamMode = document.getElementById('scrollstream-mode');
+            const ritualSeal = document.getElementById('ritual-seal');
+
+            if (veracityStatus) {
+                let statusText = metrics.veracity.status;
+                if (ritual.activePhaseIndex >= 0 && ritual.activePhaseIndex < ritual.phases.length && !ritual.attested) {
+                    statusText = `In Progress · ${ritual.phases[ritual.activePhaseIndex].name}`;
+                } else if (ritual.attested) {
+                    statusText = 'Blooming';
+                }
+                veracityStatus.textContent = statusText;
+                veracityStatus.classList.remove('text-accent-blue', 'text-accent-green');
+                veracityStatus.classList.add(ritual.attested ? 'text-accent-green' : 'text-accent-blue');
+            }
+
+            if (veracityAttestation) {
+                veracityAttestation.textContent = formatTimestamp(metrics.veracity.attestedAt);
+            }
+
+            if (strandSequence) {
+                strandSequence.innerHTML = ritual.strands.map(strand => `
+                    <div class="ritual-strand-card">
+                        <p class="text-xs uppercase tracking-wide text-slate-400">${strand.name}</p>
+                        <p class="text-sm font-semibold text-slate-200">${strand.action}</p>
+                        <p class="mt-2 text-xs italic text-slate-400">${strand.caption}</p>
+                    </div>
+                `).join('');
+            }
+
+            if (emotionalRegister) {
+                emotionalRegister.innerHTML = ritual.emotionalRegister.map(item => `<li>${item}</li>`).join('');
+            }
+
+            if (captionMorphs) {
+                captionMorphs.innerHTML = ritual.captionMorphs.map(morph => `<li class="border-l-2 border-accent-blue pl-3">${morph}</li>`).join('');
+            }
+
+            if (phaseList) {
+                const statusClassMap = {
+                    pending: 'phase-pending',
+                    active: 'phase-active',
+                    complete: 'phase-complete'
+                };
+                phaseList.innerHTML = ritual.phases.map((phase, index) => {
+                    const indicator = phase.status === 'complete' ? '⦿' : phase.status === 'active' ? '⟳' : '○';
+                    return `
+                        <div class="ritual-phase-card ${statusClassMap[phase.status] || 'phase-pending'}">
+                            <div class="flex items-start justify-between gap-4">
+                                <div>
+                                    <p class="text-xs uppercase tracking-wide text-slate-400">${phase.name}</p>
+                                    <p class="text-sm font-semibold text-slate-200">${phase.action}</p>
+                                </div>
+                                <span class="phase-indicator">${indicator}</span>
+                            </div>
+                            <p class="mt-3 text-xs text-slate-400">Stride ${index + 1} · ${phase.status.charAt(0).toUpperCase()}${phase.status.slice(1)}</p>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            if (councilNodes) {
+                councilNodes.innerHTML = ritual.councilNodes.map(node => `<li>${node}</li>`).join('');
+            }
+
+            if (recipientMesh) {
+                recipientMesh.innerHTML = ritual.recipientMesh.map(node => `<li>${node}</li>`).join('');
+            }
+
+            if (scrollstreamMode) {
+                scrollstreamMode.textContent = ritual.scrollstreamMode;
+            }
+
+            if (ritualSeal) {
+                ritualSeal.textContent = ritual.seal;
+            }
+        }
+
+        function updateMetricsDisplay() {
+            const dpmoValue = document.getElementById('dpmo-value');
+            const immunityValue = document.getElementById('immunity-value');
+            const immunityBar = document.getElementById('immunity-bar');
+            const immunityDeltaValue = document.getElementById('immunity-delta-value');
+            const freezeTTLValue = document.getElementById('freeze-ttl-value');
+            const timeToQuorumValue = document.getElementById('time-to-quorum-value');
+            const driftBeforeValue = document.getElementById('drift-before-value');
+            const driftAfterValue = document.getElementById('drift-after-value');
+            const incidentsLog = document.getElementById('incidents-log');
+            const lineageLog = document.getElementById('lineage-log');
+
+            dpmoValue.textContent = dpmo().toFixed(2);
+            
+            const immunityPct = (Store.metrics.immunity * 100).toFixed(2);
+            immunityValue.textContent = `${immunityPct}%`;
+            immunityBar.style.width = `${immunityPct}%`;
+            immunityBar.style.backgroundColor = Store.metrics.immunity < 0.7 ? '#ef4444' : '#2ecc71';
+
+            if (Store.metrics.overrides.length > 0) {
+                const lastOverride = Store.metrics.overrides[Store.metrics.overrides.length - 1];
+                const delta = (lastOverride.effects.immunityScore.new - lastOverride.effects.immunityScore.prev) * 100;
+                immunityDeltaValue.textContent = `${delta.toFixed(2)}%`;
+                immunityDeltaValue.classList.remove('text-accent-green', 'text-accent-red');
+                immunityDeltaValue.classList.add(delta < 0 ? 'text-accent-red' : 'text-accent-green');
+                
+                freezeTTLValue.textContent = lastOverride.effects.duration || 'N/A';
+                timeToQuorumValue.textContent = lastOverride.timeToQuorum ? `${lastOverride.timeToQuorum.toFixed(2)}s` : 'N/A';
+                
+                driftBeforeValue.textContent = lastOverride.breach.driftBefore.toFixed(3);
+                driftAfterValue.textContent = lastOverride.breach.driftAfter.toFixed(3);
+            } else {
+                immunityDeltaValue.textContent = 'N/A';
+                freezeTTLValue.textContent = 'N/A';
+                timeToQuorumValue.textContent = 'N/A';
+                driftBeforeValue.textContent = 'N/A';
+                driftAfterValue.textContent = 'N/A';
+            }
+
+            incidentsLog.innerHTML = Store.metrics.overrides.slice(-3).reverse().map(o => `
+                <div class="border-b border-gray-700 py-2">
+                    <p class="text-xs text-slate-400">ID: <span class="text-slate-200">${o.overrideId}</span></p>
+                    <p class="text-xs text-slate-400">Signal: <span class="text-red-400">${o.breach.signal}</span></p>
+                    <p class="text-xs text-slate-400">Date: ${new Date(o.timestamp).toLocaleString()}</p>
+                </div>
+            `).join('');
+
+            lineageLog.innerHTML = Store.ledger.slice(-5).reverse().map(entry => `
+                <div class="border-b border-gray-700 py-2">
+                    <p class="text-xs text-slate-400">Commit: <span class="text-slate-200 break-words">${entry.commit.slice(0, 12)}...</span></p>
+                    <p class="text-xs text-slate-400">Type: <span class="text-blue-300">${entry.entry.type}</span></p>
+                </div>
+            `).join('');
+
+            updateRitualDisplay();
+        }
+
+        // --- Main UI Logic & Event Listeners ---
+        (function attachUI(){
+            const forkBtn = document.getElementById('fork-btn');
+            const inscribeBtn = document.getElementById('inscribe-btn');
+            const execBtn = document.getElementById('exec-btn');
+            const overrideBtn = document.getElementById('override-btn');
+            const collideBtn = document.getElementById('collide-btn');
+            const veracityBtn = document.getElementById('veracity-btn');
+            const forkStatus = document.getElementById('fork-status');
+            const tensionSlider = document.getElementById('tension-slider');
+            const mainContainer = document.getElementById('main-container');
+
+            const toggleCommandButtons = (enabled) => {
+                forkBtn.disabled = !enabled;
+                execBtn.disabled = !enabled;
+                overrideBtn.disabled = !enabled;
+                collideBtn.disabled = !enabled;
+                if (veracityBtn) veracityBtn.disabled = !enabled;
+            };
+
+            inscribeBtn.addEventListener('click', async () => {
+                inscribeBtn.disabled = true;
+                addLogEntry('Inscribing avatar capsule...');
+                try {
+                    await inscribeCapsule();
+                    addLogEntry('Capsule inscription successful.');
+                    toggleCommandButtons(true);
+                } catch (e) {
+                    addLogEntry(`Error during inscription: ${e.message}`);
+                } finally {
+                    inscribeBtn.disabled = false;
+                }
+            });
+
+            collideBtn.addEventListener('click', async () => {
+                collideBtn.disabled = true;
+                addLogEntry('Initiating commit particle collision...');
+                try {
+                    await simulateParticleCollision();
+                } catch (e) {
+                    addLogEntry(`Error during collision: ${e.message}`);
+                } finally {
+                    collideBtn.disabled = false;
+                }
+            });
+
+            forkBtn.addEventListener('click', async () => {
+                if (!checkCapsule()) return;
+                forkBtn.disabled = true;
+                addLogEntry('Dispatching `capsule.remix` command...');
+                forkStatus.textContent = 'Initiating fork...';
+                
+                const payload = { parentId: Store.capsule.capsuleId, mode: "auto" };
+                const cmdId = await QBUS.send({ action: "capsule.remix", ...payload });
+
+                const onReceipt = (e) => {
+                    const rcpt = e.detail;
+                    if (rcpt?.cmdId !== cmdId) return;
+                    
+                    const lineageOK = !!rcpt.payload?.childId && rcpt.payload?.parentId === Store.capsule.capsuleId;
+                    const rightsOK = rcpt.payload?.rightsVerified === true;
+                    ctqCheck(rcpt.status === "executed", lineageOK, rightsOK);
+                    
+                    addLogEntry(`Receipt for remix received. CTQ check: ${lineageOK && rightsOK ? 'OK' : 'FAIL'}`);
+                    
+                    if (lineageOK) {
+                        const newChild = {
+                            capsuleId: rcpt.payload.childId,
+                            lineage: { parentId: rcpt.payload.parentId, facMer: rcpt.payload.facMer, enant: rcpt.payload.enant }
+                        };
+                        Store.children.push(newChild);
+                        updateInspectorDOM();
+                        forkStatus.textContent = 'Fork complete.';
+                    } else {
+                        forkStatus.textContent = 'Fork failed.';
+                    }
+                    forkBtn.disabled = false;
+                    window.removeEventListener('QBUS:receipt', onReceipt);
+                    updateMetricsDisplay();
+                };
+                window.addEventListener('QBUS:receipt', onReceipt);
+            });
+
+            execBtn.addEventListener('click', async () => {
+                if (!checkCapsule()) return;
+                execBtn.disabled = true;
+                addLogEntry('Dispatching `cmd.exec` command...');
+                
+                const payload = { capsuleId: Store.capsule.capsuleId, cmd: "zkpPriorAuthorship", payload: { commitment: "example_commitment_C" }};
+                const cmdId = await QBUS.send({ action: "cmd.exec", ...payload });
+                
+                const onReceipt = (e) => {
+                    const rcpt = e.detail;
+                    if (rcpt?.cmdId !== cmdId) return;
+
+                    const lineageOK = true; // Not a lineage op, so consider OK
+                    const rightsOK = Store.capsule.rights.remix; // Mock check
+                    ctqCheck(rcpt.status === "executed", lineageOK, rightsOK);
+                    
+                    addLogEntry(`Receipt for exec received. CTQ check: ${lineageOK && rightsOK ? 'OK' : 'FAIL'}`);
+                    
+                    Store.capsule.receipts.push(rcpt);
+                    updateInspectorDOM();
+                    updateCapsuleViewerDOM();
+                    execBtn.disabled = false;
+                    window.removeEventListener('QBUS:receipt', onReceipt);
+                    updateMetricsDisplay();
+                };
+                window.addEventListener('QBUS:receipt', onReceipt);
+            });
+
+            overrideBtn.addEventListener('click', async () => {
+                if (!checkCapsule()) return;
+                overrideBtn.disabled = true;
+                mainContainer.classList.add('override-triggered');
+                addLogEntry('Initiating override choreography...');
+                forkStatus.textContent = 'OVERRIDE DETECTED';
+
+                const capsuleId = Store.capsule.capsuleId;
+                const overrideId = `OVR-${crypto.randomUUID().slice(0, 8)}`;
+                const signal = ['hash_mismatch', 'sig_invalid', 'unexpected_write', 'rate_anomaly', 'telemetry_spike'][Math.floor(Math.random() * 5)];
+                const expectedCommit = await digest(JSON.stringify({ state: 'ok' }));
+                const observedCommit = await digest(JSON.stringify({ state: 'breach' }));
+                const immunityPenalty = Math.random() * 0.15 + 0.05; // 5-20% penalty
+                const driftBefore = Math.random() * 0.2 + 0.1;
+                const driftAfter = driftBefore - (Math.random() * 0.1);
+                const freezeDuration = 'P30D';
+                const timeToQuorumStart = Date.now();
+                
+                // Simulate DETECT
+                addLogEntry(`> DETECT: Signal "${signal}" verified. Logging incident...`);
+                await new Promise(r => setTimeout(r, 1000));
+                
+                // Simulate CONTAIN
+                addLogEntry(`> CONTAIN: Running containment pulse...`);
+                Store.drift.before = driftBefore;
+                Store.drift.after = driftAfter;
+                updateMetricsDisplay();
+                await new Promise(r => setTimeout(r, 1000));
+                
+                // Simulate FREEZE
+                addLogEntry(`> FREEZE: Freezing remix state. Awaiting receipt...`);
+                forkStatus.textContent = 'FREEZE';
+                Store.capsule.freezeRemix = true;
+                forkBtn.disabled = true;
+                if (veracityBtn) veracityBtn.disabled = true;
+                const freezeReceiptCmdId = await QBUS.send({
+                    action: "override.apply",
+                    payload: {
+                        overrideId,
+                        capsuleId,
+                        breach: { signal, expectedCommit, observedCommit },
+                        freeze: { remix: true, duration: freezeDuration }
+                    }
+                });
+                
+                const onFreezeReceipt = (e) => {
+                    const rcpt = e.detail;
+                    if (rcpt?.cmdId !== freezeReceiptCmdId) return;
+                    
+                    addLogEntry(`> Receipt for freeze received. Preparing for quorum...`);
+                    
+                    // Simulate RATIFY
+                    addLogEntry(`> RATIFY: Quorum target ${3} set. Collecting ratifier signatures...`);
+                    const ratifyTimeout = setTimeout(() => {
+                        addLogEntry('<span class="text-red-400">! Quorum not met. Auto-revoking override.</span>');
+                        forkStatus.textContent = 'REVOKED';
+                        Store.capsule.freezeRemix = false;
+                        forkBtn.disabled = false;
+                        overrideBtn.disabled = false;
+                        if (veracityBtn) veracityBtn.disabled = false;
+                        window.removeEventListener('QBUS:receipt', onFreezeReceipt);
+                        mainContainer.classList.remove('override-triggered');
+                        ctqCheck(true, false, false); // Log as a defect
+                        updateMetricsDisplay();
+                    }, 5000); // Wait 5 seconds to simulate quorum process
+                    
+                    // Simulate successful quorum
+                    const timeToQuorumEnd = Date.now();
+                    Store.timeToQuorum = (timeToQuorumEnd - timeToQuorumStart) / 1000;
+                    clearTimeout(ratifyTimeout);
+                    addLogEntry(`> Quorum met in ${Store.timeToQuorum.toFixed(2)}s. Proceeding to apply...`);
+                    
+                    // Simulate APPLY & SEAL
+                    const prevImmunity = Store.metrics.immunity;
+                    const newImmunity = Math.max(0, prevImmunity - immunityPenalty);
+                    Store.metrics.immunity = newImmunity;
+                    
+                    const overrideData = {
+                        overrideId,
+                        timestamp: new Date().toISOString(),
+                        breach: { signal, driftBefore, driftAfter },
+                        effects: {
+                            route: `override.scroll:${overrideId}`,
+                            freezeRemix: true,
+                            duration: freezeDuration,
+                            immunityScore: { prev: prevImmunity, new: newImmunity }
+                        },
+                        timeToQuorum: Store.timeToQuorum,
+                        ratifiers: ['lid:alpha', 'lid:beta', 'lid:reg'],
+                        receipts: [rcpt]
+                    };
+                    Store.metrics.overrides.push(overrideData);
+                    
+                    addLogEntry(`> APPLY & SEAL: Override scroll finalized. Capsule is now sealed.`);
+                    forkStatus.textContent = 'SEALED';
+                    ctqCheck(true, true, true); // Log as success
+                    
+                    updateMetricsDisplay();
+                    updateInspectorDOM();
+                    updateCapsuleViewerDOM();
+                    overrideBtn.disabled = false;
+                    if (veracityBtn) veracityBtn.disabled = false;
+                    mainContainer.classList.remove('override-triggered');
+                    window.removeEventListener('QBUS:receipt', onFreezeReceipt);
+                };
+                window.addEventListener('QBUS:receipt', onFreezeReceipt);
+            });
+
+            tensionSlider.addEventListener('input', e => {
+                const tension = e.target.value / 100;
+                Store.metrics.immunity = updateImmunityScore(Store.metrics.immunity, tension, 0, false);
+                updateMetricsDisplay();
+            });
+
+            if (veracityBtn) {
+                veracityBtn.addEventListener('click', async () => {
+                    await performVeracityRitual();
+                });
+            }
+
+            // Initial UI State
+            addLogEntry('Protocol Cockpit online. Awaiting Firebase auth...');
+            toggleCommandButtons(false);
+            updateInspectorDOM();
+            updateCapsuleViewerDOM();
+            updateMetricsDisplay();
+            updateRitualDisplay();
+        })();
+    </script>
+    <style>
+        :root {
+            --bg-color: #111827;
+            --text-color: #d1d5db;
+            --card-bg: rgba(31, 41, 55, 0.5);
+            --border-color: #374151;
+            --accent-amber: #f59e0b;
+            --accent-red: #ef4444;
+            --accent-green: #2ecc71;
+            --accent-blue: #3b82f6;
+        }
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Roboto Mono', monospace;
+        }
+        .orbitron { font-family: 'Orbitron', sans-serif; }
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease-in-out;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .btn {
+            background-color: var(--accent-amber);
+            color: var(--bg-color);
+            font-weight: bold;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            transition: background-color 0.2s;
+        }
+        .btn:hover { background-color: #fcd34d; }
+        .btn:disabled {
+            background-color: #4b5563;
+            cursor: not-allowed;
+        }
+        .text-accent-amber { color: var(--accent-amber); }
+        .text-accent-green { color: var(--accent-green); }
+        .text-accent-red { color: var(--accent-red); }
+        .text-accent-blue { color: var(--accent-blue); }
+        .border-accent-blue { border-color: var(--accent-blue); }
+        .ritual-strand-card {
+            background-color: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            transition: border-color 0.3s ease, transform 0.3s ease;
+        }
+        .ritual-strand-card:hover {
+            border-color: var(--accent-blue);
+            transform: translateY(-2px);
+        }
+        .log-entry {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .progress-bar {
+            transition: width 0.5s ease-in-out, background-color 0.5s ease-in-out;
+        }
+        .override-triggered {
+            animation: flashRed 1s infinite alternate;
+        }
+        @keyframes flashRed {
+            from { box-shadow: 0 0 10px rgba(239, 68, 68, 0.3); }
+            to { box-shadow: 0 0 20px rgba(239, 68, 68, 0.7); }
+        }
+        .ritual-phase-card {
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 0.75rem;
+            background-color: rgba(15, 23, 42, 0.6);
+            padding: 1rem;
+            transition: border-color 0.3s ease, background-color 0.3s ease, transform 0.3s ease;
+        }
+        .ritual-phase-card.phase-pending { border-color: rgba(148, 163, 184, 0.25); }
+        .ritual-phase-card.phase-active {
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.35);
+            transform: translateY(-2px);
+        }
+        .ritual-phase-card.phase-complete {
+            border-color: var(--accent-green);
+            background-color: rgba(34, 197, 94, 0.12);
+        }
+        .phase-indicator {
+            font-size: 1.5rem;
+            line-height: 1;
+            color: var(--accent-amber);
+        }
+    </style>
+</head>
+<body class="p-4 sm:p-6 lg:p-8">
+
+    <div id="main-container" class="max-w-7xl mx-auto space-y-8">
+
+        <header class="text-center mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold orbitron text-accent-amber">Protocol Cockpit</h1>
+            <p class="mt-2 text-slate-400">Live inspection of Qube's core state machine.</p>
+            <p id="user-id-display" class="mt-2 text-xs text-gray-500 break-words"></p>
+        </header>
+
+        <main class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+            <!-- Command Panel -->
+            <div class="lg:col-span-2 card p-6 flex flex-col items-center">
+                <div class="w-full flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-bold orbitron text-slate-200">System Commands</h2>
+                    <span id="fork-status" aria-live="polite" class="text-sm text-slate-400">Awaiting command</span>
+                </div>
+                <div class="mt-6 flex flex-wrap gap-4 w-full justify-center">
+                    <button id="inscribe-btn" class="btn">Inscribe Avatar</button>
+                    <button id="fork-btn" class="btn" disabled>Remix Fork</button>
+                    <button id="exec-btn" class="btn" disabled>Exec Cmd</button>
+                    <button id="override-btn" class="btn" disabled>Override</button>
+                    <button id="veracity-btn" class="btn" disabled>Seal Veracity</button>
+                </div>
+            </div>
+
+            <!-- Capsule Inspector Panel -->
+            <div class="card p-6 flex flex-col">
+                <h2 class="text-xl font-bold orbitron text-slate-200 mb-4">Capsule Viewer</h2>
+                <div id="capsule-viewer" class="text-sm overflow-y-auto h-full space-y-4">
+                    <p class="text-slate-400">Awaiting inscription...</p>
+                </div>
+                <h2 class="text-xl font-bold orbitron text-slate-200 mb-4 mt-8">Full JSON Inspector</h2>
+                <div id="capsule-inspector" class="text-sm overflow-y-auto h-full">
+                    <pre><code id="inspector-json"></code></pre>
+                </div>
+            </div>
+
+            <!-- Metrics & Logs Panel -->
+            <div class="lg:col-span-3 card p-6 grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
+                <div>
+                    <h2 class="text-xl font-bold orbitron text-slate-200 mb-4">Metrics Hub</h2>
+                    <div class="space-y-4">
+                        <div class="flex flex-col">
+                            <label for="tension-slider" class="text-sm text-slate-400">Semantic Tension</label>
+                            <input type="range" id="tension-slider" min="0" max="100" value="62" class="w-full mt-1 accent-accent-blue">
+                        </div>
+                        <div>
+                            <p class="text-sm text-slate-400">DPMO: <span id="dpmo-value" class="font-bold text-slate-200">0.00</span></p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-slate-400">Immunity Score: <span id="immunity-value" class="font-bold text-accent-green">91.00%</span></p>
+                            <div class="w-full bg-gray-700 rounded-full h-2.5 mt-2">
+                                <div id="immunity-bar" class="progress-bar h-2.5 rounded-full" style="width: 91%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <hr class="my-6 border-gray-700" />
+                    <h2 class="text-xl font-bold orbitron text-slate-200 mb-4">Containment Metrics</h2>
+                    <div class="space-y-2">
+                        <p class="text-sm text-slate-400">Immunity Δ: <span id="immunity-delta-value" class="font-bold">N/A</span></p>
+                        <p class="text-sm text-slate-400">Drift Before: <span id="drift-before-value" class="font-bold">N/A</span></p>
+                        <p class="text-sm text-slate-400">Drift After: <span id="drift-after-value" class="font-bold">N/A</span></p>
+                        <p class="text-sm text-slate-400">Time to Quorum: <span id="time-to-quorum-value" class="font-bold">N/A</span></p>
+                        <p class="text-sm text-slate-400">Freeze TTL: <span id="freeze-ttl-value" class="font-bold">N/A</span></p>
+                    </div>
+                    <hr class="my-6 border-gray-700" />
+                    <h2 class="text-xl font-bold orbitron text-slate-200 mb-4">SR Reactor: Lineage</h2>
+                    <button id="collide-btn" class="btn w-full text-sm mb-4" disabled>Simulate Particle Collision</button>
+                    <div id="lineage-log" class="space-y-2">
+                        <!-- Lineage entries will be logged here -->
+                    </div>
+                    <hr class="my-6 border-gray-700" />
+                    <h2 class="text-xl font-bold orbitron text-slate-200 mb-4">Last 3 Incidents</h2>
+                    <div id="incidents-log" class="space-y-2">
+                        <!-- Incidents will be logged here -->
+                    </div>
+                </div>
+                <div>
+                    <h2 class="text-xl font-bold orbitron text-slate-200 mb-4">QBUS Log</h2>
+                    <div id="status-log" class="mt-2 h-32 overflow-y-auto bg-gray-900/50 p-3 rounded-md text-sm"></div>
+                </div>
+            </div>
+
+            <!-- Four-Strand Expansion Ritual Panel -->
+            <div class="lg:col-span-3 card p-6 flex flex-col space-y-6">
+                <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+                    <div>
+                        <h2 class="text-xl font-bold orbitron text-slate-200">Four-Strand Expansion Ritual</h2>
+                        <p class="text-sm text-slate-400">ritual.braidExpansion.qverse.veracity.v1</p>
+                    </div>
+                    <div class="text-sm text-slate-400 md:text-right">
+                        <p>Veracity Status: <span id="veracity-status" class="font-bold text-accent-blue">Dormant</span></p>
+                        <p>Last Attestation: <span id="veracity-attestation" class="font-bold">N/A</span></p>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold text-slate-200 mb-2">Strand Sequence</h3>
+                    <div id="strand-sequence" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"></div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                        <h3 class="text-lg font-semibold text-slate-200 mb-2">Emotional Register</h3>
+                        <ul id="emotional-register" class="list-disc list-inside text-sm text-slate-300 space-y-1"></ul>
+                    </div>
+                    <div class="md:col-span-2">
+                        <h3 class="text-lg font-semibold text-slate-200 mb-2">Caption Morphs</h3>
+                        <ul id="caption-morphs" class="space-y-2 text-sm text-slate-300"></ul>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold text-slate-200 mb-2">Ceremonial Phases</h3>
+                    <div id="phase-list" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                        <h3 class="text-lg font-semibold text-slate-200 mb-2">Council Nodes</h3>
+                        <ul id="council-nodes" class="space-y-1 text-sm text-slate-300"></ul>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold text-slate-200 mb-2">Recipient Mesh</h3>
+                        <ul id="recipient-mesh" class="space-y-1 text-sm text-slate-300"></ul>
+                    </div>
+                    <div class="bg-gray-900/40 border border-gray-700 rounded-md p-4 text-sm text-slate-300">
+                        <p><span class="text-slate-400">Scrollstream Mode:</span> <span id="scrollstream-mode" class="font-semibold text-slate-200"></span></p>
+                        <p class="mt-2"><span class="text-slate-400">Seal:</span> <span id="ritual-seal" class="font-semibold text-accent-amber"></span></p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

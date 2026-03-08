@@ -1,0 +1,49 @@
+{
+  "capsule_id": "capsule.vision.train.cici.v1",
+  "type": "VisionTrainingSpec",
+  "version": "1.0.0",
+  "author": "Scrollsmith",
+  "issued_at": "2025-09-25T00:00:00Z",
+  "dataset": {
+    "manifest": "data/cici_manifest.jsonl",
+    "schema": {
+      "image_path": "str",
+      "scene_id": "str",
+      "prompt": "str",
+      "tokens": ["lexical|spatial|affective"],
+      "pose_map": "optional:path",
+      "depth_map": "optional:path",
+      "policy": {
+        "lattice": true,
+        "smear": false,
+        "intentdiff": true
+      },
+      "id_embed_ref": "str",
+      "style_tag": "str"
+    }
+  },
+  "model": {
+    "vision_backbone": "ViT-L/14@336",
+    "text_backbone": "T5-base (frozen)",
+    "proj_dim": 1024
+  },
+  "loss": {
+    "clip_contrast": 1.0,
+    "id_consistency": 1.0,
+    "style_consistency": 0.5,
+    "policy_guard_verify": 0.5
+  },
+  "guards": [
+    "capsule.policy_guard.lattice.v1",
+    "capsule.policy_guard.smearframe.v1",
+    "capsule.policy_guard.intentdiffusion.v1"
+  ],
+  "routing": "capsule.semantic.routing.v1",
+  "eval": {
+    "min_id_cos": 0.92,
+    "min_style_consistency": 0.96,
+    "max_drift": 0.02
+  },
+  "registry_out": "capsule.render.registry.v1",
+  "status": "STAGED"
+}

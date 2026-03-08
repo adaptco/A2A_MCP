@@ -1,0 +1,152 @@
+name: lint-diff-build-test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  lint-diff-build-test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: read
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: false # Prevents the 'A2A_MCP' submodule error
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+
+      - name: Go Tidy
+        run: go mod tidy
+
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@v3.5.0
+
+      - name: Install trivy
+        run: |
+          sudo apt-get install wget apt-transport-https gnupg lsb-release
+          wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | gpg --dearmor | sudo tee /usr/share/keyrings/trivy.gpg > /dev/null
+          echo "deb [signed-by=/usr/share/keyrings/trivy.gpg] https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main" | sudo tee -a /etc/apt/sources.list.d/trivy.list
+          sudo apt-get update
+          sudo apt-get install trivy
+
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v44
+
+      - name: Analyze code
+        id: analyze
+        uses: ./
+        with:
+          diff-file: ${{ steps.changed-files.outputs.all_changed_files }}
+
+      - name: Verify analysis outputs
+        id: verification
+        env:
+          COSIGN_EXPERIMENTAL: "true"
+          IMAGE_NAME: ${{ steps.analyze.outputs.image }} # Fixed reference from build-image to analyze
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p verification
+          has_any_true=false
+
+          if [ -f cosign.sig ]; then
+            cp cosign.sig verification/image.sig
+            echo "signature_path=verification/image.sig" >> $GITHUB_OUTPUT
+            echo "signature_name=image.sig" >> $GITHUB_OUTPUT
+            has_any_true=true
+          fi
+
+          if [ -f cosign.cert ]; then
+            cp cosign.cert verification/image.pem
+            echo "certificate_path=verification/image.pem" >> $GITHUB_OUTPUT
+            echo "certificate_name=image.pem" >> $GITHUB_OUTPUT
+            has_any_true=true
+          fi
+
+          echo "has_artifacts=$has_any_true" >> $GITHUB_OUTPUT
+
+      - name: Upload verification artifacts
+        if: steps.verification.outputs.has_artifacts == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: verification-artifacts
+          path: verification
+
+      - name: Create Github release
+        id: create_release # Added missing ID
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && steps.verification.outputs.has_artifacts == 'true'
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: release-${{ github.run_number }}
+          release_name: Release ${{ github.run_number }}
+          body: |
+            Automated release for commit ${{ github.sha }}.
+            - Container image digest: ${{ steps.analyze.outputs.digest || 'not-built' }}
+          draft: false
+          prerelease: false
+
+      - name: Upload OpenAPI spec to release
+        if: steps.create_release.outputs.upload_url != '' && steps.analyze.outputs.spec_path != ''
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ${{ steps.analyze.outputs.spec_path }} # Reference analyze step outputs
+          asset_name: spec.yaml
+          asset_content_type: application/yaml
+
+      - name: Upload OpenAPI diff to release
+        if: steps.create_release.outputs.upload_url != '' && steps.analyze.outputs.diff_path != ''
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ${{ steps.analyze.outputs.diff_path }} # Reference analyze step outputs
+          asset_name: diff.txt
+          asset_content_type: text/plain
+
+      - name: Upload SBOM to release
+        if: steps.create_release.outputs.upload_url != '' && steps.analyze.outputs.sbom_path != ''
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ${{ steps.analyze.outputs.sbom_path }} # Reference analyze step outputs
+          asset_name: sbom.json
+          asset_content_type: application/json
+
+      - name: Upload Cosign signature to release
+        if: steps.create_release.outputs.upload_url != '' && steps.verification.outputs.signature_path != ''
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ${{ steps.verification.outputs.signature_path }}
+          asset_name: ${{ steps.verification.outputs.signature_name }}
+          asset_content_type: application/vnd.dev.cosign.sig
+
+      - name: Upload Cosign certificate to release
+        if: steps.create_release.outputs.upload_url != '' && steps.verification.outputs.certificate_path != ''
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ${{ steps.verification.outputs.certificate_path }}
+          asset_name: ${{ steps.verification.outputs.certificate_name }}
+          asset_content_type: application/pem-certificate-chain

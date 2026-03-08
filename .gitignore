@@ -5,40 +5,50 @@ __pycache__/
 
 # Environments
 .env
+.env.*
 .venv
 env/
 venv/
 ENV/
 
-# Docker
-.docker/
+# Build artifacts
+dist/
+build/
+.out/
+out/
+tmp/
+temp/
 
 # IDEs
 .vscode/
 .idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
 
 # OS generated files
 .DS_Store
 Thumbs.db
 
-<<<<<<< HEAD
-# Local transient orchestration sandboxes
-=======
 # Runtime artifacts
 *.db
 *.sqlite
+*.pem
+*.key
+*.crt
+*.jks
+logs/
+*.log
+coverage/
+.nyc_output/
 
 # Agent temp files
 tmpclaude-*
->>>>>>> adaptco/chore/orchestration-agent-mcp-bus
 tmpclaude-*-cwd/
 tmpclaude-*-cwd
 specs/tmpclaude-*-cwd
 
-<<<<<<< HEAD
-# Local runtime artifacts
-*.sqlite
-=======
 # Test output dumps
 test_output*.txt
 test_results*.txt
@@ -46,4 +56,24 @@ test_full_output*.txt
 
 # Pytest
 .pytest_cache/
->>>>>>> adaptco/chore/orchestration-agent-mcp-bus
+
+# Spectral & API-Diff caches
+.spectral/
+openapi-diff.cache/
+
+# GitHub Actions logs & artifacts
+.github/workflows/**/action-logs/
+.github/workflows/**/artifacts/
+
+# Custom scripts / local fixtures
+scripts/local-*.*
+fixtures/*.json
+!fixtures/plan_release_candidate_input.json
+*.qcap
+
+# Firebase debug logs
+firebase-debug.log
+
+# CIE smoke artifacts
+runtime/cie_v1_smoke.log.jsonl
+*.egg-info/

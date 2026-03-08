@@ -1,0 +1,16 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Chunk Embedding",
+  "type": "object",
+  "properties": {
+    "chunk_id": { "type": "string" },
+    "doc_id": { "type": "string" },
+    "text_content": { "type": "string" },
+    "embedding": {
+      "type": "array",
+      "items": { "type": "number" }
+    },
+    "integrity_hash": { "type": "string" }
+  },
+  "required": ["chunk_id", "doc_id", "text_content", "embedding", "integrity_hash"]
+}

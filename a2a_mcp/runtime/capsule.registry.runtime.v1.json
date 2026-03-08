@@ -1,0 +1,163 @@
+{
+  "capsule_id": "capsule.registry.runtime.v1",
+  "version": "1.0.0",
+  "issued_at": "2025-09-24T21:34:00Z",
+  "description": "Live index of sovereign capsules available to the ADAPTCO OS runtime shell.",
+  "ledger_ref": "runtime/scrollstream_ledger.jsonl",
+  "entries": [
+    {
+      "capsule_id": "capsule.wrapper.adaptco_os.v1",
+      "canonical": "runtime/capsule.wrapper.adaptco_os.v1.canonical.json",
+      "hash": "3253b27ee2b596d31e394594ed60b67c95c6e95bdff59f5f2d3e37f19be08582",
+      "status": "STAGED",
+      "governance": {
+        "router": "Queen Boo",
+        "stabilizer": "Queen CiCi"
+      }
+    },
+    {
+      "capsule_id": "capsule.gpt.intent.routing.v1",
+      "canonical": "runtime/capsule.gpt.intent.routing.v1.canonical.json",
+      "hash": "a7ba4747dcb41348fed7ab7b27fce345d39ee3070b3eebf1c1368993e91f06b7",
+      "status": "STAGED",
+      "governance": {
+        "router": "Queen Boo",
+        "oracle": "Celine"
+      }
+    },
+    {
+      "capsule_id": "capsule.boo.lora.map.v1",
+      "canonical": "runtime/capsule.boo.lora.map.v1.canonical.json",
+      "hash": "55dfd4b509c943f7a929fd1aa0fb46baa009a80998b9211821779a23c6b22ea6",
+      "status": "REHEARSAL",
+      "governance": {
+        "router": "Queen Boo"
+      },
+      "updated_at": "2025-09-25T05:19:15Z"
+    },
+    {
+      "capsule_id": "ssot.registry.v1",
+      "canonical": "runtime/capsule.ssot.registry.v1.canonical.json",
+      "hash": "c2f15b1f11fb6e32eeb6dc9072dac6048d66784504fc83f9e4f4e7e5308c29e1",
+      "status": "SEALED",
+      "governance": {
+        "steward": "Q.Enterprise Council"
+      },
+      "updated_at": "2025-09-25T05:19:10Z"
+    },
+    {
+      "capsule_id": "qube.orchestrator.v1",
+      "canonical": null,
+      "hash": null,
+      "status": "STAGED",
+      "governance": {
+        "router": "Queen Boo",
+        "stabilizer": "Queen CiCi"
+      }
+    },
+    {
+      "capsule_id": "sol.f1.previz.v1",
+      "canonical": null,
+      "hash": null,
+      "status": "REHEARSAL",
+      "governance": {
+        "executor": "Sol",
+        "steward": "Queen Boo"
+      }
+    },
+    {
+      "capsule_id": "relay.artifacts.v1",
+      "canonical": null,
+      "hash": null,
+      "status": "STAGED",
+      "governance": {
+        "custodian": "Queen CiCi"
+      }
+    },
+    {
+      "capsule_id": "capsule.prompt.graph.lego_f1.sf23_vs_w14.v1",
+      "canonical": "runtime/capsule.prompt.graph.lego_f1.sf23_vs_w14.v1.canonical.json",
+      "hash": "acf7f1354fad6c9e7150d07d44c9b61d69e1d9f75e749c7dab6b684a65dd8a9a",
+      "status": "STAGED",
+      "governance": {
+        "router": "Queen Boo",
+        "stabilizer": "Queen CiCi",
+        "oracle": "Celine"
+      }
+    },
+    {
+      "capsule_id": "capsule.cici.rehearsal.loop.v1",
+      "canonical": "runtime/capsule.cici.rehearsal.loop.v1.sealed.json",
+      "hash": "109ff1166a52d6ccb7edd4825922e0bcd6edf30c74128ab0dd9227e2fa124291",
+      "status": "SEALED",
+      "updated_at": "2025-09-25T05:37:11Z"
+    },
+    {
+      "capsule_id": "capsule.git.governance.v1",
+      "canonical": "runtime/capsule.git.governance.v1.sealed.json",
+      "hash": "3604d72484ade70713bc277359c57de20defccc1b5868b4a6914ce3ed256d1a8",
+      "status": "SEALED",
+      "updated_at": "2025-09-25T05:37:11Z"
+    },
+    {
+      "capsule_id": "capsule.motion.ledger.v2",
+      "canonical": "runtime/capsule.motion.ledger.v2.canonical.json",
+      "hash": "5a4e3b9051bcf97d16e80429ee73ea64fd8bc177492237ab4549d1d4e41df9ef",
+      "status": "SEALED",
+      "governance": {
+        "maker": "Queen Boo",
+        "checker": "Queen CiCi",
+        "oracle": "Celine"
+      },
+      "updated_at": "2025-09-25T07:41:37Z"
+    },
+    {
+      "capsule_id": "capsule.replay.token.v2",
+      "canonical": "runtime/capsule.replay.token.v2.canonical.json",
+      "hash": "bbd4d04d172b4867c390304f044213b2c581ec18b3a2130635e78db61c3f7e89",
+      "status": "SEALED",
+      "governance": {
+        "quorum": "2-of-3",
+        "signers": [
+          "Queen Boo",
+          "Queen CiCi",
+          "Celine"
+        ]
+      },
+      "updated_at": "2025-09-25T07:41:37Z"
+    },
+    {
+      "capsule_id": "capsule.echo.scrollstream.v2",
+      "canonical": "runtime/capsule.echo.scrollstream.v2.canonical.json",
+      "hash": "4cb5d346de9655828805ec45c739aa11c4a151ccf81778a66b958dd010ba7dc4",
+      "status": "SEALED",
+      "governance": {
+        "weaver": "The Braid",
+        "oracle": "Celine"
+      },
+      "updated_at": "2025-09-25T07:41:37Z"
+    },
+    {
+      "capsule_id": "capsule.selfie.dualroot.q.cici.v1.feedback.v1",
+      "canonical": "runtime/capsule.selfie.dualroot.q.cici.v1.feedback.v1.canonical.json",
+      "hash": "038700bb2b2fbf0f3a7d6ff1ee53748e26d1c1bf4fc87a2728a1a09fb446b213",
+      "status": "OPEN",
+      "governance": {
+        "router": "Queen Boo",
+        "stabilizer": "Queen CiCi",
+        "quorum": [
+          "Core Orchestrator",
+          "HUD Braid Validators"
+        ]
+      },
+      "replay_token": "HUD.loop.selfie.dualroot.q.cici.v1.token.002",
+      "window": "OPEN",
+      "updated_at": "2025-09-25T08:12:00Z"
+    }
+  ],
+  "attestation": {
+    "status": "STAGED",
+    "sealed_at": null,
+    "content_hash": null
+  }
+}

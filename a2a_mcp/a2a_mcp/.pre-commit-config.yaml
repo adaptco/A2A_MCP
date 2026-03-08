@@ -1,0 +1,33 @@
+# Pre-commit hooks - runs checks locally before git commit
+# Install: pip install pre-commit && pre-commit install
+# This avoids needing GitHub Actions entirely
+
+repos:
+  - repo: local
+    hooks:
+      - id: invariants-check
+        name: Check Invariants
+        entry: python scripts/check_invariants.py
+        language: system
+        pass_filenames: false
+        always_run: true
+        
+      - id: arcstate-schema
+        name: Validate ArcState Schema
+        entry: python scripts/test_arcstate_schema.py
+        language: system
+        pass_filenames: false
+        
+      - id: yaml-syntax
+        name: Validate YAML Syntax
+        entry: bash -c 'for f in .github/workflows/*.yml environment.yml; do python -c "import yaml; yaml.safe_load(open(\"$f\"))" || exit 1; done'
+        language: system
+        pass_filenames: false
+        
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: check-yaml
+      - id: check-json
+      - id: end-of-file-fixer
+      - id: trailing-whitespace

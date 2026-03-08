@@ -1,0 +1,23 @@
+{
+  "mcpServers": {
+    "a2a-orchestrator": {
+      "command": "python",
+      "args": ["mcp_server.py"],
+      "env": {
+        "DATABASE_URL": "sqlite:///a2a_mcp.db"
+      }
+    },
+    "a2a-runtime": {
+      "command": "python",
+      "args": ["runtime_mcp_server.py"],
+      "env": {
+        "DATABASE_URL": "sqlite:///a2a_mcp.db"
+      }
+    },
+    "docker-mcp-catalog": {
+      "command": "python",
+      "args": ["mcp_servers/docker_mcp_catalog/server.py"],
+      "env": {}
+    }
+  }
+}

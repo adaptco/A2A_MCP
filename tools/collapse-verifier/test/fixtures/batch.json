@@ -1,0 +1,41 @@
+{
+  "batch_id": "batch-2026-01-20-001",
+  "epoch_id": "epoch-2026-01",
+  "items": [
+    {
+      "schema_version": "CollapseReceipt.v2",
+      "collapse_id": "c1",
+      "trace_id": "trace-abc-001",
+      "operator": { "id": "op-1", "name": "Earl" },
+      "verdict": "OPERATIONAL_FINALITY",
+      "timestamp_utc": "2026-01-20T15:00:00Z",
+      "energy_signature": "deadbeef",
+      "batch": { "batch_id": "batch-2026-01-20-001", "index": 0, "size": 2 },
+      "merkle": {
+        "leaf_hash": "",
+        "root_hash": "",
+        "proof_path": []
+      },
+      "lineage": { "epoch_id": "epoch-2026-01" }
+    },
+    {
+      "schema_version": "CollapseReceipt.v2",
+      "collapse_id": "c2",
+      "trace_id": "trace-abc-002",
+      "operator": { "id": "op-2", "name": "Nicki" },
+      "verdict": "ENTROPY_VIOLATION",
+      "timestamp_utc": "2026-01-20T15:01:00Z",
+      "energy_signature": "cafebabe",
+      "batch": { "batch_id": "batch-2026-01-20-001", "index": 1, "size": 2 },
+      "merkle": {
+        "leaf_hash": "",
+        "root_hash": "",
+        "proof_path": []
+      },
+      "lineage": { "epoch_id": "epoch-2026-01" }
+    }
+  ],
+  "merkle_root": "",
+  "signer_pub": "",
+  "signature": ""
+}

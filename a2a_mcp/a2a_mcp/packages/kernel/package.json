@@ -1,0 +1,24 @@
+{
+  "name": "@world-os/kernel",
+  "version": "0.1.0",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsc -w -p tsconfig.json",
+    "lint": "eslint src --ext .ts",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1",
+    "lodash.clonedeep": "^4.5.0",
+    "stable-stringify": "^1.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.5.1",
+    "eslint": "^8.57.0",
+    "typescript": "^5.5.4",
+    "vitest": "^2.0.5"
+  }
+}

@@ -1,0 +1,9 @@
+# adaptco-previz/.gitignore
+node_modules
+coverage
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.DS_Store
+.env
+previews/*.png

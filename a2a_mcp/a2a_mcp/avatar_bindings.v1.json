@@ -1,0 +1,189 @@
+{
+  "version": "1.0.0",
+  "generated_at": "2024-02-29T00:00:00Z",
+  "avatars": [
+    {
+      "id": "celine",
+      "name": "Celine",
+      "vessel": "car",
+      "capsule": "scene.compile.v1",
+      "capsule_gate": "E1",
+      "age": 40,
+      "glyph": {"text": "E1", "color": "#00A1E4"},
+      "geometry": {
+        "silhouette": "low-slung wedge coupe; long hood, short deck",
+        "glyph_anchor": "floating over driver-side A-pillar",
+        "props": ["Nano Banana pendant (soft pulse)"]
+      },
+      "materials": {
+        "vessel_finish": "matte black (#111827) with brushed-silver trims (#C0C0C0)",
+        "jacket": "matte technical twill",
+        "glass": "neutral AR coat"
+      },
+      "colors": {
+        "primary": "#111827",
+        "secondary": "#C0C0C0",
+        "accent": "#00A1E4",
+        "halo": "#0EA5E9"
+      },
+      "features": {
+        "hair": "short silver",
+        "eyes": "ice blue",
+        "light_pool": "cool blue key + silver rim"
+      },
+      "framing": "three-quarter car, waist-up subject, 50mm, shallow DOF"
+    },
+    {
+      "id": "spryte",
+      "name": "Spryte",
+      "vessel": "console",
+      "capsule": "runtime.freeze.v1",
+      "capsule_gate": null,
+      "age": 29,
+      "glyph": {"text": "—", "color": "#06D6A0"},
+      "geometry": {
+        "silhouette": "waist-high rectangular console; chamfered edges",
+        "glyph_anchor": "overhead centerline",
+        "props": ["matrix of soft-edge tiles", "status ribbons"]
+      },
+      "materials": {
+        "console_skin": "satin graphite",
+        "ui_glow": "emerald volumetric",
+        "jacket": "lightweight ripstop, gloss piping"
+      },
+      "colors": {
+        "primary": "#065F46",
+        "secondary": "#10B981",
+        "accent": "#06D6A0",
+        "halo": "#34D399"
+      },
+      "features": {
+        "hair": "glossy green bob",
+        "skin": "warm with freckles",
+        "light_pool": "emerald key + neutral fill"
+      },
+      "framing": "chest-up at console, 35mm, bokeh UI panels"
+    },
+    {
+      "id": "echo",
+      "name": "Echo",
+      "vessel": "console",
+      "capsule": "scene.compile.v1",
+      "capsule_gate": "E1",
+      "age": 35,
+      "glyph": {"text": "E1", "color": "#00A1E4"},
+      "geometry": {
+        "silhouette": "integrator desk with dual arms; ribbed backplate",
+        "glyph_anchor": "right-of-head, slightly forward",
+        "props": ["tactical jacket with scene.compile crest"]
+      },
+      "materials": {
+        "console_skin": "gunmetal satin",
+        "jacket": "matte ballistic weave",
+        "trim": "violet anodized"
+      },
+      "colors": {
+        "primary": "#1F2937",
+        "secondary": "#7C3AED",
+        "accent": "#00A1E4",
+        "halo": "#8B5CF6"
+      },
+      "features": {
+        "hair": "violet braids pulled tight",
+        "eyes": "grey-violet",
+        "light_pool": "cool key + violet edge"
+      },
+      "framing": "waist-up, slight angle over console, 50mm"
+    },
+    {
+      "id": "gloh",
+      "name": "Gloh",
+      "vessel": "mecha",
+      "capsule": "runtime.freeze.v1",
+      "capsule_gate": "G2",
+      "age": 38,
+      "glyph": {"text": "G2", "color": "#F97316"},
+      "geometry": {
+        "silhouette": "towering biped; broad shoulder plates; vented chest",
+        "glyph_anchor": "embossed on left shoulder plate",
+        "props": ["stance: arms crossed", "armor seams glowing"]
+      },
+      "materials": {
+        "armor": "matte black ceramic",
+        "accents": "runtime orange EL traces",
+        "mechanicals": "dark steel"
+      },
+      "colors": {
+        "primary": "#0B0F14",
+        "secondary": "#F97316",
+        "accent": "#FB923C",
+        "halo": "#FF7A1A"
+      },
+      "features": {
+        "hair": "red high ponytail",
+        "light_pool": "amber key + hard speculars"
+      },
+      "framing": "subject mid-shot with mecha shoulder dominant, 35mm"
+    },
+    {
+      "id": "luma",
+      "name": "Luma",
+      "vessel": "mecha",
+      "capsule": "hud.update.v1",
+      "capsule_gate": "L3",
+      "age": 33,
+      "glyph": {"text": "L3", "color": "#14B8A6"},
+      "geometry": {
+        "silhouette": "circular HUD rig; concentric rings and radial ticks",
+        "glyph_anchor": "floating above crown, centered",
+        "props": ["teal vectors", "icon constellations"]
+      },
+      "materials": {
+        "hud": "holographic glass",
+        "rig": "satin white composite",
+        "wardrobe": "softshell, micro-reflective piping"
+      },
+      "colors": {
+        "primary": "#14B8A6",
+        "secondary": "#0EA5A4",
+        "accent": "#A7F3D0",
+        "halo": "#5EEAD4"
+      },
+      "features": {
+        "hair": "platinum loose bun",
+        "light_pool": "teal key + soft wrap"
+      },
+      "framing": "head-and-shoulders, HUD rings crisp, 85mm"
+    },
+    {
+      "id": "dot",
+      "name": "Dot",
+      "vessel": "mecha",
+      "capsule": "attest.scroll.v1",
+      "capsule_gate": "D4",
+      "age": 27,
+      "glyph": {"text": "D4", "color": "#F59E0B"},
+      "geometry": {
+        "silhouette": "attestation mecha frame; sculpted forearm terminal; scroll motif",
+        "glyph_anchor": "engraved 'D4' on chest plate + floating tag",
+        "props": ["orange scroll", "ledger overlays"]
+      },
+      "materials": {
+        "armor": "graphite matte",
+        "terminal": "satin orange composite",
+        "glass": "warm AR coat"
+      },
+      "colors": {
+        "primary": "#111827",
+        "secondary": "#F59E0B",
+        "accent": "#F97316",
+        "halo": "#FBBF24"
+      },
+      "features": {
+        "hair": "dark-blue blunt bob",
+        "light_pool": "amber key; orange rim on edges"
+      },
+      "framing": "front-and-center, waist-up with terminal in frame, 50mm"
+    }
+  ]
+}

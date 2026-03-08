@@ -1,0 +1,5 @@
+C:/Users/eqhsp/.antigravity/A2A_MCP/A2A_MCP/build_test/CMakeFiles/ghost-void_engine.dir
+C:/Users/eqhsp/.antigravity/A2A_MCP/A2A_MCP/build_test/CMakeFiles/jurassic_pixels_test.dir
+C:/Users/eqhsp/.antigravity/A2A_MCP/A2A_MCP/build_test/CMakeFiles/hello_world.dir
+C:/Users/eqhsp/.antigravity/A2A_MCP/A2A_MCP/build_test/CMakeFiles/ALL_BUILD.dir
+C:/Users/eqhsp/.antigravity/A2A_MCP/A2A_MCP/build_test/CMakeFiles/ZERO_CHECK.dir

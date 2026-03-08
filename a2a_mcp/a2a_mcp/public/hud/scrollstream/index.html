@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Scrollstream Rehearsal Loop</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { background: #0f172a; color: #f8fafc; font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI"; }
+    .shimmer {
+      position: relative;
+      overflow: hidden;
+    }
+    .shimmer::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: -150%;
+      width: 150%;
+      height: 100%;
+      background: linear-gradient(120deg, transparent 0%, rgba(248,250,252,0.25) 50%, transparent 100%);
+      animation: shimmer 3s infinite;
+    }
+    @keyframes shimmer {
+      0% { left: -150%; }
+      50% { left: 100%; }
+      100% { left: 100%; }
+    }
+    .glyph-pulse {
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 0.6; transform: scale(0.98); }
+      50% { opacity: 1; transform: scale(1.02); }
+    }
+    .trail-glow {
+      box-shadow: 0 0 18px rgba(251, 191, 36, 0.45);
+    }
+  </style>
+</head>
+<body class="min-h-screen p-6">
+  <div class="max-w-5xl mx-auto space-y-6">
+    <header class="space-y-2">
+      <p class="text-xs uppercase tracking-[0.3em] text-slate-400">capsule.rehearsal.scrollstream.v1</p>
+      <h1 class="text-3xl font-semibold">Scrollstream Rehearsal Loop</h1>
+      <p class="text-slate-300 text-sm">Simulated Celine → Luma → Dot braid for training mode. Deterministic payloads keep CI smoke tests reproducible while the HUD renders shimmer, glyph pulses, and replay trails.</p>
+    </header>
+
+    <section class="grid md:grid-cols-3 gap-4">
+      <article class="shimmer bg-slate-900/40 border border-slate-700 rounded-2xl p-5 backdrop-blur">
+        <h2 class="font-semibold text-lg mb-2">1 · Celine</h2>
+        <p class="text-sm text-slate-300">Architect threads the <strong>audit.summary</strong> and primes the shimmer.</p>
+        <p class="text-xs text-amber-300 mt-4">HUD shimmer confirmed</p>
+      </article>
+      <article class="glyph-pulse bg-slate-900/40 border border-slate-700 rounded-2xl p-5 backdrop-blur">
+        <h2 class="font-semibold text-lg mb-2">2 · Luma</h2>
+        <p class="text-sm text-slate-300">Sentinel locks the <strong>audit.proof</strong> glyph and energises replay.</p>
+        <p class="text-xs text-cyan-300 mt-4">Replay glyph pulsing</p>
+      </article>
+      <article class="trail-glow bg-slate-900/40 border border-slate-700 rounded-2xl p-5 backdrop-blur">
+        <h2 class="font-semibold text-lg mb-2">3 · Dot</h2>
+        <p class="text-sm text-slate-300">Guardian performs <strong>audit.execution</strong> and seals the trail.</p>
+        <p class="text-xs text-emerald-300 mt-4">Sabrina Spark Test · pass</p>
+      </article>
+    </section>
+
+    <section class="bg-slate-900/50 border border-slate-700 rounded-2xl p-6">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <h2 class="text-xl font-semibold">Scrollstream Ledger</h2>
+          <p class="text-sm text-slate-300">Deterministic rehearsal events appended to <code class="text-amber-300">scrollstream_ledger</code>.</p>
+        </div>
+        <button id="replay" class="bg-amber-500 hover:bg-amber-400 text-slate-900 px-4 py-2 rounded-xl font-semibold">Replay braid</button>
+      </div>
+      <div id="ledger" class="mt-5 space-y-3 text-sm"></div>
+    </section>
+  </div>
+
+  <script>
+    const fallbackEndpoint = 'http://127.0.0.1:8080/scrollstream/rehearsal';
+    const rehearsalEndpoint = (() => {
+      if (window.location.origin.startsWith('file:')) {
+        return fallbackEndpoint;
+      }
+      return '/scrollstream/rehearsal';
+    })();
+
+    async function fetchLedger() {
+      const res = await fetch(rehearsalEndpoint);
+      if (res.ok) {
+        return res.json();
+      }
+
+      if (rehearsalEndpoint !== fallbackEndpoint) {
+        const fallback = await fetch(fallbackEndpoint);
+        if (fallback.ok) {
+          return fallback.json();
+        }
+      }
+
+      throw new Error('Failed to load rehearsal ledger');
+    }
+
+    function renderLedger(events) {
+      const container = document.getElementById('ledger');
+      container.innerHTML = '';
+      events.forEach((event) => {
+        const card = document.createElement('div');
+        card.className = 'bg-slate-900/70 border border-slate-800 rounded-xl p-4 flex flex-col gap-1';
+        card.innerHTML = `
+          <div class="flex items-center justify-between">
+            <span class="font-semibold text-slate-100 uppercase tracking-[0.2em] text-xs">${event.stage}</span>
+            <span class="text-xs text-slate-400">${event.timestamp}</span>
+          </div>
+          <p class="text-slate-200">${event.output}</p>
+          <div class="flex flex-wrap gap-2 text-xs text-slate-400 mt-2">
+            <span>Agent: <strong class="text-slate-100">${event.agent}</strong></span>
+            <span>HUD: ${event.hud_feedback}</span>
+            <span>Emotion: ${event.emotional_payload}</span>
+            <span>Spark: ${event.sabrina_spark_test}</span>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    async function replay() {
+      const button = document.getElementById('replay');
+      button.disabled = true;
+      button.textContent = 'Replaying…';
+      try {
+        const data = await fetchLedger();
+        renderLedger(data.events || []);
+      } catch (error) {
+        console.error(error);
+        alert('Scrollstream replay failed.');
+      } finally {
+        button.disabled = false;
+        button.textContent = 'Replay braid';
+      }
+    }
+
+    document.getElementById('replay').addEventListener('click', replay);
+    replay();
+  </script>
+</body>
+</html>

@@ -1,0 +1,76 @@
+============================= test session starts =============================
+platform win32 -- Python 3.11.9, pytest-9.0.2, pluggy-1.6.0 -- C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP\.venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP
+plugins: anyio-4.12.1, asyncio-1.3.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 3 items
+
+tests/test_mlops_ticker.py::TestMLOpsTicker::test_event_store_terminal_filtering FAILED [ 33%]
+tests/test_mlops_ticker.py::TestMLOpsTicker::test_whatsapp_message_format PASSED [ 66%]
+tests/test_mlops_ticker.py::TestMLOpsTicker::test_whatsapp_send_success PASSED [100%]
+
+================================== FAILURES ===================================
+_____________ TestMLOpsTicker.test_event_store_terminal_filtering _____________
+
+self = <test_mlops_ticker.TestMLOpsTicker object at 0x000001F5969B66D0>
+
+    async def test_event_store_terminal_filtering(self):
+        """Verify that only terminal events trigger observers."""
+        # Use MagicMock with AsyncMock method for on_state_change
+        mock_observer = MagicMock()
+        mock_observer.on_state_change = AsyncMock()
+    
+        mock_db = MagicMock()
+        # Mock save to return input
+        mock_db.save_artifact.side_effect = lambda x: x
+    
+        # Patch the module-level _db_manager in event_store
+        with patch("orchestrator.event_store._db_manager", mock_db):
+            store = PostgresEventStore(observers=[mock_observer])
+    
+            # 1. INIT -> No notification
+            artifact_init = ModelArtifact(
+                artifact_id="init-1",
+                model_id="test",
+                weights_hash="h1",
+                embedding_dim=1,
+                state=AgentLifecycleState.INIT,
+                content="test"
+            )
+            await store.append_event(artifact_init)
+            mock_observer.on_state_change.assert_not_called()
+    
+            # 2. CONVERGED -> Notification
+            # Note: transition returns new instance
+>           artifact_converged = artifact_init.transition(AgentLifecycleState.CONVERGED)
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_mlops_ticker.py:37: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = ModelArtifact(artifact_id='init-1', type='model_artifact', content='test', timestamp='2026-02-16T14:15:46.227265', met...ntLifecycleState.INIT: 'INIT'>, parent_artifact_id=None, agent_name='ModelRegistry', version='1.0.0', lora_config=None)
+target = <AgentLifecycleState.CONVERGED: 'CONVERGED'>
+
+    def transition(self, target: AgentLifecycleState) -> "ModelArtifact":
+        """
+        Transition to a new state if valid.
+        Returns a new artifact with updated state (immutable pattern).
+        """
+        if not self.can_transition_to(target):
+>           raise ValueError(
+                f"Invalid transition: {self.state.value} -> {target.value}. "
+                f"Valid targets: {[s.value for s in STATE_TRANSITIONS.get(self.state, [])]}"
+            )
+E           ValueError: Invalid transition: INIT -> CONVERGED. Valid targets: ['EMBEDDING']
+
+schemas\model_artifact.py:63: ValueError
+============================== warnings summary ===============================
+schemas\database.py:6
+  C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP\schemas\database.py:6: MovedIn20Warning: The ``declarative_base()`` function is now available as sqlalchemy.orm.declarative_base(). (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    Base = declarative_base()
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/test_mlops_ticker.py::TestMLOpsTicker::test_event_store_terminal_filtering
+=================== 1 failed, 2 passed, 1 warning in 0.77s ====================

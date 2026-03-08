@@ -1,0 +1,10 @@
+{
+  "name": "fieldengine-cfo-mcp",
+  "version": "0.1.0",
+  "transport": ["stdio", "http"],
+  "capabilities": {
+    "tools": true,
+    "resources": true,
+    "prompts": true
+  }
+}

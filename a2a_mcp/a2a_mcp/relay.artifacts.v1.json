@@ -1,0 +1,52 @@
+{
+  "artifact_id": "relay.artifacts.v1",
+  "type": "VaultRegistry",
+  "version": "1.0.0",
+  "issued_at": "2025-09-25T02:40:00Z",
+  "channels": {
+    "celine": {
+      "subject": "Celine",
+      "scene_capsule": "capsule.scene.ethereal_wrap.v1",
+      "previz_channel": "sol.f1.previz.v1",
+      "storyboard_capsule": "capsule.storyboard.ethereal_wrap.v1",
+      "assets": [
+        "asset.costume.aurora_wrap.v1",
+        "asset.prop.vault_glyph.v1"
+      ],
+      "motion_profile": "clip.motion.ethereal_wrap.v1",
+      "replay_token": "replay:celine:20250924:000",
+      "ledger": {
+        "checkpoint_capsule": "relay.artifacts.v1",
+        "sealed_digest": "sha256:d0913c974379658d7693940c1ea2b83984d605a663dfd6808593d9ac9e7c4d66",
+        "last_checkpoint": "2025-09-25T00:54:27Z",
+        "status": "FROZEN"
+      }
+    }
+  },
+  "automation": {
+    "binder": "Proof → Flow → Execution → Vault",
+    "resume_policy": {
+      "require_vault_digest": true,
+      "qlock_alignment": {
+        "fps": 24,
+        "tick_source": "relay.legoF1.monza.loop.v1"
+      }
+    }
+  },
+  "attestation": {
+    "status": "STAGED"
+  },
+  "feedback_loops": {
+    "selfie_dualroot_q_cici": {
+      "capsule": "capsule.selfie.dualroot.q.cici.v1.feedback.v1",
+      "replay_token": "HUD.loop.selfie.dualroot.q.cici.v1.token.002",
+      "hooks": [
+        "capsule.comment.trace.v1",
+        "shimmer.breach.monitor.v1",
+        "refusal.flare.script.v1",
+        "delta.overlay.audit.v1"
+      ],
+      "window_status": "OPEN"
+    }
+  }
+}

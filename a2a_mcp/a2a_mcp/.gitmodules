@@ -1,0 +1,4 @@
+[submodule "PhysicalAI-Autonomous-Vehicles"]
+	path = PhysicalAI-Autonomous-Vehicles
+	url = https://huggingface.co/datasets/nvidia/PhysicalAI-Autonomous-Vehicles
+	branch = main

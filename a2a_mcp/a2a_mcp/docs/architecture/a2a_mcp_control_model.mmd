@@ -1,0 +1,53 @@
+flowchart LR
+
+subgraph GOV["Governance Plane"]
+HITL["HITL Console"]
+RBAC["RBAC + Policy Gate"]
+FSM["FSM Kernel (SSOT Authority)"]
+OBJ["Objective Store (Immutable)"]
+EVAL["Evaluator (Agent-independent)"]
+LEDGER["Artifact Ledger (Append-only)"]
+
+HITL -->|"override_request"| RBAC
+RBAC -->|"authorized_event"| FSM
+FSM -->|"read"| OBJ
+FSM -->|"request_eval"| EVAL
+EVAL -->|"VERDICT_*"| FSM
+FSM -->|"append(event/artifact)"| LEDGER
+HITL -->|"OVERRIDE_EVENT (tainting)"| FSM
+end
+
+subgraph AG["Agentic Execution Plane"]
+MOE["MOE Router / Orchestrator"]
+AGENTS["Role Agents (Stateless)"]
+RET["Retriever API (read-only)"]
+TOOLS["Tool Adapters (Zapier / Linear / Mistral / Airtable)"]
+
+FSM -->|"RUN_AUTHZ(grant)"| MOE
+MOE -->|"dispatch(task)"| AGENTS
+AGENTS -->|"retrieve(query)"| RET
+RET -->|"evidence_pack (chunk_ids, hashes)"| LEDGER
+AGENTS -->|"tool_call"| TOOLS
+AGENTS -->|"artifacts / logs"| LEDGER
+end
+
+subgraph REP["Reasoning + Representation Plane"]
+CTXA["MCP Context Store: Planning Tokens (non-LLM)"]
+CTXB["MCP Context Store: Guardrails / Policy (non-LLM)"]
+CTXC["MCP Context Store: LLM Window (derived)"]
+
+RAG["RAG Assembly"]
+LLM["LLM(s)"]
+VDB["Vector DB"]
+OFF["Chunker + Embedder (OFFLINE)"]
+
+OFF -->|"index_build(versioned)"| VDB
+
+CTXA -->|"w_plan = 1.0"| MOE
+CTXB -->|"w_policy = 1.0"| MOE
+CTXC -->|"bounded_context"| RAG
+
+AGENTS -->|"evidence_ref"| RAG
+RAG -->|"prompt"| LLM
+LLM -->|"draft_response"| LEDGER
+end

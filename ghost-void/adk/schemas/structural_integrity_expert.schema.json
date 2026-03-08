@@ -1,0 +1,37 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://adaptco.ai/schemas/v0/structural_integrity_expert.schema.json",
+    "type": "object",
+    "properties": {
+        "constraints": {
+            "type": "object",
+            "properties": {
+                "kawaii_score": {
+                    "type": "number",
+                    "minimum": 0.8
+                },
+                "optical_boundary_nm": {
+                    "const": 540
+                },
+                "manifold_drift_tolerance": {
+                    "type": "number",
+                    "maximum": 1e-9
+                }
+            },
+            "required": [
+                "kawaii_score",
+                "optical_boundary_nm"
+            ]
+        },
+        "verdict": {
+            "enum": [
+                "PASS",
+                "FAIL"
+            ]
+        }
+    },
+    "required": [
+        "constraints",
+        "verdict"
+    ]
+}

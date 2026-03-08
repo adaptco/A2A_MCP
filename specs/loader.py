@@ -1,17 +1,11 @@
 """Specifications loader for Supra domain and Judge criteria."""
 
 import yaml
-<<<<<<< HEAD
 import logging
 from typing import Dict, Any, Optional
 from pathlib import Path
 
 logger = logging.getLogger(__name__)
-=======
-from typing import Dict, Any, Optional
-from pathlib import Path
-
->>>>>>> adaptco/chore/orchestration-agent-mcp-bus
 
 class SpecsLoader:
     """Load and cache specification files."""
@@ -29,7 +23,6 @@ class SpecsLoader:
             return self._cache[cache_key]
 
         spec_file = self.specs_dir / "supra_specs.yaml"
-<<<<<<< HEAD
         if not spec_file.exists():
             raise FileNotFoundError(
                 f"Supra specs file not found at {spec_file}. "
@@ -41,10 +34,6 @@ class SpecsLoader:
                 specs = yaml.safe_load(f)
         except yaml.YAMLError as e:
             raise ValueError(f"Invalid YAML in supra_specs.yaml: {e}")
-=======
-        with open(spec_file, "r") as f:
-            specs = yaml.safe_load(f)
->>>>>>> adaptco/chore/orchestration-agent-mcp-bus
 
         self._cache[cache_key] = specs
         return specs
@@ -56,7 +45,6 @@ class SpecsLoader:
             return self._cache[cache_key]
 
         criteria_file = self.specs_dir / "judge_criteria.yaml"
-<<<<<<< HEAD
         if not criteria_file.exists():
             raise FileNotFoundError(
                 f"Judge criteria file not found at {criteria_file}. "
@@ -68,15 +56,10 @@ class SpecsLoader:
                 criteria = yaml.safe_load(f)
         except yaml.YAMLError as e:
             raise ValueError(f"Invalid YAML in judge_criteria.yaml: {e}")
-=======
-        with open(criteria_file, "r") as f:
-            criteria = yaml.safe_load(f)
->>>>>>> adaptco/chore/orchestration-agent-mcp-bus
 
         self._cache[cache_key] = criteria
         return criteria
 
-<<<<<<< HEAD
     def load_base44_map(self) -> Dict[str, Any]:
         """Load and cache Base44 world map configuration."""
         cache_key = "base44_map"
@@ -99,8 +82,6 @@ class SpecsLoader:
         self._cache[cache_key] = world_map
         return world_map
 
-=======
->>>>>>> adaptco/chore/orchestration-agent-mcp-bus
     def get_supra_config(self) -> Dict[str, Any]:
         """Return supra section from specs."""
         specs = self.load_supra_specs()
@@ -138,15 +119,22 @@ class SpecsLoader:
         presets = tuning.get("presets", {})
         preset = presets.get(preset_name, {})
 
-        # Convert preset weights
+        # Convert preset weights (mapping long names to short internal keys if needed)
         weights = {}
-<<<<<<< HEAD
-        for key in ["safety", "spec", "intent", "latency"]:
-=======
-        for key in ["safety", "spec_alignment", "player_intent", "latency"]:
->>>>>>> adaptco/chore/orchestration-agent-mcp-bus
+        mapping = {
+            "safety": "safety",
+            "spec": "spec",
+            "spec_alignment": "spec",
+            "intent": "intent",
+            "player_intent": "intent",
+            "latency": "latency"
+        }
+        
+        for key in ["safety", "spec", "intent", "latency", "spec_alignment", "player_intent"]:
             weight_key = f"{key}_weight"
-            weights[key] = preset.get(weight_key, 1.0)
+            if weight_key in preset:
+                internal_key = mapping.get(key, key)
+                weights[internal_key] = preset.get(weight_key, 1.0)
 
         return weights
 

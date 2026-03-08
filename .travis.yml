@@ -1,0 +1,20 @@
+# Travis CI Config - Free for open source
+# Alternative to GitHub Actions
+
+language: python
+python:
+  - "3.11"
+
+install:
+  - pip install jsonschema pynacl requests pytest pyyaml
+
+script:
+  - python scripts/check_invariants.py
+  - python scripts/test_arcstate_schema.py
+  - |
+    for workflow in .github/workflows/*.yml environment.yml; do
+      python -c "import yaml; yaml.safe_load(open('$workflow'))"
+    done
+
+notifications:
+  email: false

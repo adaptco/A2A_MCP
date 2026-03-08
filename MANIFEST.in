@@ -1,0 +1,3 @@
+recursive-include src/mcp_adk/contracts *
+recursive-include src/mcp_adk/artifact_schemas *
+recursive-include src/mcp_adk/templates *

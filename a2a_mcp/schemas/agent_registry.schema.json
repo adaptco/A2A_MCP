@@ -1,0 +1,57 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Agent Registry",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "agents"],
+  "properties": {
+    "version": { "type": "string" },
+    "agents": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "agent_id",
+          "project_id",
+          "vertical_id",
+          "index_manifest_ref",
+          "routing_policy_ref",
+          "expert_catalog_ref",
+          "allowed_experts",
+          "prompt_contract"
+        ],
+        "properties": {
+          "agent_id": { "type": "string" },
+          "project_id": { "type": "string" },
+          "vertical_id": { "type": "string" },
+          "index_manifest_ref": { "type": "string" },
+          "routing_policy_ref": { "type": "string" },
+          "expert_catalog_ref": { "type": "string" },
+          "allowed_experts": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "prompt_contract": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["system_preamble_ref", "context_policy", "output_contract"],
+            "properties": {
+              "system_preamble_ref": { "type": "string" },
+              "context_policy": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["max_chunks", "max_tokens"],
+                "properties": {
+                  "max_chunks": { "type": "integer" },
+                  "max_tokens": { "type": "integer" }
+                }
+              },
+              "output_contract": { "type": "string" }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,10 @@
+^C:\USERS\EQHSP\.ANTIGRAVITY\A2A_MCP\A2A_MCP\BUILD\CMAKEFILES\82F63E78FF6CC926CFF9464F354C6C1B\GENERATE.STAMP.RULE
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/eqhsp/.antigravity/A2A_MCP/A2A_MCP -BC:/Users/eqhsp/.antigravity/A2A_MCP/A2A_MCP/build --check-stamp-list CMakeFiles/generate.stamp.list --vs-solution-file C:/Users/eqhsp/.antigravity/A2A_MCP/A2A_MCP/build/A2A_MCP.sln
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

@@ -1,0 +1,49 @@
+apiVersion: adk.io/v0
+kind: ThreatModel
+metadata:
+  name: moe_kernel_stride
+  version: v0
+  target: Token Suzuki R32
+
+threats:
+  - id: STRIDE-01
+    category: Spoofing
+    component: Assembly Actuator
+    description: "Malicious node attempts to inject false weights into the Merkle Root."
+    mitigation: "Strict cryptographic signature verification (M-of-N) required for all Weight Deltas."
+    status: MITIGATED
+
+  - id: STRIDE-02
+    category: Tampering
+    component: Structural Integrity Expert
+    description: "Bypassing the Kawaii Constraint to allow non-manifold geometry."
+    mitigation: "Hard-coded topological invariants in `structural_integrity_expert.schema.json` checked by CI."
+    status: MITIGATED
+
+  - id: STRIDE-03
+    category: Repudiation
+    component: Ledger
+    description: "Node denies authoring a specific Decision Record."
+    mitigation: "Immutable append-only log with chained hashes (Genesis Block anchored)."
+    status: MITIGATED
+
+  - id: STRIDE-04
+    category: Information Disclosure
+    component: Weight Adapter
+    description: "Leaking base model parameters via high-rank LoRA updates."
+    mitigation: "Rank limits enforced by `weight_adapter.schema.json`."
+    status: ACCEPTED_RISK (Model weights are semi-public)
+
+  - id: STRIDE-05
+    category: Denial of Service
+    component: Loop Wiring
+    description: "Flooding the HIRR pipeline with invalid replay packets."
+    mitigation: "Rate limiting and 1k-cycle fast-fail gate."
+    status: MITIGATED
+
+  - id: STRIDE-06
+    category: Elevation of Privilege
+    component: Tooling
+    description: "Injecting malicious pre-commit hooks."
+    mitigation: "Tooling attestation and locked `devcontainer` environment."
+    status: MITIGATED

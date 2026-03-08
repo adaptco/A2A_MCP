@@ -1,0 +1,23 @@
+{
+    "version": "v0.1.0-alpha",
+    "contracts": {
+        "surface": {
+            "surface_contract": "adk://contract/surface_contract.v0.yaml",
+            "gate_checklist": "adk://gate/GateChecklist.v0.yaml"
+        },
+        "public_schemas": {
+            "agent_capsule": "adk://schemas/agent_capsule.v0.json",
+            "decision_record": "adk://schemas/decision_record.v0.json",
+            "replay_packet": "adk://schemas/replay_packet.v0.json",
+            "gate_result": "adk://schemas/gate_result.v0.json"
+        },
+        "node_schemas": {
+            "assembly_actuator": "adk://schemas/assembly_actuator.schema.json",
+            "structural_integrity_expert": "adk://schemas/structural_integrity_expert.schema.json",
+            "weight_adapter": "adk://schemas/weight_adapter.schema.json"
+        },
+        "services": {
+            "node_6_valuation": "http://localhost:8080/valuation"
+        }
+    }
+}

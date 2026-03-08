@@ -1,0 +1,37 @@
+name: Tetris Package Reproduction
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  verify-tetris:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest pytest-asyncio pydantic sqlalchemy httpx anyio asyncio
+
+      - name: Set PYTHONPATH
+        run: echo "PYTHONPATH=${{ github.workspace }}" >> $GITHUB_ENV
+
+      - name: Run Tetris Aggregation Tests
+        run: pytest tests/test_tetris_aggregation.py -v
+
+      - name: Run Tetris Observer Tests
+        run: pytest tests/test_tetris_observer.py -v
+
+      - name: Verify Release Bundle Creation
+        run: python scripts/release_tetris.py

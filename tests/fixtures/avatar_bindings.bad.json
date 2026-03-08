@@ -1,0 +1,25 @@
+{
+  "version": "1.0.0",
+  "generated_at": "2024-02-29T00:00:00Z",
+  "avatars": [
+    {
+      "id": "bad-ship",
+      "name": "Broken",
+      "vessel": "ship",
+      "capsule": "scene.compile.v1",
+      "capsule_gate": "Z9",
+      "age": 42,
+      "glyph": {"text": "Z9", "color": "#FFFFFF"},
+      "geometry": {"silhouette": "undefined"},
+      "materials": {"primary": "n/a"},
+      "colors": {
+        "primary": "#000000",
+        "secondary": "#111111",
+        "accent": "#222222",
+        "halo": "#333333"
+      },
+      "features": {"note": "missing required vessel"},
+      "framing": "none"
+    }
+  ]
+}

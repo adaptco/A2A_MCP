@@ -1,0 +1,45 @@
+{
+  "attestation": {
+    "content_hash": "sha256:4cb5d346de9655828805ec45c739aa11c4a151ccf81778a66b958dd010ba7dc4",
+    "sealed_at": "2025-09-25T07:41:37Z",
+    "sealed_by": "Council",
+    "status": "FOSSILIZED"
+  },
+  "author": "Scrollsmith",
+  "capsule_id": "capsule.echo.scrollstream.v2",
+  "description": "Verse capsule translating the sovereign invocation telemetry into council-attested echo lines.",
+  "hud_projection": {
+    "broadcast": "hud.overlay.echo",
+    "overlays": [
+      "glyph.pulse",
+      "aura.gold",
+      "qlock.tick"
+    ],
+    "variance_pct": 2.5
+  },
+  "issued_at": "2025-09-26T02:11:00Z",
+  "source": {
+    "capsule_id": "capsule.motion.ledger.v2",
+    "digest": "sha256:5a4e3b9051bcf97d16e80429ee73ea64fd8bc177492237ab4549d1d4e41df9ef",
+    "emotional_arc": [
+      "curiosity",
+      "intimacy",
+      "clarity",
+      "wisdom"
+    ],
+    "timestamp_anchor": "2025-09-26T02:10:00Z"
+  },
+  "status": "SEALED",
+  "type": "ScrollstreamEcho",
+  "verse": {
+    "lines": [
+      "Glyph pulse beckons curiosity at the sovereign threshold.",
+      "Window stance glows—intimacy cinched in aura gold.",
+      "Orbit steadies; clarity threads the braid without drift.",
+      "Wisdom seals the vessel; qlock ticks echo through the council."
+    ],
+    "meter": "tetrameter",
+    "tone": "reverent"
+  },
+  "version": "2.0.0"
+}

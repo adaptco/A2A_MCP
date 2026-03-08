@@ -1,0 +1,1 @@
+Learnings: Standardizing method signatures across agents simplifies orchestration logic and removes the need for try/except patching. Mock objects in tests must be updated to match the new signatures to avoid TypeErrors or unexpected behavior.

@@ -1,0 +1,3 @@
+{"t":"2025-09-25T10:33:25Z","event":"capsule.seal.v1","capsule":"capsule.os.genesis.v1","digest":"sha256:a2fe0bf979aa6f0807f1b3df928487890f16c8bdc15d4239be336ccfd3c54190","sealed_by":"Council"}
+{"t":"2025-09-25T00:54:27Z","event":"capsule.seal.v1","capsule":"capsule.scene.ethereal_wrap.v1","digest":"sha256:d0913c974379658d7693940c1ea2b83984d605a663dfd6808593d9ac9e7c4d66","sealed_by":"Council"}
+{"t":"2025-09-25T00:54:27Z","event":"render.fossilize.v1","scene":"Ethereal Wrap","capsule":"capsule.scene.ethereal_wrap.v1","status":"published","digest":"sha256:d0913c974379658d7693940c1ea2b83984d605a663dfd6808593d9ac9e7c4d66"}

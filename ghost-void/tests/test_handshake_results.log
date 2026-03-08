@@ -1,0 +1,18 @@
+============================= test session starts =============================
+platform win32 -- Python 3.11.9, pytest-9.0.2, pluggy-1.6.0 -- C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP\.venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP
+plugins: anyio-4.12.1, asyncio-1.3.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 2 items
+
+tests/test_handshake_flow.py::test_handshake_initiation_and_transition PASSED [ 50%]
+tests/test_handshake_flow.py::test_docking_shell_handshake_integration PASSED [100%]
+
+============================== warnings summary ===============================
+schemas\database.py:6
+  C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP\schemas\database.py:6: MovedIn20Warning: The ``declarative_base()`` function is now available as sqlalchemy.orm.declarative_base(). (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    Base = declarative_base()
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================== 2 passed, 1 warning in 0.83s =========================

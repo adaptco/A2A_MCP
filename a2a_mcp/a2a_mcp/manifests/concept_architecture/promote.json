@@ -1,0 +1,10 @@
+{
+  "proposal_id": "proposal.alpha",
+  "canary_duration_sec": 1900,
+  "delta_phi_e": 0.0,
+  "phi_c_post": 0.0018,
+  "phi_m_current": 0.0019,
+  "council_quorum": 3,
+  "pi_v_attested": 0.012,
+  "notes": "Canary stable beyond T_canary with Council quorum."
+}

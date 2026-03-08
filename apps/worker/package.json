@@ -1,0 +1,21 @@
+{
+  "name": "@world-os/worker",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "tsx src/index.ts",
+    "build": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.19.1",
+    "bullmq": "^5.12.2",
+    "ioredis": "^5.4.1",
+    "@world-os/kernel": "0.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.5.1",
+    "prisma": "^5.19.1",
+    "tsx": "^4.19.0",
+    "typescript": "^5.5.4"
+  }
+}

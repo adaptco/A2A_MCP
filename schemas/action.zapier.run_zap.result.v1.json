@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "action.zapier.run_zap.result.v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["ok", "trace_id", "action_id", "request_hash", "response_hash"],
+  "properties": {
+    "ok": { "type": "boolean" },
+    "trace_id": { "type": "string" },
+    "action_id": { "type": "string" },
+    "request_hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "response_hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "provider_ref": { "type": "string" },
+    "error": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "code": { "type": "string" },
+        "message": { "type": "string" }
+      }
+    }
+  }
+}

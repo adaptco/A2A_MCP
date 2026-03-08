@@ -1,0 +1,40 @@
+apiVersion: adk.io/v0
+kind: MetricsControlSurface
+metadata:
+  name: loop_wiring_metrics
+  version: v0
+
+metrics:
+  - id: NON_EUCLIDEAN_DRIFT
+    type: gauge
+    unit: float
+    target: 0.0
+    description: "Deviation of the agent's trajectory from the Petrified manifold during HIRR."
+    aggregation: "deduped_per_session"
+    collection_interval: "Per 1k cycles"
+
+  - id: KAWAII_SCORE
+    type: gauge
+    unit: float
+    min: 0.8
+    description: "Aesthetic coherence score of the generated artifacts."
+    collection_interval: "Per generation"
+
+  - id: REPRODUCIBILITY_INDEX
+    type: ratio
+    unit: percent
+    target: 100.0
+    formula: "successful_sessions / total_sessions"
+    description: "Percentage of Sessions where all Decision Records reproduce bit-exact outputs."
+    aggregation: "deduped_per_session"
+
+  - id: MERKLE_COLLAPSE_TIME
+    type: histogram
+    unit: ms
+    max: 500
+    description: "Time taken to hash and verify the Assembly Actuator state."
+
+infrastructure:
+  exporter: "prometheus"
+  endpoint: "/metrics"
+  retention: "14d"

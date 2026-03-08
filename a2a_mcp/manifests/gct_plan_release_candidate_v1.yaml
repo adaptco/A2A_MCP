@@ -1,0 +1,16 @@
+gct:
+  id: GCT_PLAN_RELEASE_CANDIDATE_V1
+  adapter: adapter.plan.release.candidate.v1
+  gate: gate.plan.release.candidate.v1
+  schemas:
+    input: schemas/adapter.plan.release.candidate.input.v1.schema.json
+    output: schemas/adapter.plan.release.candidate.output.v1.schema.json
+    capsule: schemas/capsule.plan.release.candidate.v1.schema.json
+    gate_result: schemas/gate.result.plan.release.candidate.v1.schema.json
+  fixture:
+    input: fixtures/plan_release_candidate_input.json
+  expected_gate_hash: "TBD"
+  replay_harness: runtime/replay/gct_plan_release_candidate.py:replay_golden_capsule
+  hash_invariant: >-
+    GCT_HASH = H({"capsule_hash": H({"input_hash": H(input), "output_hash": H(output)}),
+    "gate_result": gate_result})

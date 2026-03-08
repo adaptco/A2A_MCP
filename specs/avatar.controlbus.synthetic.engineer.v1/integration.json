@@ -1,0 +1,12 @@
+{
+  "version": "1.0.0",
+  "substrate": {
+    "react_entry": "music-video-generator.jsx",
+    "mcp_client": "cici-music-studio-v11.json"
+  },
+  "refusal_policy": {
+    "on_constraint_violation": "fork",
+    "on_engine_error": "fork_with_reason",
+    "allow_fallback": false
+  }
+}

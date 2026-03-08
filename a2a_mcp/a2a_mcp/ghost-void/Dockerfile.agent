@@ -1,0 +1,29 @@
+# Unified Dockerfile for Python-based A2A Agents
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Common Python Dependencies
+RUN pip install --no-cache-dir \
+    numpy \
+    requests \
+    websockets \
+    pytest
+
+# Copy Agent Code
+COPY jurassic_pixels /app/jurassic_pixels
+COPY adk /app/adk
+# Copy tools if needed
+COPY tools /app/tools
+
+# Set Python path
+ENV PYTHONPATH=/app
+
+# Default command (can be overridden in docker-compose)
+CMD ["python", "-m", "jurassic_pixels.parker_train"]

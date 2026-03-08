@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": [
+    "actor",
+    "trajectory",
+    "invariants_passed",
+    "environment_fingerprint",
+    "diff_hash",
+    "ci_reproduction",
+    "timestamp"
+  ],
+  "properties": {
+    "actor": {"type": "string"},
+    "trajectory": {"type": "string"},
+    "invariants_passed": {"type": "boolean"},
+    "environment_fingerprint": {"type": "string"},
+    "diff_hash": {"type": "string"},
+    "ci_reproduction": {"type": "string"},
+    "timestamp": {"type": "string"}
+  }
+}

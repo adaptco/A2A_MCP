@@ -1,0 +1,220 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Agent Execution Skill v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "skill_name",
+    "deterministic_chain",
+    "runtime_targets",
+    "mcp_tools",
+    "artifact_flow",
+    "hardening_requirements",
+    "token_authority",
+    "defaults"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "agent_execution_skill.v1"
+    },
+    "skill_name": {
+      "const": "MultimodalRAG3DCoderExecution"
+    },
+    "deterministic_chain": {
+      "type": "array",
+      "minItems": 5,
+      "maxItems": 5,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "Planner",
+          "Architect",
+          "Coder",
+          "Tester",
+          "Reviewer"
+        ]
+      }
+    },
+    "runtime_targets": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "unity",
+        "threejs"
+      ],
+      "properties": {
+        "unity": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "render_backend",
+            "runtime_shell"
+          ],
+          "properties": {
+            "render_backend": {
+              "const": "unity"
+            },
+            "runtime_shell": {
+              "const": "wasm"
+            }
+          }
+        },
+        "threejs": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "render_backend",
+            "runtime_shell"
+          ],
+          "properties": {
+            "render_backend": {
+              "const": "threejs"
+            },
+            "runtime_shell": {
+              "const": "wasm"
+            }
+          }
+        }
+      }
+    },
+    "mcp_tools": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string"
+      },
+      "allOf": [
+        {
+          "contains": {
+            "const": "submit_runtime_assignment"
+          }
+        },
+        {
+          "contains": {
+            "const": "get_runtime_assignment"
+          }
+        },
+        {
+          "contains": {
+            "const": "list_runtime_assignments"
+          }
+        },
+        {
+          "contains": {
+            "const": "embed_submit"
+          }
+        },
+        {
+          "contains": {
+            "const": "embed_status"
+          }
+        },
+        {
+          "contains": {
+            "const": "embed_lookup"
+          }
+        },
+        {
+          "contains": {
+            "const": "embed_dispatch_batch"
+          }
+        },
+        {
+          "contains": {
+            "const": "route_a2a_intent"
+          }
+        }
+      ]
+    },
+    "artifact_flow": {
+      "type": "array",
+      "minItems": 6,
+      "items": {
+        "type": "string",
+        "enum": [
+          "worldline_block.json",
+          "multimodal_rag_logic_tree.json",
+          "token_reconstruction.json",
+          "workflow_actions.json",
+          "runtime_assignment",
+          "vector_direction_token_bundle"
+        ]
+      }
+    },
+    "hardening_requirements": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string"
+      },
+      "allOf": [
+        {
+          "contains": {
+            "const": "deterministic_outputs"
+          }
+        },
+        {
+          "contains": {
+            "const": "hash_lineage_continuity"
+          }
+        },
+        {
+          "contains": {
+            "const": "fail_closed_intent_routing"
+          }
+        },
+        {
+          "contains": {
+            "const": "replayable_receipts"
+          }
+        }
+      ]
+    },
+    "token_authority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kernel_control_token_schema_ref",
+        "token_event_schema_ref"
+      ],
+      "properties": {
+        "kernel_control_token_schema_ref": {
+          "const": "schemas/kernel_control_token.v1.schema.json"
+        },
+        "token_event_schema_ref": {
+          "const": "schemas/TokenEvent.v1.schema.json"
+        }
+      }
+    },
+    "defaults": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "cluster_count",
+        "top_k",
+        "min_similarity",
+        "strict_mode"
+      ],
+      "properties": {
+        "cluster_count": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "top_k": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "min_similarity": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 1.0
+        },
+        "strict_mode": {
+          "type": "boolean"
+        }
+      }
+    }
+  }
+}

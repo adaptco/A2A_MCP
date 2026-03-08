@@ -16,10 +16,6 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-permissions:
-  contents: read
-  issues: write
-
 jobs:
   ingress-job:
     runs-on: ubuntu-latest
@@ -57,17 +53,6 @@ jobs:
             -H "Authorization: Bearer $MCP_TOKEN" \
             -H "Content-Type: application/json" \
             -d "{\"plan_id\": \"$PLAN_ID\"}")
-
-          HTTP_STATUS=$(echo "$RESPONSE" | tail -n1)
-          BODY=$(echo "$RESPONSE" | sed '$d')
-
-          if [ "$HTTP_STATUS" -eq 200 ] || [ "$HTTP_STATUS" -eq 201 ]; then
-            echo "✅ Success: Plan ingress triggered."
-            echo "RESPONSE_BODY=$BODY" >> $GITHUB_ENV
-          else
-            echo "❌ Error: Ingress failed with status $HTTP_STATUS"
-            exit 1
-          fi
 
           HTTP_STATUS=$(echo "$RESPONSE" | tail -n1)
           BODY=$(echo "$RESPONSE" | sed '$d')

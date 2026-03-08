@@ -3,6 +3,7 @@
 const fs = require('fs');
 const path = require('path');
 const express = require('express');
+const RateLimit = require('express-rate-limit');
 const qbusGateGuard = require('../lib/qbusGates');
 const { loadManifest, buildHudState, getManifestHealth } = require('../lib/bindings');
 const { createLedgerClient } = require('./ledger');
@@ -10,6 +11,14 @@ const { createLedgerClient } = require('./ledger');
 const MANIFEST_PATH = path.join(__dirname, '..', 'governance', 'authority_map.v1.json');
 const DEFAULT_POLICY_TAG = 'pilot-alpha';
 const MANIFEST_CACHE_TTL_MS = 30 * 1000;
+
+// Rate limiter for protected capsule execution endpoint
+const capsuleExecuteRateLimiter = RateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 60, // limit each IP to 60 requests per windowMs
+  standardHeaders: true,
+  legacyHeaders: false
+});
 
 function createManifestManager(manifestPath, options = {}) {
   let cache = null;
@@ -223,7 +232,7 @@ app.post('/scrollstream/rehearsal', async (req, res) => {
   }
 });
 
-app.post('/capsule/execute', gateMiddleware, async (req, res) => {
+app.post('/capsule/execute', capsuleExecuteRateLimiter, gateMiddleware, async (req, res) => {
   const binding = req.qbus && req.qbus.binding ? req.qbus.binding.normalized : null;
   const manifestInfo = req.qbus ? req.qbus.manifest : null;
   res.json({

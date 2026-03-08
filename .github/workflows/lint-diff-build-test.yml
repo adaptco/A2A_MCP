@@ -4,6 +4,16 @@ on:
   push:
     branches: [main]
   pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: adaptco-main/a2a_mcp
+  IMAGE_TAG: ${{ github.sha }}
+  REGISTRY_IMAGE: ghcr.io/adaptco-main/a2a_mcp
+  LOCAL_IMAGE: ghcr.io/adaptco-main/a2a_mcp:${{ github.sha }}
+  OPENAPI_DIFF_VERSION: 2.1.3
 
 jobs:
   lint-diff-build-test:
@@ -27,8 +37,77 @@ jobs:
       - name: Go Tidy
         run: go mod tidy
 
-      - name: Install Cosign
-        uses: sigstore/cosign-installer@v3.5.0
+      - name: Lint OpenAPI specification
+        if: steps.spec.outputs.spec != ''
+        run: spectral lint "${{ steps.spec.outputs.spec }}"
+
+      - name: Compare OpenAPI specification changes
+        if: steps.spec.outputs.spec != ''
+        run: |
+          set -eo pipefail
+          base_file=""
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            git fetch origin main --depth=1
+            if git cat-file -e origin/main:${{ steps.spec.outputs.spec }} 2>/dev/null; then
+              git show origin/main:${{ steps.spec.outputs.spec }} > /tmp/openapi-base.yaml
+              base_file=/tmp/openapi-base.yaml
+            fi
+          else
+            if git rev-parse HEAD^ >/dev/null 2>&1 && git cat-file -e HEAD^:${{ steps.spec.outputs.spec }} 2>/dev/null; then
+              git show HEAD^:${{ steps.spec.outputs.spec }} > /tmp/openapi-base.yaml
+              base_file=/tmp/openapi-base.yaml
+            fi
+          fi
+
+          if [ -n "$base_file" ]; then
+            java -jar ~/.cache/openapi-diff/openapi-diff-cli.jar --fail-on-incompatible "$base_file" "${{ steps.spec.outputs.spec }}" > artifacts/openapi-diff.txt
+          else
+            echo "No baseline specification available; skipping diff." | tee artifacts/openapi-diff.txt
+          fi
+
+      - name: Detect Dockerfile
+        id: dockerfile
+        run: |
+          set -eo pipefail
+          file=$(git ls-files 'Dockerfile' 'docker/Dockerfile' | head -n 1 || true)
+          if [ -n "$file" ]; then
+            echo "file=$file" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Set up Docker Buildx
+        if: steps.dockerfile.outputs.file != ''
+        uses: docker/setup-buildx-action@v3
+
+      - name: Cache Docker layers
+        if: steps.dockerfile.outputs.file != ''
+        uses: actions/cache@v4
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+
+      - name: Log in to GitHub Container Registry
+        if: steps.dockerfile.outputs.file != '' && github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build (and optionally push) container image
+        if: steps.dockerfile.outputs.file != ''
+        id: build-image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ${{ steps.dockerfile.outputs.file }}
+          push: ${{ github.event_name != 'pull_request' }}
+          load: ${{ github.event_name == 'pull_request' }}
+          tags: |
+            ${{ env.LOCAL_IMAGE }}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
 
       - name: Install trivy
         run: |

@@ -1,0 +1,54 @@
+{
+  "schema_version": "agent_execution_skill.v1",
+  "skill_name": "MultimodalRAG3DCoderExecution",
+  "deterministic_chain": [
+    "Planner",
+    "Architect",
+    "Coder",
+    "Tester",
+    "Reviewer"
+  ],
+  "runtime_targets": {
+    "unity": {
+      "render_backend": "unity",
+      "runtime_shell": "wasm"
+    },
+    "threejs": {
+      "render_backend": "threejs",
+      "runtime_shell": "wasm"
+    }
+  },
+  "mcp_tools": [
+    "submit_runtime_assignment",
+    "get_runtime_assignment",
+    "list_runtime_assignments",
+    "embed_submit",
+    "embed_status",
+    "embed_lookup",
+    "route_a2a_intent"
+  ],
+  "artifact_flow": [
+    "worldline_block.json",
+    "multimodal_rag_logic_tree.json",
+    "token_reconstruction.json",
+    "workflow_actions.json",
+    "runtime_assignment",
+    "vector_direction_token_bundle"
+  ],
+  "hardening_requirements": [
+    "deterministic_outputs",
+    "hash_lineage_continuity",
+    "fail_closed_intent_routing",
+    "replayable_receipts"
+  ],
+  "token_authority": {
+    "kernel_control_token_schema_ref": "schemas/kernel_control_token.v1.schema.json",
+    "token_event_schema_ref": "schemas/TokenEvent.v1.schema.json"
+  },
+  "defaults": {
+    "cluster_count": 4,
+    "top_k": 3,
+    "min_similarity": 0.1,
+    "strict_mode": true
+  }
+}

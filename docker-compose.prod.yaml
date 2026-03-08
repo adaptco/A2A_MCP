@@ -1,0 +1,108 @@
+version: '3.9'
+
+services:
+  db:
+    image: postgres:15
+    container_name: vh2-postgres
+    environment:
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-prod-secret-change-me}
+      POSTGRES_DB: ${DB_NAME:-mcp_db}
+      POSTGRES_USER: ${DB_USER:-postgres}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - vh2-network
+
+  orchestrator:
+    image: vh2-orchestrator:latest
+    container_name: vh2-orchestrator
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-prod-secret-change-me}@db:5432/${DB_NAME:-mcp_db}
+      LLM_MODEL: ${LLM_MODEL:-gpt-4o-mini}
+      A2A_ORCHESTRATION_MODEL: ${A2A_ORCHESTRATION_MODEL:-}
+      A2A_ORCHESTRATION_EMBEDDING_LANGUAGE: ${A2A_ORCHESTRATION_EMBEDDING_LANGUAGE:-code}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./logs/orchestrator:/app/logs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+    networks:
+      - vh2-network
+
+  rbac:
+    image: vh2-rbac:latest
+    container_name: vh2-rbac
+    build:
+      context: ./rbac
+      dockerfile: Dockerfile
+    environment:
+      RBAC_SECRET: ${RBAC_SECRET:-prod-secret-change-me}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+    ports:
+      - "8001:8001"
+    volumes:
+      - ./logs/rbac:/app/logs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+    networks:
+      - vh2-network
+
+  deployment-bot:
+    image: vh2-deployment-bot:latest
+    container_name: vh2-deployment-bot-service
+    build:
+      context: .
+      dockerfile: Dockerfile.bot
+    environment:
+      ACTION: monitor
+      COMPOSE_FILE: ${COMPOSE_FILE:-docker-compose.prod.yaml}
+      HEALTH_CHECK_INTERVAL: ${HEALTH_CHECK_INTERVAL:-30}
+      RECOVERY_ATTEMPTS: ${RECOVERY_ATTEMPTS:-3}
+      RECOVERY_DELAY: ${RECOVERY_DELAY:-10}
+      PROJECT_NAME: vh2-stack
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - deployment_bot_logs:/var/log/deployment_bot
+    restart: unless-stopped
+    depends_on:
+      - db
+      - orchestrator
+      - rbac
+    networks:
+      - vh2-network
+
+volumes:
+  postgres_data:
+    driver: local
+  deployment_bot_logs:
+    driver: local
+
+networks:
+  vh2-network:
+    driver: bridge

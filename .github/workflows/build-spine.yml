@@ -12,9 +12,6 @@ on:
 jobs:
   build-spine:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ${{ github.workspace }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -24,15 +21,39 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
+          version: "9.7.1"
           run_install: false
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: pnpm
+          node-version: "20"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Configure @world-os package access
+        shell: bash
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          WORLD_OS_NPM_REGISTRY: ${{ vars.WORLD_OS_NPM_REGISTRY }}
+        run: |
+          set -euo pipefail
+          REGISTRY="${WORLD_OS_NPM_REGISTRY:-https://registry.npmjs.org}"
+          HOST="${REGISTRY#https://}"
+          HOST="${HOST#http://}"
+          HOST="${HOST%/}"
+          if [ -n "${NPM_TOKEN:-}" ]; then
+            {
+              echo "@world-os:registry=${REGISTRY}"
+              echo "//${HOST}/:_authToken=${NPM_TOKEN}"
+              echo "always-auth=true"
+            } >> .npmrc
+            echo "Configured npm auth for @world-os via ${REGISTRY}"
+          else
+            echo "NPM_TOKEN not set; rewriting @world-os/* deps to workspace:* for CI"
+            python scripts/rewrite_world_os_workspace_deps.py --repo-root .
+          fi
 
       - name: Install dependencies
-        working-directory: ${{ github.workspace }}
-        # Fixes the 'cwd: undefined' error
-        run: pnpm recursive install
+        run: pnpm -r install --frozen-lockfile --ignore-scripts
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

@@ -1,5 +1,8 @@
 name: Multimodal RAG CI/CD
 
+permissions:
+  contents: read
+
 on:
   workflow_dispatch:
     inputs:

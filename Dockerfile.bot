@@ -1,0 +1,66 @@
+# Dockerfile.bot - Deployment Bot Microservice
+# Multi-stage build for minimal production image
+
+FROM python:3.11-slim as builder
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# Runtime stage
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install Docker CLI and docker-compose
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    docker.io \
+    docker-compose \
+    curl \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create non-root user
+RUN useradd -m -u 1000 bot && \
+    mkdir -p /var/log/deployment_bot && \
+    chown -R bot:bot /var/log/deployment_bot
+
+# Copy deployment bot script
+COPY --chown=bot:bot deployment_bot.py /app/deployment_bot.py
+
+# Make it executable
+RUN chmod +x /app/deployment_bot.py
+
+# Create startup script
+RUN cat > /app/entrypoint.sh << 'EOF'
+#!/bin/bash
+set -e
+
+echo "[$(date)] Starting Deployment Bot..."
+echo "Action: ${ACTION:-full-deploy}"
+echo "Compose file: ${COMPOSE_FILE:-docker-compose.prod.yaml}"
+
+# Run deployment bot
+python /app/deployment_bot.py ${ACTION:-full-deploy} \
+  --compose-file "${COMPOSE_FILE:-docker-compose.prod.yaml}" \
+  --interval "${HEALTH_CHECK_INTERVAL:-30}"
+
+EOF
+
+RUN chmod +x /app/entrypoint.sh
+
+USER bot
+
+# Volumes for logs and docker socket
+VOLUME ["/var/log/deployment_bot"]
+
+# Default action
+ENV ACTION=full-deploy
+ENV COMPOSE_FILE=docker-compose.prod.yaml
+ENV HEALTH_CHECK_INTERVAL=30
+
+ENTRYPOINT ["/app/entrypoint.sh"]

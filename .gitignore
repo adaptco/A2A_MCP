@@ -42,6 +42,7 @@ logs/
 *.log
 coverage/
 .nyc_output/
+runtime/rbac/*.local.json
 
 # Agent temp files
 tmpclaude-*

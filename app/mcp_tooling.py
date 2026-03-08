@@ -9,6 +9,10 @@ from typing import Any, Callable
 
 import jwt
 
+from world_foundation_model import (
+    build_coding_agent_avatar_cast,
+    build_world_foundation_model,
+)
 from app.security.avatar_token_shape import AvatarTokenShapeError, shape_avatar_token_stream
 from orchestrator.telemetry_service import TelemetryService
 
@@ -127,6 +131,31 @@ def ingest_avatar_token_stream(
     return {"ok": True, "data": shaped.to_dict()}
 
 
+def build_local_world_foundation_model(
+    prompt: str,
+    repository: str,
+    commit_sha: str,
+    actor: str = "api_user",
+    cluster_count: int = 4,
+    risk_profile: str = "medium",
+) -> dict[str, Any]:
+    """Build world foundation model payloads for root-repo MCP ingestion."""
+    block = build_world_foundation_model(
+        prompt=prompt,
+        repository=repository,
+        commit_sha=commit_sha,
+        actor=actor,
+        cluster_count=cluster_count,
+        risk_profile=risk_profile,
+    )
+    return {"ok": True, "data": block}
+
+
+def get_coding_agent_avatar_cast() -> dict[str, Any]:
+    """Expose embodied avatar bindings for coding agents."""
+    return {"ok": True, "data": build_coding_agent_avatar_cast()}
+
+
 def _extract_bearer_token(authorization: str | None) -> dict[str, Any]:
     if not authorization or not authorization.startswith("Bearer "):
         return {
@@ -171,7 +200,15 @@ _TOOL_REGISTRY: dict[str, dict[str, Any]] = {
     "ingest_avatar_token_stream": {
         "func": ingest_avatar_token_stream,
         "protected": True
-    }
+    },
+    "build_local_world_foundation_model": {
+        "func": build_local_world_foundation_model,
+        "protected": False,
+    },
+    "get_coding_agent_avatar_cast": {
+        "func": get_coding_agent_avatar_cast,
+        "protected": False,
+    },
 }
 
 def register_tools(mcp: Any) -> None:

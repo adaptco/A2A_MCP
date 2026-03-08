@@ -136,3 +136,12 @@ pytest tests/ -v
 ## 📄 License
 
 See [LICENSE](LICENSE).
+
+<!-- avatar-engine:auto:start -->
+## Avatar Engine Automation
+
+- Production pipeline: `.github/workflows/avatar-engine.yml`
+- Daily recursive upskill schedule: **09:00 America/New_York** (DST-safe schedule gate)
+- Catalog output refreshed by automation: `skills/SKILL.md`
+- Safe merge policy: auto-merge only when required checks are green and conflict-free
+<!-- avatar-engine:auto:end -->

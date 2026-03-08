@@ -235,27 +235,6 @@ async def generate_challenge(request: ChallengeRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-        return results
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@app.post("/api/challenges/generate", response_model=SemanticChallenge)
-async def generate_challenge_endpoint(tool_id: str):
-    """
-    Generate an AI challenge for a specific tool.
-    """
-    try:
-        challenge = challenge_gen.generate_challenge(tool_id)
-        if not challenge:
-            raise HTTPException(status_code=404, detail="Tool not found or context insufficient")
-        return challenge
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8001)

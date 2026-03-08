@@ -5,7 +5,7 @@ RBAC Models — Pydantic schemas for agent onboarding and permission checks.
 from __future__ import annotations
 
 from enum import Enum
-from typing import Dict, List, Optional, Set
+from typing import Any, Dict, List, Optional, Set
 
 from pydantic import BaseModel, Field
 
@@ -121,3 +121,41 @@ class AgentRecord(BaseModel):
     embedding_config: Optional[Dict] = None
     metadata: Dict = Field(default_factory=dict)
     active: bool = True
+
+
+class RBACTokenIssueRequest(BaseModel):
+    """Issue a signed RBAC access token for MCP client handshakes."""
+
+    subject: str = Field(..., min_length=1)
+    tenant_id: str = Field(..., min_length=1)
+    client_id: str = Field(..., min_length=1)
+    avatar_id: str = Field(..., min_length=1)
+    roles: List[str] = Field(default_factory=list)
+    scopes: List[str] = Field(default_factory=list)
+    tools: List[str] = Field(default_factory=list)
+    ttl_seconds: int = Field(default=900, ge=60, le=3600)
+
+
+class RBACTokenIssueResponse(BaseModel):
+    """Response payload for RBAC token issuance."""
+
+    token_type: str = "Bearer"
+    access_token: str
+    expires_at: int
+    expires_in: int
+    fingerprint: str
+    claims: Dict[str, Any]
+
+
+class RBACTokenIntrospectRequest(BaseModel):
+    """Token introspection request payload."""
+
+    access_token: str = Field(..., min_length=1)
+
+
+class RBACTokenIntrospectResponse(BaseModel):
+    """Token introspection response payload."""
+
+    active: bool
+    claims: Dict[str, Any] = Field(default_factory=dict)
+    reason: str = ""

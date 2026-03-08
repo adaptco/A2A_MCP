@@ -1,7 +1,7 @@
 ## MoA ↔ MoE Routing Topology
 
 **Control plane (core-orchestrator)**
-- Registry: `registry/agents/agent_registry.json` binds agents to manifests and prompt contracts.
+- Registry: `registry/agents/agent_registry.json` binds agents to manifests, prompt contracts, owner roles, capability sets, tool allowlists, and execution environment constraints.
 - Routing policy: `registry/routing/routing_policy.v1.json` deterministically selects experts by intent.
 - Expert catalog: `registry/experts/expert_catalog.v1.json` lists capabilities.
 

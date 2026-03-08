@@ -3,14 +3,23 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Dict
 
+from app.schemas.music_video import (
+    MusicVideoPlanRequest,
+    MusicVideoPlanResponse,
+    MusicVideoSourcesResponse,
+)
+from app.services.music_video_generator import MusicVideoPlanner
 from .models import OpenPoint, OpenPointCreate, Status
 
 app = FastAPI()
+music_video_planner = MusicVideoPlanner()
 
 # Allow CORS for the frontend
 origins = [
     "http://localhost:3000",
     "http://localhost:5173",  # Vite's default port
+    "http://127.0.0.1:3000",
+    "http://127.0.0.1:5173",
 ]
 
 app.add_middleware(
@@ -27,7 +36,14 @@ id_counter = 0
 
 @app.get("/")
 def read_root():
-    return {"message": "Open Point Automator Backend"}
+    return {
+        "message": "A2A music video planning backend",
+        "routes": [
+            "/music-video/sources",
+            "/music-video/plan",
+            "/open-points",
+        ],
+    }
 
 @app.get("/open-points", response_model=List[OpenPoint])
 def get_open_points():
@@ -84,3 +100,13 @@ def execute_task(point_id: int, request: ExecutionRequest):
         output=output,
         exit_code=exit_code,
     )
+
+
+@app.get("/music-video/sources", response_model=MusicVideoSourcesResponse)
+def get_music_video_sources() -> MusicVideoSourcesResponse:
+    return music_video_planner.get_sources_response()
+
+
+@app.post("/music-video/plan", response_model=MusicVideoPlanResponse)
+def create_music_video_plan(request: MusicVideoPlanRequest) -> MusicVideoPlanResponse:
+    return music_video_planner.plan(request)

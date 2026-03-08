@@ -43,10 +43,9 @@ if ($status) {
 }
 
 Write-Section "Merge Markers"
-$mergeMarkers = rg -n "^(<<<<<<< .+|=======|>>>>>>> .+)$" . 2>$null
-if ($LASTEXITCODE -eq 0 -and $mergeMarkers) {
+& python scripts/check_merge_conflicts.py --root .
+if ($LASTEXITCODE -ne 0) {
     Mark-Fail "Potential merge markers found."
-    $mergeMarkers | ForEach-Object { Write-Host "  $_" }
 } else {
     Mark-Pass "No merge markers found."
 }

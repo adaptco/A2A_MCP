@@ -7,11 +7,14 @@ from typing import Any, Dict, Protocol
 from uuid import uuid4
 
 import numpy as np
-import torch
 from app.mcp_tooling import TELEMETRY
 
 from drift_suite.drift_metrics import ks_statistic
-from mcp_core import MCPCore, MCPResult
+
+try:  # pragma: no cover - import guarded for lightweight test environments
+    import torch
+except ModuleNotFoundError:  # pragma: no cover
+    torch = None
 
 
 class ClientNotFound(KeyError):
@@ -102,7 +105,7 @@ class ClientTokenPipe:
         )
         return namespaced
 
-    async def egress(self, mcp_result: MCPResult) -> Dict[str, Any]:
+    async def egress(self, mcp_result: Any) -> Dict[str, Any]:
         """Client-specific formatting + contamination verification"""
         processed_embedding_np = mcp_result.processed_embedding.squeeze(0).detach().cpu().numpy()
         embedding_hash = _array_hash(processed_embedding_np)
@@ -233,7 +236,15 @@ class MultiClientMCPRouter:
     def __init__(self, store: EventStore) -> None:
         self.store = store
         self.pipelines: dict[str, ClientTokenPipe] = {}
-        self.mcp_core = MCPCore()
+        self.handshake_registry: dict[str, dict[str, Any]] = {}
+        self.mcp_core: Any | None = None
+
+    def _get_mcp_core(self) -> Any:
+        if self.mcp_core is None:
+            from mcp_core import MCPCore
+
+            self.mcp_core = MCPCore()
+        return self.mcp_core
 
     async def register_client(self, api_key: str, quota: int = 1_000_000) -> str:
         api_digest = hashlib.sha256(api_key.encode("utf-8")).hexdigest()
@@ -265,13 +276,54 @@ class MultiClientMCPRouter:
         pipe = self.pipelines.get(client_key)
         if pipe is None:
             raise ClientNotFound(f"Client {client_key} not registered")
+        if torch is None:
+            raise RuntimeError("torch is required to process MCP requests in multi-client router")
 
         mcp_token = await pipe.ingress(np.asarray(tokens, dtype=float))
-        
+        mcp_core = self._get_mcp_core()
+
         # Reshape to (1, 4096) for the MCPCore model
         mcp_token_tensor = torch.from_numpy(mcp_token.reshape(1, -1)).float()
-        mcp_result = self.mcp_core(mcp_token_tensor)
+        mcp_result = mcp_core(mcp_token_tensor)
         return await pipe.egress(mcp_result)
+
+    def register_handshake(
+        self,
+        *,
+        handshake_id: str,
+        client_id: str,
+        tenant_id: str,
+        status: str,
+        metadata: dict[str, Any] | None = None,
+    ) -> None:
+        """Track handshake state in the router layer for API routing visibility."""
+
+        self.handshake_registry[handshake_id] = {
+            "handshake_id": handshake_id,
+            "client_id": client_id,
+            "tenant_id": tenant_id,
+            "status": status,
+            "metadata": dict(metadata or {}),
+        }
+
+    def update_handshake_status(
+        self,
+        *,
+        handshake_id: str,
+        status: str,
+        metadata: dict[str, Any] | None = None,
+    ) -> None:
+        if handshake_id not in self.handshake_registry:
+            raise ClientNotFound(f"Handshake {handshake_id} not registered")
+        entry = self.handshake_registry[handshake_id]
+        entry["status"] = status
+        if metadata:
+            entry["metadata"] = {**entry.get("metadata", {}), **metadata}
+
+    def get_handshake(self, handshake_id: str) -> dict[str, Any]:
+        if handshake_id not in self.handshake_registry:
+            raise ClientNotFound(f"Handshake {handshake_id} not registered")
+        return dict(self.handshake_registry[handshake_id])
 
 
 def _tenant_projection(tenant_id: str, shape: tuple[int, ...]) -> np.ndarray:

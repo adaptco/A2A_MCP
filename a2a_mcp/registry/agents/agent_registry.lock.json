@@ -22,6 +22,26 @@
           "max_tokens": 6000
         },
         "output_contract": "capsule:run:moa.run.v1"
+      },
+      "owner_role": "integration",
+      "capabilities": [
+        "routing",
+        "retrieval",
+        "governance"
+      ],
+      "tool_allowlist": [
+        "git",
+        "python",
+        "docker",
+        "kubectl",
+        "browser_automation"
+      ],
+      "execution_environment": {
+        "os": "windows",
+        "shell": "powershell",
+        "constraints": [
+          "allowlisted_tools_only"
+        ]
       }
     }
   ]

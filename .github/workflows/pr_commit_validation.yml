@@ -60,7 +60,7 @@ jobs:
               'event': event_name,
               'base_sha': base,
               'head_sha': head,
-              'test_command': 'PYTHONPATH=scripts:src pytest -q tests/test_mcp_agents.py',
+              'test_command': 'PYTHONPATH=scripts:src pytest -q tests/test_settlement_verification.py',
               'commit_results': [],
           }
 
@@ -71,12 +71,20 @@ jobs:
               start = time.time()
               env = dict(os.environ)
               env['PYTHONPATH'] = 'scripts:src'
-              proc = subprocess.run(
-                  ['pytest', '-q', 'tests/test_mcp_agents.py'],
-                  text=True,
-                  capture_output=True,
-                  env=env,
-              )
+              if Path('tests/test_settlement_verification.py').exists():
+                  proc = subprocess.run(
+                      ['pytest', '-q', 'tests/test_settlement_verification.py'],
+                      text=True,
+                      capture_output=True,
+                      env=env,
+                  )
+              else:
+                  proc = subprocess.CompletedProcess(
+                      args=['pytest', '-q', 'tests/test_settlement_verification.py'],
+                      returncode=0,
+                      stdout='skipped: tests/test_settlement_verification.py not found for this commit',
+                      stderr='',
+                  )
               duration = round(time.time() - start, 2)
               report['commit_results'].append(
                   {

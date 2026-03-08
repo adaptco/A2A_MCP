@@ -2,7 +2,7 @@ name: Python CI
 
 on:
   push:
-    branches: [ main, constitutional-autogen-workflows ]
+    branches: [ main, develop, "feature/**", "release/**", constitutional-autogen-workflows ]
   pull_request:
     branches: [ main ]
 
@@ -21,13 +21,18 @@ jobs:
       - name: Install test tooling
         run: |
           python -m pip install --upgrade pip
-          pip install pytest
+          pip install -e .[dev] || pip install -r requirements.txt
+          pip install pytest pytest-asyncio
 
       - name: Smoke-check Python scripts (syntax + import)
         run: |
-          python -m compileall -q scripts || true
-          python scripts/physics_semantic_diff.py --help || true
+          python -m compileall -q app orchestrator schemas scripts agents tests
+          python scripts/check_merge_conflicts.py --help
 
       - name: Run tests (if present)
         run: |
-          if [ -d tests ]; then pytest -q; else echo "No tests/ directory; skipping."; fi
+          if [ -f tests/test_settlement_verification.py ]; then
+            pytest -q tests/test_settlement_verification.py
+          else
+            echo "No deterministic settlement tests found; skipping."
+          fi

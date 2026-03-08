@@ -9,23 +9,23 @@ Requires-Dist: sqlalchemy
 Requires-Dist: psycopg2-binary
 Requires-Dist: pydantic
 Requires-Dist: pydantic-settings
+Requires-Dist: PyJWT
 Requires-Dist: python-dotenv
 Requires-Dist: fastapi
 Requires-Dist: uvicorn
 Requires-Dist: httpx
-Requires-Dist: requests
-Requires-Dist: jsonschema<5,>=4.18.0
+Requires-Dist: requests>=2.31.0
+Requires-Dist: jsonschema
 Requires-Dist: mcp[cli]
-Requires-Dist: fastmcp
 Requires-Dist: numpy>=1.24
 Requires-Dist: scipy
-Requires-Dist: PyJWT
 Provides-Extra: dev
 Requires-Dist: pytest; extra == "dev"
 Requires-Dist: pytest-asyncio; extra == "dev"
+Requires-Dist: pytest-cov; extra == "dev"
 Provides-Extra: integrations
-Requires-Dist: aiohttp<4,>=3.8; extra == "integrations"
-Requires-Dist: pynacl<2,>=1.5; extra == "integrations"
+Requires-Dist: aiohttp; extra == "integrations"
+Requires-Dist: pynacl; extra == "integrations"
 Requires-Dist: google-generativeai; extra == "integrations"
 Requires-Dist: pandas; extra == "integrations"
 Requires-Dist: matplotlib; extra == "integrations"

@@ -8,6 +8,8 @@ from fastapi import Depends, FastAPI, HTTPException
 from pydantic import BaseModel, Field
 
 from app.mcp_tooling import TELEMETRY
+from app.services.auth_broker import AuthBrokerError
+from app.services.handshake_service import A2AHandshakeService
 from app.security.oidc import RejectionReason, validate_ingestion_claims
 from multi_client_router import (
     ClientNotFound,
@@ -39,6 +41,25 @@ class LoRADatasetRequest(BaseModel):
     candidate_tokens: list[float] = Field(default_factory=list)
 
 
+class A2AHandshakeInitRequest(BaseModel):
+    tenant_id: str = Field(default="default", min_length=1)
+    client_id: str = Field(..., min_length=1)
+    avatar_id: str = Field(..., min_length=1)
+    capabilities: list[str] = Field(default_factory=list)
+    metadata: dict[str, Any] = Field(default_factory=dict)
+
+
+class A2AHandshakeExchangeRequest(BaseModel):
+    requested_scopes: list[str] = Field(default_factory=list)
+    requested_tools: list[str] = Field(default_factory=list)
+    ttl_seconds: int = Field(default=900, ge=60, le=3600)
+    metadata: dict[str, Any] = Field(default_factory=dict)
+
+
+class A2AHandshakeFinalizeRequest(BaseModel):
+    metadata: dict[str, Any] = Field(default_factory=dict)
+
+
 @lru_cache(maxsize=1)
 def get_router() -> MultiClientMCPRouter:
     return MultiClientMCPRouter(store=InMemoryEventStore())
@@ -47,6 +68,11 @@ def get_router() -> MultiClientMCPRouter:
 @lru_cache(maxsize=1)
 def get_runtime_service() -> RuntimeScenarioService:
     return RuntimeScenarioService()
+
+
+@lru_cache(maxsize=1)
+def get_handshake_service() -> A2AHandshakeService:
+    return A2AHandshakeService()
 
 
 @app.post("/mcp/register")
@@ -150,6 +176,96 @@ async def stream_orchestration(
             rejection_reason=RejectionReason.QUOTA_EXCEEDED.value,
         )
         raise HTTPException(status_code=429, detail=str(exc)) from exc
+
+
+@app.post("/a2a/handshake/init")
+async def init_a2a_handshake(
+    request: A2AHandshakeInitRequest,
+    router: MultiClientMCPRouter = Depends(get_router),
+    handshake_service: A2AHandshakeService = Depends(get_handshake_service),
+) -> dict[str, Any]:
+    envelope = handshake_service.init_handshake(
+        tenant_id=request.tenant_id,
+        client_id=request.client_id,
+        avatar_id=request.avatar_id,
+        capabilities=request.capabilities,
+        metadata=request.metadata,
+    )
+    router.register_handshake(
+        handshake_id=envelope.handshake_id,
+        client_id=envelope.client_id,
+        tenant_id=envelope.tenant_id,
+        status=envelope.status,
+        metadata=envelope.metadata,
+    )
+    return envelope.model_dump(mode="json")
+
+
+@app.post("/a2a/handshake/exchange")
+async def exchange_a2a_handshake(
+    handshake_id: str,
+    request: A2AHandshakeExchangeRequest,
+    router: MultiClientMCPRouter = Depends(get_router),
+    handshake_service: A2AHandshakeService = Depends(get_handshake_service),
+) -> dict[str, Any]:
+    try:
+        envelope = handshake_service.exchange_handshake(
+            handshake_id=handshake_id,
+            requested_scopes=request.requested_scopes,
+            requested_tools=request.requested_tools,
+            ttl_seconds=request.ttl_seconds,
+            metadata=request.metadata,
+        )
+        router.update_handshake_status(
+            handshake_id=handshake_id,
+            status=envelope.status,
+            metadata=envelope.metadata,
+        )
+        return envelope.model_dump(mode="json")
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except AuthBrokerError as exc:
+        raise HTTPException(status_code=403, detail=str(exc)) from exc
+    except ClientNotFound as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@app.post("/a2a/handshake/finalize")
+async def finalize_a2a_handshake(
+    handshake_id: str,
+    request: A2AHandshakeFinalizeRequest,
+    router: MultiClientMCPRouter = Depends(get_router),
+    handshake_service: A2AHandshakeService = Depends(get_handshake_service),
+) -> dict[str, Any]:
+    try:
+        envelope = handshake_service.finalize_handshake(
+            handshake_id=handshake_id,
+            metadata=request.metadata,
+        )
+        router.update_handshake_status(
+            handshake_id=handshake_id,
+            status=envelope.status,
+            metadata=envelope.metadata,
+        )
+        return envelope.model_dump(mode="json")
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except AuthBrokerError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    except ClientNotFound as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@app.get("/a2a/handshake/{handshake_id}")
+async def get_a2a_handshake(
+    handshake_id: str,
+    handshake_service: A2AHandshakeService = Depends(get_handshake_service),
+) -> dict[str, Any]:
+    try:
+        envelope = handshake_service.get_handshake(handshake_id)
+        return envelope.model_dump(mode="json")
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
 
 
 @app.post("/a2a/runtime/{client_id}/scenario")

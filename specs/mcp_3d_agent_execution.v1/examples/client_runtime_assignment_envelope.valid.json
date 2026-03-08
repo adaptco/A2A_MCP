@@ -1,0 +1,99 @@
+{
+  "schema_version": "client_runtime_assignment_envelope.v1",
+  "runtime_assignment": {
+    "schema_version": "runtime.assignment.v1",
+    "assignment_id": "assign-20260305-001",
+    "handshake_id": "hs-20260305-001",
+    "plan_id": "plan-20260305-001",
+    "repository": "adaptco-main/A2A_MCP",
+    "commit_sha": "ad854486a840079f438a361b8fa584586fd2122f",
+    "actor": "codex",
+    "prompt": "Harden game engine runtime in production with multimodal rag",
+    "runtime": {
+      "environment": "production",
+      "engine": "wham"
+    },
+    "workers": [
+      {
+        "worker_id": "worker-unity-01",
+        "agent_name": "CoderAgentUnity",
+        "role": "coder",
+        "fidelity": "high",
+        "runtime_target": "production-unity",
+        "deployment_mode": "rolling",
+        "render_backend": "unity",
+        "runtime_shell": "wasm",
+        "metadata": {
+          "zone": "na-east"
+        },
+        "mcp": {
+          "lane": "realtime"
+        }
+      },
+      {
+        "worker_id": "worker-threejs-01",
+        "agent_name": "CoderAgentThreejs",
+        "role": "coder",
+        "fidelity": "high",
+        "runtime_target": "production-threejs",
+        "deployment_mode": "rolling",
+        "render_backend": "threejs",
+        "runtime_shell": "wasm",
+        "metadata": {
+          "zone": "na-east"
+        },
+        "mcp": {
+          "lane": "realtime"
+        }
+      }
+    ],
+    "token_stream": [
+      {
+        "token": "production",
+        "token_id": "f4d4b6f4f11b91f2"
+      },
+      {
+        "token": "engine",
+        "token_id": "1216bca0cb6549f9"
+      }
+    ],
+    "token_stream_stats": {
+      "normalized": true,
+      "count": 2
+    },
+    "stateful_artifacts": [
+      {
+        "type": "worldline_block",
+        "ref": "artifact://worldline-001"
+      }
+    ],
+    "orchestration_state": {
+      "phase": "executing",
+      "retries": 0
+    },
+    "kernel_model": {
+      "kernel_id": "kernel-01",
+      "vector_namespace": "mcp-3d-v1"
+    },
+    "runtime_bridge_metadata": {
+      "bridge_path": "orchestration_mcp->runtime_mcp",
+      "schema_version": "runtime.assignment.v1",
+      "handshake_id": "hs-20260305-001",
+      "plan_id": "plan-20260305-001"
+    },
+    "mcp": {
+      "server": "A2A_Runtime",
+      "runtime_tools": [
+        "submit_runtime_assignment",
+        "get_runtime_assignment",
+        "list_runtime_assignments",
+        "embed_submit",
+        "embed_status",
+        "embed_lookup",
+        "embed_dispatch_batch",
+        "route_a2a_intent"
+      ]
+    },
+    "created_at": "2026-03-05T13:00:00+00:00"
+  }
+}

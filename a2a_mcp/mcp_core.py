@@ -79,3 +79,37 @@ class MCPCore(nn.Module):
         feat1 = self.feature_extractor(emb1)
         feat2 = self.feature_extractor(emb2)
         return float(F.cosine_similarity(feat1.mean(0), feat2.mean(0), dim=-1).item())
+
+
+def namespace_project_embedding(
+    raw_embedding: torch.Tensor, tenant_vector: torch.Tensor | None = None
+) -> torch.Tensor:
+    """
+    Project a raw embedding into a tenant namespace.
+
+    This is a standalone helper for compatibility call-sites that need
+    deterministic namespacing outside `ClientTokenPipe`.
+    """
+    if raw_embedding.dim() == 1:
+        raw_embedding = raw_embedding.unsqueeze(0)
+    if raw_embedding.dim() != 2 or raw_embedding.shape[0] != 1:
+        raise ValueError("raw_embedding must have shape [1, D] or [D]")
+
+    if tenant_vector is None:
+        return raw_embedding.float()
+
+    tenant_vector = tenant_vector.float()
+    if tenant_vector.dim() == 2 and tenant_vector.shape[0] == 1:
+        tenant_vector = tenant_vector.squeeze(0)
+    if tenant_vector.dim() != 1:
+        raise ValueError("tenant_vector must have shape [D] or [1, D]")
+    if tenant_vector.shape[0] != raw_embedding.shape[1]:
+        raise ValueError(
+            "tenant_vector width "
+            f"{tenant_vector.shape[0]} must match embedding width {raw_embedding.shape[1]}"
+        )
+
+    return raw_embedding.float() * F.normalize(tenant_vector, dim=0).unsqueeze(0)
+
+
+__all__ = ["MCPResult", "MCPCore", "namespace_project_embedding"]

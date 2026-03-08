@@ -13,6 +13,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
+          cache: 'pnpm'
+          cache-dependency-path: pnpm-lock.yaml
           registry-url: 'https://registry.npmjs.org'
       - name: Configure @world-os package access
         shell: bash
@@ -34,42 +36,9 @@ jobs:
             echo "Configured npm auth for @world-os via ${REGISTRY}"
           else
             echo "NPM_TOKEN not set; rewriting @world-os/* deps to workspace:* for CI"
-            python - <<'PY'
-            import glob
-            import json
-            changed = 0
-            patterns = [
-                "apps/*/package.json",
-                "packages/*/package.json",
-                "ui/**/package.json",
-                "api/**/package.json",
-                "tools/**/package.json",
-            ]
-            for pattern in patterns:
-                for path in glob.glob(pattern, recursive=True):
-                    try:
-                        with open(path, "r", encoding="utf-8") as fh:
-                            data = json.load(fh)
-                    except Exception:
-                        continue
-                    dirty = False
-                    for section in ("dependencies", "devDependencies", "optionalDependencies", "peerDependencies"):
-                        deps = data.get(section)
-                        if not isinstance(deps, dict):
-                            continue
-                        for name, version in list(deps.items()):
-                            if name.startswith("@world-os/") and not str(version).startswith("workspace:"):
-                                deps[name] = "workspace:*"
-                                dirty = True
-                    if dirty:
-                        with open(path, "w", encoding="utf-8") as fh:
-                            json.dump(data, fh, indent=2)
-                            fh.write("\n")
-                        changed += 1
-            print(f"Updated {changed} package manifest(s) for @world-os workspace fallback.")
-            PY
+            python scripts/rewrite_world_os_workspace_deps.py --repo-root .
           fi
-      - run: pnpm install --frozen-lockfile=false
+      - run: pnpm install --frozen-lockfile --ignore-scripts
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       - run: pnpm run build

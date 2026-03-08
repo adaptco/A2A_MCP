@@ -56,6 +56,29 @@ orchestrator.register_skill(
 )
 ```
 
+## Standardized MCP Tool Integration
+
+All agents in the A2A_MCP swarm must interact with environmental tools (Filesystem, Shell, Cloud, etc.) exclusively via the **Model Context Protocol (MCP)**. This ensures cross-platform consistency and centralized security auditing.
+
+### Tool Discovery & Binding
+- **Registry**: Agents must query the `ManagingAgent` for available MCP server UIDs.
+- **Initialization**: Tools are bound at session start. Static tool definitions are prohibited.
+- **Protocol**: JSON-RPC over stdio or HTTP as specified in the ADK `contracts/mcp_schema.json`.
+
+### Canonical Skill Phases with MCP
+Every agent skill must follow this updated five-phase lifecycle:
+
+1. **SAMPLE**: Ingest objective and initialize state.
+2. **RESOLVE**: Query MCP servers for relevant tools (`list_tools`).
+3. **PLAN**: Construct a DAG of tool calls using standard MCP tool names (e.g., `run_shell_command`, `read_file`).
+4. **EXECUTE**: Invoke MCP tools synchronously or asynchronously.
+5. **VERIFY**: Use the `PINNAgent` to validate tool outputs against the WorldModel.
+
+### MCP Safety Constraints
+- **Scope**: Shell commands must be prefixed with appropriate environment constraints.
+- **Audit**: Every tool call is logged to the `VVLRecord` with the tool provider's UID and the raw response hash.
+- **Failure**: Tool errors must be parsed into `VVLRecord` as `execution_failure` events for self-healing loops.
+
 #### Guarantees (enforced by spec pack)
 - Deterministic replay via ByteSampler seed lineage + VVL
 - Explicit bifurcation logged on every call
@@ -65,53 +88,21 @@ orchestrator.register_skill(
 
 **Commit-ready.** Replace previous section with this block. Paste agent router if exact registration patch needed.
 
----
-
-### MultimodalRAG3DCoderExecution
+### MCPEntropyTemplateRouter
 
 **Version:** 1.0  
-**Spec pack:** `specs/mcp_3d_agent_execution.v1`  
-**Mode:** Production deterministic dual-runtime (`unity` + `threejs`)  
-**Token authority:** `kernel_control_token.v1` + `TokenEvent.v1`
+**Skill folder:** `skills/mcp-entropy-template-router`  
+**Purpose:** deterministic API skill-token generation + enthalpy/entropy style control + uniform dotproduct template routing.
 
-#### Deterministic Agent Chain
-- `Planner -> Architect -> Coder -> Tester -> Reviewer`
+#### Runtime outputs
+- `api_skill_tokens` for avatar runtime shell API bindings
+- `style_temperature_profile` with `enthalpy`, `entropy`, and tuned `temperature`
+- `template_route` with deterministic scores and template-triggered action list
 
-#### MCP Runtime Tools (client-side contract)
-- `submit_runtime_assignment`
-- `get_runtime_assignment`
-- `list_runtime_assignments`
-- `embed_submit`
-- `embed_status`
-- `embed_lookup`
-- `embed_dispatch_batch`
-- `route_a2a_intent`
-
-#### Production Artifact Flow
-1. `worldline_block.json`
-2. `multimodal_rag_logic_tree.json`
-3. `token_reconstruction.json`
-4. `workflow_actions.json`
-5. `runtime_assignment`
-6. `vector_direction_token_bundle`
-
-#### Hardening Requirements
-- Deterministic outputs for identical `(prompt, repo, commit, actor, cluster_count, top_k, min_similarity)`
-- Hash lineage continuity from token event sequence through final cumulative hash
-- Fail-closed intent routing and tool access constraints
-- Replayable receipt chain for runtime and embedding control-plane actions
-
-#### Defaults
-```json
-{
-  "cluster_count": 4,
-  "top_k": 3,
-  "min_similarity": 0.10,
-  "strict_mode": true
-}
-```
-
-#### Validation Commands
+#### Execution command
 ```bash
-python scripts/validate_mcp_3d_agent_execution_spec.py --strict
+python skills/mcp-entropy-template-router/scripts/route_actions.py \
+  --prompt "Implement orchestration action chain" \
+  --risk-profile medium \
+  --changed-path-count 8
 ```

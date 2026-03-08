@@ -1,0 +1,206 @@
+name: AxQxOS Avatar Engine Pipeline
+
+on:
+  push:
+    branches: [main, develop, "feature/**", "release/**"]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      capsule:
+        description: "Avatar capsule binding"
+        required: true
+        default: "Sol.F1"
+      run_upskill:
+        description: "Run recursive upskill automation"
+        type: boolean
+        default: false
+  schedule:
+    # 09:00 America/New_York across DST transitions
+    - cron: "0 13 * * *"
+    - cron: "0 14 * * *"
+
+permissions:
+  contents: read
+
+env:
+  NODE_VERSION: "20"
+  PYTHON_VERSION: "3.11"
+
+jobs:
+  integrity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install integrity tooling
+        run: python -m pip install --upgrade pip pyyaml
+
+      - name: Verify merge-marker hygiene
+        run: python scripts/check_merge_conflicts.py
+
+      - name: Validate workflow YAML files
+        run: |
+          python -c "import pathlib,yaml; [yaml.safe_load(p.read_text(encoding='utf-8')) for p in pathlib.Path('.github/workflows').glob('*.y*ml')]; print('Workflow YAML validation complete.')"
+
+  quality:
+    runs-on: ubuntu-latest
+    needs: integrity
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .[dev] || pip install -r requirements.txt
+          pip install flake8 pytest pytest-asyncio
+
+      - name: Python compile + deterministic tests
+        run: |
+          python -m compileall -q app orchestrator schemas scripts agents tests
+          pytest -q tests/test_settlement_verification.py
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: "9.7.1"
+          run_install: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "pnpm"
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Configure @world-os package access
+        shell: bash
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          WORLD_OS_NPM_REGISTRY: ${{ vars.WORLD_OS_NPM_REGISTRY }}
+        run: |
+          set -euo pipefail
+          REGISTRY="${WORLD_OS_NPM_REGISTRY:-https://registry.npmjs.org}"
+          HOST="${REGISTRY#https://}"
+          HOST="${HOST#http://}"
+          HOST="${HOST%/}"
+          if [ -n "${NPM_TOKEN:-}" ]; then
+            {
+              echo "@world-os:registry=${REGISTRY}"
+              echo "//${HOST}/:_authToken=${NPM_TOKEN}"
+              echo "always-auth=true"
+            } >> .npmrc
+          else
+            python scripts/rewrite_world_os_workspace_deps.py --repo-root .
+          fi
+
+      - name: Node install + lint + build
+        run: |
+          pnpm install --frozen-lockfile --ignore-scripts
+          pnpm -r --if-present run lint
+          pnpm -r --if-present run build
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  artifacts:
+    runs-on: ubuntu-latest
+    needs: quality
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Emit avatar-engine artifact receipt
+        run: |
+          mkdir -p manifests
+          RECEIPT="manifests/avatar-engine-receipt-$(date -u +%Y%m%dT%H%M%SZ).json"
+          cat > "$RECEIPT" <<EOF
+          {
+            "schema": "AxQxOS/AvatarEngineReceipt/v1",
+            "sha": "${{ github.sha }}",
+            "ref": "${{ github.ref }}",
+            "event": "${{ github.event_name }}",
+            "capsule": "${{ github.event.inputs.capsule || 'Sol.F1' }}",
+            "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+            "canonical": "Canonical truth, attested and replayable."
+          }
+          EOF
+          echo "RECEIPT=$RECEIPT" >> "$GITHUB_ENV"
+
+      - name: Optional receipt signing
+        env:
+          PIPELINE_SIGNING_KEY: ${{ secrets.PIPELINE_SIGNING_KEY }}
+        run: |
+          if [ -n "${PIPELINE_SIGNING_KEY:-}" ] && [ -f scripts/sign_receipt.py ]; then
+            python scripts/sign_receipt.py "$RECEIPT"
+          else
+            echo "Signing key or signer script missing; skipping optional signing."
+          fi
+
+      - name: Upload pipeline artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: avatar-engine-artifacts
+          path: |
+            manifests/avatar-engine-receipt-*.json
+            skills/SKILL.md
+          if-no-files-found: warn
+
+  upskill:
+    runs-on: ubuntu-latest
+    needs: [quality, artifacts]
+    if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.event.inputs.run_upskill == 'true')
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - id: et_gate
+        name: Enforce 09:00 America/New_York
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" != "schedule" ]; then
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          ET_HOUR=$(TZ=America/New_York date +%H)
+          ET_MINUTE=$(TZ=America/New_York date +%M)
+          if [ "$ET_HOUR" = "09" ] && [ "$ET_MINUTE" = "00" ]; then
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "Skipping run at ET ${ET_HOUR}:${ET_MINUTE}; waiting for 09:00 ET."
+          fi
+
+      - uses: actions/setup-python@v5
+        if: steps.et_gate.outputs.skip != 'true'
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Regenerate skills catalog
+        if: steps.et_gate.outputs.skip != 'true'
+        run: |
+          python scripts/generate_skills_catalog.py --repo-root . --output skills/SKILL.md
+
+      - name: Sync docs references
+        if: steps.et_gate.outputs.skip != 'true'
+        run: |
+          python scripts/sync_avatar_engine_docs.py --repo-root .
+
+      - name: Open/update automation PR and enable safe auto-merge
+        if: steps.et_gate.outputs.skip != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.AVATAR_ENGINE_AUTOMATION_PAT }}
+        run: |
+          python scripts/avatar_upskill_automation.py \
+            --repo-root . \
+            --base-branch main \
+            --automation-branch automation/avatar-engine-upskill

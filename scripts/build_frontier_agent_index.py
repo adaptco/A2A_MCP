@@ -21,6 +21,7 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from rbac.models import ACTION_PERMISSIONS, ROLE_PERMISSIONS, AgentRole  # noqa: E402
+from scripts.frontier_preferences import load_workspace_preferences  # noqa: E402
 
 
 FRONTIER_MODELS: list[dict[str, Any]] = [
@@ -156,6 +157,13 @@ def _tool_scope_for_role(role: str, all_tools: list[str]) -> list[str]:
     return [tool for tool in all_tools if tool.startswith(READ_TOOL_HINTS)]
 
 
+def _normalize_token_ref(tokens_out: Path, repo_root: Path) -> str:
+    token_ref = str(tokens_out)
+    if tokens_out.is_absolute() and str(tokens_out).startswith(str(repo_root)):
+        token_ref = str(tokens_out.relative_to(repo_root))
+    return token_ref.replace("\\", "/")
+
+
 def _build_cards(all_tools: list[str], token_ref: str) -> list[dict[str, Any]]:
     cards: list[dict[str, Any]] = []
     for profile in FRONTIER_MODELS:
@@ -270,11 +278,13 @@ def main() -> int:
     tokens_out = Path(args.tokens_out)
 
     tools = _load_mcp_tools(REPO_ROOT)
-    token_ref = str(tokens_out.relative_to(REPO_ROOT)).replace("\\", "/")
+    token_ref = _normalize_token_ref(tokens_out, REPO_ROOT)
     cards = _build_cards(tools, token_ref=token_ref)
 
     secret = os.getenv(args.secret_env, "dev-secret-change-me")
     tokens = _build_tokens(cards, secret=secret, issuer=args.issuer, ttl_hours=args.ttl_hours)
+
+    preferences = load_workspace_preferences()
 
     index_payload = {
         "version": "v1",
@@ -287,6 +297,7 @@ def main() -> int:
         "frontier_agent_count": len(cards),
         "mcp_tool_count": len(tools),
         "mcp_tools": tools,
+        "workspace_preferences": preferences,
         "agents": [
             {
                 "agent_id": card["agent_id"],

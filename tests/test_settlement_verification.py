@@ -45,35 +45,34 @@ def test_verify_fails_when_payload_mutates_after_hashing() -> None:
 
     result = verify_execution([e1, tampered])
 
-        assert not result.valid
-        assert result.reason == "Hash mismatch at event_id=2"
-    
-    
-    def test_verify_fails_when_state_mutates_after_hashing() -> None:
-        tenant_id = "tenant-a"
-        execution_id = "exec-1"
-    
-        e1 = _build_event(1, tenant_id, execution_id, State.RUNNING, {"step": 1}, None)
-        e2 = _build_event(2, tenant_id, execution_id, State.RUNNING, {"step": 2}, e1.hash_current)
-    
-        tampered = Event(
-            id=e2.id,
-            tenant_id=e2.tenant_id,
-            execution_id=e2.execution_id,
-            state=State.FINALIZED.value,
-            payload=e2.payload,
-            hash_prev=e2.hash_prev,
-            hash_current=e2.hash_current,
-        )
-    
-        result = verify_execution([e1, tampered])
-    
-        assert not result.valid
-        assert result.reason == "Hash mismatch at event_id=2"
-    
-    
-    def test_partial_unique_index_blocks_second_finalized_event() -> None:
-    
+    assert not result.valid
+    assert result.reason == "Hash mismatch at event_id=2"
+
+
+def test_verify_fails_when_state_mutates_after_hashing() -> None:
+    tenant_id = "tenant-a"
+    execution_id = "exec-1"
+
+    e1 = _build_event(1, tenant_id, execution_id, State.RUNNING, {"step": 1}, None)
+    e2 = _build_event(2, tenant_id, execution_id, State.RUNNING, {"step": 2}, e1.hash_current)
+
+    tampered = Event(
+        id=e2.id,
+        tenant_id=e2.tenant_id,
+        execution_id=e2.execution_id,
+        state=State.FINALIZED.value,
+        payload=e2.payload,
+        hash_prev=e2.hash_prev,
+        hash_current=e2.hash_current,
+    )
+
+    result = verify_execution([e1, tampered])
+
+    assert not result.valid
+    assert result.reason == "Hash mismatch at event_id=2"
+
+
+def test_partial_unique_index_blocks_second_finalized_event() -> None:
     conn = sqlite3.connect(":memory:")
     cur = conn.cursor()
     cur.execute(

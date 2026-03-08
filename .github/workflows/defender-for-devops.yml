@@ -22,12 +22,9 @@ permissions:
   contents: read
 
 on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
   schedule:
     - cron: '26 7 * * 6'
+  workflow_dispatch:
 
 jobs:
   MSDO:

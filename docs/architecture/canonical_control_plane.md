@@ -26,6 +26,20 @@ Primary runtime stack:
 5. Artifacts and plan snapshots are persisted through `orchestrator.storage`.
 6. RBAC checks are enforced by orchestrator through `rbac.client.RBACClient`.
 
+## Unified FSM + MCP Bus Contract
+
+The control plane is anchored on one finite-state machine authority and one MCP transport surface:
+
+1. `orchestrator.stateflow.StateMachine` is the only state transition authority for objective lifecycle.
+2. `app.mcp_gateway:app` is the canonical MCP ingress for tool invocations and agent payload exchange.
+3. All agent/tool side effects are represented as events that must be replayable through the same FSM path.
+4. Forward-only override events (`OVERRIDE_EVENT`) are allowed only through RBAC-authorized governance paths.
+
+Reference diagrams:
+
+- [`docs/architecture/a2a_mcp_fsm_stateflow.mmd`](./a2a_mcp_fsm_stateflow.mmd)
+- [`docs/architecture/a2a_mcp_control_model.mmd`](./a2a_mcp_control_model.mmd)
+
 ## Environment Contract
 
 ### Shared globals

@@ -1,10 +1,39 @@
 import { Worker } from "bullmq";
-import { PrismaClient } from "@prisma/client";
 import { stableHash } from "@world-os/kernel";
 
 const connection = { url: process.env.REDIS_URL || "redis://localhost:6379" };
 const queueName = process.env.FORGE_QUEUE_NAME || "asset-forge";
-const prisma = new PrismaClient();
+
+type ForgeAssetRecordInput = {
+  tokenSeed: string;
+  tokenSeedHash: string;
+  baseAssetId: string;
+  styleClamp: number;
+  url: string;
+  lineage: string;
+};
+
+type PrismaClientLike = {
+  forgeAsset: {
+    create(args: { data: ForgeAssetRecordInput }): Promise<unknown>;
+  };
+};
+
+function createPrismaClient(): PrismaClientLike {
+  // `@prisma/client` only exposes PrismaClient after `prisma generate` runs.
+  // Keep import dynamic so CI type-checks do not fail when generation is skipped.
+  const prismaModule = require("@prisma/client") as {
+    PrismaClient?: new () => PrismaClientLike;
+  };
+
+  if (!prismaModule.PrismaClient) {
+    throw new Error("PrismaClient is unavailable. Run `prisma generate` before starting worker.");
+  }
+
+  return new prismaModule.PrismaClient();
+}
+
+const prisma = createPrismaClient();
 
 const worker = new Worker(
   queueName,

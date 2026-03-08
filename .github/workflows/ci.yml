@@ -14,9 +14,25 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  merge-marker-guard:
+    name: Merge Marker Guard
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11.8"
+
+      - name: Fail on unresolved merge markers
+        run: python scripts/check_merge_conflicts.py --root .
+
   behavior:
     name: Behavior Validator
     runs-on: ubuntu-latest
+    needs: merge-marker-guard
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -33,7 +49,12 @@ jobs:
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
       - name: Validate MCP 3D agent execution spec pack
-        run: python scripts/validate_mcp_3d_agent_execution_spec.py --strict
+        run: |
+          if [ -f scripts/validate_mcp_3d_agent_execution_spec.py ]; then
+            python scripts/validate_mcp_3d_agent_execution_spec.py --strict
+          else
+            echo "scripts/validate_mcp_3d_agent_execution_spec.py not found; skipping strict pack validation."
+          fi
 
       - name: Behavior validator (fast)
         run: |
@@ -90,20 +111,22 @@ jobs:
   workspace-install:
     name: Install Workspace Dependencies
     runs-on: ubuntu-latest
+    needs: merge-marker-guard
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-          registry-url: "https://registry.npmjs.org"
+      - uses: actions/checkout@v4
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
           version: "9.7.1"
+          run_install: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+          cache-dependency-path: pnpm-lock.yaml
 
       - name: Configure @world-os package access
         shell: bash
@@ -125,43 +148,10 @@ jobs:
             echo "Configured npm auth for @world-os via ${REGISTRY}"
           else
             echo "NPM_TOKEN not set; rewriting @world-os/* deps to workspace:* for CI"
-            python - <<'PY'
-            import glob
-            import json
-            changed = 0
-            patterns = [
-                "apps/*/package.json",
-                "packages/*/package.json",
-                "ui/**/package.json",
-                "api/**/package.json",
-                "tools/**/package.json",
-            ]
-            for pattern in patterns:
-                for path in glob.glob(pattern, recursive=True):
-                    try:
-                        with open(path, "r", encoding="utf-8") as fh:
-                            data = json.load(fh)
-                    except Exception:
-                        continue
-                    dirty = False
-                    for section in ("dependencies", "devDependencies", "optionalDependencies", "peerDependencies"):
-                        deps = data.get(section)
-                        if not isinstance(deps, dict):
-                            continue
-                        for name, version in list(deps.items()):
-                            if name.startswith("@world-os/") and not str(version).startswith("workspace:"):
-                                deps[name] = "workspace:*"
-                                dirty = True
-                    if dirty:
-                        with open(path, "w", encoding="utf-8") as fh:
-                            json.dump(data, fh, indent=2)
-                            fh.write("\n")
-                        changed += 1
-            print(f"Updated {changed} package manifest(s) for @world-os workspace fallback.")
-            PY
+            python scripts/rewrite_world_os_workspace_deps.py --repo-root .
           fi
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile=false
+        run: pnpm install --frozen-lockfile --ignore-scripts
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

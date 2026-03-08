@@ -191,9 +191,9 @@ class RalphAgent:
         
         intent = PromptIntent(
             task_context=f"Project State: {self.state.context}",
-            user_input=user_msg,
+            user_input=user_prompt,
             workflow_constraints=[
-                ralph_persona,
+                "Use the Ralph Wiggum persona while producing technically correct output.",
                 f"You MUST focus EXCLUSIVELY on the {chore} phase.",
                 "Produce high-quality engineering output despite the whimsical persona."
             ],

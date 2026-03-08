@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<enterpriseAgentMap version="1.0" canonical="true">
+  <workspacePreferences>
+    <memoryAnchor path="C:\AGENTS.md" normalizedKey="root_agents" />
+    <memoryAnchor path="C:\Skills.md" normalizedKey="root_skills" />
+    <workingStyle mode="targeted_changes" approvals="hitl_required" />
+  </workspacePreferences>
+
+  <mcpTopology>
+    <node id="node:a2a.runtime" interface="A2A_MCP" plane="upper" />
+    <node id="node:antigravity.hitl" interface="Antigravity" plane="upper" />
+    <node id="node:pinn.verify" interface="PINNVerifier" plane="lower" />
+  </mcpTopology>
+
+  <extensions>
+    <extension id="ext:antigravity.browser" interface="Antigravity" owner="platform" checkpoint="browser_hitl" />
+    <extension id="ext:org.github.workflows" interface="GitHub" owner="release-engineering" checkpoint="release_gate" />
+  </extensions>
+
+  <agentCards>
+    <agent id="agent:frontier.endpoint.gpt" displayName="Endpoint GPT Operator" role="pipeline_operator" owner="runtime" rewardSemantic="0.4" rewardSystems="0.35" rewardDomain="0.25" escalationRequired="true" escalationTarget="agent:frontier.anthropic.claude">
+      <toolScope>
+        <tool name="route_a2a_intent" />
+        <tool name="list_runtime_assignments" />
+      </toolScope>
+    </agent>
+    <agent id="agent:blackmamba.planner" displayName="BlackMamba Planner" role="pipeline_operator" owner="mlops" rewardSemantic="0.25" rewardSystems="0.5" rewardDomain="0.25" escalationRequired="true" escalationTarget="agent:frontier.anthropic.claude">
+      <toolScope>
+        <tool name="estimate_token_cost" />
+        <tool name="estimate_runtime_cost" />
+      </toolScope>
+    </agent>
+  </agentCards>
+
+  <orchestrationGraph>
+    <edge from="node:a2a.runtime" to="node:antigravity.hitl" condition="requires_approval" />
+    <edge from="node:a2a.runtime" to="node:pinn.verify" condition="physics_validation_required" />
+  </orchestrationGraph>
+
+  <verificationGraph>
+    <constraint id="constraint:latency" thresholdMs="2000" />
+    <constraint id="constraint:token_burn" thresholdPerTask="75000" />
+  </verificationGraph>
+
+  <integrations>
+    <integration name="Office" enabled="true" interface="office365" node="node:a2a.runtime" />
+    <integration name="Google Workspace" enabled="true" interface="google_workspace" node="node:a2a.runtime" />
+    <integration name="Airtable" enabled="true" interface="airtable" node="node:a2a.runtime" />
+    <integration name="GitHub" enabled="true" interface="github" node="node:a2a.runtime" />
+    <integration name="Firebase" enabled="false" interface="firebase" node="node:a2a.runtime" />
+    <integration name="Vertex" enabled="true" interface="vertex" node="node:a2a.runtime" />
+    <integration name="DOORS" enabled="false" interface="doors" node="node:pinn.verify" />
+    <integration name="Windchill" enabled="false" interface="windchill" node="node:pinn.verify" />
+    <integration name="Canvas" enabled="false" interface="canvas" node="node:antigravity.hitl" />
+  </integrations>
+
+  <rewardLedger>
+    <semanticWeight>0.4</semanticWeight>
+    <systemsWeight>0.35</systemsWeight>
+    <domainWeight>0.25</domainWeight>
+  </rewardLedger>
+
+  <costModel>
+    <tokenUnitCost>0.000002</tokenUnitCost>
+    <latencyUnitCost>0.01</latencyUnitCost>
+    <approvalUnitCost>0.15</approvalUnitCost>
+  </costModel>
+</enterpriseAgentMap>

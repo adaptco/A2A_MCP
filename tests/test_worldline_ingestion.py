@@ -19,7 +19,7 @@ async def test_ingest_worldline_block_success():
     }
     mock_claims = {"repository": "adaptco/A2A_MCP", "actor": "github-actions"}
 
-    with patch("scripts.knowledge_ingestion.verify_github_oidc_token", return_value=mock_claims):
+    with patch("scripts.knowledge_ingestion.verify_bearer_token", return_value=mock_claims):
         async with Client(app_ingest) as client:
             response = await client.call_tool(
                 "ingest_worldline_block",
@@ -37,7 +37,7 @@ async def test_ingest_worldline_block_missing_fields():
     }
     mock_claims = {"repository": "adaptco/A2A_MCP", "actor": "github-actions"}
 
-    with patch("scripts.knowledge_ingestion.verify_github_oidc_token", return_value=mock_claims):
+    with patch("scripts.knowledge_ingestion.verify_bearer_token", return_value=mock_claims):
         async with Client(app_ingest) as client:
             response = await client.call_tool(
                 "ingest_worldline_block",

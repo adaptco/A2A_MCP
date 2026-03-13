@@ -238,3 +238,14 @@ trainer.train_with_custom_data(custom_loader, num_epochs=100)
 **Status**: Production-ready
 **Last Updated**: 2026-02-12
 **Maintainer**: Autonomous Vehicles Team
+
+## Unity Autonomous Training
+
+A Unity-focused orchestration module is available at `mlops_unity_pipeline.py` with setup instructions in `UNITY_MLOPS_SETUP.md`. It supports:
+
+- LLM-driven Unity C# scaffold generation
+- Unity environment build stage hooks
+- Offline/online RL training stage hooks (ML-Agents compatible)
+- Optional Vertex AI registration metadata output
+- Cron-based scheduling for continuous training
+

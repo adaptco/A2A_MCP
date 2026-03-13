@@ -1,0 +1,79 @@
+{
+  "capsule_id": "raci.plan.v1.1",
+  "protocol": "AxQxOS",
+  "spec_version": "V6.0.0",
+  "frozen": false,
+  "entries": [
+    {
+      "track": "phase-1",
+      "description": "Init planning",
+      "target_date": "2025-10-01",
+      "responsible": "planner@example.org",
+      "accountable": "lead_pm@example.org",
+      "consulted": [
+        "architect@example.org"
+      ],
+      "informed": [
+        "council@example.org"
+      ]
+    },
+    {
+      "track": "phase-2",
+      "description": "Mid-term review",
+      "target_date": "2025-11-01",
+      "responsible": "analyst@example.org",
+      "accountable": "program_manager@example.org",
+      "consulted": [
+        "legal@example.org",
+        "qa@example.org"
+      ],
+      "informed": [
+        "stakeholder@example.org"
+      ]
+    },
+    {
+      "track": "phase-3",
+      "description": "Final analysis",
+      "target_date": "2025-12-01",
+      "responsible": "analyst@example.org",
+      "accountable": "cto@example.org",
+      "consulted": [
+        "security@example.org"
+      ],
+      "informed": [
+        "council@example.org"
+      ]
+    },
+    {
+      "track": "phase-4",
+      "description": "Stakeholder sign-off",
+      "target_date": "2025-12-15",
+      "responsible": "eng_manager@example.org",
+      "accountable": "cto@example.org",
+      "consulted": [
+        "legal@example.org",
+        "finance@example.org"
+      ],
+      "informed": [
+        "stakeholder@example.org"
+      ]
+    },
+    {
+      "track": "phase-5",
+      "description": "Rollout",
+      "target_date": "2025-12-31",
+      "responsible": "ops@example.org",
+      "accountable": "coo@example.org",
+      "consulted": [
+        "support@example.org"
+      ],
+      "informed": [
+        "all@example.org"
+      ]
+    }
+  ],
+  "provenance": {
+    "author": "AI-Assistant",
+    "timestamp": "2025-09-19T04:05:00Z"
+  }
+}

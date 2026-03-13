@@ -127,6 +127,37 @@ def check_deterministic_artifact_hash(criteria: dict[str, Any]) -> tuple[bool, s
     return ok, f"file={artifact_path}, actual_sha256={actual}, expected_sha256={expected}"
 
 
+def check_mcp_3d_agent_spec_pack(criteria: dict[str, Any]) -> tuple[bool, str]:
+    validator_script = Path(criteria.get("validator_script", "scripts/validate_mcp_3d_agent_execution_spec.py"))
+    strict = bool(criteria.get("strict", True))
+
+    command = [sys.executable, str(validator_script)]
+    if strict:
+        command.append("--strict")
+
+    proc = subprocess.run(command, capture_output=True, text=True)
+    stdout = (proc.stdout or "").strip()
+    stderr = (proc.stderr or "").strip()
+
+    if proc.returncode != 0:
+        details = stderr or stdout or "validator failed with no output"
+        return False, f"validator={validator_script}, exit_code={proc.returncode}, details={details}"
+
+    preview = "ok"
+    if stdout:
+        try:
+            payload = json.loads(stdout)
+            preview = (
+                "bundle_hash="
+                + str(payload.get("determinism", {}).get("bundle_hash", "unknown"))
+                + ", token_events="
+                + str(payload.get("token_lineage", {}).get("token_event_count", "unknown"))
+            )
+        except json.JSONDecodeError:
+            preview = stdout.splitlines()[-1]
+    return True, f"validator={validator_script}, strict={strict}, summary={preview}"
+
+
 CHECKERS = {
     "INV-PR-ONLY-AUTOMATION-OUTPUT": check_pr_only_output_policy,
     "INV-HERMETIC-FINGERPRINT": check_hermetic_fingerprint,
@@ -134,6 +165,7 @@ CHECKERS = {
     "INV-SECRET-SCAN-GATE": check_secret_scan_gate,
     "INV-POLICY-ZONING-QUORUM": check_policy_zoning,
     "INV-DETERMINISTIC-ARTIFACT-HASH": check_deterministic_artifact_hash,
+    "INV-MCP-3D-AGENT-SPEC-PACK": check_mcp_3d_agent_spec_pack,
 }
 
 

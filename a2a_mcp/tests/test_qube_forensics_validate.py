@@ -1,6 +1,4 @@
 import pytest
-
-pytest.importorskip("jsonschema", reason="Skipping due to rpds-py C-extension environment issue")
 from jsonschema.exceptions import ValidationError
 
 from qube_forensics.validate import validate_forensic_report

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 import json
 
 import pytest
@@ -154,6 +154,56 @@ def test_a2a_auth_broker_fails_closed_on_gemini_token_failure() -> None:
         )
 
 
+
+
+def test_runtime_tokens_unavailable_after_finalize() -> None:
+    service = A2AHandshakeService(broker=_BrokerSuccessStub())
+    envelope = service.init_handshake(
+        tenant_id="tenant-a",
+        client_id="client-a",
+        avatar_id="avatar-a",
+    )
+
+    service.exchange_handshake(
+        handshake_id=envelope.handshake_id,
+        requested_scopes=["mcp:handshake"],
+        requested_tools=[],
+        ttl_seconds=900,
+    )
+    assert service.get_runtime_tokens(envelope.handshake_id) == {
+        "rbac_access_token": "raw-rbac-token",
+        "gemini_access_token": "raw-gemini-token",
+    }
+
+    service.finalize_handshake(handshake_id=envelope.handshake_id)
+    assert service.get_runtime_tokens(envelope.handshake_id) == {}
+
+
+def test_runtime_tokens_unavailable_after_ttl_expiry(monkeypatch: pytest.MonkeyPatch) -> None:
+    service = A2AHandshakeService(broker=_BrokerSuccessStub())
+    envelope = service.init_handshake(
+        tenant_id="tenant-a",
+        client_id="client-a",
+        avatar_id="avatar-a",
+    )
+
+    issued_at = datetime(2030, 1, 1, tzinfo=timezone.utc)
+    monkeypatch.setattr("app.services.handshake_service._utc_now", lambda: issued_at)
+
+    service.exchange_handshake(
+        handshake_id=envelope.handshake_id,
+        requested_scopes=["mcp:handshake"],
+        requested_tools=[],
+        ttl_seconds=60,
+    )
+    assert service.get_runtime_tokens(envelope.handshake_id) == {
+        "rbac_access_token": "raw-rbac-token",
+        "gemini_access_token": "raw-gemini-token",
+    }
+
+    monkeypatch.setattr("app.services.handshake_service._utc_now", lambda: issued_at + timedelta(seconds=61))
+    assert service.get_runtime_tokens(envelope.handshake_id) == {}
+
 def test_handshake_api_round_trip_stores_only_token_refs() -> None:
     get_router.cache_clear()
     get_handshake_service.cache_clear()
@@ -205,6 +255,7 @@ def test_handshake_api_round_trip_stores_only_token_refs() -> None:
         )
         assert finalize_response.status_code == 200
         assert finalize_response.json()["status"] == "finalized"
+        assert service.get_runtime_tokens(handshake_id) == {}
     finally:
         app.dependency_overrides.pop(get_handshake_service, None)
         get_handshake_service.cache_clear()

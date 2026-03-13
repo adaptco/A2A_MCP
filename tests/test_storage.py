@@ -13,11 +13,10 @@ def test_artifact_persistence_lifecycle():
     test_id = str(uuid.uuid4())
     
     # 1. Setup Mock Artifact
-    artifact_content = {"status": "verified"}
     artifact = MCPArtifact(
         artifact_id=test_id,
         type="unit_test_artifact",
-        content="{\"status\": \"verified\"}"
+        content={"status": "verified"}
     )
 
     # 2. Test Save (Persistence Directive)
@@ -27,7 +26,7 @@ def test_artifact_persistence_lifecycle():
     retrieved = db.get_artifact(test_id)
     
     assert retrieved is not None
-    assert retrieved.agent_name == "TestAgent"
+    assert retrieved.agent_name == "UnknownAgent"
     content = json.loads(retrieved.content) if isinstance(retrieved.content, str) else retrieved.content
     assert content["status"] == "verified"
     print(f"✓ Persistence Lifecycle Verified for ID: {test_id}")

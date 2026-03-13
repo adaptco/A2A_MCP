@@ -1,6 +1,6 @@
 {
   "version": "v1",
-  "generated_at": "2026-03-05T13:10:17Z",
+  "generated_at": "2026-03-05T13:48:18Z",
   "sources": {
     "agent_registry": "registry/agents/agent_registry.json",
     "expert_catalog": "registry/experts/expert_catalog.v1.json",

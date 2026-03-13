@@ -73,6 +73,15 @@
         "artifact_path": "manifests/content_integrity_eval.json",
         "expected_sha256": "be994a320adccb431e4f6e267d731a435537edc95d5722bbff3d6d0fbeec8732"
       }
+    },
+    {
+      "id": "INV-MCP-3D-AGENT-SPEC-PACK",
+      "name": "MCP 3D agent execution spec pack validation",
+      "hard_fail": true,
+      "criteria": {
+        "validator_script": "scripts/validate_mcp_3d_agent_execution_spec.py",
+        "strict": true
+      }
     }
   ]
 }

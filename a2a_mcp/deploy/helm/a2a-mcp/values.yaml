@@ -1,0 +1,98 @@
+# Default values for a2a-mcp.
+# Canonical control plane: orchestrator.api + app.mcp_gateway + rbac.rbac_service.
+
+nameOverride: ""
+fullnameOverride: ""
+
+imagePullSecrets: []
+
+images:
+  mcp:
+    repository: ghcr.io/adaptco/a2a-mcp-mcp
+    tag: latest
+    pullPolicy: IfNotPresent
+  orchestrator:
+    repository: ghcr.io/adaptco/a2a-mcp-orchestrator
+    tag: latest
+    pullPolicy: IfNotPresent
+  postgres:
+    repository: postgres
+    tag: "15"
+    pullPolicy: IfNotPresent
+
+mcp:
+  replicaCount: 1
+  service:
+    type: ClusterIP
+    port: 8080
+  resources: {}
+
+orchestrator:
+  replicaCount: 1
+  service:
+    type: ClusterIP
+    port: 8000
+  resources: {}
+
+database:
+  mode: postgres
+  postgres:
+    servicePort: 5432
+    credentials:
+      database: mcp_db
+    storage:
+      size: 10Gi
+      storageClassName: ""
+  sqlite:
+    path: /data/a2a_mcp.db
+    pvc:
+      enabled: true
+      size: 5Gi
+      storageClassName: ""
+
+secrets:
+  create: true
+  nameOverride: ""
+  postgresUser: postgres
+  postgresPassword: pass
+  rbacSecret: dev-secret-change-me
+  llmApiKey: ""
+  avatarTokenSigningKey: ""
+  avatarTokenValidationKey: ""
+
+config:
+  nameOverride: ""
+  environment: development
+  logLevel: INFO
+
+  rbacEnabled: true
+  rbacUrl: http://rbac-gateway:8001
+  authDisabled: false
+
+  llmEndpoint: https://api.mistral.ai/v1/chat/completions
+  llmModel: gpt-4o-mini
+  llmTimeoutSeconds: "30"
+
+  oidc:
+    enforce: false
+    issuer: https://token.actions.githubusercontent.com
+    audience: ""
+    jwksUrl: https://token.actions.githubusercontent.com/.well-known/jwks
+    avatarRepositoryAllowlist: ""
+    avatarActorAllowlist: ""
+
+  avatarTokenAlgorithm: HS256
+  avatarTokenTtlSeconds: "900"
+
+ingress:
+  enabled: false
+  className: ""
+  host: a2a-mcp.example.com
+  annotations: {}
+  tls:
+    enabled: false
+    secretName: ""
+
+nodeSelector: {}
+tolerations: []
+affinity: {}

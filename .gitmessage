@@ -1,0 +1,7 @@
+<type>(<scope>)!: <short summary>
+
+<why this change was needed>
+<what behavior changed>
+
+BREAKING CHANGE: <only if applicable>
+Refs: #123

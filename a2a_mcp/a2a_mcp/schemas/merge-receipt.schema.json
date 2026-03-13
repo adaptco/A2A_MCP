@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/schemas/merge-receipt.schema.json",
+  "title": "Merge Receipt",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "receipt_version",
+    "type",
+    "repo",
+    "pull_request",
+    "pointers",
+    "merge",
+    "toolchain",
+    "integrity"
+  ],
+  "properties": {
+    "receipt_version": { "type": "string" },
+    "type": { "type": "string", "const": "merge_receipt" },
+    "repo": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["slug", "origin_url"],
+      "properties": {
+        "slug": { "type": "string", "minLength": 1 },
+        "origin_url": { "type": "string", "minLength": 1 }
+      }
+    },
+    "pull_request": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["number", "base_ref", "head_ref"],
+      "properties": {
+        "number": { "type": "integer", "minimum": 1 },
+        "base_ref": { "type": "string", "minLength": 1 },
+        "head_ref": { "type": "string", "minLength": 1 }
+      }
+    },
+    "pointers": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["base_before", "head_sha", "merge_commit", "base_after"],
+      "properties": {
+        "base_before": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+        "head_sha": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+        "merge_commit": {
+          "anyOf": [
+            { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+            { "type": "null" }
+          ]
+        },
+        "base_after": {
+          "anyOf": [
+            { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+            { "type": "null" }
+          ]
+        }
+      }
+    },
+    "merge": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["method", "no_ff"],
+      "properties": {
+        "method": { "type": "string", "enum": ["merge", "squash", "rebase"] },
+        "no_ff": { "type": "boolean" }
+      }
+    },
+    "toolchain": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["git_version", "gh_version"],
+      "properties": {
+        "git_version": { "type": "string", "minLength": 1 },
+        "gh_version": { "type": "string", "minLength": 1 }
+      }
+    },
+    "integrity": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["hash_surface_sha256"],
+      "properties": {
+        "hash_surface_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "signature_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "signature_method": { "type": "string" }
+      }
+    },
+    "hash_surface": { "type": ["object", "null"] }
+  }
+}

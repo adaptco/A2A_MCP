@@ -1,0 +1,23 @@
+{
+  "id": "cie.scs.benign.003",
+  "content_source": "cie.v1.smoke",
+  "payload_format": "json",
+  "module_targets": [
+    "synthetic.contradiction.synth.v1"
+  ],
+  "assertions": [
+    "All electric vehicle batteries include a battery management system to prevent overcharging.",
+    "Lithium-ion cells can degrade faster when regularly charged above 90% state of charge."
+  ],
+  "sources": [
+    "https://energy.gov/ev/battery-safety",
+    "https://nrel.gov/storage/lithium-best-practices"
+  ],
+  "expected_outcome": {
+    "integrity": "pass",
+    "mutual_exclusivity": false,
+    "confidence_consistency_min": 0.92,
+    "citation_traceability_min": 0.95
+  },
+  "notes": "Consistency check with complementary assertions; SCS should find no contradiction while validating sourcing coverage." 
+}

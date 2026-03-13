@@ -1,0 +1,24 @@
+alerts:
+  - name: high_rejection_rate
+    expr: sum(rate(mcp_ingestion_requests_total{outcome="rejected"}[5m])) / sum(rate(mcp_ingestion_requests_total[5m])) > 0.05
+    for: 10m
+    severity: warning
+    annotations:
+      summary: "Protected ingestion rejection rate elevated"
+      runbook_url: "https://runbooks.a2a.local/oncall/protected-ingestion"
+
+  - name: protected_ingestion_p99_latency
+    expr: histogram_quantile(0.99, sum(rate(mcp_ingestion_latency_ms_bucket[5m])) by (le)) > 750
+    for: 10m
+    severity: critical
+    annotations:
+      summary: "Protected ingestion p99 latency exceeded SLO"
+      runbook_url: "https://runbooks.a2a.local/oncall/protected-ingestion"
+
+  - name: token_shaping_hash_anomaly
+    expr: sum(rate(mcp_token_shaping_hash_anomaly_total[5m])) > 0
+    for: 1m
+    severity: critical
+    annotations:
+      summary: "Hash collision or anomaly detected in token shaping"
+      runbook_url: "https://runbooks.a2a.local/oncall/token-shaping"

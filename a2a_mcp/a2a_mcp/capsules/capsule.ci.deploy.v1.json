@@ -1,0 +1,61 @@
+{
+  "capsuleType": "capsule.ci.deploy.v1",
+  "name": "QUBE Federation Deploy",
+  "version": "1.0.0",
+  "lineage": { "parent_br9id": "BR9ID-DE96E5266902", "desc": "Unifies deploy ritual across CI backbones" },
+  "env": {
+    "RENDERER_URL": { "required": false, "secret": true },
+    "DEPLOY_CHANNEL": { "default": "production" }
+  },
+  "artifacts": ["artifacts/**", "storage/ledger.jsonl"],
+  "steps": [
+    { "id": "tooling", "script": ["apt-get update -y","apt-get install -y jq moreutils curl python3 || true","python3 --version && jq --version || true","sha256sum --version || true"] },
+    { "id": "renderer", "if": "$RENDERER_URL", "script": ["curl -L \"$RENDERER_URL\" -o ./render","chmod +x ./render"] },
+    { "id": "deploy", "script": ["chmod +x ./deploy.sh","./deploy.sh \"$DEPLOY_CHANNEL\""] },
+    { "id": "collect", "script": ["mkdir -p artifacts","cp -r storage/ledger.jsonl artifacts/ || true","cp -r ops/boo/avatar/guard/out artifacts/out || true","cp -r /tmp/* artifacts/ 2>/dev/null || true"] }
+  ],
+  "bindings": {
+    "github": {
+      "workflow": ".github/workflows/deploy.yml",
+      "map": {
+        "runs-on": "ubuntu-latest",
+        "permissions": { "contents": "read" },
+        "steps": ["actions/checkout@v4","tooling","renderer","deploy","collect"],
+        "secrets": ["RENDERER_URL"]
+      }
+    },
+    "gitlab": {
+      "file": ".gitlab-ci.yml",
+      "map": {
+        "stages": ["deploy"],
+        "deploy": {
+          "image": "ubuntu:22.04",
+          "stage": "deploy",
+          "variables": { "GIT_STRATEGY": "fetch" },
+          "scriptRefs": ["tooling","renderer","deploy","collect"],
+          "artifacts": { "paths": ["artifacts/"], "expire_in": "14 days", "name": "boo-avatar-guard-$CI_PIPELINE_ID" }
+        }
+      }
+    },
+    "jenkins": {
+      "file": "Jenkinsfile",
+      "map": {
+        "agent": "ubuntu-latest",
+        "stages": ["Checkout","Tooling","Install renderer (optional)","Deploy","Collect artifacts"],
+        "scriptRefs": {
+          "Tooling": "tooling",
+          "Install renderer (optional)": "renderer",
+          "Deploy": "deploy",
+          "Collect artifacts": "collect"
+        },
+        "post": { "archive": "artifacts/**" },
+        "credentials": { "RENDERER_URL": "renderer-url" }
+      }
+    }
+  },
+  "policy": {
+    "maker_checker": true,
+    "attestation_quorum": 3,
+    "export_replay_verifiable": true
+  }
+}

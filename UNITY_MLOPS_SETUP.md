@@ -52,6 +52,8 @@ RLTrainingConfig(
     num_envs=16,
     time_scale=20.0,
     training_mode="online",  # online | offline | hybrid
+    token_alignment_slices=5,
+    merkle_seed="0x1984_Q9",
 )
 ```
 
@@ -174,6 +176,26 @@ config = RLTrainingConfig(
     training_mode="offline",
     offline_dataset_path="data/demos/navigation_demo.jsonl",
     max_steps=1_000_000,
+)
+```
+
+## Nested alignment drill + Merkle stability
+
+`train_rl_agent` now performs a deterministic nested alignment drill before writing training outputs:
+
+- `token_alignment_slices` controls how many time-spread slices are audited (must be `>= 1`).
+- `merkle_seed` is included in a canonicalized SHA-256 digest input.
+- `training_summary.json` includes `nested_alignment_report`, `merkle_seed`, and `merkle_hash`.
+
+Example:
+
+```python
+config = RLTrainingConfig(
+    algorithm="PPO",
+    training_mode="hybrid",
+    offline_dataset_path="data/demos/patrol.jsonl",
+    token_alignment_slices=8,
+    merkle_seed="0x1984_Q9",
 )
 ```
 

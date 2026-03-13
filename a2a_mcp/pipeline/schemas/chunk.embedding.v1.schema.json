@@ -1,0 +1,40 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Chunk Embedding",
+  "type": "object",
+  "properties": {
+    "chunk_id": { "type": "string" },
+    "doc_id": { "type": "string" },
+    "chunk_index": { "type": "integer", "minimum": 0 },
+    "text_content": { "type": "string" },
+    "source_type": {
+      "type": "string",
+      "enum": ["code", "document", "text"]
+    },
+    "chunk_locator": {
+      "type": "object",
+      "properties": {
+        "line_start": { "type": ["integer", "null"], "minimum": 1 },
+        "line_end": { "type": ["integer", "null"], "minimum": 1 },
+        "strategy": { "type": ["string", "null"] },
+        "symbol": { "type": ["string", "null"] }
+      },
+      "additionalProperties": false
+    },
+    "chunker_version": { "type": "string" },
+    "repo_key": { "type": "string" },
+    "repo_kind": { "type": "string" },
+    "repo_url": { "type": "string" },
+    "repo_root": { "type": "string" },
+    "relative_path": { "type": "string" },
+    "commit_sha": { "type": "string" },
+    "branch": { "type": "string" },
+    "module_name": { "type": "string" },
+    "embedding": {
+      "type": "array",
+      "items": { "type": "number" }
+    },
+    "integrity_hash": { "type": "string" }
+  },
+  "required": ["chunk_id", "doc_id", "text_content", "embedding", "integrity_hash"]
+}

@@ -1,11 +1,11 @@
 # tests/test_mcp_agents.py
 import asyncio
 import pytest
+from unittest.mock import patch
 
 pytest.importorskip("fastmcp", reason="Skipping due to rpds-py C-extension environment issue")
 from fastmcp import Client
-from knowledge_ingestion import app_ingest
-from unittest.mock import patch
+from scripts.knowledge_ingestion import app_ingest
 
 @pytest.fixture
 def mock_snapshot():

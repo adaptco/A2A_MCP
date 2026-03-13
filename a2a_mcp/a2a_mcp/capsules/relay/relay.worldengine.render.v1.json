@@ -1,0 +1,38 @@
+{
+  "relay_id": "relay.worldengine.render.v1",
+  "type": "WorldRelayCapsule",
+  "version": "1.0.0",
+  "protocol_tag": "V7",
+  "author": "Earl 'Q' Han",
+  "issued_at": "2025-09-25T04:42:00Z",
+  "summary": "Bind the runtime, HUD, and sovereign agents into a braided render relay for the Sol cockpit.",
+  "linked_capsules": [
+    "capsule.map.qube.cartesian.v1",
+    "capsule.motion.ledger.v2",
+    "capsule.render.complete.v1",
+    "capsule.invoke.trailer.replay.v1",
+    "capsule.hud.mock.solF1.v1",
+    "capsule.agent.gloh.human.v1",
+    "capsule.agent.celine.human.v1",
+    "capsule.agent.echo.human.v1",
+    "capsule.agent.spryte.human.v1",
+    "capsule.agent.luma.human.v1",
+    "capsule.agent.dot.human.v1"
+  ],
+  "protocol": {
+    "runtime": "AxQxOS",
+    "execution_mode": "braided-parallel",
+    "attestation": "cohort-synchronized",
+    "render_engine": "goodnood.flux",
+    "hud_overlay": true
+  },
+  "runtime_hooks": {
+    "dashboard_overlay": "/mesh/visualize",
+    "attestation_feed": "/mesh/attest",
+    "glyph_echo": "/mesh/glyphstream",
+    "hud_snapshot": "/capsules/preview/solF1/mock"
+  },
+  "status": "ACTIVE",
+  "sealed_at": "2025-09-25T04:42:00Z",
+  "audit_ready": true
+}

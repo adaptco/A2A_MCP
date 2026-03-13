@@ -1,0 +1,10 @@
+# Emotional payload map and overlay enforcement schema
+capsule:
+  version: 1
+  emotional_payloads:
+    baseline: calm-focus
+    rupture_response: firm-boundary
+  overlay_enforcement:
+    persona: CiCi
+    strict_mode: true
+    audit_log: shimmer_trace

@@ -1,0 +1,30 @@
+{
+  "version": "v1",
+  "experts": [
+    {
+      "expert_id": "expert:retrieval.rag",
+      "capabilities": [
+        "embed",
+        "upsert",
+        "manifest_build",
+        "retrieval_eval"
+      ]
+    },
+    {
+      "expert_id": "expert:integration.runtime",
+      "capabilities": [
+        "router_wiring",
+        "state_machine",
+        "idempotency"
+      ]
+    },
+    {
+      "expert_id": "expert:governance.pm",
+      "capabilities": [
+        "gate_eval",
+        "release_lock",
+        "policy_enforcement"
+      ]
+    }
+  ]
+}

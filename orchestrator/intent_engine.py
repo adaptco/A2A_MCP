@@ -235,14 +235,36 @@ class IntentEngine:
             ))
             artifact_ids.append(test_id)
 
-            pinn_id = str(uuid.uuid4())
-            token = await self.pinn.ingest_artifact(artifact_id=pinn_id, content=artifact.content, parent_id=artifact.artifact_id)
-            self.db.save_artifact(SimpleNamespace(
-                artifact_id=pinn_id, parent_artifact_id=artifact.artifact_id,
-                agent_name=self.pinn.agent_name, version="1.0.0", type="vector_token",
-                content=token.model_dump_json(), metadata={}
-            ))
-            artifact_ids.append(pinn_id)
+            # 3. Save Test Report
+            test_artifact_id = str(uuid.uuid4())
+            report_artifact = MCPArtifact(
+                artifact_id=test_artifact_id,
+                parent_artifact_id=artifact.artifact_id,
+                agent_name=self.tester.agent_name,
+                version="1.0.0",
+                type="test_report",
+                content=report.model_dump_json(),
+            )
+            self.db.save_artifact(report_artifact)
+            artifact_ids.append(test_artifact_id)
+
+            # 4. Ingest into PINN (Vector Store)
+            pinn_artifact_id = str(uuid.uuid4())
+            token = await self.pinn.ingest_artifact(
+                artifact_id=pinn_artifact_id,
+                content=artifact.content,
+                parent_id=artifact.artifact_id,
+            )
+            pinn_artifact = MCPArtifact(
+                artifact_id=pinn_artifact_id,
+                parent_artifact_id=artifact.artifact_id,
+                agent_name=self.pinn.agent_name,
+                version="1.0.0",
+                type="vector_token",
+                content=token.model_dump_json(),
+            )
+            self.db.save_artifact(pinn_artifact)
+            artifact_ids.append(pinn_artifact_id)
 
             action.status = "completed" if report.status == "PASS" else "failed"
             if action.status == "completed" and self.sm:

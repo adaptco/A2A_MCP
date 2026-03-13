@@ -53,7 +53,10 @@ class GameEngine:
                 obj = self.world_renderer.scene.get_object(obj_dict["id"])
                 if obj:
                     self.scene.add_object(obj)
-            except:
+            except Exception as e:
+                # Consider adding logging here to be aware of potential issues
+                # import logging
+                # logging.warning(f"Could not recreate object from dict: {e}")
                 pass
 
         # Add avatar representations

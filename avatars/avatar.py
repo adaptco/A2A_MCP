@@ -38,9 +38,6 @@ class AvatarProfile:
         """Validate profile after initialization."""
         if not self.avatar_id:
             raise ValueError("avatar_id is required")
-        if not self.name:
-            # Allow empty name for factory-default profiles if needed, but usually required
-            pass
 
 
 class Avatar:

@@ -70,7 +70,9 @@ class JudgmentModel:
                 key = crit_type.value
                 if key in weights:
                     self._criteria[crit_type].weight = weights[key]
-        except Exception:
+        except Exception as e:
+            import logging
+            logging.warning(f"Failed to load judge criteria from specs, falling back to defaults. Error: {e}")
             # Fallback to defaults if specs loading fails
             if not self._criteria:
                 self._load_default_criteria()

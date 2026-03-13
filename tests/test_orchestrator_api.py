@@ -149,3 +149,72 @@ def test_plans_ingress_endpoint(monkeypatch):
     body = response.json()
     assert body["status"] == "scheduled"
     assert body["plan_id"] == "plan-test-123"
+
+
+class _FakeTime:
+    def __init__(self, value: float = 0.0):
+        self.value = value
+
+    def now(self) -> float:
+        return self.value
+
+    def advance(self, delta: float) -> None:
+        self.value += delta
+
+
+def test_idempotency_cache_hit_within_ttl():
+    fake_time = _FakeTime(100.0)
+    cache = api_module._IdempotencyCache(ttl_seconds=10, max_entries=4, now_fn=fake_time.now)
+    response = {"run_id": "run-1"}
+
+    cache.set(idempotency_key="idem-1", actor="actor-a", response=response)
+
+    cache_record = cache._entries[("idem-1", "actor-a")]
+    assert cache_record["cached_at"] == 100.0
+    assert cache_record["expires_at"] == 110.0
+    assert cache.get(idempotency_key="idem-1", actor="actor-a") == response
+
+
+def test_idempotency_cache_expiration_after_ttl():
+    fake_time = _FakeTime(100.0)
+    cache = api_module._IdempotencyCache(ttl_seconds=10, max_entries=4, now_fn=fake_time.now)
+
+    cache.set(idempotency_key="idem-1", actor="actor-a", response={"run_id": "run-1"})
+    fake_time.advance(11.0)
+
+    assert cache.get(idempotency_key="idem-1", actor="actor-a") is None
+
+
+def test_idempotency_cache_eviction_when_max_size_reached():
+    fake_time = _FakeTime(100.0)
+    cache = api_module._IdempotencyCache(ttl_seconds=60, max_entries=2, now_fn=fake_time.now)
+
+    cache.set(idempotency_key="idem-1", actor="actor-a", response={"run_id": "run-1"})
+    fake_time.advance(1.0)
+    cache.set(idempotency_key="idem-2", actor="actor-a", response={"run_id": "run-2"})
+    fake_time.advance(1.0)
+    cache.set(idempotency_key="idem-3", actor="actor-a", response={"run_id": "run-3"})
+
+    assert cache.get(idempotency_key="idem-1", actor="actor-a") is None
+    assert cache.get(idempotency_key="idem-2", actor="actor-a") == {"run_id": "run-2"}
+    assert cache.get(idempotency_key="idem-3", actor="actor-a") == {"run_id": "run-3"}
+
+
+def test_orchestrate_option_b_idempotency_no_cross_actor_reuse(monkeypatch):
+    monkeypatch.setattr(api_module, "IntentEngine", _FakeIntentEngine)
+    monkeypatch.setattr(api_module, "OptionBService", _FakeOptionBService)
+    monkeypatch.setenv("AUTH_DISABLED", "true")
+    api_module._IDEMPOTENCY_CACHE = api_module._IdempotencyCache(ttl_seconds=300, max_entries=16)
+    _FakeOptionBService.create_calls = 0
+
+    client = TestClient(api_module.app)
+    payload = {"command": "!run", "args": "ship release", "slack": {"channel_id": "C123"}}
+    headers = {"X-Idempotency-Key": "idem-repeat"}
+
+    first = client.post("/orchestrate", json=payload, params={"requester": "alice"}, headers=headers)
+    second = client.post("/orchestrate", json=payload, params={"requester": "bob"}, headers=headers)
+
+    assert first.status_code == 200
+    assert second.status_code == 200
+    assert first.json()["run_id"] != second.json()["run_id"]
+    assert _FakeOptionBService.create_calls == 2

@@ -1,0 +1,65 @@
+{
+  "schema_version": "multimodal_rag_bundle.v1",
+  "worldline_block": {
+    "pipeline": "qube-multimodal-worldline",
+    "prompt": "invalid bundle case",
+    "repository": "adaptco-main/A2A_MCP",
+    "commit_sha": "ad854486a840079f438a361b8fa584586fd2122f",
+    "actor": "codex",
+    "infrastructure_agent": {
+      "embedding_vector": [
+        0.21
+      ],
+      "token_stream": [
+        {
+          "token": "invalid",
+          "token_id": "d0d0d0d0d0d0d0d0"
+        }
+      ],
+      "artifact_clusters": {
+        "cluster_0": [
+          "artifact::invalid"
+        ]
+      },
+      "lora_attention_weights": {
+        "cluster_0": 1.0
+      }
+    }
+  },
+  "multimodal_rag_logic_tree": {
+    "logic_tree": [
+      {
+        "node_id": "N0_INGRESS",
+        "phase": "idle_to_scheduled",
+        "query": "invalid",
+        "allowed_actions": [
+          "validate_intake_token"
+        ]
+      }
+    ]
+  },
+  "token_reconstruction": {
+    "pipeline": "multimodal-rag-cicd-logic-tree",
+    "repository": "adaptco-main/A2A_MCP",
+    "commit_sha": "ad854486a840079f438a361b8fa584586fd2122f",
+    "vector_store_size": 0,
+    "nodes": [
+      {
+        "node_id": "N0_INGRESS",
+        "phase": "idle_to_scheduled",
+        "gate_open": true,
+        "selected_action": "validate_intake_token"
+      }
+    ]
+  },
+  "workflow_actions": {
+    "workflow_actions": [
+      {
+        "node_id": "N0_INGRESS",
+        "phase": "idle_to_scheduled",
+        "action": "validate_intake_token",
+        "gate_open": true
+      }
+    ]
+  }
+}

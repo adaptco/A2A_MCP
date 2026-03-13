@@ -7,7 +7,6 @@ from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
-
 class SpecsLoader:
     """Load and cache specification files."""
 

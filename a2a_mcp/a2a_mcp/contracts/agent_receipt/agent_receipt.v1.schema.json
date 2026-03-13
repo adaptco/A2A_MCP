@@ -1,0 +1,78 @@
+{
+  "$id": "ssot://contracts/agent_receipt/agent_receipt.v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AgentReceipt.v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "world_id",
+    "tick",
+    "plug_digest",
+    "capsule_digest",
+    "baseline_merkle_root",
+    "tick_count",
+    "cie_verdict",
+    "reason_codes",
+    "prev_mode",
+    "next_mode",
+    "action_profile",
+    "observed",
+    "receipt_digest"
+  ],
+  "properties": {
+    "schema_version": { "const": "agent_receipt.v1" },
+    "world_id": { "type": "string", "minLength": 1 },
+    "tick": { "type": "integer", "minimum": 0 },
+    "plug_digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "capsule_digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "baseline_merkle_root": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "tick_count": { "type": "integer", "minimum": 0 },
+    "cie_verdict": { "type": "string", "enum": ["PASS", "INDETERMINATE", "FAIL"] },
+    "reason_codes": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "minItems": 1
+    },
+    "prev_mode": { "type": "string", "enum": ["NORMAL", "DEGRADE", "QUARANTINE", "HALT"] },
+    "next_mode": { "type": "string", "enum": ["NORMAL", "DEGRADE", "QUARANTINE", "HALT"] },
+    "action_profile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["allow_actuation", "max_throttle_q", "max_steer_q"],
+      "properties": {
+        "allow_actuation": { "type": "integer", "enum": [0, 1] },
+        "max_throttle_q": { "type": "integer", "minimum": 0 },
+        "max_steer_q": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "observed": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "observed_tick_hash",
+        "psp_merkle_root",
+        "invariant_set_digest",
+        "extractor_version"
+      ],
+      "properties": {
+        "observed_tick_hash": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+        "psp_merkle_root": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+        "invariant_set_digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+        "extractor_version": { "type": "string", "minLength": 1 }
+      }
+    },
+    "timestamp_utc_ms": { "type": "integer", "minimum": 0 },
+    "receipt_digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "signature": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["alg", "pubkey", "sig"],
+      "properties": {
+        "alg": { "type": "string", "enum": ["ed25519"] },
+        "pubkey": { "type": "string", "minLength": 1 },
+        "sig": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}

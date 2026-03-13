@@ -1,0 +1,10 @@
+{
+  "proposal_id": "proposal.alpha",
+  "council_signatures": [
+    "Gloh:maker",
+    "Spryte:checker",
+    "Glyph.Trace:auditor"
+  ],
+  "attestation_status": "SEALED",
+  "notes": "Fossilized trace with Council quorum."
+}

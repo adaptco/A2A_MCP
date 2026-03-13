@@ -1,0 +1,6 @@
+
+{"ts":"2026-03-08T09:17:07Z","event":"ci.step.start","step":"spectral"}
+{"ts":"2026-03-08T09:17:08Z","event":"ci.step.end","step":"spectral"}
+{"ts":"2026-03-08T09:17:15Z","event":"ci.step.start","step":"build"}
+{"ts":"2026-03-08T09:17:15Z","event":"ci.step.end","step":"build"}
+{"ts": "2026-03-08T09:17:15Z", "type": "capsule.merkle.emitted", "actor": "QBot", "merkle_root": "58564a240a96a443b243c0bad51050e6857781dd09e87d559ee09c634d070eaa", "batch_dir": "data/capsules/2026/03/08/20260308_091715-58564a240a96", "count": 65}

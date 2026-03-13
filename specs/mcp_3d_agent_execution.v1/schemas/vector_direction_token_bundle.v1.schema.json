@@ -1,0 +1,160 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Vector Direction Token Bundle v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "kernel_control_token",
+    "token_events",
+    "lineage"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "vector_direction_token_bundle.v1"
+    },
+    "kernel_control_token": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "schema_version",
+        "token_id",
+        "session_id",
+        "issued_at",
+        "physics_constraints",
+        "stability_mode"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "kernel_control_token.v1"
+        },
+        "token_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "session_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "issued_at": {
+          "type": "string"
+        },
+        "stability_mode": {
+          "type": "string",
+          "minLength": 1
+        },
+        "physics_constraints": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "gravity",
+            "friction",
+            "visibility_range",
+            "entropy_budget"
+          ],
+          "properties": {
+            "gravity": {
+              "type": "number"
+            },
+            "friction": {
+              "type": "number",
+              "minimum": 0.0,
+              "maximum": 1.0
+            },
+            "visibility_range": {
+              "type": "number",
+              "minimum": 0.0
+            },
+            "entropy_budget": {
+              "type": "number",
+              "minimum": 0.0,
+              "maximum": 1.0
+            }
+          }
+        }
+      }
+    },
+    "token_events": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "schema_version",
+          "call_id",
+          "seq",
+          "token",
+          "token_hash",
+          "cumulative_hash"
+        ],
+        "properties": {
+          "schema_version": {
+            "const": "TokenEvent.v1"
+          },
+          "call_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "seq": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "token": {
+            "type": "string",
+            "minLength": 1
+          },
+          "token_hash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "cumulative_hash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          }
+        }
+      }
+    },
+    "lineage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "runtime_assignment_id",
+        "rag_node_ids",
+        "token_event_count",
+        "final_cumulative_hash",
+        "generated_from"
+      ],
+      "properties": {
+        "runtime_assignment_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "rag_node_ids": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "token_event_count": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "final_cumulative_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "generated_from": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  }
+}

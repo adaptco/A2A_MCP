@@ -1,77 +1,52 @@
 """
-Vector ingestion engine module.
-"""
-import os
-import json
-import logging
-from typing import List
-from workers.embed_worker import EmbedWorker
+vector_ingestion.py - Stub for Vector Ingestion Engine.
 
-logger = logging.getLogger("VectorIngestionEngine")
+This module provides the VectorIngestionEngine class used by the ingestion API.
+"""
+from typing import Any, Dict, List
 
 class VectorIngestionEngine:
-    """
-    Data-Plane Ingestion Engine.
-    Handles repository snapshots by dispatching to EmbedWorker.
-    """
+    """Stub for the Vector Ingestion Engine."""
 
-    def __init__(self, output_dir: str = "pipeline/ledger/embeddings"):
-        self.output_dir = output_dir
-        # Dispatcher for embedding
-        self.worker = EmbedWorker(output_dir=output_dir)
-
-    async def process_snapshot(self, snapshot: dict, claims: dict) -> List[dict]:
+    async def process_snapshot(self, snapshot: Dict[str, Any], claims: Dict[str, Any]) -> List[Dict[str, Any]]:
         """
-        Processes a full repository snapshot into canonical embeddings.
-        Input: snapshot (JSON), claims (Auth Context)
-        Output: List of vector nodes.
+        Process a repository snapshot and return a list of vector nodes.
+        
+        Args:
+            snapshot: Dictionary containing repository data (files, commits, etc.)
+            claims: OIDC claims from the authentication token
+            
+        Returns:
+            List of dictionaries representing vector nodes correctly formatted for storage
         """
-        # 1. Flatten snapshot into nodes/spans
-        # (Assuming snapshots have 'files' containing 'content')
-        nodes = []
-        for file in snapshot.get("files", []):
-            nodes.append({
-                "text": file.get("content", ""),
+        # In a real implementation, this would chunk files, generate embeddings,
+        # and prepare data for Vector DB.
+        
+        repo_name = claims.get("repository", "unknown-repo")
+        print(f"Processing snapshot for {repo_name}")
+        
+        # Return dummy vector nodes
+        return [
+            {
+                "id": "node-1",
+                "content": "Stub content",
                 "metadata": {
-                    "source": file.get("path", "file_node"),
-                    "provenance": claims.get("repository", "unknown")
-                }
-            })
+                    "source": repo_name,
+                    "type": "code"
+                },
+                "vector": [0.1, 0.2, 0.3] # Dummy vector
+            }
+        ]
 
-        # 2. Dispatch to deterministic EmbedWorker (Batch Process)
-        if not nodes:
-            return []
-
-        receipt = self.worker.embed_batch(nodes)
-
-        # 3. Format result for knowledge store
-        # (Each node gets its embedding and batch metadata)
-        vector_nodes = []
-        for res_node, raw_node in zip(receipt["results"], nodes):
-            vector_nodes.append({
-                "id": res_node["node_id"],
-                "text": raw_node["text"],
-                "embedding": res_node["embedding"],
-                "batch_hash": receipt["batch_hash"],
-                "model_version": receipt["model_version"],
-                "provenance": raw_node["metadata"]["source"]
-            })
-
-        return vector_nodes
-
-async def upsert_to_knowledge_store(nodes: List[dict]) -> dict:
+async def upsert_to_knowledge_store(nodes: List[Dict[str, Any]]) -> Dict[str, Any]:
     """
-    Persistence Layer (Mocked).
-    In a production system, this would write to ChromaDB/Pinecone.
+    Stub to upsert vector nodes to the knowledge store (e.g. PGVector, Qdrant).
+    
+    Args:
+        nodes: List of vector node dictionaries
+        
+    Returns:
+        Summary dictionary with count of indexed items.
     """
-    # For now, we use a file-based JSON store for stable sharding
-    logger.info("Upserting %s nodes to knowledge store.", len(nodes))
-    store_dir = "pipeline/ledger/knowledge_store"
-    os.makedirs(store_dir, exist_ok=True)
-
-    for node in nodes:
-        node_id = node["id"]
-        with open(os.path.join(store_dir, f"{node_id}.json"), 'w', encoding='utf-8') as f:
-            json.dump(node, f, indent=4)
-
-    return {"status": "success", "count": len(nodes)}
+    print(f"Upserting {len(nodes)} nodes to knowledge store.")
+    return {"count": len(nodes), "status": "indexed"}

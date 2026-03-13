@@ -1,0 +1,31 @@
+{
+  "manifest_id": "capsule.sync.verify.v1.freeze",
+  "capsule_id": "capsule.sync.verify.v1",
+  "capsule_version": "1.0.0",
+  "status": "FROZEN",
+  "frozen_at": "2025-09-22T06:45:00Z",
+  "capsule_ref": "capsules/doctrine/capsule.sync.verify.v1.json",
+  "hashes": {
+    "protocol_sha256": "d90db4363ef9bda57bf9de299228627b82d7ea83ced3e1721a8f92facece7424"
+  },
+  "lineage": {
+    "anchors": [
+      "capsule.canon.kit.v1@1.1.1"
+    ]
+  },
+  "quorum": {
+    "required": true,
+    "signed_by": [
+      "Council.ops"
+    ],
+    "report_schema": "capsule.quorum.report.v1"
+  },
+  "heartbeat_frame_schema": "capsule.heartbeat.v1",
+  "provenance": {
+    "policy": [
+      "append-only-ledger",
+      "no-mutation-post-freeze"
+    ],
+    "notes": "Freeze manifest for capsule.sync.verify.v1 ensuring mesh-wide sync verification prior to new creative arcs."
+  }
+}

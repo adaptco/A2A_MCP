@@ -25,3 +25,14 @@ def test_gate_rejects_empty_inputs():
         assert False, "Expected ValueError for empty baseline"
     except ValueError:
         pass
+
+
+def test_gate_uses_loader_when_baseline_missing():
+    baseline = np.linspace(0.0, 1.0, 100)
+    candidate = baseline + 1e-6
+
+    def loader() -> np.ndarray:
+        return baseline
+
+    result = gate_drift(None, candidate, baseline_loader=loader)
+    assert result.passed, result.reason

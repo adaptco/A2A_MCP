@@ -299,9 +299,5 @@ class StateMachine:
         with self._lock:
             return self.state
 
-    def clear_history(self) -> None:
-        with self._lock:
-            self.history = []
-
     def __repr__(self) -> str:
         return f"<StateMachine state={self.state} attempts={self.attempts} history_len={len(self.history)}>"

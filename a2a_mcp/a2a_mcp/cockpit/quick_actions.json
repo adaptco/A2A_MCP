@@ -1,0 +1,5 @@
+[
+  {"id": "initiate-rehearsal", "label": "Start Rehearsal Loop", "command": "scripts/generate_preview.sh"},
+  {"id": "freeze", "label": "Freeze Current State", "command": "python scripts/freeze.py"},
+  {"id": "sync-ledger", "label": "Sync Ledger", "command": "python scripts/log_action.py --summarize"}
+]

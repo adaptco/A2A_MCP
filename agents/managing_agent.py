@@ -50,7 +50,7 @@ class ManagingAgent:
                 "agent": self.AGENT_NAME,
                 "requester": requester,
                 "summary": f"Categorizing project: {description[:50]}...",
-                "constraints_count": len(["Act as a project-management planner.", "Return output as a numbered task list that is easy to parse line-by-line."])
+                "constraints_count": str(len(["Act as a project-management planner.", "Return output as a numbered task list that is easy to parse line-by-line."]))
             },
         )
 

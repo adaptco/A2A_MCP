@@ -4,7 +4,7 @@ Ported from: a2a_mcp/mcp_token.py + a2a_mcp/core.py
 """
 import uuid
 from dataclasses import dataclass, field
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 import torch
 
 

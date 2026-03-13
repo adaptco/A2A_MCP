@@ -27,7 +27,7 @@ def test_codestral_fim():
     print(f"🚀 Testing Codestral FIM at: {endpoint}...")
     
     try:
-        response = requests.post(endpoint, headers=headers, json=data)
+        response = requests.post(endpoint, headers=headers, json=data, timeout=30)
         response.raise_for_status()
         result = response.json()
         

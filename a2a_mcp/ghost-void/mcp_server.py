@@ -22,7 +22,7 @@ def get_artifact_trace(root_id: str):
 def trigger_new_research(query: str):
     """Triggers the A2A pipeline for a new user query via the orchestrator."""
     import requests
-    response = requests.post("http://localhost:8000/orchestrate", params={"user_query": query})
+    response = requests.post("http://localhost:8000/orchestrate", params={"user_query": query}, timeout=30)
     return response.json()
 
 if __name__ == "__main__":

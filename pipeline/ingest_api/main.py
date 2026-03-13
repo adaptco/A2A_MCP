@@ -3,6 +3,7 @@ FastAPI Ingest Service
 Handles file uploads and enqueues parsing tasks.
 """
 
+import asyncio
 import uuid
 import redis
 import json
@@ -114,11 +115,14 @@ async def ingest_document(
         
         # Store file temporarily (in production, use object storage)
         temp_dir = Path("/tmp/docling_uploads")
-        temp_dir.mkdir(parents=True, exist_ok=True)
         file_path = temp_dir / f"{bundle_id}_{file.filename}"
-        
-        with open(file_path, "wb") as f:
-            f.write(content)
+
+        def _save_file():
+            temp_dir.mkdir(parents=True, exist_ok=True)
+            with open(file_path, "wb") as f:
+                f.write(content)
+
+        await asyncio.to_thread(_save_file)
         
         # Add file path to payload
         task_payload["file_path"] = str(file_path)

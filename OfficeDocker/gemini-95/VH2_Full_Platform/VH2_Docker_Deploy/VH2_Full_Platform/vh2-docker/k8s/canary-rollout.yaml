@@ -1,0 +1,208 @@
+# Argo Rollouts Canary Deployment Configuration
+# This enables progressive rollouts with traffic shifting
+
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: vh2-backend-canary
+  namespace: vh2-prod
+  labels:
+    app: vh2-backend
+    component: api
+spec:
+  replicas: 3
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: vh2-backend
+  template:
+    metadata:
+      labels:
+        app: vh2-backend
+        version: "1.0.0"
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "3001"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: vh2-backend
+      securityContext:
+        fsGroup: 1001
+      containers:
+      - name: backend
+        image: vh2-backend:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - name: http
+          containerPort: 3001
+          protocol: TCP
+        env:
+        - name: NODE_ENV
+          value: production
+        - name: PORT
+          value: "3001"
+        - name: REDIS_HOST
+          value: redis.vh2-prod.svc.cluster.local
+        - name: REDIS_PORT
+          value: "6379"
+        resources:
+          requests:
+            cpu: 250m
+            memory: 256Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: http
+          initialDelaySeconds: 10
+          periodSeconds: 20
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: http
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          timeoutSeconds: 3
+          failureThreshold: 2
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          runAsUser: 1001
+          capabilities:
+            drop:
+            - ALL
+        volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+      volumes:
+      - name: tmp
+        emptyDir: {}
+  strategy:
+    canary:
+      canaryService: vh2-backend-canary
+      stableService: vh2-backend-stable
+      trafficRouting:
+        # Use Istio VirtualService for traffic shifting
+        istio:
+          virtualServices:
+          - name: vh2-backend-vs
+            tlsRoute:
+            - port: 443
+          destinationRules:
+          - name: vh2-backend-dr
+      steps:
+      # Step 1: Route 5% traffic to canary for 2 minutes
+      - setWeight: 5
+      - pause:
+          duration: 2m
+      # Step 2: Increase to 10% for 3 minutes
+      - setWeight: 10
+      - pause:
+          duration: 3m
+      # Step 3: Increase to 25% for 5 minutes
+      - setWeight: 25
+      - pause:
+          duration: 5m
+      # Step 4: Manual approval before proceeding to 50%
+      - setWeight: 50
+      - pause:
+          duration: 0  # Wait for manual promotion
+      # Step 5: Increase to 75% for 5 minutes
+      - setWeight: 75
+      - pause:
+          duration: 5m
+      # Step 6: Full rollout (100%)
+      - setWeight: 100
+      - pause:
+          duration: 1m
+      analysis:
+        # Run Argo Analysis after each step
+        interval: 30s
+        threshold: 5
+        templates:
+        - name: success-rate
+          successCriteria:
+          - onSuccess: true
+          - onFailure: true
+      onFailure: abort  # Abort rollout on analysis failure
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vh2-backend-canary
+  namespace: vh2-prod
+  labels:
+    app: vh2-backend
+    variant: canary
+spec:
+  selector:
+    app: vh2-backend
+  type: ClusterIP
+  ports:
+  - port: 3001
+    targetPort: 3001
+    name: http
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vh2-backend-stable
+  namespace: vh2-prod
+  labels:
+    app: vh2-backend
+    variant: stable
+spec:
+  selector:
+    app: vh2-backend
+  type: ClusterIP
+  ports:
+  - port: 3001
+    targetPort: 3001
+    name: http
+
+---
+# Argo Analysis Template for Canary Metrics
+apiVersion: argoproj.io/v1alpha1
+kind: AnalysisTemplate
+metadata:
+  name: vh2-backend-analysis
+  namespace: vh2-prod
+spec:
+  metrics:
+  - name: success-rate
+    provider:
+      prometheus:
+        address: http://prometheus:9090
+        query: |
+          sum(rate(http_requests_total{job="vh2-backend",status=~"2.."}[5m])) /
+          sum(rate(http_requests_total{job="vh2-backend"}[5m]))
+    successCriteria: "{{ result > 0.95 }}"
+    interval: 30s
+    failureLimit: 3
+    inconclusiveLimit: 2
+  - name: error-rate
+    provider:
+      prometheus:
+        address: http://prometheus:9090
+        query: |
+          sum(rate(http_requests_total{job="vh2-backend",status=~"5.."}[5m])) /
+          sum(rate(http_requests_total{job="vh2-backend"}[5m]))
+    successCriteria: "{{ result < 0.05 }}"
+    interval: 30s
+    failureLimit: 3
+  - name: latency-p95
+    provider:
+      prometheus:
+        address: http://prometheus:9090
+        query: |
+          histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{job="vh2-backend"}[5m])) by (le))
+    successCriteria: "{{ result < 1.0 }}"
+    interval: 30s
+    failureLimit: 3

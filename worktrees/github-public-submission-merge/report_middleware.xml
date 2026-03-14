@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="3" skipped="0" tests="15" time="1.082" timestamp="2026-02-16T09:32:38.934256-05:00" hostname="Mac-Laptop"><testcase classname="tests.test_state_space.TestStateSpace" name="test_initialization" time="0.001" /><testcase classname="tests.test_state_space.TestStateSpace" name="test_legal_transitions" time="0.001" /><testcase classname="tests.test_state_space.TestStateSpace" name="test_illegal_transitions" time="0.001" /><testcase classname="tests.test_state_space.TestStateSpace" name="test_immutability" time="0.000" /><testcase classname="tests.test_state_space.TestStateSpace" name="test_lora_config" time="0.001" /><testcase classname="tests.test_rag_pipeline.TestRAGPipeline" name="test_document_ingestion" time="0.002" /><testcase classname="tests.test_rag_pipeline.TestRAGPipeline" name="test_retrieval_integrity" time="0.002" /><testcase classname="tests.test_cicd_pipeline.TestCICDPipeline" name="test_end_to_end_lifecycle" time="0.001" /><testcase classname="tests.test_cicd_pipeline.TestCICDPipeline" name="test_pipeline_failure_recovery" time="0.001" /><testcase classname="tests.test_mlops_ticker.TestMLOpsTicker" name="test_event_store_terminal_filtering" time="0.009"><failure message="ValueError: Invalid transition: INIT -&gt; CONVERGED. Valid targets: ['EMBEDDING']">self = &lt;test_mlops_ticker.TestMLOpsTicker object at 0x00000165EAA6C7D0&gt;
+
+    async def test_event_store_terminal_filtering(self):
+        """Verify that only terminal events trigger observers."""
+        # Use MagicMock with AsyncMock method for on_state_change
+        mock_observer = MagicMock()
+        mock_observer.on_state_change = AsyncMock()
+    
+        mock_db = MagicMock()
+        # Mock save to return input
+        mock_db.save_artifact.side_effect = lambda x: x
+    
+        # Patch the module-level _db_manager in middleware.events
+        with patch("middleware.events._db_manager", mock_db):
+            store = PostgresEventStore(observers=[mock_observer])
+    
+            # 1. INIT -&gt; No notification
+            artifact_init = ModelArtifact(
+                artifact_id="init-1",
+                model_id="test",
+                weights_hash="h1",
+                embedding_dim=1,
+                state=AgentLifecycleState.INIT,
+                content="test"
+            )
+            await store.append_event(artifact_init)
+            mock_observer.on_state_change.assert_not_called()
+    
+            # 2. CONVERGED -&gt; Notification
+&gt;           artifact_converged = artifact_init.transition(AgentLifecycleState.CONVERGED)
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_mlops_ticker.py:36: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = ModelArtifact(artifact_id='init-1', type='model_artifact', content='test', timestamp='2026-02-16T14:32:39.855939', met...ntLifecycleState.INIT: 'INIT'&gt;, parent_artifact_id=None, agent_name='ModelRegistry', version='1.0.0', lora_config=None)
+target = &lt;AgentLifecycleState.CONVERGED: 'CONVERGED'&gt;
+
+    def transition(self, target: AgentLifecycleState) -&gt; "ModelArtifact":
+        """
+        Transition to a new state if valid.
+        Returns a new artifact with updated state (immutable pattern).
+        """
+        if not self.can_transition_to(target):
+&gt;           raise ValueError(
+                f"Invalid transition: {self.state.value} -&gt; {target.value}. "
+                f"Valid targets: {[s.value for s in STATE_TRANSITIONS.get(self.state, [])]}"
+            )
+E           ValueError: Invalid transition: INIT -&gt; CONVERGED. Valid targets: ['EMBEDDING']
+
+schemas\model_artifact.py:63: ValueError</failure></testcase><testcase classname="tests.test_mlops_ticker.TestMLOpsTicker" name="test_whatsapp_message_format" time="0.003"><failure message="AssertionError: assert 'state: CONVERGED' in '[MODEL EVENT VERIFIED]\npipeline: pip-1\nexecution: exec-1\nstate: AgentLifecycleState.CONVERGED\nhash: ver-hash-123...\ntimestamp: 2026-02-16T14:32:39.978354'">self = &lt;test_mlops_ticker.TestMLOpsTicker object at 0x00000165EAA6CFD0&gt;
+
+    async def test_whatsapp_message_format(self):
+        """Verify WhatsApp message formatting."""
+        observer = WhatsAppEventObserver(channel_id="123", api_token="abc")
+    
+        artifact = ModelArtifact(
+            artifact_id="verify-1",
+            model_id="test-model",
+            weights_hash="ver-hash-1234567890",
+            embedding_dim=10,
+            state=AgentLifecycleState.CONVERGED,
+            content="verification content",
+            metadata={"pipeline_id": "pip-1", "execution_id": "exec-1"}
+        )
+    
+        body = observer._format_message(artifact)
+        assert "[MODEL EVENT VERIFIED]" in body
+        assert "pipeline: pip-1" in body
+        assert "execution: exec-1" in body
+&gt;       assert "state: CONVERGED" in body
+E       AssertionError: assert 'state: CONVERGED' in '[MODEL EVENT VERIFIED]\npipeline: pip-1\nexecution: exec-1\nstate: AgentLifecycleState.CONVERGED\nhash: ver-hash-123...\ntimestamp: 2026-02-16T14:32:39.978354'
+
+tests\test_mlops_ticker.py:62: AssertionError</failure></testcase><testcase classname="tests.test_mlops_ticker.TestMLOpsTicker" name="test_whatsapp_send_success" time="0.006" /><testcase classname="tests.test_middleware_runtime.TestMiddlewareRuntime" name="test_runtime_emit_event" time="0.003" /><testcase classname="tests.test_middleware_runtime.TestMiddlewareRuntime" name="test_runtime_transition_and_emit" time="0.005"><failure message="ValueError: Invalid transition: EMBEDDING -&gt; CONVERGED. Valid targets: ['RAG_QUERY', 'FAILED']">self = &lt;test_middleware_runtime.TestMiddlewareRuntime object at 0x00000165EAA88310&gt;
+
+    async def test_runtime_transition_and_emit(self):
+        """Verify integrated state transition and emission."""
+        mock_db = MagicMock()
+        mock_db.save_artifact.side_effect = lambda x: x
+        mock_observer = MagicMock()
+        mock_observer.on_state_change = AsyncMock()
+    
+        with patch("middleware.events._db_manager", mock_db):
+            runtime = AgenticRuntime(observers=[mock_observer])
+            artifact = ModelArtifact(
+                artifact_id="trans-1",
+                model_id="test",
+                weights_hash="h1",
+                embedding_dim=1,
+                state=AgentLifecycleState.INIT,
+                content="test"
+            )
+    
+            # Transition to EMBEDDING (Non-terminal)
+            next_art = await runtime.transition_and_emit(artifact, AgentLifecycleState.EMBEDDING)
+            assert next_art.state == AgentLifecycleState.EMBEDDING
+            mock_observer.on_state_change.assert_not_called()
+    
+            # Transition to CONVERGED (Terminal)
+&gt;           final_art = await runtime.transition_and_emit(next_art, AgentLifecycleState.CONVERGED)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_middleware_runtime.py:52: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+middleware\runtime.py:27: in transition_and_emit
+    new_artifact = artifact.transition(target_state)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = ModelArtifact(artifact_id='trans-1', type='model_artifact', content='test', timestamp='2026-02-16T14:32:40.002272', me...e.EMBEDDING: 'EMBEDDING'&gt;, parent_artifact_id='trans-1', agent_name='ModelRegistry', version='1.0.0', lora_config=None)
+target = &lt;AgentLifecycleState.CONVERGED: 'CONVERGED'&gt;
+
+    def transition(self, target: AgentLifecycleState) -&gt; "ModelArtifact":
+        """
+        Transition to a new state if valid.
+        Returns a new artifact with updated state (immutable pattern).
+        """
+        if not self.can_transition_to(target):
+&gt;           raise ValueError(
+                f"Invalid transition: {self.state.value} -&gt; {target.value}. "
+                f"Valid targets: {[s.value for s in STATE_TRANSITIONS.get(self.state, [])]}"
+            )
+E           ValueError: Invalid transition: EMBEDDING -&gt; CONVERGED. Valid targets: ['RAG_QUERY', 'FAILED']
+
+schemas\model_artifact.py:63: ValueError</failure></testcase><testcase classname="tests.test_middleware_runtime.TestMiddlewareRuntime" name="test_register_observer" time="0.001" /></testsuite></testsuites>

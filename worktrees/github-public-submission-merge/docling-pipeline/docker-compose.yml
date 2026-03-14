@@ -1,0 +1,87 @@
+version: "3.9"
+
+services:
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  qdrant:
+    image: qdrant/qdrant:latest
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - qdrant_data:/qdrant/storage
+    environment:
+      QDRANT__SERVICE__GRPC_PORT: 6334
+
+  ingest-api:
+    build:
+      context: ./services/ingest_api
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      REDIS_URL: redis://redis:6379/0
+      QDRANT_HOST: qdrant
+      QDRANT_PORT: 6333
+    depends_on:
+      redis:
+        condition: service_healthy
+      qdrant:
+        condition: service_started
+    volumes:
+      - ledger_data:/app/ledger
+
+  docling-worker:
+    build:
+      context: ./services/docling_worker
+      dockerfile: Dockerfile
+    environment:
+      REDIS_URL: redis://redis:6379/0
+      PIPELINE_VERSION: v0.1.0
+      DOCLING_VERSION: "0.5.0"
+      NORMALIZER_VERSION: norm.v1
+    depends_on:
+      redis:
+        condition: service_healthy
+    volumes:
+      - ledger_data:/app/ledger
+      - input_docs:/app/input
+
+  embed-worker:
+    build:
+      context: ./services/embed_worker
+      dockerfile: Dockerfile
+    environment:
+      REDIS_URL: redis://redis:6379/0
+      QDRANT_HOST: qdrant
+      QDRANT_PORT: 6333
+      EMBEDDER_MODEL_ID: text-embedder-v1
+      CHUNKER_VERSION: chunk.v1
+    depends_on:
+      redis:
+        condition: service_healthy
+      qdrant:
+        condition: service_started
+    volumes:
+      - ledger_data:/app/ledger
+    # Uncomment for GPU support:
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]
+
+volumes:
+  qdrant_data:
+  ledger_data:
+  input_docs:

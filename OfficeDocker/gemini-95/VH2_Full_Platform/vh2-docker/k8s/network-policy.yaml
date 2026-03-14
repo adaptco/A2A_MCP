@@ -1,0 +1,82 @@
+##############################################################################
+# VH2 NETWORK POLICY — Zero-Trust
+#
+# Rule matrix:
+#   ingress-controller → frontend:3000  ✓
+#   ingress-controller → backend:3001   ✓
+#   frontend → backend (same ns)        ✗  (plugin calls /api via ingress)
+#   anything else → backend             ✗
+#   pods → internet egress              ✗ (node-local DNS only)
+##############################################################################
+
+# ── DEFAULT DENY ALL ─────────────────────────────────────────────────────────
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-all
+  namespace: vh2-prod
+spec:
+  podSelector: {}
+  policyTypes: [Ingress, Egress]
+---
+# ── BACKEND: accept from ingress-controller namespace only ────────────────────
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-ingress-to-backend
+  namespace: vh2-prod
+spec:
+  podSelector:
+    matchLabels:
+      app: vh2-backend
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ingress-nginx
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 3001
+---
+# ── FRONTEND: accept from ingress-controller namespace only ──────────────────
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-ingress-to-frontend
+  namespace: vh2-prod
+spec:
+  podSelector:
+    matchLabels:
+      app: vh2-frontend
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ingress-nginx
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 3000
+---
+# ── EGRESS: allow DNS only (kube-dns) ────────────────────────────────────────
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-dns-egress
+  namespace: vh2-prod
+spec:
+  podSelector: {}
+  policyTypes: [Egress]
+  egress:
+    - ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53

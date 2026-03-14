@@ -1,0 +1,147 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: vh2-network-policy
+  namespace: vh2-prod
+  labels:
+    app: vh2-validator
+  annotations:
+    description: "VH2 Network security - zero-trust, default-deny"
+spec:
+  podSelector:
+    matchLabels:
+      app: vh2-validator
+  policyTypes:
+  - Ingress
+  - Egress
+  
+  ingress:
+  # ── Backend: allow from Nginx/Ingress Controller
+  - name: backend-ingress
+    from:
+    - namespaceSelector:
+        matchLabels:
+          name: ingress-nginx
+    - podSelector:
+        matchLabels:
+          app: vh2-validator
+          component: frontend
+    ports:
+    - protocol: TCP
+      port: 3001
+  
+  # ── Frontend: allow from Nginx/Ingress Controller
+  - name: frontend-ingress
+    from:
+    - namespaceSelector:
+        matchLabels:
+          name: ingress-nginx
+    ports:
+    - protocol: TCP
+      port: 3000
+  
+  # ── Internal: allow between pods
+  - name: internal-pods
+    from:
+    - podSelector:
+        matchLabels:
+          app: vh2-validator
+    ports:
+    - protocol: TCP
+      port: 3001
+    - protocol: TCP
+      port: 3000
+  
+  # ── DNS: allow all pods to query DNS
+  - name: dns-query
+    from:
+    - podSelector: {}
+    ports:
+    - protocol: UDP
+      port: 53
+  
+  egress:
+  # ── Backend: allow to Frontend
+  - name: backend-to-frontend
+    to:
+    - podSelector:
+        matchLabels:
+          app: vh2-validator
+          component: frontend
+    ports:
+    - protocol: TCP
+      port: 3000
+  
+  # ── Frontend: allow to Backend
+  - name: frontend-to-backend
+    to:
+    - podSelector:
+        matchLabels:
+          app: vh2-validator
+          component: backend
+    ports:
+    - protocol: TCP
+      port: 3001
+  
+  # ── Allow DNS
+  - name: dns-query
+    to:
+    - namespaceSelector: {}
+    ports:
+    - protocol: UDP
+      port: 53
+  
+  # ── Allow external HTTPS (for CDN: Three.js, fonts, etc)
+  - name: external-https
+    to:
+    - podSelector: {}
+    ports:
+    - protocol: TCP
+      port: 443
+
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: vh2-test-network-policy
+  namespace: vh2-prod
+  labels:
+    app: vh2-validator
+    component: test
+spec:
+  podSelector:
+    matchLabels:
+      component: test
+  policyTypes:
+  - Egress
+  
+  egress:
+  # ── Test Jobs: allow to services
+  - name: test-to-backend
+    to:
+    - podSelector:
+        matchLabels:
+          app: vh2-validator
+          component: backend
+    ports:
+    - protocol: TCP
+      port: 3001
+  
+  - name: test-to-frontend
+    to:
+    - podSelector:
+        matchLabels:
+          app: vh2-validator
+          component: frontend
+    ports:
+    - protocol: TCP
+      port: 3000
+  
+  # ── Allow DNS
+  - name: dns-query
+    to:
+    - namespaceSelector: {}
+    ports:
+    - protocol: UDP
+      port: 53

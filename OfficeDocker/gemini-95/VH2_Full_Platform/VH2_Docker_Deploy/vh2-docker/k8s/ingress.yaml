@@ -1,0 +1,61 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: vh2-ingress
+  namespace: vh2-prod
+  labels:
+    app: vh2-validator
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "4m"
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "*"
+    nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, OPTIONS"
+    nginx.ingress.kubernetes.io/cors-allow-credentials: "true"
+    nginx.ingress.kubernetes.io/rate-limit: "1000"
+    nginx.ingress.kubernetes.io/rate-limit-burst: "2000"
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - vh2-prod.yourdomain.com
+    - vh2-api.yourdomain.com
+    secretName: vh2-tls-prod
+  rules:
+  - host: vh2-prod.yourdomain.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: vh2-frontend
+            port:
+              number: 3000
+      - path: /api
+        pathType: Prefix
+        backend:
+          service:
+            name: vh2-backend
+            port:
+              number: 3001
+      - path: /tests
+        pathType: Prefix
+        backend:
+          service:
+            name: vh2-frontend
+            port:
+              number: 3000
+  - host: vh2-api.yourdomain.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: vh2-backend
+            port:
+              number: 3001

@@ -1,0 +1,54 @@
+{
+  "version": "v1",
+  "experts": [
+    {
+      "expert_id": "expert:retrieval.rag",
+      "capabilities": [
+        "embed",
+        "upsert",
+        "manifest_build",
+        "retrieval_eval"
+      ]
+    },
+    {
+      "expert_id": "expert:integration.runtime",
+      "capabilities": [
+        "router_wiring",
+        "state_machine",
+        "idempotency"
+      ]
+    },
+    {
+      "expert_id": "expert:governance.pm",
+      "capabilities": [
+        "gate_eval",
+        "release_lock",
+        "policy_enforcement"
+      ]
+    },
+    {
+      "expert_id": "expert:spatial.3d",
+      "capabilities": [
+        "python_runtime",
+        "mesh_generation",
+        "phase_space_mapping"
+      ]
+    },
+    {
+      "expert_id": "expert:security.rbac",
+      "capabilities": [
+        "avatar_identity",
+        "middleware_enforcement",
+        "token_gating"
+      ]
+    },
+    {
+      "expert_id": "expert:data.rag_lora",
+      "capabilities": [
+        "tensor_flow_indexing",
+        "lora_embedding",
+        "multimodal_scenario_training"
+      ]
+    }
+  ]
+}

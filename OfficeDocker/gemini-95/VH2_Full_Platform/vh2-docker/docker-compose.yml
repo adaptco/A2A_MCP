@@ -1,0 +1,158 @@
+version: '3.9'
+
+# ════════════════════════════════════════════════════════════════════════
+# VH2 SOVEREIGN SUSPENSION RIG — Docker Compose
+#
+# Services:
+#   backend  — Validation API socket  (port 3001, internal only)
+#   frontend — Static + plugin socket (port 3000, internal only)
+#   nginx    — Reverse proxy          (port 80, public)
+#
+# Usage:
+#   docker compose up --build       # development
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up
+# ════════════════════════════════════════════════════════════════════════
+
+networks:
+  vh2-internal:
+    driver: bridge
+    internal: true        # backend never exposed directly
+  vh2-public:
+    driver: bridge
+
+services:
+
+  # ── BACKEND SOCKET (Validation API + SHA-256 Witness) ─────────────────
+  backend:
+    build:
+      context: ./backend
+      target: production
+    container_name: vh2-backend
+    restart: unless-stopped
+    networks:
+      - vh2-internal
+    environment:
+      NODE_ENV:        production
+      PORT:            3001
+      ALLOWED_ORIGIN:  "http://localhost"
+    expose:
+      - "3001"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3001/health"]
+      interval: 20s
+      timeout:  5s
+      retries:  3
+      start_period: 10s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+
+  # ── FRONTEND SOCKET (Plugin + Static Files) ────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      target: production
+    container_name: vh2-frontend
+    restart: unless-stopped
+    networks:
+      - vh2-internal
+    environment:
+      NODE_ENV: production
+      PORT:     3000
+    expose:
+      - "3000"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/"]
+      interval: 20s
+      timeout:  5s
+      retries:  3
+      start_period: 8s
+    volumes:
+      # Mount vehicle artifacts at runtime (no rebuild needed to swap models)
+      - ./frontend/public:/app/public:ro
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+
+  # ── NGINX (Reverse Proxy — the public face) ────────────────────────────
+  nginx:
+    image: nginx:1.25-alpine
+    container_name: vh2-nginx
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+      frontend:
+        condition: service_healthy
+    networks:
+      - vh2-internal
+      - vh2-public
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    healthcheck:
+      test: ["CMD", "nginx", "-t"]
+      interval: 30s
+      timeout:  5s
+      retries:  3
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    security_opt:
+      - no-new-privileges:true
+
+  # ── MCP SERVER (stdio default; set MCP_TRANSPORT=sse for HTTP mode) ───
+  mcp:
+    build:
+      context: ./mcp
+    container_name: vh2-mcp
+    restart: unless-stopped
+    networks:
+      - vh2-internal
+    environment:
+      MCP_TRANSPORT:   "${MCP_TRANSPORT:-stdio}"
+      MCP_HTTP_HOST:   "0.0.0.0"
+      MCP_HTTP_PORT:   "3002"
+      MCP_CORS_ORIGIN: "${MCP_CORS_ORIGIN:-http://localhost}"
+    # In stdio mode: expose nothing (piped to backend sidecar)
+    # In SSE mode: expose 3002 for direct client access
+    expose:
+      - "3002"
+    healthcheck:
+      # Pass immediately in stdio mode; check HTTP in sse/both mode
+      test: >
+        sh -c '[ "$$MCP_TRANSPORT" = "stdio" ] && exit 0 ||
+        wget -qO- http://localhost:3002/health | grep -q "\"ok\":true"'
+      interval: 20s
+      timeout:  5s
+      retries:  3
+      start_period: 5s
+    stdin_open: true   # keep stdin open for stdio transport
+    tty: false
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"

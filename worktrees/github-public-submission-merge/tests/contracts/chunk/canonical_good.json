@@ -1,0 +1,18 @@
+{
+  "request_id": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+  "ingestion_version": "v1.0",
+  "created_at": "2023-10-27T10:02:00Z",
+  "chunks": [
+    {
+      "chunk_id": "chunk-1",
+      "text": "This is a substantial amount of text that definitely meets the minimum length requirement of fifty characters for a chunk.",
+      "metadata": {
+        "source": {
+          "url": "https://example.com/research-paper",
+          "tab_id": 42
+        },
+        "confidence": "high"
+      }
+    }
+  ]
+}

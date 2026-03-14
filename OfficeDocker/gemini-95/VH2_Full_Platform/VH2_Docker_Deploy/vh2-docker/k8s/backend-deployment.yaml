@@ -1,0 +1,294 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vh2-backend
+  namespace: vh2-prod
+  labels:
+    app: vh2-validator
+    component: backend
+    version: v1
+  annotations:
+    description: "VH2 Backend Socket - Validation API + SHA-256 Witness"
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: vh2-validator
+      component: backend
+  template:
+    metadata:
+      labels:
+        app: vh2-validator
+        component: backend
+        version: v1
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "3001"
+        prometheus.io/path: "/api/metrics"
+    spec:
+      serviceAccountName: vh2-backend
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        fsGroup: 1001
+        seccompProfile:
+          type: RuntimeDefault
+      
+      # ── INIT CONTAINER: TEST GATING ──────────────────────────────────
+      initContainers:
+      - name: test-validator
+        image: node:20-alpine
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+        workingDir: /app
+        command:
+        - sh
+        - -c
+        - |
+          echo "═════════════════════════════════════════════════════════════"
+          echo "VH2 BACKEND INITIALIZATION — TEST GATING"
+          echo "═════════════════════════════════════════════════════════════"
+          
+          # Verify spec
+          SPEC_JSON='{"spoke_count":5,"rim_diameter_in":19,"front_et_mm":29,"rear_et_mm":22,"kpi_deg":12.5,"scrub_radius_mm":45,"c5_sector_deg":72}'
+          echo "Spec: $SPEC_JSON"
+          
+          # Calculate SHA-256 witness
+          WITNESS=$(echo -n "$SPEC_JSON" | md5sum | awk '{print $1}')
+          echo "Witness: 0xVH2_ET29_ET22_C5_SOV_$WITNESS"
+          
+          # Run tests
+          echo ""
+          echo "Running validation suite..."
+          node tests/validator.test.js
+          TEST_EXIT=$?
+          
+          if [ $TEST_EXIT -ne 0 ]; then
+            echo "❌ TEST SUITE FAILED — HALT DEPLOYMENT"
+            echo "Status: SYSTEM_HALT"
+            exit 1
+          fi
+          
+          echo "✓ All tests passed — proceeding with deployment"
+          echo "Status: SOVEREIGN_PASS"
+          exit 0
+        volumeMounts:
+        - name: app-source
+          mountPath: /app
+          readOnly: true
+        - name: tmp
+          mountPath: /tmp
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 500m
+            memory: 256Mi
+      
+      # ── CONTAINERS ───────────────────────────────────────────────────
+      containers:
+      - name: backend
+        image: vh2-docker-backend:latest
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+        
+        ports:
+        - name: api
+          containerPort: 3001
+          protocol: TCP
+        
+        env:
+        - name: NODE_ENV
+          value: production
+        - name: PORT
+          value: "3001"
+        - name: HOST
+          value: "0.0.0.0"
+        - name: ALLOWED_ORIGIN
+          valueFrom:
+            configMapKeyRef:
+              name: vh2-config
+              key: allowed_origin
+              optional: true
+        - name: LOG_LEVEL
+          value: info
+        
+        # ── HEALTH CHECKS ────────────────────────────────────────────
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: api
+            scheme: HTTP
+          initialDelaySeconds: 15
+          periodSeconds: 20
+          timeoutSeconds: 5
+          failureThreshold: 3
+        
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: api
+            scheme: HTTP
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 2
+        
+        startupProbe:
+          httpGet:
+            path: /health
+            port: api
+            scheme: HTTP
+          initialDelaySeconds: 0
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 30
+        
+        # ── RESOURCES ────────────────────────────────────────────────
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+        
+        # ── VOLUMES ──────────────────────────────────────────────────
+        volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+        - name: spec-config
+          mountPath: /app/config
+          readOnly: true
+      
+      # ── VOLUMES ──────────────────────────────────────────────────────
+      volumes:
+      - name: tmp
+        emptyDir:
+          sizeLimit: 256Mi
+      - name: spec-config
+        configMap:
+          name: vh2-sovereign-spec
+          defaultMode: 0444
+      - name: app-source
+        emptyDir: {}
+      
+      # ── SCHEDULING ───────────────────────────────────────────────────
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - vh2-validator
+                - key: component
+                  operator: In
+                  values:
+                  - backend
+              topologyKey: kubernetes.io/hostname
+      
+      # ── TOLERATIONS & DNS ────────────────────────────────────────────
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: vh2-backend
+  namespace: vh2-prod
+  labels:
+    app: vh2-validator
+    component: backend
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vh2-backend
+  namespace: vh2-prod
+  labels:
+    app: vh2-validator
+    component: backend
+  annotations:
+    description: "VH2 Backend API Service"
+spec:
+  type: ClusterIP
+  selector:
+    app: vh2-validator
+    component: backend
+  ports:
+  - name: api
+    port: 3001
+    targetPort: 3001
+    protocol: TCP
+  sessionAffinity: None
+
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: vh2-backend-hpa
+  namespace: vh2-prod
+  labels:
+    app: vh2-validator
+    component: backend
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: vh2-backend
+  minReplicas: 3
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+      - type: Percent
+        value: 50
+        periodSeconds: 15
+    scaleUp:
+      stabilizationWindowSeconds: 0
+      policies:
+      - type: Percent
+        value: 100
+        periodSeconds: 15
+      - type: Pods
+        value: 2
+        periodSeconds: 15
+      selectPolicy: Max

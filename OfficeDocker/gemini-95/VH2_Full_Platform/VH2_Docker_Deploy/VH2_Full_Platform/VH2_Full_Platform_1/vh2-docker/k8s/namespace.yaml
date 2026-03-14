@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: vh2-prod
+  labels:
+    app.kubernetes.io/name: vh2-sovereign-validator
+    app.kubernetes.io/version: "1.0.0"
+    environment: production
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/warn: restricted
+---
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: vh2-quota
+  namespace: vh2-prod
+spec:
+  hard:
+    requests.cpu:    "4"
+    requests.memory: 4Gi
+    limits.cpu:      "8"
+    limits.memory:   8Gi
+    pods:            "30"
+    services:        "10"

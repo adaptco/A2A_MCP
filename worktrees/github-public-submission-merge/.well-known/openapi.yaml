@@ -1,0 +1,204 @@
+openapi: 3.0.3
+info:
+  title: Core Orchestrator API
+  version: 1.1.0
+  description: >-
+    HTTP interface for the Core Orchestrator capsule. Provides service health
+    introspection along with branch merge planning metadata, automation hooks,
+    and middleware contract discovery for cockpit and CI consumers.
+  contact:
+    name: Protocol Automation Team
+    url: https://example.com/core-orchestrator
+    email: ops@example.com
+servers:
+  - url: http://localhost:8080
+tags:
+  - name: health
+    description: Liveness and readiness status endpoints.
+  - name: txtordr
+    description: Txtordr intake and routing endpoints.
+  - name: pos
+    description: POS order intake and deterministic idempotency handling.
+paths:
+  /health:
+    get:
+      summary: Service health probe
+      operationId: getHealth
+      description: Retrieve the live readiness state of the orchestrator capsule.
+      tags:
+        - health
+      responses:
+        '200':
+          description: Service status information.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - status
+                properties:
+                  status:
+                    type: string
+                    description: Service status indicator.
+                    enum:
+                      - ok
+  /txtordr/intake:
+    post:
+      summary: Submit a Txtordr payload
+      description: Receive and route structured Txtordr payloads.
+      operationId: postTxtordrIntake
+      tags:
+        - txtordr
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: Txtordr payload v1
+      responses:
+        '202':
+          description: Accepted and routed
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - capsule
+                  - ledger
+                  - events
+                properties:
+                  ok:
+                    type: boolean
+                  order_id:
+                    type: string
+                  capsule:
+                    type: string
+                    description: Capsule identifier.
+                    example: capsule.rehearsal.scrollstream.v1
+                  ledger:
+                    type: string
+                    description: Ledger channel receiving the rehearsal events.
+                    example: scrollstream_ledger
+                  events:
+                    type: array
+                    description: Ordered rehearsal events.
+                    items:
+                      type: object
+                      required: [timestamp, stage, agent, output]
+                      properties:
+                        timestamp:
+                          type: string
+                          format: date-time
+                        stage:
+                          type: string
+                        agent:
+                          type: string
+                        output:
+                          type: string
+        '400':
+          description: Invalid payload or HMAC
+        '409':
+          description: Duplicate idempotency key
+        '500':
+          description: Internal error
+      security:
+        - hmacAuth: []
+  /pos/order:
+    post:
+      summary: Submit a normalized POS order EventEnvelope
+      description: >-
+        Accepts Sovereign EventEnvelope payloads emitted by the Codex Connector. Idempotency
+        is enforced via deterministic UUIDv5 anchors built from store, register, and sequence
+        identifiers. Duplicate envelopes return HTTP 409 with the previously recorded resource
+        identifier to prevent state drift.
+      operationId: postPosOrder
+      tags:
+        - pos
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EventEnvelope'
+      responses:
+        '202':
+          description: Accepted and routed to the Order Service
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - ok
+                  - idempotencyKey
+                properties:
+                  ok:
+                    type: boolean
+                    example: true
+                  idempotencyKey:
+                    type: string
+                    format: uuid
+                    description: Deterministic UUIDv5 anchor returned for audit chaining.
+        '400':
+          description: Invalid envelope structure
+        '409':
+          description: Duplicate idempotency key already recorded in the Audit Ledger
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - error
+                  - idempotencyKey
+                properties:
+                  error:
+                    type: string
+                    example: duplicate_idempotency_key
+                  idempotencyKey:
+                    type: string
+                    format: uuid
+                    description: The deterministic UUIDv5 submitted by the client.
+          headers:
+            X-Resource-ID:
+              description: Previously persisted resource identifier for legacy POS verification.
+              schema:
+                type: string
+        '500':
+          description: Internal error
+      security:
+        - hmacAuth: []
+components:
+  securitySchemes:
+    hmacAuth:
+      type: apiKey
+      in: header
+      name: X-Txtordr-HMAC
+  schemas:
+    EventEnvelope:
+      type: object
+      required: [header, payload]
+      additionalProperties: false
+      properties:
+        header:
+          type: object
+          required: [idempotencyKey, traceId, timestamp, version]
+          additionalProperties: false
+          properties:
+            idempotencyKey:
+              type: string
+              format: uuid
+              description: Deterministic UUIDv5 generated from the Codex Connector anchor string.
+            traceId:
+              type: string
+              format: uuid
+              description: Distributed trace identifier.
+            timestamp:
+              type: string
+              format: date-time
+            version:
+              type: string
+              enum: ["1.0.0"]
+        payload:
+          type: object
+          description: Sovereign normalized order data emitted by the Codex Connector.
+          additionalProperties: true

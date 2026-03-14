@@ -1,0 +1,174 @@
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: vh2-smoke-tests
+  namespace: vh2-prod
+  labels:
+    app: vh2-validator
+    component: test
+    test-type: smoke
+  annotations:
+    description: "VH2 Smoke Tests - Quick validation after deployment"
+spec:
+  backoffLimit: 3
+  ttlSecondsAfterFinished: 3600
+  template:
+    metadata:
+      labels:
+        app: vh2-validator
+        component: test
+      annotations:
+        prometheus.io/scrape: "false"
+    spec:
+      serviceAccountName: vh2-test
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        fsGroup: 1001
+        seccompProfile:
+          type: RuntimeDefault
+      
+      containers:
+      - name: smoke-tests
+        image: curlimages/curl:latest
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+        
+        env:
+        - name: BACKEND_URL
+          value: http://vh2-backend:3001
+        - name: FRONTEND_URL
+          value: http://vh2-frontend:3000
+        
+        command:
+        - /bin/sh
+        - -c
+        - |
+          set -e
+          
+          echo "════════════════════════════════════════════════════════════"
+          echo "VH2 SMOKE TESTS"
+          echo "════════════════════════════════════════════════════════════"
+          
+          # Wait for services
+          echo "Waiting for backend to be ready..."
+          for i in {1..30}; do
+            if curl -sf "$BACKEND_URL/health" > /dev/null; then
+              echo "✓ Backend healthy"
+              break
+            fi
+            echo "  Attempt $i/30..."
+            sleep 2
+          done
+          
+          echo "Waiting for frontend to be ready..."
+          for i in {1..30}; do
+            if curl -sf "$FRONTEND_URL/" > /dev/null; then
+              echo "✓ Frontend healthy"
+              break
+            fi
+            echo "  Attempt $i/30..."
+            sleep 2
+          done
+          
+          # Test backend API
+          echo ""
+          echo "Testing backend endpoints..."
+          
+          echo "1. GET /health"
+          curl -sf "$BACKEND_URL/health" | head -c 100
+          echo ""
+          
+          echo "2. GET /api/spec"
+          SPEC=$(curl -sf "$BACKEND_URL/api/spec")
+          echo "$SPEC" | grep -q "VH2_Full_v1" && echo "✓ Spec endpoint works" || echo "✗ Spec endpoint failed"
+          
+          echo "3. POST /api/validate"
+          PAYLOAD='{"spoke_count":5,"rim_diameter_in":19,"front_et_mm":29,"rear_et_mm":22,"kpi_deg":12.5,"scrub_radius_mm":45,"c5_sector_deg":72}'
+          RESULT=$(curl -sf -X POST "$BACKEND_URL/api/validate" \
+            -H "Content-Type: application/json" \
+            -d "$PAYLOAD")
+          echo "$RESULT" | grep -q "SOVEREIGN_PASS" && echo "✓ Validator passed" || echo "✗ Validator failed"
+          
+          echo "4. GET /api/kpi"
+          curl -sf "$BACKEND_URL/api/kpi" | grep -q "kpi_deg" && echo "✓ KPI endpoint works" || echo "✗ KPI endpoint failed"
+          
+          # Test frontend
+          echo ""
+          echo "Testing frontend endpoints..."
+          
+          echo "5. GET /tests.html"
+          curl -sf "$FRONTEND_URL/tests.html" | grep -q "VH2 · PRODUCTION UNIT TEST RUNNER" && echo "✓ Tests page loads" || echo "✗ Tests page failed"
+          
+          echo "6. GET /vehicle.html"
+          curl -sf "$FRONTEND_URL/vehicle.html" | head -c 1 > /dev/null && echo "✓ Vehicle page loads" || echo "✗ Vehicle page failed"
+          
+          echo ""
+          echo "════════════════════════════════════════════════════════════"
+          echo "✓ ALL SMOKE TESTS PASSED"
+          echo "════════════════════════════════════════════════════════════"
+        
+        resources:
+          requests:
+            cpu: 50m
+            memory: 32Mi
+          limits:
+            cpu: 200m
+            memory: 128Mi
+        
+        volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+      
+      volumes:
+      - name: tmp
+        emptyDir:
+          sizeLimit: 64Mi
+      
+      restartPolicy: Never
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: vh2-test
+  namespace: vh2-prod
+  labels:
+    app: vh2-validator
+    component: test
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: vh2-test-role
+  namespace: vh2-prod
+  labels:
+    app: vh2-validator
+rules:
+- apiGroups: [""]
+  resources: ["pods", "pods/log"]
+  verbs: ["get", "list", "watch"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: vh2-test-rolebinding
+  namespace: vh2-prod
+  labels:
+    app: vh2-validator
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: vh2-test-role
+subjects:
+- kind: ServiceAccount
+  name: vh2-test
+  namespace: vh2-prod

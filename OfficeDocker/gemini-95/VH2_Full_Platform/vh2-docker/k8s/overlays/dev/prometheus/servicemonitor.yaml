@@ -1,0 +1,31 @@
+##############################################################################
+# VH2 — Prometheus ServiceMonitor
+# Requires: kube-prometheus-stack (or prometheus-operator) installed
+# Scrapes: GET /metrics on vh2-backend-svc:3001 every 15s
+##############################################################################
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: dev-vh2-backend
+  namespace: vh2-dev
+  labels:
+    # Must match your Prometheus operator's serviceMonitorSelector
+    # Default kube-prometheus-stack label:
+    release: prometheus
+    app.kubernetes.io/name: vh2-sovereign-validator
+    environment: dev
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: backend
+  namespaceSelector:
+    matchNames:
+      - vh2-dev
+  endpoints:
+    - port: http               # matches Service port name in backend-deployment.yaml
+      path: /metrics
+      interval: 15s
+      scrapeTimeout: 10s
+      scheme: http
+      # Parse Prometheus text format (Content-Type: text/plain; version=0.0.4)
+      # No relabeling needed — metric names already namespaced with vh2_ prefix

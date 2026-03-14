@@ -54,6 +54,8 @@ def test_compose_files_expose_orchestration_profile_variables():
         "A2A_ORCHESTRATION_EMBEDDING_LANGUAGE: "
         "${A2A_ORCHESTRATION_EMBEDDING_LANGUAGE:-code}"
     ) in compose_default
+<<<<<<< HEAD
+=======
 
 
 def test_automation_env_example_contains_runtime_defaults():
@@ -82,3 +84,4 @@ def test_automation_compose_wires_frontend_to_runtime_api():
     assert "\"${AUTOMATION_FRONTEND_PORT:-4173}:4173\"" in compose_automation
     assert "frontend/Dockerfile.automation" in compose_automation
     assert "/healthz" in compose_automation
+>>>>>>> origin/main

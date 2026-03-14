@@ -1,0 +1,50 @@
+{
+  "agent": {
+    "name": "Ghost Void Validation Agent",
+    "version": "1.0.0",
+    "description": "Autonomous post-completion validator for the Ghost Void game engine",
+    "trigger": "post-agent-commit",
+    "capabilities": [
+      "source-integrity",
+      "build-verification",
+      "unit-test-execution",
+      "determinism-replay",
+      "runtime-smoke-test",
+      "report-generation"
+    ]
+  },
+  "validation": {
+    "levels": {
+      "quick": {
+        "description": "Build + unit tests only (< 2 min)",
+        "phases": ["source-integrity", "build", "unit-tests"]
+      },
+      "standard": {
+        "description": "Full validation suite (< 5 min)",
+        "phases": ["source-integrity", "build", "unit-tests", "determinism", "smoke-test"]
+      },
+      "full": {
+        "description": "Exhaustive validation with performance profiling (< 10 min)",
+        "phases": ["source-integrity", "build", "unit-tests", "integration", "determinism", "smoke-test", "performance"]
+      }
+    },
+    "defaultLevel": "standard"
+  },
+  "engine": {
+    "binary": "bin/ghost-void_engine",
+    "buildCommand": "make all",
+    "testTargets": {
+      "safety": "make test",
+      "engine": "make test_engine",
+      "jurassic": "make test_jurassic"
+    }
+  },
+  "ci": {
+    "workflow": ".github/workflows/game-validation.yml",
+    "triggers": ["push:main", "push:develop", "pull_request:main", "workflow_dispatch"],
+    "artifacts": {
+      "retentionDays": 7,
+      "reportRetentionDays": 30
+    }
+  }
+}

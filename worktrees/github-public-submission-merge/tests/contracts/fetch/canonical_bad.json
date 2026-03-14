@@ -1,0 +1,7 @@
+{
+  "source": {
+    "url": "invalid-uri",
+    "tab_id": "not-an-integer"
+  },
+  "content_type": "text/html"
+}

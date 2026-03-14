@@ -1,0 +1,9 @@
+{
+  "version": "1.0.0",
+  "templates": {
+    "PRT.AUTO_REPAIR.V1": {
+      "path": ".github/PULL_REQUEST_TEMPLATE/auto_repair_v1.md",
+      "format": "markdown"
+    }
+  }
+}

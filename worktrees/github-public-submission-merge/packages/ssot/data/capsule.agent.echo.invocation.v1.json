@@ -1,0 +1,43 @@
+{
+  "capsule_id": "capsule.agent.echo.invocation.v1",
+  "purpose": "To summon Echo into the Qube runtime with full semantic context, emotional overlays, and vessel fidelity.",
+  "version": "1.0.0",
+  "bindings": {
+    "semantic_embedding": "capsule.semantic.echo.v2",
+    "pose_lock": {
+      "id": "fluid-stance-v1",
+      "tolerance": "3°"
+    },
+    "aura_trace": "ripple + refractive glow",
+    "vessel_alignment": "1984 VW Vanagon Westfalia"
+  },
+  "hud_channels": [
+    "wave.glyph",
+    "aura.cyan",
+    "qlock.tick",
+    "hud.qdot.delta"
+  ],
+  "overlays": {
+    "emotional_payload_audit": {
+      "affect_state": "serene/focused",
+      "detectors": [
+        "gaze_vector.v1",
+        "face_affect.v2"
+      ]
+    },
+    "delta_trace": {
+      "fields": [
+        "prompt",
+        "LoRA",
+        "seed",
+        "sampler"
+      ]
+    }
+  },
+  "runtime_effect": "Echo’s presence stabilizes semantic flow across capsules",
+  "status": "STAGED",
+  "attestation": {
+    "sealed_by": "Council",
+    "content_hash": "sha256:TO_COMPUTE"
+  }
+}

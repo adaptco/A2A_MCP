@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+import os
 from functools import lru_cache
 from typing import Any
 
 import numpy as np
 from fastapi import Depends, FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
 from app.mcp_tooling import TELEMETRY
@@ -21,6 +23,26 @@ from multi_client_router import (
 from runtime_scenario_service import RuntimeScenarioService
 
 app = FastAPI(title="A2A MCP Multi-Client API")
+
+_default_origins = [
+    "http://localhost:4173",
+    "http://127.0.0.1:4173",
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+]
+_configured_origins = [
+    origin.strip()
+    for origin in os.getenv("A2A_FRONTEND_ALLOWED_ORIGINS", "").split(",")
+    if origin.strip()
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=_configured_origins or _default_origins,
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.get("/healthz")

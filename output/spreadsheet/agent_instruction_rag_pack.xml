@@ -1,0 +1,125 @@
+<?xml version='1.0' encoding='utf-8'?>
+<AgentInstructionPack version="1.0" source="C:\Users\eqhsp\.codex\AGENTS.md" ragCsv="agent_instruction_rag_tasks.csv" winuiWorkbook="agent_instruction_rag_pack.xlsx">
+  <Meta>
+    <Goal>Compact AGENTS instructions into stable RAG task rows, LoRA stabilizer labels, and repository-scoped coding tasks.</Goal>
+    <ContextStrategy>chunked-instruction-catalog</ContextStrategy>
+  </Meta>
+  <Tasks>
+    <Task id="rag-bootstrap-repo-inventory" role="Planner" category="bootstrap" priority="high" embeddingSlot="vec.bootstrap.inventory">
+      <Title>Bootstrap repository inventory</Title>
+      <InstructionSummary>Initialize the repository inventory before any deterministic MoA routing begins.</InstructionSummary>
+      <ContextChunk>python C:\Users\eqhsp\.codex\skills\moa-cli-coding-fabric\scripts\bootstrap_repo_inventory.py</ContextChunk>
+      <LoRAStabilizer>inventory-first grounding</LoRAStabilizer>
+      <RepoScope>all_repositories</RepoScope>
+      <OutputArtifact>repo_inventory.json</OutputArtifact>
+      <WinUISurface>RepoInfraPage</WinUISurface>
+    </Task>
+    <Task id="rag-bootstrap-subagents" role="Architect" category="bootstrap" priority="high" embeddingSlot="vec.bootstrap.subagents">
+      <Title>Generate sub-agent contract</Title>
+      <InstructionSummary>Refresh the deterministic Planner/Architect/Coder/Tester/Reviewer contract file.</InstructionSummary>
+      <ContextChunk>python C:\Users\eqhsp\.codex\skills\moa-cli-coding-fabric\scripts\generate_subagents.py</ContextChunk>
+      <LoRAStabilizer>fixed-agent topology</LoRAStabilizer>
+      <RepoScope>all_repositories</RepoScope>
+      <OutputArtifact>subagents.v1.json</OutputArtifact>
+      <WinUISurface>TaskCatalogPage</WinUISurface>
+    </Task>
+    <Task id="rag-plan-only-moa" role="Planner" category="execution" priority="high" embeddingSlot="vec.execution.plan_only">
+      <Title>Plan-only MoA run</Title>
+      <InstructionSummary>Route a task in dry-run mode first to keep command execution deterministic.</InstructionSummary>
+      <ContextChunk>python C:\Users\eqhsp\.codex\skills\moa-cli-coding-fabric\scripts\run_moa_task.py --repo "C:\Users\eqhsp\Documents\GitHub\A2A_MCP" --task "Describe and plan the task" --mode auto</ContextChunk>
+      <LoRAStabilizer>dry-run before mutation</LoRAStabilizer>
+      <RepoScope>repo_scoped</RepoScope>
+      <OutputArtifact>plan.json</OutputArtifact>
+      <WinUISurface>MainShellWindow</WinUISurface>
+    </Task>
+    <Task id="rag-guarded-checks" role="Tester" category="execution" priority="medium" embeddingSlot="vec.execution.guarded_checks">
+      <Title>Execute guarded checks</Title>
+      <InstructionSummary>Run repo checks only after policy evaluation and only within repo scope.</InstructionSummary>
+      <ContextChunk>python C:\Users\eqhsp\.codex\skills\moa-cli-coding-fabric\scripts\run_moa_task.py --repo "C:\Users\eqhsp\Documents\GitHub\A2A_MCP" --task "Run repo checks" --mode auto --execute</ContextChunk>
+      <LoRAStabilizer>policy-gated execution</LoRAStabilizer>
+      <RepoScope>repo_scoped</RepoScope>
+      <OutputArtifact>execution.json</OutputArtifact>
+      <WinUISurface>TaskCatalogPage</WinUISurface>
+    </Task>
+    <Task id="rag-release-confirm-risk" role="Reviewer" category="governance" priority="high" embeddingSlot="vec.governance.confirm_risk">
+      <Title>Require explicit release confirmation</Title>
+      <InstructionSummary>High-risk release operations require an explicit confirmation flag before execution.</InstructionSummary>
+      <ContextChunk>python C:\Users\eqhsp\.codex\skills\moa-cli-coding-fabric\scripts\run_moa_task.py --repo "C:\Users\eqhsp\Documents\GitHub\A2A_MCP" --task "Release operations" --mode auto --execute --confirm-risk</ContextChunk>
+      <LoRAStabilizer>risk-confirmation latch</LoRAStabilizer>
+      <RepoScope>repo_scoped</RepoScope>
+      <OutputArtifact>execution.json</OutputArtifact>
+      <WinUISurface>CommandBar</WinUISurface>
+    </Task>
+    <Task id="rag-auto-retrieval-fallback" role="Architect" category="retrieval" priority="medium" embeddingSlot="vec.retrieval.auto_fallback">
+      <Title>Fallback from pgvector to local context</Title>
+      <InstructionSummary>Auto retrieval chooses pgvector only when manifest and Docker health checks pass; otherwise it falls back to deterministic local context.</InstructionSummary>
+      <ContextChunk>Auto chooses pgvector only when manifest and Docker health checks pass; otherwise local context is used.</ContextChunk>
+      <LoRAStabilizer>retrieval-mode stability</LoRAStabilizer>
+      <RepoScope>all_repositories</RepoScope>
+      <OutputArtifact>retrieval_mode=auto</OutputArtifact>
+      <WinUISurface>SettingsPage</WinUISurface>
+    </Task>
+    <Task id="rag-repo-scope-guard" role="Coder" category="infrastructure" priority="high" embeddingSlot="vec.infrastructure.repo_scope">
+      <Title>Enforce repo-scoped mutation</Title>
+      <InstructionSummary>Coding agents may inspect the whole GitHub workspace but must mutate only the repo selected by --repo.</InstructionSummary>
+      <ContextChunk>Primary scope is all repositories under Documents/GitHub, but mutations remain repo-scoped by --repo.</ContextChunk>
+      <LoRAStabilizer>mutation-boundary discipline</LoRAStabilizer>
+      <RepoScope>all_repositories</RepoScope>
+      <OutputArtifact>repo_scope_guard</OutputArtifact>
+      <WinUISurface>RepoInfraPage</WinUISurface>
+    </Task>
+    <Task id="rag-run-artifact-capture" role="Tester" category="artifacts" priority="high" embeddingSlot="vec.artifacts.run_pack">
+      <Title>Persist run artifacts for replay</Title>
+      <InstructionSummary>Each routed run persists plan.json and execution.json so RAG chunks can compact context without rereading raw console history.</InstructionSummary>
+      <ContextChunk>Persist plan.json and execution.json under .codex/tmp/moa/runs/&lt;run-id&gt;/</ContextChunk>
+      <LoRAStabilizer>artifact-backed replay</LoRAStabilizer>
+      <RepoScope>repo_scoped</RepoScope>
+      <OutputArtifact>plan.json;execution.json</OutputArtifact>
+      <WinUISurface>ArtifactsPage</WinUISurface>
+    </Task>
+    <Task id="rag-context-compaction-catalog" role="Planner" category="lora" priority="high" embeddingSlot="vec.lora.context_compaction">
+      <Title>Compact instruction context into chunkable tasks</Title>
+      <InstructionSummary>Convert top-level AGENTS instructions into stable CSV rows that carry summaries, chunk text, vector slots, and output targets for coding agents.</InstructionSummary>
+      <ContextChunk>Summarize instructions into agent-task chunks with explicit embedding slots and token budgets.</ContextChunk>
+      <LoRAStabilizer>context-window compaction</LoRAStabilizer>
+      <RepoScope>all_repositories</RepoScope>
+      <OutputArtifact>agent_instruction_rag_tasks.csv</OutputArtifact>
+      <WinUISurface>TaskCatalogPage</WinUISurface>
+    </Task>
+  </Tasks>
+  <RepositoryInfrastructure>
+    <Repository id="repo:github" name=".github" role="control-plane" mutationPolicy="repo-scoped-only" ragCollection="rag.github.instructions" embeddingLane="vec.repo.github" />
+    <Repository id="repo:a2a-mcp" name="A2A_MCP" role="orchestrator" mutationPolicy="repo-scoped-only" ragCollection="rag.a2a-mcp.instructions" embeddingLane="vec.repo.a2a-mcp" />
+    <Repository id="repo:adaptco-main" name="ADAPTCO-MAIN" role="supporting-repo" mutationPolicy="repo-scoped-only" ragCollection="rag.adaptco-main.instructions" embeddingLane="vec.repo.adaptco-main" />
+    <Repository id="repo:core-orchestrator" name="core-orchestrator" role="supporting-repo" mutationPolicy="repo-scoped-only" ragCollection="rag.core-orchestrator.instructions" embeddingLane="vec.repo.core-orchestrator" />
+    <Repository id="repo:dadroit-json-generator" name="Dadroit JSON Generator" role="supporting-repo" mutationPolicy="repo-scoped-only" ragCollection="rag.dadroit-json-generator.instructions" embeddingLane="vec.repo.dadroit-json-generator" />
+    <Repository id="repo:hp-win32" name="HP-win32" role="supporting-repo" mutationPolicy="repo-scoped-only" ragCollection="rag.hp-win32.instructions" embeddingLane="vec.repo.hp-win32" />
+    <Repository id="repo:windowspowershell" name="WindowsPowerShell" role="supporting-repo" mutationPolicy="repo-scoped-only" ragCollection="rag.windowspowershell.instructions" embeddingLane="vec.repo.windowspowershell" />
+  </RepositoryInfrastructure>
+  <WinUIBacklog>
+    <BacklogItem id="winui-shell-001" area="shell" priority="high">
+      <Title>Create a NavigationView-based coding-agent shell</Title>
+      <ImplementationShape>MainWindow with NavigationView and minimal stable destinations</ImplementationShape>
+      <Purpose>Host Instructions, Task Catalog, Repo Infrastructure, and Artifact views in a native desktop shell.</Purpose>
+      <SourceReference>shell-navigation-and-windowing.md</SourceReference>
+    </BacklogItem>
+    <BacklogItem id="winui-structure-002" area="structure" priority="high">
+      <Title>Split Pages, Services, Styles, and ViewModels cleanly</Title>
+      <ImplementationShape>Pages/Controls/ViewModels/Services/Styles folder structure</ImplementationShape>
+      <Purpose>Keep RAG task browsing and artifact inspection maintainable as the host grows.</Purpose>
+      <SourceReference>foundation-winui-app-structure.md</SourceReference>
+    </BacklogItem>
+    <BacklogItem id="winui-import-003" area="services" priority="medium">
+      <Title>Add spreadsheet and CSV import services</Title>
+      <ImplementationShape>Services layer for workbook, XML, and CSV ingestion</ImplementationShape>
+      <Purpose>Load the generated instruction pack into the desktop host without custom parsing in page code.</Purpose>
+      <SourceReference>foundation-winui-app-structure.md</SourceReference>
+    </BacklogItem>
+    <BacklogItem id="winui-rag-004" area="pages" priority="high">
+      <Title>Expose a compact RAG task browser</Title>
+      <ImplementationShape>Task catalog page with filters for role, repo, priority, and embedding slot</ImplementationShape>
+      <Purpose>Let coding agents and operators browse the compacted context-window tasks quickly.</Purpose>
+      <SourceReference>shell-navigation-and-windowing.md</SourceReference>
+    </BacklogItem>
+  </WinUIBacklog>
+</AgentInstructionPack>

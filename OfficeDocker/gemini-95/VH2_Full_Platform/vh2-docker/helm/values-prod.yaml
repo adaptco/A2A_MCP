@@ -1,0 +1,109 @@
+##############################################################################
+# VH2 SOVEREIGN VALIDATOR — Helm Production Values
+# Usage: helm upgrade --install vh2 ./helm -f helm/values-prod.yaml
+##############################################################################
+
+global:
+  imageRegistry: ""          # e.g. "ghcr.io/your-org/"
+  imageTag: "1.0.0"
+  domain: vh2.yourdomain.com # ← replace
+
+# ── VH2 SPEC (canonical — do not change, fail-closed) ─────────────────────
+vh2Spec:
+  spokeCount:       5
+  rimDiameterIn:    19
+  frontEtMm:        29
+  rearEtMm:         22
+  kpiDeg:           12.5
+  scrubRadiusMm:    45
+  c5SectorDeg:      72
+  concavityFront:   0.150
+  concavityRear:    0.185
+  wheelbaseMm:      2600
+  trackMm:          1460
+  material:         "RSM_PBR_D4AF37"
+  sovereignty:      "SAINTLY_HONESTY_TRUE"
+
+# ── BACKEND SOCKET ─────────────────────────────────────────────────────────
+backend:
+  image:
+    repository: vh2-backend
+    tag: ""                  # falls back to global.imageTag
+    pullPolicy: IfNotPresent
+  replicaCount: 3
+  resources:
+    requests: { cpu: "100m", memory: "128Mi" }
+    limits:   { cpu: "500m", memory: "256Mi" }
+  hpa:
+    enabled: true
+    minReplicas: 3
+    maxReplicas: 10
+    targetCPUUtilization: 70
+  service:
+    type: ClusterIP
+    port: 3001
+  nodeSelector: {}
+  tolerations: []
+
+# ── FRONTEND SOCKET ────────────────────────────────────────────────────────
+frontend:
+  image:
+    repository: vh2-frontend
+    tag: ""
+    pullPolicy: IfNotPresent
+  replicaCount: 2
+  resources:
+    requests: { cpu: "50m",  memory: "64Mi" }
+    limits:   { cpu: "250m", memory: "128Mi" }
+  hpa:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 5
+    targetCPUUtilization: 75
+  service:
+    type: ClusterIP
+    port: 3000
+
+# ── INGRESS ────────────────────────────────────────────────────────────────
+ingress:
+  enabled: true
+  className: nginx
+  tls:
+    enabled: true
+    certManager:
+      enabled: true
+      clusterIssuer: letsencrypt-prod
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/limit-rps: "50"
+
+# ── SECURITY ───────────────────────────────────────────────────────────────
+security:
+  networkPolicy:
+    enabled: true
+  podSecurityContext:
+    runAsNonRoot: true
+    runAsUser: 1001
+    fsGroup: 1001
+    seccompProfile:
+      type: RuntimeDefault
+  containerSecurityContext:
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    capabilities:
+      drop: ["ALL"]
+
+# ── SMOKE TEST JOB ─────────────────────────────────────────────────────────
+smokeTest:
+  enabled: true
+  # Runs as ArgoCD PostSync hook
+  hook: PostSync
+  backoffLimit: 2
+  activeDeadlineSeconds: 120
+
+# ── MONITORING (requires kube-prometheus-stack) ────────────────────────────
+monitoring:
+  serviceMonitor:
+    enabled: false            # set true if Prometheus operator installed
+    interval: 30s
+    path: /health

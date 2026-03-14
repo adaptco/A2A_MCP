@@ -1,0 +1,697 @@
+{
+  "balloons": [
+    {
+      "id": 1,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-01"
+    },
+    {
+      "id": 2,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-02"
+    },
+    {
+      "id": 3,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-03"
+    },
+    {
+      "id": 4,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-04"
+    },
+    {
+      "id": 5,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-05"
+    },
+    {
+      "id": 6,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-06"
+    },
+    {
+      "id": 7,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-07"
+    },
+    {
+      "id": 8,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-08"
+    },
+    {
+      "id": 9,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-09"
+    },
+    {
+      "id": 10,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-10"
+    },
+    {
+      "id": 11,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-11"
+    },
+    {
+      "id": 12,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-12"
+    },
+    {
+      "id": 13,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-13"
+    },
+    {
+      "id": 14,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-14"
+    },
+    {
+      "id": 15,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-15"
+    },
+    {
+      "id": 16,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-16"
+    },
+    {
+      "id": 17,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-17"
+    },
+    {
+      "id": 18,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-18"
+    },
+    {
+      "id": 19,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-19"
+    },
+    {
+      "id": 20,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-20"
+    },
+    {
+      "id": 21,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-21"
+    },
+    {
+      "id": 22,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-22"
+    },
+    {
+      "id": 23,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-23"
+    },
+    {
+      "id": 24,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-24"
+    },
+    {
+      "id": 25,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-25"
+    },
+    {
+      "id": 26,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-26"
+    },
+    {
+      "id": 27,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-27"
+    },
+    {
+      "id": 28,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-28"
+    },
+    {
+      "id": 29,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-29"
+    },
+    {
+      "id": 30,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-30"
+    },
+    {
+      "id": 31,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-31"
+    },
+    {
+      "id": 32,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-32"
+    },
+    {
+      "id": 33,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-33"
+    },
+    {
+      "id": 34,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-34"
+    },
+    {
+      "id": 35,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-35"
+    },
+    {
+      "id": 36,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-36"
+    },
+    {
+      "id": 37,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-37"
+    },
+    {
+      "id": 38,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-38"
+    },
+    {
+      "id": 39,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-39"
+    },
+    {
+      "id": 40,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-40"
+    },
+    {
+      "id": 41,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-41"
+    },
+    {
+      "id": 42,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-42"
+    },
+    {
+      "id": 43,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-43"
+    },
+    {
+      "id": 44,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-44"
+    },
+    {
+      "id": 45,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-45"
+    },
+    {
+      "id": 46,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-46"
+    },
+    {
+      "id": 47,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-47"
+    },
+    {
+      "id": 48,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-48"
+    },
+    {
+      "id": 49,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-49"
+    },
+    {
+      "id": 50,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-50"
+    },
+    {
+      "id": 51,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-51"
+    },
+    {
+      "id": 52,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-52"
+    },
+    {
+      "id": 53,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-53"
+    },
+    {
+      "id": 54,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-54"
+    },
+    {
+      "id": 55,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-55"
+    },
+    {
+      "id": 56,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-56"
+    },
+    {
+      "id": 57,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-57"
+    },
+    {
+      "id": 58,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-58"
+    },
+    {
+      "id": 59,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-59"
+    },
+    {
+      "id": 60,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-60"
+    },
+    {
+      "id": 61,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-61"
+    },
+    {
+      "id": 62,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-62"
+    },
+    {
+      "id": 63,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-63"
+    },
+    {
+      "id": 64,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-64"
+    },
+    {
+      "id": 65,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-65"
+    },
+    {
+      "id": 66,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-66"
+    },
+    {
+      "id": 67,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-67"
+    },
+    {
+      "id": 68,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-68"
+    },
+    {
+      "id": 69,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-69"
+    },
+    {
+      "id": 70,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-70"
+    },
+    {
+      "id": 71,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-71"
+    },
+    {
+      "id": 72,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-72"
+    },
+    {
+      "id": 73,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-73"
+    },
+    {
+      "id": 74,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-74"
+    },
+    {
+      "id": 75,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-75"
+    },
+    {
+      "id": 76,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-76"
+    },
+    {
+      "id": 77,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-77"
+    },
+    {
+      "id": 78,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-78"
+    },
+    {
+      "id": 79,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-79"
+    },
+    {
+      "id": 80,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-80"
+    },
+    {
+      "id": 81,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-81"
+    },
+    {
+      "id": 82,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-82"
+    },
+    {
+      "id": 83,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-83"
+    },
+    {
+      "id": 84,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-84"
+    },
+    {
+      "id": 85,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-85"
+    },
+    {
+      "id": 86,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-86"
+    },
+    {
+      "id": 87,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-87"
+    },
+    {
+      "id": 88,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-88"
+    },
+    {
+      "id": 89,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-89"
+    },
+    {
+      "id": 90,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-90"
+    },
+    {
+      "id": 91,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-91"
+    },
+    {
+      "id": 92,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-92"
+    },
+    {
+      "id": 93,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-93"
+    },
+    {
+      "id": 94,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-94"
+    },
+    {
+      "id": 95,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-95"
+    },
+    {
+      "id": 96,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-96"
+    },
+    {
+      "id": 97,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-97"
+    },
+    {
+      "id": 98,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-98"
+    },
+    {
+      "id": 99,
+      "color": "red",
+      "checkpoint": "rbac-token-geometry-phase-change",
+      "phase": "embedding",
+      "label": "red-balloon-99"
+    }
+  ]
+}

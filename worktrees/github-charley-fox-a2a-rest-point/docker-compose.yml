@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: Dynamical-Agent-Runner/Dynamical-Agent-Runner
+      dockerfile: Dockerfile
+    container_name: agent-runner-dev
+    ports:
+      - "5000:5000"
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      PORT: 5000
+    volumes:
+      - ./Dynamical-Agent-Runner/Dynamical-Agent-Runner/client:/app/client:delegated
+      - ./Dynamical-Agent-Runner/Dynamical-Agent-Runner/server:/app/server:delegated
+      - ./Dynamical-Agent-Runner/Dynamical-Agent-Runner/shared:/app/shared:delegated
+      - /app/node_modules
+      - /app/dist
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+
+networks:
+  app-network:
+    driver: bridge

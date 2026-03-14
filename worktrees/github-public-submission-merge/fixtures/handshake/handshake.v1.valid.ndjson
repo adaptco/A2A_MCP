@@ -1,0 +1,3 @@
+{"entropy_threshold":0.21,"event_id":"evt-1","han_eigenvalue":0.231396,"kind":"handshake.opened","lineage_witness":{"format":"ndjson","line_number":1,"stream_id":"handshake.hs-1"},"session_id":"hs-1"}
+{"entropy_threshold":0.21,"event_id":"evt-2","han_eigenvalue":0.166061,"kind":"handshake.bound","lineage_witness":{"format":"ndjson","line_number":2,"stream_id":"handshake.hs-1"},"prev":"evt-1","session_id":"hs-1"}
+{"entropy_threshold":0.21,"event_id":"evt-3","han_eigenvalue":0.605292,"kind":"handshake.fossilized","lineage_witness":{"format":"ndjson","line_number":3,"stream_id":"handshake.hs-1"},"prev":"evt-2","session_id":"hs-1"}

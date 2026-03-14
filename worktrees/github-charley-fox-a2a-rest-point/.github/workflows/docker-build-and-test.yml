@@ -1,0 +1,143 @@
+name: Docker Build and Test
+
+on:
+  push:
+    branches: [main, develop, deployment]
+  pull_request:
+    branches: [main, deployment]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Build and test stage
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./Dynamical-Agent-Runner/Dynamical-Agent-Runner
+          push: false
+          load: true
+          tags: agent-runner:test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Run container tests
+        run: |
+          docker run --rm agent-runner:test npm run check
+
+      - name: Run health check on container
+        run: |
+          docker run -d --name workflow-smoke agent-runner:test
+          sleep 5
+          docker exec workflow-smoke curl -f http://localhost:5000/ || docker logs workflow-smoke
+          docker stop workflow-smoke
+          docker rm workflow-smoke
+
+  dot-runtime-rest-point:
+    name: Dot Runtime Rest Point
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install workflow validator dependency
+        run: python -m pip install pyyaml
+
+      - name: Validate Charley Fox runtime handoff
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          python scripts/validate_runtime_contract.py \
+            --workflow .github/workflows/deploy-pipeline.yml \
+            --workflow .github/workflows/docker-build-and-test.yml
+
+      - name: Validate workflow files
+        run: python scripts/validate_workflows.py
+
+      - name: Upload runtime contract
+        uses: actions/upload-artifact@v4
+        with:
+          name: charley-fox-runtime-contract
+          path: |
+            Agents.md
+            runtime/scenarios/charley_fox_gemini_dot.runtime.v1.json
+            runtime/wasm/charley_fox_gemini_dot_wasd_control_module.ts
+
+  push-to-registry:
+    needs: dot-runtime-rest-point
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/deployment')
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./Dynamical-Agent-Runner/Dynamical-Agent-Runner
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # Optional: Scan image for vulnerabilities
+  security-scan:
+    runs-on: ubuntu-latest
+    needs: dot-runtime-rest-point
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/deployment')
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Trivy vulnerability scan
+        uses: aquasecurity/trivy-action@0.33.1
+        with:
+          scan-type: 'fs'
+          scan-ref: './Dynamical-Agent-Runner/Dynamical-Agent-Runner'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+
+      - name: Upload Trivy results to GitHub Security
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: 'trivy-results.sarif'

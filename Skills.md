@@ -106,3 +106,21 @@ python skills/mcp-entropy-template-router/scripts/route_actions.py \
   --risk-profile medium \
   --changed-path-count 8
 ```
+
+### RecursiveActionHandler
+
+**Version:** 1.0  
+**Skill folder:** `skills/recursive-action-handler`  
+**Purpose:** Implement multi-level task decomposition as discrete, traceable actions within the Digital Weave FSM.
+
+#### Runtime outputs
+- `ChildTaskArtifacts` linked via `correlation_id`
+- `StateTransition` metadata for parent-child synchronization
+- `RecursionTelemetry` for depth-bounded execution control
+
+#### Execution command
+```bash
+python scripts/trigger_recursive_action.py \
+  --parent-task-id <id> \
+  --sub-tasks <list>
+```

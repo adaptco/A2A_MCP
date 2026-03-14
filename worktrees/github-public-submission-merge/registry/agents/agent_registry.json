@@ -1,0 +1,84 @@
+{
+  "version": "v1",
+  "agents": [
+    {
+      "agent_id": "agent:qube_core.simulation",
+      "project_id": "axq:project:qube_core",
+      "vertical_id": "axq:vertical:simulation",
+      "index_manifest_ref": "manifests/rag/qube_core/simulation/CURRENT.json",
+      "routing_policy_ref": "registry/routing/routing_policy.v1.json",
+      "expert_catalog_ref": "registry/experts/expert_catalog.v1.json",
+      "allowed_experts": [
+        "expert:retrieval.rag",
+        "expert:integration.runtime",
+        "expert:governance.pm"
+      ],
+      "prompt_contract": {
+        "system_preamble_ref": "docs/prompt/system_preamble.md",
+        "context_policy": {
+          "max_chunks": 12,
+          "max_tokens": 6000
+        },
+        "output_contract": "capsule:run:moa.run.v1"
+      }
+    },
+    {
+      "agent_id": "agent:orchestrator.core",
+      "project_id": "axq:project:core_orchestrator",
+      "implementation_plan_ref": "registry/agents/project_implementation_plan.md",
+      "allowed_experts": [
+        "expert:governance.pm",
+        "expert:integration.runtime"
+      ],
+      "prompt_contract": {
+        "system_preamble_ref": "docs/prompt/system_preamble.md",
+        "output_contract": "capsule:run:moa.orchestration.v1"
+      }
+    },
+    {
+      "agent_id": "agent:manager.moa",
+      "project_id": "axq:project:moa_manager",
+      "framework": "MoA",
+      "allowed_experts": [
+        "expert:retrieval.rag",
+        "expert:governance.pm"
+      ],
+      "prompt_contract": {
+        "system_preamble_ref": "docs/prompt/system_preamble.md",
+        "output_contract": "capsule:run:moa.deployment.v1"
+      }
+    },
+    {
+      "agent_id": "agent:coding.sentry",
+      "project_id": "axq:project:coding_sentry",
+      "capabilities": [
+        "api_discovery",
+        "context_shaping"
+      ],
+      "allowed_experts": [
+        "expert:spatial.3d",
+        "expert:integration.runtime"
+      ],
+      "prompt_contract": {
+        "system_preamble_ref": "docs/prompt/system_preamble.md",
+        "output_contract": "capsule:run:coding.sentry.v1"
+      }
+    },
+    {
+      "agent_id": "agent:chat.nlp",
+      "project_id": "axq:project:chat_terminal",
+      "capabilities": [
+        "vector_harness",
+        "geodesic_token_flow"
+      ],
+      "allowed_experts": [
+        "expert:data.rag_lora",
+        "expert:security.rbac"
+      ],
+      "prompt_contract": {
+        "system_preamble_ref": "docs/prompt/system_preamble.md",
+        "output_contract": "capsule:run:chat.terminal.v1"
+      }
+    }
+  ]
+}

@@ -1,0 +1,80 @@
+# Environment
+.env
+.env.*
+!.env.example
+!.env.production.example
+
+# Node / Python
+node_modules/
+**/node_modules/
+dist/
+**/dist/
+build/
+**/__pycache__/
+*.py[cod]
+.venv/
+venv/
+.local/
+
+# Generated output and temp state
+output/
+tmp/
+shared/tmp/
+Dynamical-Agent-Runner/Dynamical-Agent-Runner/output/
+
+# Logs
+*.log
+
+# Editor / OS noise
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Large artifact dumps kept outside version control
+AGENCY/
+Dynamical-Agent-Runner/
+tests/
+MEDIA/
+files/
+/*.zip
+/*.png
+/*.jpg
+/*.jpeg
+/*.gif
+/*.pdf
+/*.mp3
+/*.mp4
+/*.glb
+/*.stl
+/*.svg
+/*.html
+/*.jsx
+/*.ts
+/*.js
+/*.py
+/*.json
+/*.md
+!/README.md
+!/AGENTS.md
+!/Agents.md
+!/package.json
+!/.env.example
+!/.env.production.example
+
+# Embedded repo internals
+Dynamical-Agent-Runner/Dynamical-Agent-Runner/.git/
+
+# Keep the shared UI lean by versioning only the runnable app surface
+shared/*
+!shared/.gitignore
+!shared/package.json
+!shared/package-lock.json
+!shared/index.html
+!shared/index.css
+!shared/tsconfig.json
+!shared/vite.config.ts
+!shared/src/
+shared/src/*
+!shared/src/App.tsx
+!shared/src/main.tsx

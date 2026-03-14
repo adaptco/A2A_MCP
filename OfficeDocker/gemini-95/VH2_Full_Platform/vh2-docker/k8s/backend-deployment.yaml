@@ -1,0 +1,212 @@
+##############################################################################
+# VH2 BACKEND SOCKET — Kubernetes Deployment
+# Init container: runs 42 fail-closed unit tests before any pod becomes Ready
+# HPA: 3–10 replicas, target 70% CPU
+##############################################################################
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vh2-backend
+  namespace: vh2-prod
+  labels:
+    app.kubernetes.io/name: vh2-sovereign-validator
+    app.kubernetes.io/component: backend
+    app.kubernetes.io/version: "1.0.0"
+  annotations:
+    deployment.kubernetes.io/revision: "1"
+spec:
+  replicas: 3
+  revisionHistoryLimit: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0          # zero-downtime rollout
+  selector:
+    matchLabels:
+      app: vh2-backend
+  template:
+    metadata:
+      labels:
+        app: vh2-backend
+        app.kubernetes.io/component: backend
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "3001"
+        prometheus.io/path: "/health"
+    spec:
+      # ── SECURITY ──────────────────────────────────────────────────────
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        runAsGroup: 1001
+        fsGroup: 1001
+        seccompProfile:
+          type: RuntimeDefault
+
+      automountServiceAccountToken: false
+
+      # ── TOPOLOGY: spread across nodes ─────────────────────────────────
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app: vh2-backend
+                topologyKey: kubernetes.io/hostname
+
+      # ── INIT CONTAINER: fail-closed test gate ─────────────────────────
+      # Blocks pod startup until all 42 server-side tests pass.
+      # If tests fail → pod never becomes Ready → deployment rolls back.
+      initContainers:
+        - name: validator-gate
+          image: vh2-backend:1.0.0
+          imagePullPolicy: IfNotPresent
+          command: ["node", "tests/validator.test.js"]
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            requests: { cpu: "50m",  memory: "64Mi" }
+            limits:   { cpu: "250m", memory: "128Mi" }
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+
+      # ── MAIN CONTAINERS ───────────────────────────────────────────────
+      containers:
+        - name: backend
+          image: vh2-backend:1.0.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3001
+              protocol: TCP
+              name: http
+
+          # Env from ConfigMap (spec constants)
+          envFrom:
+            - configMapRef:
+                name: vh2-spec
+
+          env:
+            - name: NODE_ENV
+              value: production
+            - name: PORT
+              value: "3001"
+            - name: HOST
+              value: "0.0.0.0"
+            - name: ALLOWED_ORIGIN
+              valueFrom:
+                secretKeyRef:
+                  name: vh2-secrets
+                  key: allowed-origin
+                  optional: true
+
+          # ── HEALTH CHECKS ─────────────────────────────────────────────
+          startupProbe:
+            httpGet: { path: /health, port: 3001 }
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            failureThreshold: 12    # 60s startup budget
+
+          readinessProbe:
+            httpGet: { path: /health, port: 3001 }
+            initialDelaySeconds: 3
+            periodSeconds: 10
+            failureThreshold: 3
+            successThreshold: 1
+
+          livenessProbe:
+            httpGet: { path: /health, port: 3001 }
+            initialDelaySeconds: 15
+            periodSeconds: 20
+            failureThreshold: 3
+
+          # ── RESOURCES ─────────────────────────────────────────────────
+          resources:
+            requests: { cpu: "100m", memory: "128Mi" }
+            limits:   { cpu: "500m", memory: "256Mi" }
+
+          # ── SECURITY ──────────────────────────────────────────────────
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+
+      volumes:
+        - name: tmp
+          emptyDir: {}
+
+      terminationGracePeriodSeconds: 30
+      restartPolicy: Always
+---
+##############################################################################
+# SERVICE — ClusterIP (only nginx can reach it via NetworkPolicy)
+##############################################################################
+apiVersion: v1
+kind: Service
+metadata:
+  name: vh2-backend-svc
+  namespace: vh2-prod
+  labels:
+    app.kubernetes.io/component: backend
+spec:
+  type: ClusterIP
+  selector:
+    app: vh2-backend
+  ports:
+    - name: http
+      port: 3001
+      targetPort: 3001
+      protocol: TCP
+---
+##############################################################################
+# HPA — autoscale 3–10 replicas at 70% CPU
+##############################################################################
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: vh2-backend-hpa
+  namespace: vh2-prod
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: vh2-backend
+  minReplicas: 3
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Pods
+          value: 1
+          periodSeconds: 60
+    scaleUp:
+      stabilizationWindowSeconds: 0
+      policies:
+        - type: Pods
+          value: 2
+          periodSeconds: 30

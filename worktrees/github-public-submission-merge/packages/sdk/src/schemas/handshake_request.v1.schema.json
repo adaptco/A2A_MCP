@@ -1,0 +1,45 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "HandshakeRequestV1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "request_id", "requested_at", "requester", "target", "intent"],
+  "properties": {
+    "schema_version": { "const": "handshake_request.v1" },
+    "request_id": { "type": "string", "minLength": 1 },
+    "requested_at": { "type": "integer" },
+    "requester": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["agent_id", "protocol_version", "nonce"],
+      "properties": {
+        "agent_id": { "type": "string", "minLength": 1 },
+        "protocol_version": { "type": "string", "minLength": 1 },
+        "nonce": { "type": "string", "minLength": 1 }
+      }
+    },
+    "target": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["agent_id", "endpoint"],
+      "properties": {
+        "agent_id": { "type": "string", "minLength": 1 },
+        "endpoint": { "type": "string", "minLength": 1 }
+      }
+    },
+    "intent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["session_id", "scopes", "expires_at"],
+      "properties": {
+        "session_id": { "type": "string", "minLength": 1 },
+        "scopes": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "minItems": 1
+        },
+        "expires_at": { "type": "number" }
+      }
+    }
+  }
+}

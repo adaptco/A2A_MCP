@@ -1,0 +1,47 @@
+{
+  "capsule_id": "sol.f1.previz.packnet_rehearsal.v1",
+  "scene": "packnet_rehearsal",
+  "fps": 12,
+  "frames": [
+    {
+      "frame": 0,
+      "cars": {
+        "ghost_car": {"x": 0, "y": 0, "yaw": 0}
+      },
+      "camera": {"pan": 0, "tilt": 28, "zoom": 1.0}
+    },
+    {
+      "frame": 6,
+      "cars": {
+        "ghost_car": {"x": 1.5, "y": 0.5, "yaw": 4}
+      },
+      "camera": {"pan": 2, "tilt": 27.5, "zoom": 1.01}
+    },
+    {
+      "frame": 12,
+      "cars": {
+        "ghost_car": {"x": 3.5, "y": 1.0, "yaw": 7}
+      },
+      "camera": {"pan": 4.5, "tilt": 26.5, "zoom": 1.03}
+    },
+    {
+      "frame": 18,
+      "cars": {
+        "ghost_car": {"x": 6.0, "y": 1.4, "yaw": 11}
+      },
+      "camera": {"pan": 7.5, "tilt": 25.0, "zoom": 1.05}
+    },
+    {
+      "frame": 24,
+      "cars": {
+        "ghost_car": {"x": 9.0, "y": 2.0, "yaw": 14}
+      },
+      "camera": {"pan": 11.0, "tilt": 23.5, "zoom": 1.08}
+    }
+  ],
+  "style_capsules": [
+    "material.abs.v1",
+    "camera.tiltshift.v1",
+    "simulation.overlay.packnet"
+  ]
+}

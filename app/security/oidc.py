@@ -43,11 +43,16 @@ def validate_ingestion_claims(
     """
     Validates ingestion claims against the verified OIDC token and quotas.
     """
-    # 1. Claim Mismatch (Identity Verification)
-    # Using 'repository' as client_id and 'actor' as avatar_id for GitHub OIDC
-    if claims.get("repository") != client_id or claims.get("actor") != avatar_id:
-        return IngestionValidationResult(False, RejectionReason.CLAIM_MISMATCH)
+    config = load_oidc_config()
 
+    # In local/dev mode, allow empty claims and only enforce structural checks.
+    if config.enforce or claims:
+        # 1. Claim Mismatch (Identity Verification)
+        # Using 'repository' as client_id and 'actor' as avatar_id for GitHub OIDC
+        if claims.get("repository") != client_id or claims.get("actor") != avatar_id:
+            return IngestionValidationResult(False, RejectionReason.CLAIM_MISMATCH)
+
+    # 1. Claim Mismatch (Identity Verification)
     # 2. Invalid Vector (Structural Integrity)
     if not token_vector or any(not isinstance(v, (int, float)) for v in token_vector):
         return IngestionValidationResult(False, RejectionReason.INVALID_VECTOR)

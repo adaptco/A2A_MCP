@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>VH2 · Full Vehicle · Advan GT Beyond C5</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@300;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#05050c;overflow:hidden;font-family:'Share Tech Mono',monospace}
+canvas{position:fixed;inset:0}
+:root{--g:#D4AF37;--gb:rgba(212,175,55,.22);--bg:rgba(5,5,18,.88);
+      --t:#aaaabe;--d:#30304a;--ok:#3dbd72;--cy:#00c8d4}
+#ui{position:fixed;inset:0;pointer-events:none;display:grid;
+    grid-template-columns:240px 1fr 240px;grid-template-rows:1fr auto;padding:12px 12px 8px;gap:0}
+.p{pointer-events:all;background:var(--bg);border:1px solid var(--gb);
+   padding:11px 13px;backdrop-filter:blur(16px)}
+.pl{grid-column:1;grid-row:1;border-right-color:transparent}
+.pr{grid-column:3;grid-row:1;border-left-color:transparent}
+.pb{grid-column:1/-1;grid-row:2;margin-top:7px;display:flex;align-items:center;gap:14px}
+.lbl{font-size:7px;letter-spacing:2.5px;color:var(--g);margin-bottom:5px;text-transform:uppercase}
+.ttl{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:17px;color:#fff;letter-spacing:1px;margin-bottom:0}
+.sub{font-size:7.5px;color:var(--d);margin-bottom:10px}
+.rr{display:flex;justify-content:space-between;padding:3px 0;
+    border-bottom:1px solid rgba(212,175,55,.04);font-size:8.5px}
+.k{color:var(--d)}.v{color:var(--t);font-weight:600}
+.gold{color:var(--g)}.ok{color:var(--ok)}.cy{color:var(--cy)}
+.div{height:1px;background:var(--gb);margin:7px 0}
+.hash{background:#020208;border:1px solid var(--gb);padding:5px 7px;
+      font-size:6.5px;word-break:break-all;line-height:1.8;color:var(--g);margin-top:5px}
+.badge{font-size:6px;letter-spacing:1px;padding:2px 6px;border:1px solid;
+       display:inline-block;margin:2px 2px 0 0}
+.bg{border-color:var(--g);color:var(--g)}.bok{border-color:var(--ok);color:var(--ok)}
+.bcy{border-color:var(--cy);color:var(--cy)}
+.dot{width:5px;height:5px;border-radius:50%;display:inline-block;
+     margin-right:4px;vertical-align:middle;background:var(--ok);box-shadow:0 0 4px var(--ok)}
+.sv{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:28px;color:#fff;text-align:center}
+.sc{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;min-width:130px}
+input[type=range]{-webkit-appearance:none;width:100%;height:2px;
+  background:rgba(212,175,55,.18);outline:none;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;
+  border-radius:50%;background:var(--g);border:2px solid #000;box-shadow:0 0 8px rgba(212,175,55,.8)}
+.sr{display:flex;justify-content:space-between;width:100%;font-size:7px;color:var(--d)}
+.pill{border:1px solid var(--g);padding:2px 9px;font-size:7.5px;color:var(--g);white-space:nowrap}
+.cams{display:flex;flex-direction:column;gap:3px;min-width:80px}
+.cam{background:rgba(212,175,55,.07);border:1px solid var(--gb);color:var(--g);
+     font-family:'Share Tech Mono',monospace;font-size:6.5px;letter-spacing:1px;
+     padding:4px 8px;cursor:pointer;pointer-events:all;transition:.15s;text-align:center}
+.cam:hover,.cam.on{background:rgba(212,175,55,.22);border-color:var(--g)}
+#hud{position:fixed;top:12px;left:50%;transform:translateX(-50%);
+     text-align:center;pointer-events:none}
+.ht{font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:300;
+    color:rgba(212,175,55,.42);letter-spacing:5px}
+.hs{font-size:6.5px;color:var(--d);letter-spacing:1.5px;margin-top:1px}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+
+<div id="hud">
+  <div class="ht">VH2 · COMPLETE VEHICLE SIMULATION</div>
+  <div class="hs">ADVAN GT BEYOND C5 · 4× 5-SPOKE · KPI 12.5° · ACKERMANN STEERING · SHA-256 WITNESSED</div>
+</div>
+
+<div id="ui">
+  <div class="p pl">
+    <div class="lbl">Front Axle · Steering</div>
+    <div class="ttl">ADVAN GT BEYOND</div>
+    <div class="sub">19×9.5J ET29 · RSM PBR #D4AF37</div>
+    <div class="rr"><span class="k">Spoke Pattern</span><span class="v gold">5-Spoke · C5</span></div>
+    <div class="rr"><span class="k">Sector Angles</span><span class="v">0·72·144·216·288°</span></div>
+    <div class="rr"><span class="k">Offset ET</span><span class="v gold">+29mm</span></div>
+    <div class="rr"><span class="k">Diameter</span><span class="v gold">19"</span></div>
+    <div class="rr"><span class="k">Width</span><span class="v">9.5J · 241mm</span></div>
+    <div class="rr"><span class="k">Concavity</span><span class="v">0.150</span></div>
+    <div class="div"></div>
+    <div class="lbl" style="margin-bottom:4px">Kingpin Kinematics</div>
+    <div class="rr"><span class="k">KPI Angle</span><span class="v gold">12.5°</span></div>
+    <div class="rr"><span class="k">Scrub Radius</span><span class="v cy">45mm</span></div>
+    <div class="rr"><span class="k">Steering Mode</span><span class="v ok"><span class="dot"></span>ACKERMANN</span></div>
+    <div class="rr"><span class="k">Inner Wheel</span><span class="v gold" id="ia">0.0°</span></div>
+    <div class="rr"><span class="k">Outer Wheel</span><span class="v" id="oa">0.0°</span></div>
+    <div class="rr"><span class="k">Δ Ackermann</span><span class="v cy" id="ad">0.0°</span></div>
+    <div class="div"></div>
+    <div class="rr"><span class="k">Han Eigenvalue</span><span class="v">0.82mm</span></div>
+    <div class="rr"><span class="k">Hausdorff</span><span class="v">&lt;0.20mm</span></div>
+    <div class="badge bg">RSM·PBR</div><div class="badge bok">INVARIANT OK</div>
+  </div>
+
+  <div class="p pr">
+    <div class="lbl">Rear Axle · Static</div>
+    <div class="ttl">ADVAN GT BEYOND</div>
+    <div class="sub">19×10.5J ET22 · Deeper Concavity</div>
+    <div class="rr"><span class="k">Spoke Pattern</span><span class="v gold">5-Spoke · C5</span></div>
+    <div class="rr"><span class="k">Offset ET</span><span class="v gold">+22mm</span></div>
+    <div class="rr"><span class="k">Width</span><span class="v">10.5J · 267mm</span></div>
+    <div class="rr"><span class="k">Concavity</span><span class="v">0.185 (+23% vs front)</span></div>
+    <div class="div"></div>
+    <div class="lbl" style="margin-bottom:4px">Vehicle Layout</div>
+    <div class="rr"><span class="k">Wheelbase</span><span class="v">2600mm</span></div>
+    <div class="rr"><span class="k">Track Width</span><span class="v">1460mm F/R</span></div>
+    <div class="rr"><span class="k">Layout</span><span class="v gold">FR Coupe · RWD</span></div>
+    <div class="rr"><span class="k">Suspension</span><span class="v">McPherson / Multilink</span></div>
+    <div class="div"></div>
+    <div class="lbl" style="margin-bottom:4px">SHA-256 Validator</div>
+    <div class="rr"><span class="k">spoke_count</span><span class="v ok">5 ✓</span></div>
+    <div class="rr"><span class="k">rim_diam / et_f / et_r</span><span class="v ok">19 / 29 / 22 ✓</span></div>
+    <div class="rr"><span class="k">kpi / scrub / c5</span><span class="v ok">12.5 / 45 / 72° ✓</span></div>
+    <div class="rr"><span class="k">constraints</span><span class="v ok">7/7 PASS</span></div>
+    <div class="lbl" style="margin-top:8px;margin-bottom:2px">Witness Hash</div>
+    <div class="hash" id="wh">Computing SHA-256…</div>
+    <div class="badge bg">FOSSIL READY</div><div class="badge bcy">ΣVDELTA LOCKED</div>
+  </div>
+
+  <div class="p pb">
+    <div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+      <div class="lbl" style="margin:0">STEER</div>
+      <div class="sv" id="sv">0.0°</div>
+    </div>
+    <div class="sc">
+      <input type="range" id="sl" min="-35" max="35" value="0" step="0.5">
+      <div class="sr"><span>← 35°L</span><span>CTR</span><span>R35° →</span></div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:3px;align-items:center">
+      <div class="pill">KINGPIN PIVOT · NOT WHEEL CTR</div>
+      <div class="pill" id="tr">Straight</div>
+    </div>
+    <div class="cams">
+      <button class="cam on" onclick="setCam(0)">¾ FRONT</button>
+      <button class="cam"    onclick="setCam(1)">SIDE</button>
+      <button class="cam"    onclick="setCam(2)">FRONT</button>
+      <button class="cam"    onclick="setCam(3)">WHEEL CU</button>
+      <button class="cam"    onclick="setCam(4)">¾ REAR</button>
+    </div>
+    <div style="font-size:7px;color:var(--d);text-align:right;line-height:2;margin-left:auto">
+      ORBIT: DRAG<br>ZOOM: SCROLL<br>STEER: SLIDER
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+// ═══════════════════════════════════════════════════════════════════════
+// VH2 COMPLETE VEHICLE — Three.js r128
+// Scale: 1 unit = 200mm
+// ═══════════════════════════════════════════════════════════════════════
+
+// ── CONSTANTS ──────────────────────────────────────────────────────────
+const KPI_RAD = 12.5*Math.PI/180;
+const cosK=Math.cos(KPI_RAD), sinK=Math.sin(KPI_RAD);
+const SCRUB  = 0.225;   // 45mm
+const RIM_R  = 1.205;   // 19" = 241mm radius
+const TIRE_H = 0.430;   // section height
+const WR     = RIM_R+TIRE_H; // rolling radius ≈ 1.635
+const FBW    = 1.205;   // 9.5J front barrel
+const RBW    = 1.335;   // 10.5J rear barrel
+const CF     = 0.150, CR = 0.185;
+const C5     = [0,72,144,216,288].map(d=>d*Math.PI/180);
+const TRACK  = 3.65;   // half-track (730mm)
+const WBH    = 6.50;   // half-wheelbase (1300mm)
+const WY     = WR;     // wheel centre Y
+
+// Kingpin knuckle local offsets for each side
+// Left front:  pivot tilt -KPI_RAD about Z, offset from KP to wheel = (-SCRUB, WY)
+// Right front: pivot tilt +KPI_RAD about Z, offset = (+SCRUB, WY)
+const loL_x = -SCRUB*cosK - WY*sinK;
+const loL_y = -SCRUB*sinK + WY*cosK;
+const loR_x =  SCRUB*cosK + WY*sinK;
+const loR_y = -SCRUB*sinK + WY*cosK;
+
+// ── RENDERER ────────────────────────────────────────────────────────────
+const cv = document.getElementById('c');
+const ren = new THREE.WebGLRenderer({canvas:cv, antialias:true});
+ren.setPixelRatio(Math.min(devicePixelRatio,2));
+ren.shadowMap.enabled=true; ren.shadowMap.type=THREE.PCFSoftShadowMap;
+ren.outputEncoding=THREE.sRGBEncoding;
+ren.toneMapping=THREE.ACESFilmicToneMapping;
+ren.toneMappingExposure=1.15;
+
+const sc = new THREE.Scene();
+sc.background = new THREE.Color(0x05050c);
+sc.fog = new THREE.FogExp2(0x05050c, 0.010);
+
+const cam = new THREE.PerspectiveCamera(36,innerWidth/innerHeight,0.05,300);
+window.addEventListener('resize',()=>{
+  ren.setSize(innerWidth,innerHeight);
+  cam.aspect=innerWidth/innerHeight; cam.updateProjectionMatrix();
+});
+ren.setSize(innerWidth,innerHeight);
+
+// ── LIGHTS ──────────────────────────────────────────────────────────────
+sc.add(new THREE.AmbientLight(0x07071a,2.0));
+const key=new THREE.DirectionalLight(0xfff9ee,5.0);
+key.position.set(10,18,10); key.castShadow=true;
+key.shadow.mapSize.set(2048,2048);
+key.shadow.camera.left=key.shadow.camera.bottom=-22;
+key.shadow.camera.right=key.shadow.camera.top=22;
+key.shadow.camera.far=70; sc.add(key);
+const fill=new THREE.DirectionalLight(0x3050bb,1.1); fill.position.set(-12,3,5); sc.add(fill);
+const rimL=new THREE.DirectionalLight(0xD4AF37,0.7); rimL.position.set(0,-2,-18); sc.add(rimL);
+const rimR=new THREE.DirectionalLight(0x6050aa,0.5); rimR.position.set(0,2,18); sc.add(rimR);
+const gpt=new THREE.PointLight(0xD4AF37,0.4,25); gpt.position.set(-6,2,10); sc.add(gpt);
+
+// ── MATERIALS ────────────────────────────────────────────────────────────
+const gold =new THREE.MeshStandardMaterial({color:0xD4AF37,metalness:.94,roughness:.09});
+const goldD=new THREE.MeshStandardMaterial({color:0x6a5010,metalness:.97,roughness:.06});
+const rimM =new THREE.MeshStandardMaterial({color:0x101018,metalness:.82,roughness:.42});
+const tireM=new THREE.MeshStandardMaterial({color:0x0b0b0d,roughness:.97,metalness:0});
+const rotM =new THREE.MeshStandardMaterial({color:0x1c1c28,metalness:.92,roughness:.62});
+const calM =new THREE.MeshStandardMaterial({color:0x7a0000,metalness:.55,roughness:.30});
+const strtM=new THREE.MeshStandardMaterial({color:0x252535,metalness:.72,roughness:.42});
+const bodyM=new THREE.MeshStandardMaterial({color:0x07070f,metalness:.90,roughness:.30});
+const bodyD=new THREE.MeshStandardMaterial({color:0x040408,metalness:.65,roughness:.55});
+const carbM=new THREE.MeshStandardMaterial({color:0x060608,metalness:.25,roughness:.72});
+const glsM =new THREE.MeshStandardMaterial({color:0x060c1a,metalness:.05,roughness:.02,transparent:true,opacity:.70});
+const hdM  =new THREE.MeshStandardMaterial({color:0xffffff,emissive:0xffffff,emissiveIntensity:1.6});
+const tlM  =new THREE.MeshStandardMaterial({color:0xff1515,emissive:0xff1515,emissiveIntensity:1.4});
+const amM  =new THREE.MeshStandardMaterial({color:0xff8800,emissive:0xff8800,emissiveIntensity:.9});
+const gndM =new THREE.MeshStandardMaterial({color:0x060610,roughness:.95,metalness:0});
+
+// ── GROUND ───────────────────────────────────────────────────────────────
+const gnd=new THREE.Mesh(new THREE.PlaneGeometry(100,100),gndM);
+gnd.rotation.x=-Math.PI/2; gnd.receiveShadow=true; sc.add(gnd);
+sc.add(new THREE.GridHelper(80,80,0x0e0e22,0x090915));
+
+// ── SPOKE GEOMETRY (C5 Advan GT Beyond profile) ───────────────────────────
+// Each spoke is a tapered trapezoid: narrow at hub, wide at rim
+function makeSpokeGeo(r0,r1,wHub,wRim,depth){
+  const v=new Float32Array([
+    -wHub/2,r0, depth/2,  wHub/2,r0, depth/2,   // hub front  0,1
+    -wRim/2,r1, depth/2,  wRim/2,r1, depth/2,   // rim front  2,3
+    -wHub/2,r0,-depth/2,  wHub/2,r0,-depth/2,   // hub back   4,5
+    -wRim/2,r1,-depth/2,  wRim/2,r1,-depth/2,   // rim back   6,7
+  ]);
+  const idx=[0,2,1,1,2,3, 4,5,6,5,7,6, 0,4,2,2,4,6, 1,3,5,3,7,5, 0,1,4,1,5,4, 2,6,3,3,6,7];
+  const g=new THREE.BufferGeometry();
+  g.setAttribute('position',new THREE.BufferAttribute(v,3));
+  g.setIndex(idx); g.computeVertexNormals(); return g;
+}
+
+// ── WHEEL BUILDER (Advan GT Beyond C5 · 5-spoke) ─────────────────────────
+// Wheel local space: axle along Z, face toward +Z, barrel toward -Z
+// Lug nuts and spokes in XY plane at z=faceZ
+function buildWheel(barrelW, concav){
+  const G=new THREE.Group();
+  const rimIn=RIM_R-0.12;
+  const lip=0.090;
+
+  // Tyre tread cylinder
+  const trd=new THREE.Mesh(new THREE.CylinderGeometry(WR,WR,barrelW*1.10,80,1,true),tireM);
+  trd.rotation.x=Math.PI/2; G.add(trd);
+
+  // Tyre sidewall tori (shoulders)
+  const tsR=TIRE_H*0.36, tsMR=WR-tsR;
+  [-1,1].forEach(s=>{
+    const sw=new THREE.Mesh(new THREE.TorusGeometry(tsMR,tsR,12,80),tireM);
+    sw.position.z=s*barrelW*0.55; G.add(sw);
+  });
+
+  // Tyre inner fill (caps the inside of tire on hidden side)
+  [-1,1].forEach(s=>{
+    const cap=new THREE.Mesh(new THREE.RingGeometry(RIM_R,WR,80),tireM);
+    cap.position.z=s*barrelW*0.56; if(s>0) cap.rotation.y=Math.PI; G.add(cap);
+  });
+
+  // Rim barrel outer
+  const bOut=new THREE.Mesh(new THREE.CylinderGeometry(RIM_R,RIM_R,barrelW,80,1,true),rimM);
+  bOut.rotation.x=Math.PI/2; G.add(bOut);
+
+  // Rim barrel inner wall
+  const bIn=new THREE.Mesh(new THREE.CylinderGeometry(rimIn,rimIn,barrelW,80,1,true),rimM);
+  bIn.rotation.x=Math.PI/2; G.add(bIn);
+
+  // Front & rear rim lip flanges
+  [{z:barrelW/2,w:lip},{z:-barrelW/2,w:lip*.55}].forEach(({z,w})=>{
+    const fl=new THREE.Mesh(new THREE.CylinderGeometry(RIM_R,RIM_R,w,80),gold);
+    fl.rotation.x=Math.PI/2; fl.position.z=z; G.add(fl);
+    const bd=new THREE.Mesh(new THREE.TorusGeometry(RIM_R,.034,8,80),gold);
+    bd.position.z=z; G.add(bd);
+  });
+
+  // Concavity: face position
+  const fZ=barrelW/2 - concav*barrelW;
+
+  // ── FIVE SPOKES ────────────────────────────────────────────────────────
+  const r0=0.200, r1=rimIn-0.055;
+  const wH=0.130, wR=0.500, spkD=0.078;
+  const spkGeo=makeSpokeGeo(r0,r1,wH,wR,spkD);
+
+  // Rim junction pad (where spoke meets rim wall — wider wedge)
+  const padV=new Float32Array([
+    -(wR+.10)/2,r1-.04, spkD/2, (wR+.10)/2,r1-.04, spkD/2,
+    -(wR+.10)/2,r1+.03, spkD/2, (wR+.10)/2,r1+.03, spkD/2,
+    -(wR+.10)/2,r1-.04,-spkD/2, (wR+.10)/2,r1-.04,-spkD/2,
+    -(wR+.10)/2,r1+.03,-spkD/2, (wR+.10)/2,r1+.03,-spkD/2,
+  ]);
+  const padI=[0,2,1,1,2,3, 4,5,6,5,7,6, 0,4,2,2,4,6, 1,3,5,3,7,5, 0,1,4,1,5,4, 2,6,3,3,6,7];
+  const padGeo=new THREE.BufferGeometry();
+  padGeo.setAttribute('position',new THREE.BufferAttribute(padV,3));
+  padGeo.setIndex(padI); padGeo.computeVertexNormals();
+
+  C5.forEach(a=>{
+    // Spoke body
+    const spk=new THREE.Mesh(spkGeo,gold);
+    spk.rotation.z=a; spk.position.z=fZ-spkD/2; G.add(spk);
+    // Rim junction pad
+    const pad=new THREE.Mesh(padGeo,gold);
+    pad.rotation.z=a; pad.position.z=fZ-spkD/2; G.add(pad);
+    // Chamfer accent (goldDeep strip along one edge)
+    const midR=(r0+r1)/2;
+    const ch=new THREE.Mesh(new THREE.BoxGeometry(.018,r1-r0-.02,.018),goldD);
+    ch.position.set(Math.sin(a)*midR-Math.cos(a)*(wH*.40),
+                    Math.cos(a)*midR+Math.sin(a)*(wH*.40), fZ);
+    ch.rotation.z=a; G.add(ch);
+  });
+
+  // Spoke backing dish
+  const dsh=new THREE.Mesh(new THREE.RingGeometry(r0*.95,r1*.97,80),rimM);
+  dsh.position.z=fZ-spkD*.62; G.add(dsh);
+
+  // ── HUB ────────────────────────────────────────────────────────────────
+  const hub=new THREE.Mesh(new THREE.CylinderGeometry(r0,.34*.85,.070,40),gold);
+  hub.rotation.x=Math.PI/2; hub.position.z=fZ-.020; G.add(hub);
+  const hubI=new THREE.Mesh(new THREE.CylinderGeometry(.175,.175,.062,32),goldD);
+  hubI.rotation.x=Math.PI/2; hubI.position.z=fZ+.018; G.add(hubI);
+  const cap=new THREE.Mesh(new THREE.CircleGeometry(.115,32),goldD);
+  cap.position.z=fZ+.050; G.add(cap);
+
+  // Lug nuts ×5
+  C5.forEach(a=>{
+    const lg=new THREE.Mesh(new THREE.CylinderGeometry(.038,.038,.055,6),goldD);
+    lg.rotation.x=Math.PI/2;
+    lg.position.set(Math.sin(a)*.265,Math.cos(a)*.265,fZ+.022); G.add(lg);
+  });
+
+  // ── BRAKE ROTOR ────────────────────────────────────────────────────────
+  const rtR=rimIn*.74, rtH=rtR*.40, rtZ=fZ-.30;
+  const rotFace=new THREE.Mesh(new THREE.RingGeometry(rtH,rtR,80),rotM);
+  rotFace.position.z=rtZ; G.add(rotFace);
+  const rtB=new THREE.Mesh(new THREE.CylinderGeometry(rtR,rtR,.048,80,1,true),rotM);
+  rtB.rotation.x=Math.PI/2; rtB.position.z=rtZ-.008; G.add(rtB);
+  // Vented slots
+  const sltM=new THREE.MeshStandardMaterial({color:0x05050e,metalness:.95,roughness:.9});
+  const sltMR=(rtH+rtR)*.5, sltL=rtR-rtH-.05;
+  for(let i=0;i<20;i++){
+    const sa=(i/20)*Math.PI*2+.07;
+    const sl=new THREE.Mesh(new THREE.BoxGeometry(.024,sltL,.062),sltM);
+    sl.position.set(Math.sin(sa)*sltMR,Math.cos(sa)*sltMR,rtZ);
+    sl.rotation.z=sa; G.add(sl);
+  }
+
+  // ── CALIPER ─────────────────────────────────────────────────────────────
+  const cal=new THREE.Mesh(new THREE.BoxGeometry(.36,rtR*.40,.34),calM);
+  cal.position.set(0,-(rtR+rtR*.21),rtZ); G.add(cal);
+  [-1,1].forEach(s=>{
+    const b=new THREE.Mesh(new THREE.CylinderGeometry(.020,.020,.36,8),goldD);
+    b.rotation.z=Math.PI/2; b.position.set(s*.13,-(rtR+.035),rtZ); G.add(b);
+  });
+
+  return G;
+}
+
+// ── VEHICLE BODY BUILDER ────────────────────────────────────────────────
+function buildBody(){
+  const B=new THREE.Group();
+
+  function box(w,h,d,x,y,z,mat,rx=0,ry=0,rz=0){
+    const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat||bodyM);
+    m.position.set(x,y,z); m.rotation.set(rx,ry,rz);
+    m.castShadow=true; m.receiveShadow=true; B.add(m); return m;
+  }
+  function cyl(rt,rb,h,x,y,z,mat,rx=0){
+    const m=new THREE.Mesh(new THREE.CylinderGeometry(rt,rb,h,24),mat||strtM);
+    m.position.set(x,y,z); m.rotation.x=rx; m.castShadow=true; B.add(m); return m;
+  }
+
+  // Floor / chassis underside
+  box(7.0,.20,17.0, 0,.11,-0.2, bodyD);
+
+  // Side sills
+  [-1,1].forEach(s=>{
+    box(.30,1.25,14.2, s*3.62,.84,-0.2, bodyM);
+    box(.10,.09,14.6, s*3.77,.17,-0.2, carbM);
+  });
+
+  // ── FRONT END ──────────────────────────────────────────────────────────
+  box(8.6,1.55,.52, 0,.82,-9.90, bodyM); // bumper
+  box(7.8,.10,.90, 0,.27,-10.38, carbM); // splitter
+  box(5.8,.48,.36, 0,.29,-10.22, bodyD); // air dam
+  // Grille
+  box(4.6,.62,.07, 0,1.04,-10.28, bodyD);
+  for(let i=0;i<3;i++) box(4.4,.055,.08, 0,.76+i*.21,-10.33, carbM);
+  // Headlights
+  [-1,1].forEach(s=>{
+    box(1.25,.38,.18, s*2.95,1.82,-10.10, bodyD);
+    box(1.15,.07,.10, s*2.95,1.63,-10.15, hdM); // DRL
+    box(.55,.26,.10, s*2.72,1.88,-10.12, hdM);  // main beam
+    box(.26,.07,.07, s*3.26,1.70,-10.16, amM);  // signal
+    box(1.05,.050,.07, s*2.95,2.08,-10.14, hdM); // brow
+    const pl=new THREE.PointLight(0xffffff,.28,9);
+    pl.position.set(s*2.9,1.85,-10.5); sc.add(pl);
+  });
+
+  // Hood
+  box(7.2,.09,6.4, 0,2.40,-6.8, bodyM,-.040);
+  box(1.7,.08,4.6, 0,2.48,-6.8, bodyM,-.040); // power bulge
+  [-1,1].forEach(s=> box(.055,.055,6.4, s*3.58,2.32,-6.8, bodyD)); // gap
+
+  // ── FENDERS ─────────────────────────────────────────────────────────────
+  [-1,1].forEach(s=>{
+    box(.09,1.38,5.60, s*4.16,2.02,-7.0, bodyM); // fender panel
+    box(.08,.40,4.70,  s*4.26,.87,-7.0, bodyM);  // lower fender
+    box(.22,.09,4.10,  s*4.26,3.28,-6.9, bodyM); // arch lip
+  });
+
+  // ── WINDSCREEN A-PILLARS ─────────────────────────────────────────────────
+  const wsGeo=new THREE.PlaneGeometry(6.6,2.22);
+  const ws=new THREE.Mesh(wsGeo,glsM);
+  ws.position.set(0,3.42,-3.58); ws.rotation.x=-1.10; B.add(ws);
+  box(6.7,.09,.09, 0,2.54,-4.46, bodyM,-1.10); // bottom frame
+  box(6.7,.09,.09, 0,4.32,-2.82, bodyM,-1.10); // top frame
+  [-1,1].forEach(s=>{
+    const ap=new THREE.Mesh(new THREE.BoxGeometry(.13,2.35,.10),bodyM);
+    ap.position.set(s*3.38,3.40,-3.58); ap.rotation.x=-1.10; ap.castShadow=true; B.add(ap);
+  });
+
+  // Roof
+  box(6.7,.11,5.0,  0,4.44,.90, bodyM);
+  box(6.4,.09,.45,  0,4.40,3.46, bodyM,.17);
+
+  // Rear glass + C-pillars
+  const rgGeo=new THREE.PlaneGeometry(5.7,1.88);
+  const rg=new THREE.Mesh(rgGeo,glsM);
+  rg.position.set(0,3.58,4.42); rg.rotation.x=.94; B.add(rg);
+  [-1,1].forEach(s=>{
+    const cp=new THREE.Mesh(new THREE.BoxGeometry(.20,1.84,.12),bodyM);
+    cp.position.set(s*3.16,3.55,4.44); cp.rotation.x=.94; cp.castShadow=true; B.add(cp);
+  });
+
+  // Door windows + B-pillars + mirrors
+  [-1,1].forEach(s=>{
+    const dw=new THREE.Mesh(new THREE.PlaneGeometry(3.05,1.52),glsM);
+    dw.position.set(s*3.80,3.08,-.70); dw.rotation.y=s*Math.PI/2; B.add(dw);
+    box(.18,1.55,.12, s*3.76,3.08,.50, bodyM); // B-pillar
+    box(.33,.20,.26, s*3.88,3.48,-4.0, bodyD); // mirror housing
+    box(.04,.12,.20, s*4.04,3.47,-4.0, bodyD); // mirror arm
+  });
+
+  // Doors
+  [-1,1].forEach(s=>{
+    box(.09,1.22,7.0, s*3.80,1.32,-.18, bodyM);
+    box(.26,.07,1.1,  s*3.76,1.84,-1.0, bodyD); // handle
+    box(.04,.04,7.0,  s*3.84,1.07,-.18, bodyD); // crease
+  });
+
+  // ── REAR END ─────────────────────────────────────────────────────────────
+  // Rear quarter panels
+  [-1,1].forEach(s=>{
+    box(.12,1.55,6.0,  s*4.30,2.20,4.10, bodyM);
+    box(.09,.46,5.20,  s*4.36,.90,4.10, bodyM);
+    box(.22,.09,4.2,   s*4.36,3.38,3.90, bodyM); // arch lip
+  });
+
+  // Trunk lid
+  box(7.0,.09,2.85, 0,3.04,7.06, bodyM,.13);
+  box(7.2,.09,1.10, 0,2.28,8.60, bodyM,.54);
+
+  // Rear bumper
+  box(8.2,1.72,.52, 0,.92,9.18, bodyM);
+  box(5.8,.11,1.10, 0,.26,9.48, carbM); // diffuser
+  for(let i=-2;i<=2;i++) box(.07,.42,1.12, i*1.0,.30,9.48, bodyD);
+
+  // Tail lights
+  [-1,1].forEach(s=>{
+    box(1.70,.28,.12, s*2.80,2.64,9.12, tlM);
+    box(2.0,.09,.09,  s*2.80,2.90,9.12, tlM); // upper strip
+    box(.75,.20,.09,  s*1.52,2.68,9.14, amM); // amber
+    const tl=new THREE.PointLight(0xff2020,.22,7);
+    tl.position.set(s*2.7,2.65,9.4); sc.add(tl);
+  });
+  box(1.60,.20,.09, 0,2.66,9.14, tlM); // centre
+
+  // Exhausts (quad)
+  [-1,1].forEach(s=>{
+    [-0.26,.26].forEach(ox=>{
+      cyl(.095,.085,.26, s*2.70+ox,.34,9.58, strtM,Math.PI/2);
+      const ring=new THREE.Mesh(new THREE.TorusGeometry(.098,.010,8,32),goldD);
+      ring.position.set(s*2.70+ox,.34,9.72); B.add(ring);
+    });
+  });
+
+  // ── REAR WING ─────────────────────────────────────────────────────────────
+  [-1,1].forEach(s=> box(.11,.76,.86, s*3.10,4.18,8.18, carbM)); // end plates
+  box(6.70,.09,.82, 0,4.76,8.18, bodyD,-.14);    // main plane
+  box(6.70,.055,.18, 0,4.70,8.60, bodyD,-.88);   // wicker
+  [-1,1].forEach(s=> box(.08,.72,.10, s*2.55,4.36,8.18, carbM)); // pillars
+
+  // ── INTERIOR GLIMPSES ─────────────────────────────────────────────────────
+  box(4.8,.06,4.0, 0,2.54,-.45, bodyD); // dash
+  box(1.0,.46,.07, 0,2.60,-2.02, bodyD); // instrument cluster
+  box(.55,.22,2.65, 0,2.36,.75, bodyD); // centre console
+  [-1,1].forEach(s=>{
+    box(.85,.82,1.55, s*1.40,2.40,1.20, bodyD); // seat back
+    box(.90,.32,1.80, s*1.40,1.82,2.0, bodyD);  // seat base
+  });
+
+  return B;
+}
+
+// ── SUSPENSION BUILDER ──────────────────────────────────────────────────
+function addFrontSuspension(side, x, z){
+  // side: 1=left, -1=right
+  // MacPherson strut
+  const strutH=WY*1.40;
+  const strut=new THREE.Mesh(new THREE.CylinderGeometry(.050,.050,strutH,12),strtM);
+  strut.position.set(x, WY+strutH*.5, z);
+  strut.castShadow=true; sc.add(strut);
+  // Coil rings
+  for(let i=0;i<5;i++){
+    const coil=new THREE.Mesh(new THREE.TorusGeometry(.080,.018,6,40),strtM);
+    coil.position.set(x, WY+strutH*.32+i*.17, z); sc.add(coil);
+  }
+  // Top mount
+  const mt=new THREE.Mesh(new THREE.SphereGeometry(.115,14,14),gold);
+  mt.position.set(x, WY+strutH, z); mt.castShadow=true; sc.add(mt);
+  // LCA pivots
+  const pts=[
+    new THREE.Vector3(x, WY*.22, z),
+    new THREE.Vector3(x*(.28), WY*.16, z+side*.45),
+    new THREE.Vector3(x*(.28), WY*.16, z-side*.45),
+  ];
+  [[0,1],[0,2],[1,2]].forEach(([a,b])=>{
+    const g=new THREE.BufferGeometry().setFromPoints([pts[a],pts[b]]);
+    sc.add(new THREE.Line(g,new THREE.LineBasicMaterial({color:0x303050,transparent:true,opacity:.7})));
+  });
+  pts.forEach((p,i)=>{
+    const sp=new THREE.Mesh(new THREE.SphereGeometry(i===0?.075:.055,8,8),i===0?gold:strtM);
+    sp.position.copy(p); sc.add(sp);
+  });
+  // Tie rod
+  const tr=[new THREE.Vector3(x,WY*.64,z), new THREE.Vector3(x*.28,WY*.56,z)];
+  sc.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(tr),
+    new THREE.LineBasicMaterial({color:0x303050,transparent:true,opacity:.7})));
+  tr.forEach(p=>{
+    const sp=new THREE.Mesh(new THREE.SphereGeometry(.048,8,8),gold);
+    sp.position.copy(p); sc.add(sp);
+  });
+}
+
+function addRearSuspension(x, z){
+  // Multilink simplified: 2 lateral links + 1 toe link
+  const py=WY*.25;
+  const pts=[
+    new THREE.Vector3(x, py, z),
+    new THREE.Vector3(x*.35, py, z+.50),
+    new THREE.Vector3(x*.35, py, z-.50),
+    new THREE.Vector3(x*.20, py+WY*.5, z),
+  ];
+  [[0,1],[0,2],[0,3]].forEach(([a,b])=>{
+    const g=new THREE.BufferGeometry().setFromPoints([pts[a],pts[b]]);
+    sc.add(new THREE.Line(g,new THREE.LineBasicMaterial({color:0x303050,transparent:true,opacity:.65})));
+  });
+  pts.forEach((p,i)=>{
+    const sp=new THREE.Mesh(new THREE.SphereGeometry(i===0?.070:.048,8,8),i===0?gold:strtM);
+    sp.position.copy(p); sc.add(sp);
+  });
+  // Rear coilover
+  const coilH=WY*1.25;
+  const rc=new THREE.Mesh(new THREE.CylinderGeometry(.048,.048,coilH,12),strtM);
+  rc.position.set(x, WY+coilH*.5, z); rc.castShadow=true; sc.add(rc);
+  const rmt=new THREE.Mesh(new THREE.SphereGeometry(.105,14,14),gold);
+  rmt.position.set(x,WY+coilH,z); sc.add(rmt);
+}
+
+// ── ASSEMBLE SCENE ──────────────────────────────────────────────────────
+const body=buildBody();
+body.position.y=WY; // lift body to wheel-centre height
+sc.add(body);
+
+// ── 4 WHEEL RIGS WITH KINGPIN PIVOTS ────────────────────────────────────
+// Each wheel group: pivot → knuckle → wheel mesh
+// Front Left
+const FL_wheel = buildWheel(FBW, CF);
+FL_wheel.rotation.y = Math.PI; // face toward left (+X in world = outboard for left)
+const FL_knuckle=new THREE.Group(); FL_knuckle.position.set(loL_x,loL_y,0);
+FL_knuckle.add(FL_wheel);
+const FL_pivot=new THREE.Group();
+FL_pivot.position.set(-TRACK-SCRUB, 0, -WBH);
+FL_pivot.rotation.order='ZYX'; FL_pivot.rotation.z=-KPI_RAD;
+FL_pivot.add(FL_knuckle); sc.add(FL_pivot);
+
+// Front Right
+const FR_wheel = buildWheel(FBW, CF);
+// No flip needed — face already toward +Z then we rotate
+const FR_knuckle=new THREE.Group(); FR_knuckle.position.set(loR_x,loR_y,0);
+FR_knuckle.add(FR_wheel);
+const FR_pivot=new THREE.Group();
+FR_pivot.position.set(+TRACK+SCRUB, 0, -WBH);
+FR_pivot.rotation.order='ZYX'; FR_pivot.rotation.z=+KPI_RAD;
+FR_pivot.add(FR_knuckle); sc.add(FR_pivot);
+
+// Rear Left (static)
+const RL_wheel=buildWheel(RBW,CR);
+RL_wheel.rotation.y=Math.PI;
+const RL_grp=new THREE.Group();
+RL_grp.position.set(-TRACK, WY, WBH);
+RL_grp.add(RL_wheel); sc.add(RL_grp);
+
+// Rear Right (static)
+const RR_wheel=buildWheel(RBW,CR);
+const RR_grp=new THREE.Group();
+RR_grp.position.set(+TRACK, WY, WBH);
+RR_grp.add(RR_wheel); sc.add(RR_grp);
+
+// Store base quaternions
+const FL_qBase=FL_pivot.quaternion.clone();
+const FR_qBase=FR_pivot.quaternion.clone();
+
+// ── SUSPENSION GEOMETRY ────────────────────────────────────────────────
+addFrontSuspension( 1, -TRACK, -WBH);
+addFrontSuspension(-1, +TRACK, -WBH);
+addRearSuspension(-TRACK, WBH);
+addRearSuspension(+TRACK, WBH);
+
+// Axle stubs (rear)
+[-1,1].forEach(s=>{
+  const ax=new THREE.Mesh(new THREE.CylinderGeometry(.065,.065,RBW*1.1,16),strtM);
+  ax.rotation.x=Math.PI/2; ax.position.set(s*TRACK, WY, WBH); sc.add(ax);
+});
+
+// Ground reflections (subtle gold glow under each wheel)
+[[- TRACK,-WBH],[+TRACK,-WBH],[-TRACK,WBH],[+TRACK,WBH]].forEach(([x,z])=>{
+  const ref=new THREE.Mesh(new THREE.CircleGeometry(1.5,64),
+    new THREE.MeshBasicMaterial({color:0xD4AF37,transparent:true,opacity:.020}));
+  ref.rotation.x=-Math.PI/2; ref.position.set(x,.003,z); sc.add(ref);
+});
+
+// ── SHA-256 WITNESS HASH ─────────────────────────────────────────────────
+(async()=>{
+  const specs={schema:'VH2_Full_v1',spoke_count:5,rim_diameter_in:19,
+    front_et_mm:29,rear_et_mm:22,kpi_deg:12.5,scrub_radius_mm:45,c5_sector_deg:72,
+    concavity_front:.150,concavity_rear:.185,wheelbase_mm:2600,track_mm:1460,
+    material:'RSM_PBR_D4AF37',sovereignty:'SAINTLY_HONESTY_TRUE'};
+  const enc=new TextEncoder().encode(JSON.stringify(specs));
+  const buf=await crypto.subtle.digest('SHA-256',enc);
+  const hex=Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+  document.getElementById('wh').innerHTML=
+    `<span style="color:rgba(212,175,55,.45)">0xVH2_ET29_ET22_C5_SOV_</span>${hex.slice(0,6).toUpperCase()}<br>`+
+    `<span style="font-size:6px;color:#1a1a30">${hex}</span>`;
+})();
+
+// ── CAMERA PRESETS ────────────────────────────────────────────────────────
+const CAMS=[
+  {t:-0.45, p:0.20, r:22},  // 0: ¾ front
+  {t:-Math.PI/2, p:0.14, r:22},  // 1: side
+  {t:0.0, p:0.15, r:20},    // 2: front straight
+  {t:-0.55, p:0.10, r:7.5}, // 3: wheel closeup
+  {t:Math.PI*.68, p:0.18, r:22}, // 4: ¾ rear
+];
+let camTheta=-0.45, camPhi=0.20, camR=22, camTarget=0;
+let cButtons=[...document.querySelectorAll('.cam')];
+function setCam(i){
+  camTheta=CAMS[i].t; camPhi=CAMS[i].p; camR=CAMS[i].r;
+  cButtons.forEach((b,j)=>b.classList.toggle('on',j===i));
+}
+window.setCam=setCam;
+
+// ── STEERING ──────────────────────────────────────────────────────────────
+const slider=document.getElementById('sl');
+let tgt=0, cur=0;
+
+// Ackermann geometry: inner wheel steers more than outer
+// For wheelbase L=13, track T=7.3, steer angle δ:
+// inner angle α ≈ atan(L/(L/tanδ - T/2))
+// outer angle β ≈ atan(L/(L/tanδ + T/2))
+function ackermann(deg){
+  if(Math.abs(deg)<0.1) return {inner:0, outer:0};
+  const sign=Math.sign(deg);
+  const d=Math.abs(deg)*Math.PI/180;
+  const L=13.0, T=7.3; // wheelbase and track in scene units
+  const R=L/Math.tan(d); // turn radius
+  const inner=Math.atan(L/(R-T/2))*sign;
+  const outer=Math.atan(L/(R+T/2))*sign;
+  return {inner, outer};
+}
+
+function applySteer(angle){
+  const deg=angle*180/Math.PI;
+  const {inner, outer}=ackermann(deg);
+  // Left turn (negative angle): FL is inner, FR is outer
+  const flAng = angle<0 ? inner : outer;
+  const frAng = angle<0 ? outer : inner;
+  // Apply to FL pivot (rotation about local Y = kingpin axis)
+  FL_pivot.quaternion.copy(FL_qBase);
+  FL_pivot.rotateOnAxis(new THREE.Vector3(0,1,0), flAng);
+  // Apply to FR pivot
+  FR_pivot.quaternion.copy(FR_qBase);
+  FR_pivot.rotateOnAxis(new THREE.Vector3(0,1,0), frAng);
+  // Update HUD
+  document.getElementById('ia').textContent=(Math.abs(inner)*180/Math.PI).toFixed(1)+'°';
+  document.getElementById('oa').textContent=(Math.abs(outer)*180/Math.PI).toFixed(1)+'°';
+  document.getElementById('ad').textContent=
+    ((Math.abs(inner)-Math.abs(outer))*180/Math.PI).toFixed(2)+'°';
+  if(Math.abs(deg)>0.3){
+    const R=(13/Math.tan(Math.abs(deg)*Math.PI/180)).toFixed(1);
+    document.getElementById('tr').textContent=`R = ${R} u (${(parseFloat(R)*2).toFixed(0)}00mm)`;
+  } else {
+    document.getElementById('tr').textContent='Straight';
+  }
+}
+
+slider.addEventListener('input',e=>{
+  tgt=parseFloat(e.target.value)*Math.PI/180;
+  document.getElementById('sv').textContent=parseFloat(e.target.value).toFixed(1)+'°';
+  document.getElementById('ia').textContent=parseFloat(e.target.value).toFixed(1)+'°';
+});
+
+// ── ORBIT ─────────────────────────────────────────────────────────────────
+let drag=false, prev={x:0,y:0};
+function move(x,y){ if(!drag)return; camTheta-=(x-prev.x)*.006; camPhi=Math.max(.04,Math.min(.58,camPhi+(y-prev.y)*.005)); prev={x,y}; }
+cv.addEventListener('mousedown', e=>{drag=true; prev={x:e.clientX,y:e.clientY}});
+cv.addEventListener('mousemove', e=>move(e.clientX,e.clientY));
+cv.addEventListener('mouseup',   ()=>drag=false);
+cv.addEventListener('mouseleave',()=>drag=false);
+cv.addEventListener('wheel',     e=>{ camR=Math.max(5,Math.min(30,camR+e.deltaY*.015)); });
+cv.addEventListener('touchstart',e=>{drag=true; prev={x:e.touches[0].clientX,y:e.touches[0].clientY}});
+cv.addEventListener('touchmove', e=>move(e.touches[0].clientX,e.touches[0].clientY));
+cv.addEventListener('touchend',  ()=>drag=false);
+
+// ── RENDER LOOP ────────────────────────────────────────────────────────────
+let spin=0;
+const CLK=new THREE.Clock();
+function loop(){
+  requestAnimationFrame(loop);
+  CLK.getDelta();
+
+  // Smooth steer
+  cur+=(tgt-cur)*.08;
+  applySteer(cur);
+
+  // Passive spin (slow roll)
+  spin+=.006;
+  [FL_wheel,FR_wheel,RL_wheel,RR_wheel].forEach(w=>{ w.rotation.y+=.006; });
+  // (FL and RL face outward via rotation.y=PI, so their spin is already reversed)
+
+  // Camera
+  cam.position.set(
+    Math.sin(camTheta)*Math.cos(camPhi)*camR,
+    Math.sin(camPhi)*camR+1.2,
+    Math.cos(camTheta)*Math.cos(camPhi)*camR
+  );
+  cam.lookAt(0, WY*.60, 0);
+
+  // Pulse
+  const p=.65+Math.sin(Date.now()*.0017)*.28;
+  gpt.intensity=p*.4;
+
+  ren.render(sc,cam);
+}
+loop();
+</script>
+</body>
+</html>

@@ -1,0 +1,108 @@
+##############################################################################
+# VH2 SMOKE TEST JOB
+# Runs after deploy: hits live /api/validate with canonical spec
+# ArgoCD post-sync hook: job must complete successfully or sync fails
+##############################################################################
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: vh2-smoke-test
+  namespace: vh2-prod
+  labels:
+    app.kubernetes.io/name: vh2-sovereign-validator
+    app.kubernetes.io/component: smoke-test
+  annotations:
+    # ArgoCD: run as post-sync hook, delete on success
+    argocd.argoproj.io/hook: PostSync
+    argocd.argoproj.io/hook-delete-policy: HookSucceeded
+spec:
+  backoffLimit: 2
+  activeDeadlineSeconds: 120
+  template:
+    metadata:
+      labels:
+        app: vh2-smoke-test
+    spec:
+      restartPolicy: Never
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534   # nobody
+        seccompProfile:
+          type: RuntimeDefault
+      automountServiceAccountToken: false
+
+      containers:
+        - name: smoke-test
+          image: curlimages/curl:8.5.0
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              set -e
+              API="http://vh2-backend-svc:3001"
+              PASS=0
+              FAIL=0
+
+              check() {
+                local desc="$1" expected="$2" actual="$3"
+                if [ "$actual" = "$expected" ]; then
+                  echo "  ✓ $desc"
+                  PASS=$((PASS+1))
+                else
+                  echo "  ✗ $desc (expected=$expected got=$actual)"
+                  FAIL=$((FAIL+1))
+                fi
+              }
+
+              echo "[1] HEALTH CHECK"
+              STATUS=$(curl -sf "$API/health" | grep -o '"status":"UP"' || echo "FAIL")
+              check "GET /health → status:UP" '"status":"UP"' "$STATUS"
+
+              echo "[2] SPEC ENDPOINT"
+              SCHEMA=$(curl -sf "$API/api/spec" | grep -o '"schema":"VH2_Full_v1"' || echo "FAIL")
+              check "GET /api/spec → schema=VH2_Full_v1" '"schema":"VH2_Full_v1"' "$SCHEMA"
+
+              echo "[3] CANONICAL VALIDATION (SOVEREIGN_PASS)"
+              RESULT=$(curl -sf -X POST "$API/api/validate" \
+                -H 'Content-Type: application/json' \
+                -d '{"spoke_count":5,"rim_diameter_in":19,"front_et_mm":29,"rear_et_mm":22,"kpi_deg":12.5,"scrub_radius_mm":45,"c5_sector_deg":72}')
+              check "POST /api/validate → pass=true" \
+                "true" "$(echo $RESULT | grep -o '"pass":true' | grep -o 'true' || echo 'false')"
+              check "POST /api/validate → SOVEREIGN_PASS" \
+                "SOVEREIGN_PASS" "$(echo $RESULT | grep -o 'SOVEREIGN_PASS' || echo 'FAIL')"
+
+              echo "[4] TAMPER DETECTION (SYSTEM_HALT)"
+              TAMPER=$(curl -sf -X POST "$API/api/validate" \
+                -H 'Content-Type: application/json' \
+                -d '{"spoke_count":4,"rim_diameter_in":19,"front_et_mm":29,"rear_et_mm":22,"kpi_deg":12.5,"scrub_radius_mm":45,"c5_sector_deg":72}')
+              check "Tampered spoke_count=4 → SYSTEM_HALT" \
+                "SYSTEM_HALT" "$(echo $TAMPER | grep -o 'SYSTEM_HALT' || echo 'FAIL')"
+
+              echo "[5] ACKERMANN ENDPOINT"
+              ACK=$(curl -sf "$API/api/ackermann/15")
+              check "GET /api/ackermann/15 → inner_deg present" \
+                "1" "$(echo $ACK | grep -c 'inner_deg' || echo 0)"
+
+              echo "[6] KPI ENDPOINT"
+              KPI=$(curl -sf "$API/api/kpi")
+              check "GET /api/kpi → kpi_deg=12.5" \
+                "1" "$(echo $KPI | grep -c '12.5' || echo 0)"
+
+              echo ""
+              echo "────────────────────────────────────────"
+              echo "SMOKE TEST: $PASS passed, $FAIL failed"
+              if [ "$FAIL" -gt 0 ]; then
+                echo "STATUS: ✗ SYSTEM HALT — smoke test failed"
+                exit 1
+              fi
+              echo "STATUS: ✓ SOVEREIGN PASS"
+              exit 0
+
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+
+          resources:
+            requests: { cpu: "10m", memory: "16Mi" }
+            limits:   { cpu: "50m", memory: "32Mi" }

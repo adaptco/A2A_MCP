@@ -1,0 +1,48 @@
+version: '3.8'
+
+# Production overrides for docker-compose
+# Usage: docker compose -f docker-compose.yml -f docker-compose.prod.yml up
+
+services:
+  app:
+    # Use production image
+    image: ${REGISTRY:-ghcr.io}/${IMAGE_NAME:-worldline-racer}:${TAG:-latest}
+    
+    # Remove build context
+    build: null
+    
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+    
+    # Remove volume mounts (no hot-reload in production)
+    volumes: []
+    
+    # Environment for production
+    environment:
+      NODE_ENV: production
+      PORT: 5000
+    
+    # Restart policy
+    restart: always
+    
+    # Health check
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    
+    # Logging
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"

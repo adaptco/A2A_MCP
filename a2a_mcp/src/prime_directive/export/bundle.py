@@ -1,1 +1,0 @@
-"""Run bundle assembler placeholder."""

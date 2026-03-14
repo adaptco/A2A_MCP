@@ -1,0 +1,57 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vh2-sovereign-spec
+  namespace: vh2-prod
+  labels:
+    app: vh2-validator
+    component: config
+data:
+  spec.json: |
+    {
+      "schema": "VH2_Full_v1",
+      "spoke_count": 5,
+      "rim_diameter_in": 19,
+      "front_et_mm": 29,
+      "rear_et_mm": 22,
+      "kpi_deg": 12.5,
+      "scrub_radius_mm": 45,
+      "c5_sector_deg": 72,
+      "concavity_front": 0.150,
+      "concavity_rear": 0.185,
+      "wheelbase_mm": 2600,
+      "track_mm": 1460,
+      "material": "RSM_PBR_D4AF37",
+      "sovereignty": "SAINTLY_HONESTY_TRUE",
+      "han_eigenvalue": 0.82,
+      "hausdorff_mm": 0.20
+    }
+  
+  constraints.json: |
+    {
+      "spoke_count": 5,
+      "rim_diameter_in": 19,
+      "front_et_mm": 29,
+      "rear_et_mm": 22,
+      "kpi_deg": 12.5,
+      "scrub_radius_mm": 45,
+      "c5_sector_deg": 72
+    }
+  
+  kpi-math.sh: |
+    #!/bin/bash
+    # KPI Physics constants
+    KPI_RAD=$(echo "12.5 * 3.141592653589793 / 180" | bc -l)
+    COS_KPI=$(echo "c($KPI_RAD)" | bc -l)
+    SIN_KPI=$(echo "s($KPI_RAD)" | bc -l)
+    SCRUB=0.225
+    WHEELBASE=2.6
+    TRACK=1.46
+    
+    echo "KPI_RAD: $KPI_RAD"
+    echo "COS_KPI: $COS_KPI (expect: 0.97630)"
+    echo "SIN_KPI: $SIN_KPI (expect: 0.21644)"
+    echo "SCRUB_M: $SCRUB"
+    echo "WHEELBASE_M: $WHEELBASE"
+    echo "TRACK_M: $TRACK"

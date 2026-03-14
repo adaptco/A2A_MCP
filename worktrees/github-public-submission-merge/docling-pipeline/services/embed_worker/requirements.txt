@@ -1,0 +1,6 @@
+torch>=2.1.0
+qdrant-client>=1.7.0
+redis>=5.0.0
+rq>=1.16.0
+pydantic>=2.5.0
+# transformers>=4.36.0  # Uncomment for real model inference

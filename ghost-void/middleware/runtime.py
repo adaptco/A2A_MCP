@@ -1,4 +1,8 @@
+<<<<<<< HEAD
+from typing import List, Any, Dict
+=======
 from typing import List, Any, Optional, Dict
+>>>>>>> origin/main
 from .events import PostgresEventStore
 from .fossil_chain import FossilChain
 from .swarm_runtime import SwarmRuntime, AgentTask
@@ -21,6 +25,10 @@ class AgenticRuntime:
         This provides a trace for the initial model onboarding on the MCP.
         """
         artifact = ModelArtifact(
+<<<<<<< HEAD
+        artifact_id=f"handshake-{__import__('uuid').uuid4()}",
+=======
+>>>>>>> origin/main
             model_id=model_id,
             weights_hash=weights_hash,
             embedding_dim=embedding_dim,

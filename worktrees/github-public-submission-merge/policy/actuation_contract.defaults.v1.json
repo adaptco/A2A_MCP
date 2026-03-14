@@ -1,0 +1,41 @@
+{
+  "actuation_payload_defaults": {
+    "trigger_reason": "ci_failure",
+    "mode": "hermetic",
+    "policy_zone": "orchestrator",
+    "pr_template_id": "PRT.AUTO_REPAIR.V1",
+    "required_checks": [
+      "invariant-check",
+      "lint-diff-build-test",
+      "governance_check"
+    ],
+    "risk_profile": {
+      "blast_radius_estimate": "med"
+    }
+  },
+  "cost_weights": {
+    "tokens": 0.35,
+    "runtime_seconds": 0.25,
+    "files_changed": 0.2,
+    "risk": 0.2
+  },
+  "invariants": {
+    "registry": [
+      {
+        "id": "INV.REPO.PR_TEMPLATE_REQUIRED.V1",
+        "description": "All autonomous repair PRs must bind to a canonical PR template identifier.",
+        "assertion": "actuation_payload_defaults.pr_template_id == 'PRT.AUTO_REPAIR.V1'"
+      },
+      {
+        "id": "INV.REPO.REQUIRED_CHECKS_DECLARED.V1",
+        "description": "Every required check entry must be selected from the canonical declared set.",
+        "assertion": "actuation_payload_defaults.required_checks subset_of declared_required_checks"
+      },
+      {
+        "id": "INV.REPO.RISK_PROFILE_CANONICAL.V1",
+        "description": "Blast radius estimate must use canonical low/med/high vocabulary.",
+        "assertion": "actuation_payload_defaults.risk_profile.blast_radius_estimate in ['low', 'med', 'high']"
+      }
+    ]
+  }
+}

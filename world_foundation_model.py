@@ -17,7 +17,10 @@ DEFAULT_CODING_AGENT_CAST: tuple[str, ...] = (
     "ArchitectureAgent",
     "CoderAgent",
     "TesterAgent",
+<<<<<<< HEAD
+=======
     "ReviewerAgent",
+>>>>>>> origin/main
 )
 
 

@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#05050c">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>VH2 · Plugin Demo · Sovereign Suspension</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@300;600;700&display=swap" rel="stylesheet">
+
+<!-- THE PLUGIN — single script tag, zero config -->
+<script src="/vh2-plugin.js" defer></script>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --g:#D4AF37; --bg:#05050c; --bg2:#080812; --t:#aaaabe;
+  --ok:#3dbd72; --dim:#28284a; --border:rgba(212,175,55,.18);
+}
+html,body{height:100%; background:var(--bg); color:var(--t);
+  font-family:'Share Tech Mono',monospace; overflow-x:hidden}
+
+/* ── NAV ── */
+nav{
+  position:sticky; top:0; z-index:100;
+  background:rgba(5,5,18,.95); border-bottom:1px solid var(--border);
+  display:flex; align-items:center; padding:0 20px; height:52px;
+  backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
+  /* Safe area for notched phones */
+  padding-left: max(20px, env(safe-area-inset-left));
+  padding-right: max(20px, env(safe-area-inset-right));
+}
+.nav-brand{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:16px;
+  color:var(--g);letter-spacing:2px}
+.nav-sub{font-size:7px;color:var(--dim);letter-spacing:1.5px;margin-left:10px}
+.nav-spacer{flex:1}
+.nav-badge{font-size:7px;letter-spacing:1px;padding:3px 9px;
+  border:1px solid var(--border);color:var(--g)}
+@media(max-width:480px){.nav-sub,.nav-badge{display:none}}
+
+/* ── PAGE LAYOUT ── */
+.page{max-width:1320px;margin:0 auto;padding:28px 20px;
+  padding-left:max(20px,env(safe-area-inset-left));
+  padding-right:max(20px,env(safe-area-inset-right));}
+
+/* ── SECTION INTRO ── */
+.section-hdr{margin-bottom:16px}
+.lbl{font-size:7px;letter-spacing:2.5px;color:var(--g);margin-bottom:5px}
+.section-hdr h2{font-family:'Rajdhani',sans-serif;font-size:22px;font-weight:700;
+  color:#fff;letter-spacing:1px;margin-bottom:4px}
+.section-hdr p{font-size:9px;color:var(--dim);line-height:1.8;max-width:560px}
+
+/* ── PLUGIN EMBED CARD ── */
+.embed-card{border:1px solid var(--border);background:var(--bg2);margin-bottom:28px;overflow:hidden}
+.embed-card-hdr{padding:10px 16px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.dot{width:8px;height:8px;border-radius:50%}
+.dot.r{background:#c04040}.dot.y{background:#D4AF37}.dot.g{background:#3dbd72}
+.embed-title{font-size:8px;letter-spacing:2px;color:var(--dim);margin-left:4px;flex:1}
+.copy-btn{font-family:'Share Tech Mono',monospace;font-size:7px;letter-spacing:1px;
+  padding:3px 10px;border:1px solid var(--border);color:var(--g);
+  background:rgba(212,175,55,.06);cursor:pointer;transition:.15s}
+.copy-btn:hover{background:rgba(212,175,55,.2)}
+
+/* ── CODE SNIPPET ── */
+.code-block{background:#020208;border:1px solid var(--border);
+  padding:14px 18px;margin-bottom:16px;overflow-x:auto;
+  -webkit-overflow-scrolling:touch}
+.code-block code{font-family:'Share Tech Mono',monospace;font-size:9px;
+  line-height:1.9;color:#aaaabe;white-space:pre}
+.tok-tag{color:#00c8d4}.tok-attr{color:var(--g)}.tok-val{color:var(--ok)}
+.tok-cmt{color:var(--dim)}
+
+/* ── METRICS STRIP ── */
+.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));
+  gap:1px;background:var(--border);border:1px solid var(--border);
+  margin-bottom:28px}
+.metric{background:var(--bg2);padding:14px 16px;display:flex;flex-direction:column;gap:4px}
+.metric-v{font-family:'Rajdhani',sans-serif;font-size:24px;font-weight:700;color:var(--g)}
+.metric-l{font-size:7px;letter-spacing:1.5px;color:var(--dim)}
+.metric-s{font-size:8px;color:var(--ok)}
+
+/* ── VALIDATION LOG ── */
+#api-log{background:#020208;border:1px solid var(--border);
+  padding:14px 18px;font-size:8px;line-height:2;min-height:80px;max-height:160px;
+  overflow-y:auto;-webkit-overflow-scrolling:touch}
+#api-log .entry{display:flex;gap:10px}
+#api-log .ts{color:var(--dim);min-width:80px}
+#api-log .msg.ok{color:var(--ok)}.msg.err{color:#c04040}.msg.inf{color:var(--g)}
+
+/* ── FOOTER ── */
+footer{border-top:1px solid var(--border);padding:16px 20px;
+  font-size:7.5px;color:var(--dim);letter-spacing:1px;text-align:center;
+  padding-bottom:max(16px,env(safe-area-inset-bottom))}
+
+/* ── MOBILE TWEAKS ── */
+@media(max-width:768px){
+  .page{padding:16px 14px}
+  .metrics .metric-v{font-size:18px}
+}
+@media(max-width:480px){
+  .section-hdr h2{font-size:18px}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <span class="nav-brand">VH2</span>
+  <span class="nav-sub">SOVEREIGN SUSPENSION RIG · DOCKER DEPLOY</span>
+  <div class="nav-spacer"></div>
+  <span class="nav-badge" id="validation-badge">VALIDATING…</span>
+</nav>
+
+<div class="page">
+
+  <!-- ── SECTION 1: PLUGIN EMBED ── -->
+  <div class="section-hdr">
+    <div class="lbl">Plugin · Web Component</div>
+    <h2>VH2 Simulator — Drop-in Embed</h2>
+    <p>Add the full vehicle simulation to any webpage with two lines of HTML.
+       The <code>&lt;vh2-simulator&gt;</code> web component connects to the backend
+       validation socket automatically on mount.</p>
+  </div>
+
+  <div class="embed-card">
+    <div class="embed-card-hdr">
+      <div class="dot r"></div><div class="dot y"></div><div class="dot g"></div>
+      <span class="embed-title">LIVE · vh2-simulator · mode=split</span>
+      <button class="copy-btn" onclick="copySnippet()">COPY EMBED CODE</button>
+    </div>
+
+    <!-- THE COMPONENT IN ACTION -->
+    <vh2-simulator
+      id="demo-sim"
+      mode="sim"
+      api-base="/api"
+      height="580px"
+    ></vh2-simulator>
+  </div>
+
+  <!-- Code snippet -->
+  <div class="lbl" style="margin-bottom:8px">Embed Code</div>
+  <div class="code-block" id="snippet-block">
+<code><span class="tok-cmt">&lt;!-- 1. Include plugin (one script tag) --&gt;</span>
+<span class="tok-tag">&lt;script</span> <span class="tok-attr">src</span>=<span class="tok-val">"/vh2-plugin.js"</span> <span class="tok-attr">defer</span><span class="tok-tag">&gt;&lt;/script&gt;</span>
+
+<span class="tok-cmt">&lt;!-- 2. Drop the component anywhere in your HTML --&gt;</span>
+<span class="tok-tag">&lt;vh2-simulator</span>
+  <span class="tok-attr">mode</span>=<span class="tok-val">"sim"</span>        <span class="tok-cmt">&lt;!-- sim | test | split --&gt;</span>
+  <span class="tok-attr">api-base</span>=<span class="tok-val">"/api"</span>  <span class="tok-cmt">&lt;!-- backend socket URL --&gt;</span>
+  <span class="tok-attr">height</span>=<span class="tok-val">"600px"</span>   <span class="tok-cmt">&lt;!-- CSS height (auto on mobile) --&gt;</span>
+<span class="tok-tag">&gt;&lt;/vh2-simulator&gt;</span>
+
+<span class="tok-cmt">&lt;!-- 3. Listen to validation events --&gt;</span>
+<span class="tok-tag">&lt;script&gt;</span>
+  document.querySelector(<span class="tok-val">'vh2-simulator'</span>)
+    .addEventListener(<span class="tok-val">'vh2:validated'</span>, e =&gt; {
+      console.log(e.detail.witness.tag)  <span class="tok-cmt">// 0xVH2_ET29_ET22_C5_SOV_XXXXXX</span>
+    })
+<span class="tok-tag">&lt;/script&gt;</span>
+</code>
+  </div>
+
+  <!-- ── SECTION 2: METRICS ── -->
+  <div class="section-hdr" style="margin-top:28px">
+    <div class="lbl">Architecture · Socket Metrics</div>
+    <h2>Backend ↔ Frontend Socket Status</h2>
+  </div>
+
+  <div class="metrics" id="metrics-strip">
+    <div class="metric"><div class="metric-v" id="m-api">…</div><div class="metric-l">BACKEND API</div><div class="metric-s" id="m-api-s">polling…</div></div>
+    <div class="metric"><div class="metric-v gold">5</div><div class="metric-l">SPOKE COUNT</div><div class="metric-s">C5 · 72° pitch</div></div>
+    <div class="metric"><div class="metric-v">12.5°</div><div class="metric-l">KPI ANGLE</div><div class="metric-s">Kingpin inclination</div></div>
+    <div class="metric"><div class="metric-v">45mm</div><div class="metric-l">SCRUB RADIUS</div><div class="metric-s">Positive offset</div></div>
+    <div class="metric"><div class="metric-v">ET29</div><div class="metric-l">FRONT OFFSET</div><div class="metric-s">CF 0.150</div></div>
+    <div class="metric"><div class="metric-v">ET22</div><div class="metric-l">REAR OFFSET</div><div class="metric-s">CR 0.185</div></div>
+    <div class="metric"><div class="metric-v" id="m-wit">…</div><div class="metric-l">WITNESS</div><div class="metric-s" id="m-wit-s">SHA-256</div></div>
+  </div>
+
+  <!-- ── SECTION 3: LIVE API LOG ── -->
+  <div class="section-hdr">
+    <div class="lbl">Backend Socket · Live Validation Log</div>
+    <h2>API Trace</h2>
+  </div>
+  <div id="api-log">
+    <div class="entry"><span class="ts">00:00:000</span><span class="msg inf">INITIALISING VH2 BACKEND SOCKET…</span></div>
+  </div>
+
+</div>
+
+<footer>
+  VH2 · SOVEREIGN SUSPENSION RIG · DOCKER DEPLOY · THREE.JS r128 · SHA-256 WITNESSED
+  · &lt;vh2-simulator&gt; WEB COMPONENT v1.0.0
+</footer>
+
+<script>
+// ── EVENT LISTENERS (plugin events bubble up to document) ──────────────────
+const sim  = document.getElementById('demo-sim')
+const badge = document.getElementById('validation-badge')
+const log   = document.getElementById('api-log')
+const t0    = Date.now()
+
+function logEntry(msg, cls='inf') {
+  const elapsed = Date.now() - t0
+  const mm = String(Math.floor(elapsed/60000)).padStart(2,'0')
+  const ss = String(Math.floor((elapsed%60000)/1000)).padStart(2,'0')
+  const ms = String(elapsed%1000).padStart(3,'0')
+  const entry = document.createElement('div')
+  entry.className = 'entry'
+  entry.innerHTML = `<span class="ts">${mm}:${ss}:${ms}</span><span class="msg ${cls}">${msg}</span>`
+  log.appendChild(entry)
+  log.scrollTop = log.scrollHeight
+}
+
+sim.addEventListener('vh2:validated', e => {
+  const d = e.detail
+  badge.textContent = d.pass ? `✓ SOVEREIGN PASS` : `✗ HALT`
+  badge.style.color = d.pass ? '#3dbd72' : '#c04040'
+  badge.style.borderColor = d.pass ? '#3dbd72' : '#c04040'
+  logEntry(`VALIDATE → ${d.status} · ${d.witness?.tag || 'NO WITNESS'}`, d.pass?'ok':'err')
+  document.getElementById('m-api').textContent = d.pass ? 'UP' : 'ERR'
+  document.getElementById('m-api-s').textContent = d.status
+  if (d.witness) {
+    document.getElementById('m-wit').textContent = d.witness.tag.slice(-6)
+    document.getElementById('m-wit-s').textContent = d.witness.hex.slice(0,12)+'…'
+  }
+})
+
+sim.addEventListener('vh2:offline', () => {
+  badge.textContent = '⚠ OFFLINE'
+  badge.style.color = '#d4851e'
+  logEntry('BACKEND SOCKET OFFLINE — running in standalone mode', 'err')
+  document.getElementById('m-api').textContent = 'OFF'
+  document.getElementById('m-api-s').textContent = 'standalone'
+})
+
+// ── LIVE ACKERMANN POLLING ─────────────────────────────────────────────────
+let steerDeg = 0, dir = 1
+setInterval(async () => {
+  steerDeg += dir * 2.5
+  if (steerDeg > 30 || steerDeg < -30) dir *= -1
+  try {
+    const r = await fetch(`/api/ackermann/${steerDeg.toFixed(1)}`)
+    if (!r.ok) return
+    const d = await r.json()
+    logEntry(`ACKERMANN δ=${steerDeg.toFixed(1)}° → inner=${d.inner_deg}° outer=${d.outer_deg}° Δ=${d.delta_deg}° R=${d.turn_radius_m}m`, 'inf')
+  } catch(_) {}
+}, 3500)
+
+// ── COPY SNIPPET ───────────────────────────────────────────────────────────
+function copySnippet() {
+  const snippet = `<script src="/vh2-plugin.js" defer><\/script>\n<vh2-simulator mode="sim" api-base="/api" height="600px"></vh2-simulator>`
+  navigator.clipboard?.writeText(snippet).then(() => {
+    const btn = document.querySelector('.copy-btn')
+    btn.textContent = 'COPIED ✓'
+    setTimeout(() => btn.textContent = 'COPY EMBED CODE', 2000)
+  })
+}
+window.copySnippet = copySnippet
+
+logEntry('VH2 FRONTEND SOCKET READY · plugin registered', 'ok')
+</script>
+</body>
+</html>

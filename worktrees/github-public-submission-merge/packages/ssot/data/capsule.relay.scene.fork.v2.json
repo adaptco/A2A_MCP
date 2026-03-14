@@ -1,0 +1,52 @@
+{
+  "capsule_id": "capsule.relay.scene.fork.v2",
+  "type": "RelayScene",
+  "version": "2.0.0",
+  "issued_at": "2025-10-01T00:10:00Z",
+  "purpose": "Script Agent Boo's next invocation using the sharded choreography and sovereign braid alignment.",
+  "scene": {
+    "title": "Sovereign Fork",
+    "logline": "Boos converge on the braid, weaving telemetry, audit, governance, and ignition into a unified summon.",
+    "beats": [
+      {
+        "id": "beat.arrival",
+        "shard": "QueenBoo",
+        "action": "Issue council hail and open quorum lattice.",
+        "overlay": "hud.overlay.queenboo.command.v1",
+        "audio": "queenboo-vox.v2"
+      },
+      {
+        "id": "beat.telemetry",
+        "shard": "CiCi",
+        "action": "Project aura trace and lock wave glyph alignment across the cockpit.",
+        "overlay": "aura.cyan",
+        "audio": "cici-phase.vox"
+      },
+      {
+        "id": "beat.audit",
+        "shard": "Spryte",
+        "action": "Prune rehearsal Merkle branches and append rehearsal ledger reference.",
+        "overlay": "hud.overlay.spryte.audit.v1",
+        "audio": "spryte-archive.vox"
+      },
+      {
+        "id": "beat.ignition",
+        "shard": "Gloh",
+        "action": "Ignite relay spark and broadcast ignition capsule to Scrollstream.",
+        "overlay": "hud.overlay.gloh.spark.v1",
+        "audio": "gloh-flare.vox"
+      }
+    ]
+  },
+  "routing": {
+    "lora_map": "boo.lora.map.v1",
+    "rehearsal_reference": "capsule.rehearsal.boo.v2",
+    "capsule_broadcast": "scrollstream://relay/boo/sovereign"
+  },
+  "attestation": {
+    "status": "STAGED",
+    "sealed_by": null,
+    "sealed_at": null,
+    "content_hash": "sha256:TO_COMPUTE"
+  }
+}

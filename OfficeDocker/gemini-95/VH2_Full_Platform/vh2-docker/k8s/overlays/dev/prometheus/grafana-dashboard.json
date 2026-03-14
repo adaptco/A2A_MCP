@@ -1,0 +1,101 @@
+{
+  "title": "VH2 Sovereign Validator — Dev",
+  "uid": "vh2-dev-001",
+  "schemaVersion": 38,
+  "refresh": "15s",
+  "time": { "from": "now-1h", "to": "now" },
+  "panels": [
+    {
+      "id": 1, "type": "stat", "title": "Sovereign Pass Rate (5m)",
+      "gridPos": { "x": 0, "y": 0, "w": 4, "h": 4 },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "thresholds": { "steps": [
+            { "color": "red",    "value": 0    },
+            { "color": "yellow", "value": 0.8  },
+            { "color": "green",  "value": 0.95 }
+          ]}
+        }
+      },
+      "targets": [{ "expr": "vh2:sovereign_pass_rate5m", "legendFormat": "pass rate" }]
+    },
+    {
+      "id": 2, "type": "stat", "title": "SYSTEM_HALT Total",
+      "gridPos": { "x": 4, "y": 0, "w": 4, "h": 4 },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": { "steps": [
+            { "color": "green", "value": 0 },
+            { "color": "red",   "value": 1 }
+          ]}
+        }
+      },
+      "targets": [{ "expr": "sum(vh2_validator_requests_total{result=\"system_halt\"})", "legendFormat": "halts" }]
+    },
+    {
+      "id": 3, "type": "stat", "title": "Validator p99 Latency",
+      "gridPos": { "x": 8, "y": 0, "w": 4, "h": 4 },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ms",
+          "thresholds": { "steps": [
+            { "color": "green",  "value": 0  },
+            { "color": "yellow", "value": 10 },
+            { "color": "red",    "value": 50 }
+          ]}
+        }
+      },
+      "targets": [{
+        "expr": "histogram_quantile(0.99, rate(vh2_validator_latency_ms_bucket[5m]))",
+        "legendFormat": "p99"
+      }]
+    },
+    {
+      "id": 4, "type": "stat", "title": "Process Uptime",
+      "gridPos": { "x": 12, "y": 0, "w": 4, "h": 4 },
+      "fieldConfig": { "defaults": { "unit": "ms" } },
+      "targets": [{ "expr": "vh2_process_uptime_ms", "legendFormat": "uptime" }]
+    },
+    {
+      "id": 5, "type": "timeseries", "title": "Validate Requests/sec by Result",
+      "gridPos": { "x": 0, "y": 4, "w": 12, "h": 8 },
+      "fieldConfig": { "defaults": { "unit": "reqps" } },
+      "targets": [
+        { "expr": "rate(vh2_validator_requests_total{result=\"sovereign_pass\"}[1m])", "legendFormat": "SOVEREIGN_PASS" },
+        { "expr": "rate(vh2_validator_requests_total{result=\"system_halt\"}[1m])",    "legendFormat": "SYSTEM_HALT" },
+        { "expr": "rate(vh2_validator_requests_total{result=\"error\"}[1m])",          "legendFormat": "ERROR" }
+      ]
+    },
+    {
+      "id": 6, "type": "timeseries", "title": "SYSTEM_HALT by Constraint Key",
+      "gridPos": { "x": 12, "y": 4, "w": 12, "h": 8 },
+      "fieldConfig": { "defaults": { "unit": "short" } },
+      "targets": [{
+        "expr": "rate(vh2_validator_system_halt_total[1m])",
+        "legendFormat": "{{ constraint }}"
+      }]
+    },
+    {
+      "id": 7, "type": "timeseries", "title": "Latency Percentiles",
+      "gridPos": { "x": 0, "y": 12, "w": 12, "h": 8 },
+      "fieldConfig": { "defaults": { "unit": "ms" } },
+      "targets": [
+        { "expr": "histogram_quantile(0.50, rate(vh2_validator_latency_ms_bucket[5m]))", "legendFormat": "p50" },
+        { "expr": "histogram_quantile(0.95, rate(vh2_validator_latency_ms_bucket[5m]))", "legendFormat": "p95" },
+        { "expr": "histogram_quantile(0.99, rate(vh2_validator_latency_ms_bucket[5m]))", "legendFormat": "p99" }
+      ]
+    },
+    {
+      "id": 8, "type": "timeseries", "title": "Requests/sec by Endpoint",
+      "gridPos": { "x": 12, "y": 12, "w": 12, "h": 8 },
+      "fieldConfig": { "defaults": { "unit": "reqps" } },
+      "targets": [{
+        "expr": "rate(vh2_endpoint_requests_total[1m])",
+        "legendFormat": "{{ endpoint }}"
+      }]
+    }
+  ]
+}

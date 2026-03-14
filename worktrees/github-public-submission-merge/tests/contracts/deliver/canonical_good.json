@@ -1,0 +1,12 @@
+{
+  "request_id": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+  "artifacts": [
+    {
+      "artifact_type": "report",
+      "artifact_key": "s3://bucket/reports/final.pdf",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "manifest_key": "s3://bucket/manifests/v1.json",
+  "delivered_at": "2023-10-27T10:05:00Z"
+}

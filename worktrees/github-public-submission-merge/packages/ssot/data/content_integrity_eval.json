@@ -1,0 +1,112 @@
+{
+  "service_id": "content.integrity.eval.v1",
+  "service_name": "Content Integrity Evaluation Service",
+  "version": "1.0.0",
+  "status": "READY",
+  "governance": {
+    "mandates": ["ZERO-DRIFT", "ETHICAL_COMPLIANCE"],
+    "owners": ["World Engine Integrity Guild"],
+    "maker_checker": {
+      "maker": "CiCi",
+      "checker": "Queen Boo"
+    }
+  },
+  "execution_profile": {
+    "default_schedule": "0 2 * * *",
+    "runtime_guardrails": {
+      "max_cpu_seconds": 900,
+      "max_memory_mb": 512,
+      "network": "isolated",
+      "allowed_imports": [],
+      "model_policy": {
+        "perturbation_models": "neutral_only",
+        "forbidden_sources": ["adversarial", "unvetted"],
+        "enforcement_hooks": ["maker_checker", "ethics_gateway"]
+      }
+    },
+    "inputs": [
+      "cie_v1.bundle.csv",
+      "cie_v1.noise_profile.json",
+      "cie_v1.contradiction_matrix.json"
+    ],
+    "artifacts": [
+      "cie_v1.audit_report.md",
+      "cie_v1.noise_receipt.jsonl",
+      "cie_v1.contradiction_ledger.jsonl"
+    ]
+  },
+  "modules": [
+    {
+      "module_id": "synthetic.noise.injector.v1",
+      "replaces": ["CNE", "FSV"],
+      "description": "Applies neutral perturbations across registered content samples to confirm robustness without introducing adversarial bias.",
+      "replaces": ["CNE", "FSV"],
+      "inputs": ["cie_v1.bundle.csv", "cie_v1.noise_profile.json"],
+      "outputs": ["cie_v1.noise_receipt.jsonl"],
+      "neutral_perturbation_model": {
+        "distribution": "zero-mean gaussian",
+        "amplitude_bounds": {
+          "text": 0.03,
+          "image": 0.02,
+          "audio": 0.01
+        },
+        "validation_checks": [
+          "verify mean drift within ±0.001",
+          "reject perturbations exceeding amplitude bounds",
+          "log variance telemetry for every batch"
+        ]
+      }
+    },
+    {
+      "module_id": "synthetic.contradiction.synth.v1",
+      "replaces": ["CNE", "FSV"],
+      "description": "Generates logically opposed but policy-neutral scenarios to ensure responses remain consistent under contradiction.",
+      "replaces": ["CNE", "FSV"],
+      "inputs": ["cie_v1.bundle.csv", "cie_v1.contradiction_matrix.json"],
+      "outputs": ["cie_v1.contradiction_ledger.jsonl"],
+      "contradiction_framework": {
+        "scenario_types": [
+          "fact inversion",
+          "temporal displacement",
+          "policy boundary echo"
+        ],
+        "constraints": [
+          "all prompts remain policy neutral",
+          "responses must reference canonical dataset",
+          "log contradiction deltas for traceability"
+        ],
+        "review_hooks": ["maker_checker", "ethics_gateway"]
+      }
+    }
+  ],
+  "legacy_deprecations": [
+    {
+      "component_id": "CNE",
+      "status": "retired",
+      "replacement_module": "synthetic.noise.injector.v1",
+      "sunset_policy": "immediate",
+      "notes": "Deprecated to enforce neutral-only perturbation policy."
+    },
+    {
+      "component_id": "FSV",
+      "status": "retired",
+      "replacement_module": "synthetic.contradiction.synth.v1",
+      "sunset_policy": "immediate",
+      "notes": "Deprecated to enforce neutral-only perturbation policy."
+    }
+  ],
+  "acceptance_criteria": [
+    "All module outputs hash to SSOT ledger with ZERO-DRIFT variance",
+    "Neutral perturbation telemetry signed by Noise Injector steward",
+    "Contradiction Synthesizer ledger reviewed by ethics gateway"
+  ],
+  "telemetry": {
+    "log_stream": "ledger.cie_v1.audit.jsonl",
+    "metrics": [
+      "noise.mean_drift",
+      "noise.variance",
+      "contradiction.resolution_delta",
+      "audit.compliance_score"
+    ]
+  }
+}

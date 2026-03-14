@@ -1,0 +1,3 @@
+{
+  "PRT.AUTO_REPAIR.V1": "## Trigger Reason / Mode / Policy Zone / Risk\n- Trigger Reason: {{trigger_reason}}\n- Mode: {{mode}}\n- Policy Zone: {{policy_zone}}\n- Risk: {{risk}}\n\n## Provenance block (fingerprint, command log excerpt, internet access, speculative attempts, provenance store ID)\n- fingerprint: {{fingerprint}}\n- command_log_excerpt: {{command_log_excerpt}}\n- internet_access: {{internet_access}}\n- speculative_attempts: {{speculative_attempts}}\n- provenance_store_id: {{provenance_store_id}}\n\n## Candidate summary\n{{candidate_summary}}\n\n## Acceptance invariants (checked)\n- [ ] {{acceptance_invariant_1}}\n- [ ] {{acceptance_invariant_2}}\n- [ ] {{acceptance_invariant_3}}\n\n## Final reviewer note\n{{final_reviewer_note}}\n"
+}

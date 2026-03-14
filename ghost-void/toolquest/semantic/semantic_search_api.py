@@ -235,6 +235,8 @@ async def generate_challenge(request: ChallengeRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+<<<<<<< HEAD
+=======
         return results
     except HTTPException:
         raise
@@ -256,6 +258,7 @@ async def generate_challenge_endpoint(tool_id: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+>>>>>>> origin/main
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8001)

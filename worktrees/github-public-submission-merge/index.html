@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sovereign Command Surface v10.0</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@langchain/core/dist/messages.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@langchain/google-genai/dist/chat_models.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/2.1.0/showdown.min.js"></script>
+</head>
+<body>
+    <header class="sovereign-command-header">
+        <div class="header-metadata">
+            <span>Epoch 042</span>
+            <span>Node ID: 7C4A1B</span>
+            <span>Compliance: NIST-Traceable</span>
+        </div>
+        <nav>
+            <a href="#executive-brief">Brief</a>
+            <a href="#lattice-fidelity">Lattice Fidelity</a>
+            <a href="#physicalized-lab">Physicalized Lab</a>
+            <a href="#sovereign-intelligence">Intelligence Hub</a>
+            <a href="#spacetime-ledger">Ledger</a>
+        </nav>
+    </header>
+
+    <main>
+        <section id="executive-brief" class="executive-synthesis-brief">
+            <h2>Executive Synthesis Brief</h2>
+            <p>Exploring the "Shared Obsession" between automotive tuning (Vantage) and digital reality. This application provides a centralized hub for monitoring Zero-Drift stability, verifying NIST-traceable metrology, and interacting with the 1.3 million asset manifold through a Gemini-powered intelligence layer.</p>
+        </section>
+
+        <section id="lattice-fidelity" class="lattice-fidelity-dashboard">
+            <h2>Lattice Fidelity Dashboard</h2>
+            <div class="dashboard-grid">
+                <div class="fidelity-monitor">
+                    <h3>Fidelity Monitor</h3>
+                    <canvas id="fidelityChart"></canvas>
+                </div>
+                <div class="metrology-checksum">
+                    <h3>Metrology Checksum</h3>
+                    <div class="status-card">
+                        <h4>Starrett RS81.W</h4>
+                        <p>Status: <span class="status-ok">OK</span></p>
+                    </div>
+                    <div class="status-card">
+                        <h4>Granite Plate</h4>
+                        <p>Status: <span class="status-ok">OK</span></p>
+                    </div>
+                </div>
+                <div class="asset-manifold">
+                    <h3>Asset Manifold</h3>
+                    <input type="text" id="assetSearch" placeholder="Search assets...">
+                    <div class="asset-grid">
+                        <div class="asset-item">
+                            <img src="https://jules.google.com/session/9197931925258069041/code/apps/web/public/assets/building.png" alt="Asset 1">
+                            <p>Asset #000001</p>
+                        </div>
+                        <div class="asset-item">
+                            <img src="https://jules.google.com/session/9197931925258069041/code/apps/web/public/assets/building.png" alt="Asset 2">
+                            <p>Asset #000002</p>
+                        </div>
+                        <div class="asset-item">
+                            <img src="https://jules.google.com/session/9197931925258069041/code/apps/web/public/assets/building.png" alt="Asset 3">
+                            <p>Asset #000003</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="physicalized-lab" class="physicalized-lab">
+            <h2>The Physicalized Lab</h2>
+            <div class="lab-grid">
+                <div class="torque-logic-simulator">
+                    <h3>Torque Logic Simulator</h3>
+                    <p>Validating the 133 lb-ft Vantage hub strike.</p>
+                </div>
+                <div class="socio-physical-matrix">
+                    <h3>Socio-Physical Matrix</h3>
+                    <canvas id="resonanceRadarChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <section id="sovereign-intelligence" class="sovereign-intelligence-hub">
+            <h2>Sovereign Intelligence Hub</h2>
+            <div class="intelligence-grid">
+                <div class="audit-synthesis">
+                    <h3>Audit Synthesis</h3>
+                    <div class="api-key-input">
+                        <label for="apiKey">Gemini API Key:</label>
+                        <input type="password" id="apiKey" name="apiKey" placeholder="Enter your API key">
+                    </div>
+                    <button id="generate-debrief">Generate Technical Debrief</button>
+                    <div id="debrief-output"></div>
+                </div>
+                <div class="consensus-handshake">
+                    <h3>Consensus Handshake</h3>
+                    <p>Multi-speaker TTS enabled technical debate.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="spacetime-ledger" class="bi-pan-spacetime-ledger">
+            <h2>Bi-PAN Spacetime Ledger</h2>
+            <div class="terminal">
+                <p>> System Initialized...</p>
+                <p>> Jixie state validation: OK</p>
+            </div>
+        </section>
+    </main>
+
+    <script type="module" src="main.js"></script>
+</body>
+</html>

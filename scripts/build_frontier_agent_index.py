@@ -61,6 +61,8 @@ FRONTIER_MODELS: list[dict[str, Any]] = [
         "role": "healer",
         "extra_skills": ["regression_triage", "self_healing"],
     },
+<<<<<<< HEAD
+=======
     {
         "agent_id": "agent:frontier.reviewer",
         "display_name": "Frontier Reviewer",
@@ -70,6 +72,7 @@ FRONTIER_MODELS: list[dict[str, Any]] = [
         "role": "observer",
         "extra_skills": ["code_review", "security_audit"],
     },
+>>>>>>> origin/main
 ]
 
 

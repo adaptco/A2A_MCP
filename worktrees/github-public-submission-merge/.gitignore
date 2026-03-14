@@ -1,0 +1,122 @@
+
+!fixtures/plan_release_candidate_input.json
+# Build artifacts
+# CIE smoke artifacts
+# Custom scripts / local fixtures
+# Docker
+# Environment files & secrets
+# GitHub Actions logs & artifacts
+# IDE / Editor
+# Java (for OpenAPI-Diff)
+# Node.js
+# Operating System
+# Pytest / test artifacts
+# Python
+# Runtime data
+# Spectral & API-Diff caches
+#########
+##########
+############
+###############
+##################
+##########################
+##############################
+##################################
+*.class
+*.crt
+*.db
+*.egg-info/
+*.jks
+*.key
+*.log
+*.njsproj
+*.ntvs*
+*.pem
+*.pid
+*.py[cod]
+*.pyd
+*.pyo
+*.qcap
+*.sln
+*.suo
+*.tgz
+.DS_Store
+.eggs/
+.env
+.env.*
+.tmp/
+*.pid
+*.log
+coverage/
+dist/
+# Operating System
+##################
+.DS_Store
+Thumbs.db
+
+out/
+.out/
+tmp/
+temp/
+
+# Runtime data
+###############
+logs/
+*.log
+coverage/
+.nyc_output/
+
+# Environment files & secrets
+##############################
+.env
+.env.*.local
+.env.local
+.github/workflows/**/action-logs/
+.github/workflows/**/artifacts/
+.idea/
+.nyc_output/
+.out/
+.package-lock.json
+.pnpm-debug.log*
+.pytest_cache/
+.spectral/
+.tmp/
+.venv/
+.vscode/
+__pycache__/
+build/
+coverage/
+dist/
+docker-compose.*.yml
+docker-compose.override.yml
+ENV/
+firebase-debug.log
+fixtures/*.json
+gh_2.44.1_linux_amd64/
+logs/
+node_modules/
+npm-debug.log*
+openapi-diff.cache/
+out/
+pnpm-debug.log*
+runtime/cie_v1_smoke.log.jsonl
+*.egg-info/
+/extensions/
+/*.zip
+/*.patch
+/_projects/
+/browser_recordings/
+/html_artifacts/
+/code/
+scripts/local-*.*
+target/
+temp/
+test_*.db
+test_output*.txt
+test_result*.txt
+Thumbs.db
+tmp/
+venv/
+yarn.lock
+yarn-debug.log*
+yarn-error.log*

@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "HandshakeBoundV1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "request_id", "handshake_id", "bound_at", "binding"],
+  "properties": {
+    "schema_version": { "const": "handshake_bound.v1" },
+    "request_id": { "type": "string", "minLength": 1 },
+    "handshake_id": { "type": "string", "minLength": 1 },
+    "bound_at": { "type": "number" },
+    "binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["requester_agent_id", "target_agent_id", "session_id", "expires_at"],
+      "properties": {
+        "requester_agent_id": { "type": "string", "minLength": 1 },
+        "target_agent_id": { "type": "string", "minLength": 1 },
+        "session_id": { "type": "string", "minLength": 1 },
+        "expires_at": { "type": "number" }
+      }
+    }
+  }
+}

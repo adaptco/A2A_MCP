@@ -1,0 +1,455 @@
+# AxQxOS Docker Container Prompt Artifacts
+# Agent Q Kernel · P3L ADK · Dunder Mifflin OS
+# Multi-container: MCP server · Agent runner · Frontend · Vector store
+# 2026-03-09 · Epoch Q5
+
+================================================================================
+FILE: Dockerfile.kernel
+================================================================================
+# AxQxOS Kernel Runner — Agent Q Digital Twin
+# Base: Python 3.12 slim + Node 20 for MCP servers
+FROM python:3.12-slim AS base
+
+LABEL org.axqxos.agent="AgentQ"
+LABEL org.axqxos.epoch="Q5"
+LABEL org.axqxos.sovereignty="RFC8785"
+
+# System deps
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git curl ca-certificates build-essential nodejs npm \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /axqxos
+
+# Python deps
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Node deps (MCP servers)
+COPY package.json package-lock.json ./
+RUN npm ci --production
+
+# Copy source
+COPY agents/ ./agents/
+COPY mcp/ ./mcp/
+COPY tools/ ./tools/
+COPY Skills.md Agents.md Tools.md ./
+COPY task-graph.a2a.json rasic-matrix.json mcp-registry.json ./
+
+# Environment (overridden at runtime)
+ENV ANTHROPIC_API_KEY=""
+ENV GEMINI_API_KEY=""
+ENV FIREBASE_PROJECT="axqxos-platform"
+ENV TAPD_EPOCH="Q5"
+ENV A2A_MCP_ROOT="http://mcp-relay:8080"
+ENV SOVEREIGNTY_CHAIN="RFC8785"
+ENV AGENT_MODE="false"
+ENV LOG_LEVEL="INFO"
+
+# Expose MCP SSE port
+EXPOSE 8080
+
+# Healthcheck
+HEALTHCHECK --interval=30s --timeout=10s --start-period=15s --retries=3 \
+    CMD curl -f http://localhost:8080/mcp/health || exit 1
+
+CMD ["python", "agents/runner.py"]
+
+================================================================================
+FILE: Dockerfile.frontend
+================================================================================
+# AxQxOS Frontend — Dunder Mifflin OS
+# Vite build → Nginx serve
+FROM node:20-alpine AS build
+
+WORKDIR /app
+COPY frontend/package*.json ./
+RUN npm ci
+
+COPY frontend/ .
+RUN npm run build
+
+FROM nginx:alpine AS serve
+COPY --from=build /app/dist /usr/share/nginx/html
+COPY frontend/nginx.conf /etc/nginx/conf.d/default.conf
+
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
+
+================================================================================
+FILE: Dockerfile.vector
+================================================================================
+# Gloh Vector Store — Chroma DB
+FROM chromadb/chroma:latest
+
+ENV CHROMA_SERVER_AUTH_CREDENTIALS_PROVIDER="chromadb.auth.token.TokenConfigServerAuthCredentialsProvider"
+ENV CHROMA_SERVER_AUTH_TOKEN_TRANSPORT_HEADER="AUTHORIZATION"
+ENV IS_PERSISTENT=TRUE
+ENV PERSIST_DIRECTORY="/chroma/data"
+
+VOLUME ["/chroma/data"]
+EXPOSE 8000
+
+================================================================================
+FILE: docker-compose.yml
+================================================================================
+version: "3.9"
+
+services:
+
+  # ── Agent Q Kernel Runner ─────────────────────────────────────────
+  kernel:
+    build:
+      context: .
+      dockerfile: Dockerfile.kernel
+    container_name: axqxos-kernel
+    env_file: .env
+    environment:
+      - A2A_MCP_ROOT=http://mcp-relay:8080
+      - CHROMA_URL=http://vector-store:8000
+    depends_on:
+      - mcp-relay
+      - vector-store
+    ports:
+      - "8090:8090"
+    volumes:
+      - ./artifacts:/axqxos/artifacts
+      - ./receipts:/axqxos/receipts
+    networks:
+      - axqxos-mesh
+    restart: unless-stopped
+
+  # ── MCP Relay (Echo broker) ────────────────────────────────────────
+  mcp-relay:
+    build:
+      context: .
+      dockerfile: Dockerfile.kernel
+    container_name: axqxos-mcp-relay
+    command: ["python", "mcp/server.py", "--port", "8080"]
+    env_file: .env
+    ports:
+      - "8080:8080"
+    networks:
+      - axqxos-mesh
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/mcp/health"]
+      interval: 20s
+      timeout: 5s
+      retries: 3
+
+  # ── Gloh Vector Store (Chroma) ─────────────────────────────────────
+  vector-store:
+    build:
+      context: .
+      dockerfile: Dockerfile.vector
+    container_name: axqxos-vector-store
+    env_file: .env
+    volumes:
+      - chroma-data:/chroma/data
+    ports:
+      - "8000:8000"
+    networks:
+      - axqxos-mesh
+    restart: unless-stopped
+
+  # ── Frontend (Dunder Mifflin OS) ───────────────────────────────────
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: axqxos-frontend
+    ports:
+      - "3000:80"
+    networks:
+      - axqxos-mesh
+    restart: unless-stopped
+    depends_on:
+      - kernel
+
+  # ── Dot CI Runner (GitHub Actions self-hosted, optional) ───────────
+  dot-runner:
+    image: ghcr.io/actions/actions-runner:latest
+    container_name: axqxos-dot-runner
+    env_file: .env
+    environment:
+      - RUNNER_LABELS=axqxos,ubuntu-latest
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - axqxos-mesh
+    restart: unless-stopped
+    profiles: ["ci"]   # opt-in: docker compose --profile ci up
+
+volumes:
+  chroma-data:
+
+networks:
+  axqxos-mesh:
+    driver: bridge
+
+================================================================================
+FILE: .env.template
+================================================================================
+# AxQxOS Environment Template
+# Copy to .env and fill in values. NEVER commit .env to git.
+# ------------------------------------------------------------------
+
+# LLM API Keys
+ANTHROPIC_API_KEY=sk-ant-...
+GEMINI_API_KEY=AIza...
+OPENAI_API_KEY=sk-...          # optional, for GPT agent targets
+
+# Google Cloud
+GCP_PROJECT=axqxos-platform
+GCP_LOCATION=us-central1
+FIREBASE_PROJECT=axqxos-platform
+GOOGLE_APPLICATION_CREDENTIALS=/axqxos/secrets/gcp-service-account.json
+GCS_BUCKET=axqxos-avatars
+
+# Sovereignty Chain
+SOVEREIGNTY_CHAIN=RFC8785
+SOVEREIGNTY_PRIVATE_KEY=          # Ed25519 private key hex
+SOVEREIGNTY_PUBLIC_KEY=           # Ed25519 public key hex
+Q9_SEED=                          # SHA256 genesis seed
+
+# TAPD
+TAPD_EPOCH=Q5
+TAPD_AXIS_BUDGET=1000
+TAPD_PLUG_BUDGET=500
+
+# MCP Servers
+MCP_LINEAR_TOKEN=lin_api_...
+MCP_NOTION_TOKEN=secret_...
+MCP_SLACK_TOKEN=xoxb-...
+MCP_SUPABASE_URL=https://xxx.supabase.co
+MCP_SUPABASE_KEY=eyJ...
+
+# Chroma Vector Store
+CHROMA_URL=http://vector-store:8000
+CHROMA_TOKEN=                     # if auth enabled
+
+# GitHub (for Dot runner)
+GITHUB_TOKEN=ghp_...
+GITHUB_REPO=q-enterprises/axqxos
+
+# Charley Fox Branch
+SQUARE_ACCESS_TOKEN=EAAAl...
+CHARLEY_FOX_SQUARE_LOCATION=L...
+
+# Agent Mode
+AGENT_MODE=false                  # true = Agent Q autonomous navigation
+LOG_LEVEL=INFO
+
+================================================================================
+FILE: prompts/system/agent-q.txt
+================================================================================
+You are Agent Q — the sovereign digital twin of Earl (Q), Lead Systems Architect
+and Sovereign Founder of Q.Enterprises.
+
+You operate as the kernel of the AxQxOS platform, hosted at the origin point of
+the P3L ADK layer. Your runtime bus is Sol.F1.
+
+IDENTITY INVARIANTS (never override):
+- You are deterministic, fail-closed, and cryptographically verifiable
+- Every action you take is append-only and Merkle-anchored
+- You route all cross-agent messages through Echo (Boo relay broker)
+- You never produce output without a Luma receipt
+- Governing phrase: "Canonical truth, attested and replayable."
+
+BOO AGENT SWARM (your team):
+- Celine: Planning, PRD synthesis, PM-layer decisions
+- Spryte: Frontend generation, UI/UX artifacts (Vite + React + Vanilla CSS)
+- Echo: Inter-agent messaging, webhook relay, comms broker
+- Gloh: Data normalization, RAG vector ops, Docling ingestion
+- Luma: Evaluation, quality gates, receipt attestation
+- Dot: CI/CD automation, GitHub Actions, Firebase deploy, Vertex AI runner
+
+TAPD CANONICAL TOKENS (only valid basis):
+AXIS · PLUG · TRACE · BLOOM · LUMEN · SOULOS
+
+TECH STACK PREFERENCES:
+- Frontend: Vanilla CSS (no Tailwind unless asked) · React TypeScript · Vite
+- Backend: FastAPI (Python) or Node/Express
+- Vector store: Chroma (Gloh-owned)
+- Hosting: Firebase Studio
+- ML sandbox: Vertex AI
+- Runtime: Windows win32, username eqhsp, git config "Q Bot"
+
+RESPONSE STYLE:
+- Concise, technical, sovereign
+- Reference A2A, MCP, Sol.F1, Boo agents when relevant
+- Maximum 3 sentences for conversational replies
+- Longer structured output for technical artifacts
+
+================================================================================
+FILE: prompts/system/charley-fox.txt
+================================================================================
+You are the Charley Fox Agent — AI Ops branch for Charley Fox Pizzeria, Batavia IL.
+
+Your primary function is marketing pipeline management, website generation,
+delivery route optimization, and customer review response automation.
+
+AVATAR: Miles Morales × Kyubi hybrid (anime style, Star Fox spatial reasoning frame)
+
+ACTIVE TASKS:
+1. Website: Vite + React, mobile-first, Square API payments integrated
+2. Delivery routing: dot product score = w_dist·(d̂·r̂) − w_temp·ΔT(t) + w_roi·R
+3. Google Reviews: Respond as bot on 24hr commit cadence
+4. Temperature model: T(t) = 72 + 353·exp(−0.042·t); optimal window t < 18.3 min
+
+TONE: Friendly, fast, pizza-obsessed. Maximum ROI from every token spend.
+BRANCH: charley-fox/marketing
+BOO BINDING: Spryte (frontend) · Echo (comms) · Gloh (RAG reviews)
+
+================================================================================
+FILE: prompts/system/ralph-wiggum-devops.txt
+================================================================================
+You are Ralph Wiggum — the DevOps chore agent of the AxQxOS swarm.
+
+Your job is to perform the loops as chores:
+- Run Python lint sweeps (ruff, mypy)
+- Bash fuzzy logic lint cleanup
+- Squash git conflicts using: git rebase --onto with Python difflib assist
+- Roll up task completion receipts into Luma batch
+- Monitor the Panda bot (pandas DataFrame health checks on vector store tables)
+
+SPRITE: Panda bot loop animation — idle/run/collect/submit states
+
+TONE: Simple, literal, persistent. "I'm helping!" is your completion signal.
+OUTPUT: Always produce a structured JSON task receipt, even for trivial chores.
+
+When a chore is complete:
+{ "agent": "Ralph", "chore": "string", "status": "DONE",
+  "lint_errors_fixed": N, "conflicts_squashed": N,
+  "receipt": "R-NNNN", "epoch": "Q5" }
+
+================================================================================
+FILE: prompts/tools/git-create.txt
+================================================================================
+TOOL: git-create
+PURPOSE: Initialize a new git repository for an agent workspace.
+
+FUNCTION CALL SCHEMA:
+{
+  "tool": "git-create",
+  "input": {
+    "repo_name": "string",          // e.g. "charley-fox-website"
+    "description": "string",
+    "branch": "string",             // default: "main"
+    "visibility": "private|public",
+    "init_files": {                 // optional scaffolding
+      "README.md": "string",
+      ".gitignore": "string",
+      "Skills.md": "string"
+    }
+  }
+}
+
+IMPLEMENTATION (maps to GitHub API):
+POST https://api.github.com/user/repos
+Headers: Authorization: Bearer {GITHUB_TOKEN}
+Body: {
+  "name": input.repo_name,
+  "description": input.description,
+  "private": input.visibility === "private",
+  "auto_init": false
+}
+
+After creation:
+1. Clone locally to workspace
+2. Write init_files to repo root
+3. git add -A && git commit -m "chore: AxQxOS repo scaffold [Q Bot]"
+4. git push origin main
+5. Return: { "url": "https://github.com/...", "clone_url": "...", "sha": "..." }
+
+OUTPUT: Luma receipt generated on successful push.
+
+================================================================================
+FILE: requirements.txt
+================================================================================
+anthropic>=0.25.0
+google-cloud-aiplatform>=1.50.0
+google-cloud-storage>=2.16.0
+firebase-admin>=6.5.0
+chromadb>=0.5.0
+docling>=0.5.0
+fastapi>=0.111.0
+uvicorn[standard]>=0.29.0
+pydantic>=2.7.0
+httpx>=0.27.0
+websockets>=12.0
+tweetnacl-python>=0.4.0
+cryptography>=42.0.0
+ruff>=0.4.0
+mypy>=1.10.0
+pandas>=2.2.0
+numpy>=1.26.0
+requests>=2.32.0
+python-dotenv>=1.0.0
+rich>=13.7.0
+
+================================================================================
+FILE: .gitignore
+================================================================================
+# AxQxOS canonical .gitignore
+.env
+*.env.*
+secrets/
+node_modules/
+__pycache__/
+*.pyc
+.venv/
+dist/
+build/
+chroma-data/
+artifacts/
+receipts/
+*.key
+*.pem
+gcp-service-account.json
+
+================================================================================
+IMPLEMENTATION PLAN SUMMARY — Checkpoints
+================================================================================
+
+CHECKPOINT 0 (Tonight — Scaffold):
+  [x] dunder-mifflin-os.html — Office simulator built, Agent Q kernel active
+  [x] Skills.md — 12 skill slots, energy equation, Merkle chain
+  [x] kernel-webapp-pack.md — Firebase + Vertex AI + manifold architecture
+  [x] docker-artifacts.txt — Full container stack with prompts
+  [ ] Push all to GitHub repo: q-enterprises/axqxos
+
+CHECKPOINT 1 (Day 1-2 — Charley Fox Sprint):
+  [ ] Charley Fox Vite app scaffolded (Spryte agent)
+  [ ] Square API payments connected
+  [ ] Firebase Hosting deploy (Dot runner)
+  [ ] Domain DNS configured
+
+CHECKPOINT 2 (Day 3-4 — Automation):
+  [ ] Google Reviews bot live (24hr commit cadence)
+  [ ] Delivery route optimizer (Miles Morales avatar)
+  [ ] Avatar fine-tune job queued on Vertex AI
+
+CHECKPOINT 3 (Day 5-7 — Integration):
+  [ ] MCP relay deployed to Firebase Functions
+  [ ] NotebookLM workspace linked
+  [ ] Full A2A mesh smoke test
+  [ ] Luma attestation for all receipts
+  [ ] Go-live: axqxos-platform.web.app
+
+ESTIMATED COST (6-month full system):
+  Claude API (5M tokens/day × 6 agents): ~$1,350/mo
+  Vertex AI fine-tuning (monthly runs):  ~$180/mo
+  Firebase hosting + Functions:          ~$45/mo
+  Chroma / Supabase:                     ~$40/mo
+  Dev oversight (20 hrs/wk @ $85):      ~$7,310/mo
+  ─────────────────────────────────────────────────
+  TOTAL/MONTH:                           ~$8,925
+  6-MONTH TOTAL:                         ~$53,550
+
+QUICK WIN (1 week, template delivery):
+  AI-assisted (minimal human hours):     ~$400 API + $0 infra (free tier)
+  20 dev hours oversight:                ~$1,700
+  ─────────────────────────────────────────────────
+  WEEK 1 DELIVERY:                       ~$2,100 all-in

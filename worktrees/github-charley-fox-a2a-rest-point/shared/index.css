@@ -1,0 +1,485 @@
+:root {
+  color-scheme: dark;
+  --bg: #130d0a;
+  --panel: rgba(33, 18, 12, 0.84);
+  --line: rgba(255, 214, 183, 0.16);
+  --text: #fff7ef;
+  --muted: #d8bfad;
+  --accent: #ff8d3a;
+  --mint: #7ce0c3;
+  --danger: #ff6678;
+  --shadow: 0 28px 90px rgba(0, 0, 0, 0.38);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: "Space Grotesk", sans-serif;
+  color: var(--text);
+  background:
+    radial-gradient(circle at top left, rgba(255, 141, 58, 0.18), transparent 28%),
+    radial-gradient(circle at 88% 14%, rgba(124, 224, 195, 0.12), transparent 18%),
+    linear-gradient(160deg, #090607 0%, #170f0b 48%, #120d0a 100%);
+  overflow-x: hidden;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+  background-size: 46px 46px;
+  mask-image: radial-gradient(circle at center, black 55%, transparent 100%);
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+}
+
+button {
+  border: 0;
+}
+
+.app-shell {
+  width: min(1380px, calc(100vw - 32px));
+  margin: 0 auto;
+  padding: 28px 0 40px;
+}
+
+.topline,
+.footer-bar,
+.section-head,
+.hero-actions,
+.range-header,
+.meta-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  align-items: center;
+}
+
+.topline {
+  margin-bottom: 18px;
+  color: var(--muted);
+  font-size: 0.82rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.hero-grid,
+.dashboard-grid,
+.hero-copy,
+.mission-grid {
+  display: grid;
+  gap: 18px;
+}
+
+.hero-grid {
+  grid-template-columns: minmax(0, 1.35fr) minmax(360px, 0.65fr);
+  margin-bottom: 18px;
+}
+
+.dashboard-grid {
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
+}
+
+.hero-copy {
+  grid-template-columns: minmax(0, 1.15fr) minmax(280px, 0.85fr);
+  align-items: center;
+}
+
+.mission-grid {
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 0.9fr);
+}
+
+.stack,
+.hero-panel,
+.brief-panel,
+.avatar-meta,
+.field,
+.range-field,
+.mission-rail,
+.insight-grid {
+  display: grid;
+  gap: 18px;
+}
+
+.stack {
+  gap: 18px;
+}
+
+.panel {
+  position: relative;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 28px;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(18px);
+  overflow: hidden;
+}
+
+.panel::after {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  border-radius: 27px;
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  pointer-events: none;
+}
+
+.hero-panel,
+.brief-panel,
+.mission-panel,
+.ledger-panel,
+.insight-panel {
+  padding: 24px;
+}
+
+.eyebrow,
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  width: fit-content;
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+}
+
+.eyebrow {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.eyebrow strong {
+  color: var(--accent);
+}
+
+.hero-title {
+  margin: 16px 0 10px;
+  font-family: "Cormorant Garamond", serif;
+  font-size: clamp(2.8rem, 6vw, 4.8rem);
+  line-height: 0.92;
+  letter-spacing: -0.04em;
+}
+
+.hero-title em {
+  color: var(--accent);
+  font-style: normal;
+}
+
+.hero-body,
+.section-head p,
+.insight-card p,
+.insight-card li,
+.mission-copy p,
+.mission-detail p,
+.mission-detail li,
+.receipt-empty {
+  color: var(--muted);
+  line-height: 1.65;
+}
+
+.hero-stats,
+.hero-form,
+.receipt-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.hero-stats {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.hero-form,
+.receipt-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.field.wide {
+  grid-column: 1 / -1;
+}
+
+.field label,
+.stat-label {
+  color: var(--muted);
+  font-size: 0.82rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.field input,
+.field textarea,
+.receipt-empty,
+.insight-card,
+.mission-detail,
+.stat-card,
+.avatar-shell,
+.mission-row,
+.receipt-card {
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.field input,
+.field textarea {
+  width: 100%;
+  padding: 14px 16px;
+  color: var(--text);
+}
+
+.field textarea {
+  min-height: 92px;
+  resize: vertical;
+}
+
+.stat-card,
+.avatar-shell,
+.mission-detail,
+.insight-card,
+.receipt-empty,
+.receipt-card {
+  padding: 16px 18px;
+}
+
+.stat-value {
+  font-size: 1.7rem;
+  font-weight: 700;
+}
+
+.stat-meta,
+.muted,
+.mission-metrics,
+.range-header,
+.meta-row strong {
+  color: var(--muted);
+  font-size: 0.84rem;
+}
+
+.action-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-width: 174px;
+  padding: 14px 18px;
+  border-radius: 18px;
+  cursor: pointer;
+  transition: transform 160ms ease;
+}
+
+.action-button:hover,
+.mission-row:hover {
+  transform: translateY(-1px);
+}
+
+.action-button.primary {
+  color: #20110a;
+  background: linear-gradient(135deg, #ffb15e 0%, #ff7f38 100%);
+}
+
+.action-button.secondary,
+.pill.orange,
+.pill.mint,
+.pill.danger {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.pill.orange {
+  border: 1px solid rgba(255, 141, 58, 0.28);
+}
+
+.pill.mint {
+  border: 1px solid rgba(124, 224, 195, 0.28);
+}
+
+.pill.danger {
+  border: 1px solid rgba(255, 102, 120, 0.26);
+}
+
+.avatar-shell h2,
+.section-head h3,
+.mission-detail h4,
+.insight-card h4 {
+  margin: 0 0 8px;
+}
+
+.avatar-figure {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 236px;
+}
+
+.avatar-ring {
+  position: absolute;
+  inset: 26px;
+  border: 1px dashed rgba(255, 199, 150, 0.24);
+  border-radius: 50%;
+  animation: spin 20s linear infinite;
+}
+
+.token-badge {
+  position: absolute;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.token-badge.one { top: 26px; left: 18px; }
+.token-badge.two { top: 42px; right: 14px; }
+.token-badge.three { bottom: 24px; left: 42px; }
+
+.mission-row {
+  display: grid;
+  grid-template-columns: 92px minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: center;
+  padding: 16px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.mission-row[data-active="true"] {
+  background: rgba(255, 141, 58, 0.11);
+}
+
+.mission-row[data-complete="true"] {
+  background: rgba(124, 224, 195, 0.09);
+}
+
+.mission-phase {
+  display: grid;
+  gap: 4px;
+  color: var(--muted);
+  font-size: 0.76rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.mission-phase strong,
+.mission-copy strong {
+  color: var(--text);
+}
+
+.mission-copy strong {
+  display: block;
+  font-size: 1.06rem;
+  margin-bottom: 6px;
+}
+
+.mission-metrics {
+  display: grid;
+  gap: 8px;
+  justify-items: end;
+}
+
+.ledger-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.ledger-table th,
+.ledger-table td {
+  padding: 12px 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  text-align: left;
+}
+
+.readiness-bar {
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.readiness-bar > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #ff7f38 0%, #ffd166 50%, #7ce0c3 100%);
+}
+
+.fox-svg {
+  width: min(100%, 280px);
+}
+
+.footer-bar {
+  padding: 18px 22px;
+  margin-top: 18px;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  color: var(--muted);
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@media (max-width: 1180px) {
+  .hero-grid,
+  .dashboard-grid,
+  .hero-copy,
+  .mission-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .app-shell {
+    width: min(100vw - 20px, 100%);
+    padding-top: 18px;
+  }
+
+  .topline,
+  .footer-bar,
+  .section-head,
+  .hero-actions,
+  .range-header,
+  .meta-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .hero-stats,
+  .hero-form,
+  .receipt-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .mission-row {
+    grid-template-columns: 1fr;
+  }
+
+  .mission-metrics {
+    justify-items: start;
+  }
+}

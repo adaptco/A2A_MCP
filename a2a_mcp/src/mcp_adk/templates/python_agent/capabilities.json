@@ -1,4 +1,0 @@
-{
-  "name": "python-agent",
-  "endpoints": ["on_actuate", "on_attest", "on_event"]
-}

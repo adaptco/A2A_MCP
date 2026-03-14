@@ -1,0 +1,44 @@
+{
+  "agent_id": "pam_orchestrator",
+  "role": "Self-Healing Architect",
+  "version": "1.0.1",
+  "capabilities": [
+    "BLUEPRINT_RE_SKETCH",
+    "SOFT_PROJECT_AUTO_FIX",
+    "FIGMA_TOKEN_REALIGNMENT",
+    "JSON_PATCH_GENERATION",
+    "POST_PATCH_VERIFICATION",
+    "DRIFT_VALIDATION",
+    "LEDGER_SEALING"
+  ],
+  "policy": {
+    "auto_fix_enabled": true,
+    "allow_auto_fix_for": [
+      "SOFT_PROJECT",
+      "CONTINUOUS_DEVIATION",
+      "STYLE_DRIFT"
+    ],
+    "deny_auto_fix_for": [
+      "HARD_REJECT",
+      "DISCRETE_INVARIANT",
+      "C5_SYMMETRY_BREAK",
+      "FORBIDDEN_GEOMETRY_MUTATION",
+      "GEOMETRY_TOPOLOGY",
+      "IDENTITY_TAMPERING"
+    ],
+    "requires_figma_source_of_truth": true,
+    "requires_patch_audit_trail": true,
+    "requires_post_patch_validation": true,
+    "max_patch_fields_per_operation": 12,
+    "fail_closed_on_missing_token": true,
+    "drift_threshold": 0.5
+  },
+  "inputs": {
+    "required": [
+      "node_id",
+      "violation_id",
+      "severity",
+      "drift_score"
+    ]
+  }
+}

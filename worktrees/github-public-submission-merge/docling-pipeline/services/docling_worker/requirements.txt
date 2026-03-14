@@ -1,0 +1,4 @@
+redis>=5.0.0
+rq>=1.16.0
+pydantic>=2.5.0
+# docling>=0.5.0  # Uncomment when Docling is available

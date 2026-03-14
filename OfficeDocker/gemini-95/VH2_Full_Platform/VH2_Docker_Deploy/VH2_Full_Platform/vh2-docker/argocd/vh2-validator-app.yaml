@@ -1,0 +1,75 @@
+##############################################################################
+# VH2 SOVEREIGN VALIDATOR — ArgoCD Application
+#
+# Auto-sync on git push to main.
+# Post-sync hook: smoke test Job must pass or rollback triggers.
+# Self-healing: any manual kubectl edit is reverted within 3 minutes.
+##############################################################################
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: vh2-sovereign-validator
+  namespace: argocd           # ArgoCD's own namespace
+  labels:
+    app.kubernetes.io/name: vh2-sovereign-validator
+    app.kubernetes.io/part-of: vh2-platform
+  # Prevent accidental deletion via kubectl delete
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+
+spec:
+  # ── SOURCE ─────────────────────────────────────────────────────────────
+  source:
+    repoURL: https://github.com/YOUR_ORG/vh2-sovereign-validator.git  # ← set your repo
+    targetRevision: main
+    path: k8s                 # folder containing kustomization.yaml
+    plugin:
+      name: kustomize         # use kustomize to compose manifests
+
+  # ── DESTINATION ────────────────────────────────────────────────────────
+  destination:
+    server: https://kubernetes.default.svc   # in-cluster
+    namespace: vh2-prod
+
+  # ── SYNC POLICY ────────────────────────────────────────────────────────
+  syncPolicy:
+    automated:
+      prune: true             # delete resources removed from git
+      selfHeal: true          # revert manual kubectl edits
+      allowEmpty: false       # never sync an empty app
+
+    syncOptions:
+      - CreateNamespace=true          # create vh2-prod if absent
+      - PrunePropagationPolicy=foreground
+      - PruneLast=true
+      - ApplyOutOfSyncOnly=true
+      - RespectIgnoreDifferences=true
+      - ServerSideApply=true
+
+    retry:
+      limit: 5
+      backoff:
+        duration: 10s
+        factor: 2
+        maxDuration: 3m
+
+  # ── HEALTH CHECKS (ArgoCD custom) ──────────────────────────────────────
+  # ArgoCD knows about Deployment/Service health natively.
+  # Job health is tracked via the PostSync hook result.
+
+  # ── IGNORE DIFFERENCES (HPA managed replicas) ──────────────────────────
+  ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      jsonPointers:
+        - /spec/replicas      # HPA manages this at runtime
+    - group: autoscaling
+      kind: HorizontalPodAutoscaler
+      jsonPointers:
+        - /spec/metrics       # cluster may inject additional metrics
+
+  # ── PROJECT (default, override if using AppProjects) ───────────────────
+  project: default
+
+  # ── REVISION HISTORY ───────────────────────────────────────────────────
+  revisionHistoryLimit: 10

@@ -1,18 +1,37 @@
-# A2A_MCP Agentic Factory Index
+# 🌌 Agentic Factory: Unified Monorepo Index
 
-This index is the root entrypoint for the Agentic Factory System release-control stack.
+This index serves as the root map for the consolidated Agentic Factory system.
 
-## Kernel And Release Specs
-- `KERNEL_MODEL_SPEC.md`: kernel model contract for vector manifold control and API-token gating.
-- `MANIFOLD_VECTOR_RELEASE_SPEC.md`: release policy for vectorized runtime assignments and MCP handoff.
+## 🤖 Core Agent Surfaces
+- `agents/`: Implementation of specialized agent personas (`managing_agent.py`, `orchestration_agent.py`, `reviewer.py`).
+- `rbac/`: Sovereign Role-Based Access Control and token management.
+- `registry/agents/`: Canonical JSON indexes for agent cards and skills.
+- `mcp_core.py`: Multi-agent Model Context Protocol core module.
 
-## Core Python Surfaces
-- `orchestrator/release_orchestrator.py`: phase resolver and release gating signals.
-- `orchestrator/runtime_bridge.py`: handshake bundle builder and runtime assignment writer.
-- `orchestrator/qube_kernel_bridge.py`: signed chaos/test receipt exporter for a future `qube-kernel` consumer.
-- `schemas/runtime_bridge.py`: typed runtime handoff schema (`runtime.assignment.v1` + kernel model).
-- `schemas/qube_kernel_bridge.py`: typed bridge schema for `chaos.test.receipt.v1` and AXIS receipt tokens.
-- `tests/test_release_orchestrator.py`: release-control behavior tests.
+## 🧵 Orchestration & Middleware
+- `orchestrator/`: Runtime orchestration, release gating (`release_orchestrator.py`), and FSM persistence.
+- `middleware/`: Platform-level middleware for environment integration.
+- `app/`: Production API entrypoints (`server.py`, `mcp_rest_endpoint.py`).
+- `schemas/`: Shared Pydantic contracts for protocol-level messaging.
 
-## API Token Control
-- Runtime assignments reference `A2A_MCP_API_TOKEN` as the required environment variable for release-controlled MCP calls.
+## 🛠️ Skills & Capabilities
+- `skills/`: Pluggable agent skills including:
+  - `recursive-action-handler`: Multi-level task decomposition and routing.
+  - `mcp-entropy-template-router`: Skill-token generation and template routing.
+  - `avatar-mcp-root-context`: Zero-shot context building.
+
+## 🧪 CI/CD & MLOps
+- `mlops_unity_pipeline.py`: Autonomous Unity + RL training pipeline.
+- `scripts/`: Unified automation and utility scripts.
+- `tests/`: End-to-end and unit test suites.
+- `.github/workflows/`: Hardened CI/CD pipelines.
+
+## 🔐 Forensics & Governance
+- `judge/`: LLM-driven decision logic for release gating.
+- `data/events/`: Immutable append-only ledger of state transitions.
+- `scripts/verification/`: Deterministic verification of frozen capsules.
+
+## 📖 Documentation
+- `AGENTS.md`: Agent personas, embedded skills, and RBAC token flow.
+- `Skills.md`: Detailed catalog of available skills and execution patterns.
+- `README.md`: System overview, setup, and architecture maps.

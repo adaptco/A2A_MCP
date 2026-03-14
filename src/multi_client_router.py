@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import hashlib
 import hmac
 from dataclasses import dataclass
@@ -11,10 +12,54 @@ from app.mcp_tooling import TELEMETRY
 
 from drift_suite.drift_metrics import ks_statistic
 
+<<<<<<< HEAD
+
+@dataclass
+class LightweightMCPResult:
+    processed_embedding: np.ndarray
+    arbitration_scores: np.ndarray
+    protocol_features: Dict[str, Any]
+    execution_hash: str
+
+
+class DeterministicMCPCore:
+    """Cheap fallback MCP core for API/runtime flows that should not depend on torch."""
+
+    hidden_dim = 128
+    n_roles = 32
+
+    def __call__(self, namespaced_embedding: np.ndarray) -> LightweightMCPResult:
+        source = np.asarray(namespaced_embedding, dtype=float).ravel()
+        if source.size == 0:
+            source = np.zeros(1, dtype=float)
+
+        expanded = np.resize(source, self.hidden_dim * 8)
+        features = expanded.reshape(self.hidden_dim, 8).mean(axis=1)
+        norm = np.linalg.norm(features)
+        if norm > 0:
+            features = features / norm
+
+        role_logits = np.resize(features, self.n_roles * 4).reshape(self.n_roles, 4).mean(axis=1)
+        role_logits = role_logits - np.max(role_logits)
+        role_exp = np.exp(role_logits)
+        arbitration_scores = role_exp / np.clip(np.sum(role_exp), 1e-12, None)
+
+        execution_hash = hashlib.sha256(features.tobytes()).hexdigest()
+        return LightweightMCPResult(
+            processed_embedding=features.reshape(1, -1),
+            arbitration_scores=arbitration_scores,
+            protocol_features={
+                "similarity_features": np.resize(features, 64).tolist(),
+                "feature_norm": float(np.linalg.norm(source)),
+            },
+            execution_hash=execution_hash,
+        )
+=======
 try:  # pragma: no cover - import guarded for lightweight test environments
     import torch
 except ModuleNotFoundError:  # pragma: no cover
     torch = None
+>>>>>>> origin/main
 
 
 class ClientNotFound(KeyError):
@@ -107,7 +152,7 @@ class ClientTokenPipe:
 
     async def egress(self, mcp_result: Any) -> Dict[str, Any]:
         """Client-specific formatting + contamination verification"""
-        processed_embedding_np = mcp_result.processed_embedding.squeeze(0).detach().cpu().numpy()
+        processed_embedding_np = _to_numpy(mcp_result.processed_embedding).reshape(-1)
         embedding_hash = _array_hash(processed_embedding_np)
 
         TELEMETRY.record_token_shaping_stage(
@@ -115,6 +160,13 @@ class ClientTokenPipe:
             tenant_id=self.ctx.tenant_id,
             token_count=int(processed_embedding_np.size),
             embedding_hash=embedding_hash,
+        )
+
+        arbitration_scores_np = _to_numpy(mcp_result.arbitration_scores).reshape(-1)
+        top_roles = (
+            np.argsort(arbitration_scores_np)[-5:][::-1].tolist()
+            if arbitration_scores_np.size
+            else []
         )
 
         # 1. DRIFT VERIFICATION (client baseline)
@@ -134,7 +186,7 @@ class ClientTokenPipe:
             "tenant_id": self.ctx.tenant_id,
             "result": processed_embedding_np,
             "mcp_tensor": processed_embedding_np.tolist(),
-            "middleware_roles": mcp_result.arbitration_scores.topk(5).indices.tolist() if hasattr(mcp_result.arbitration_scores, 'topk') else [],
+            "middleware_roles": top_roles,
             "protocol_features": mcp_result.protocol_features,
             "drift": drift,
             "sovereignty_hash": witness_hash,
@@ -241,9 +293,19 @@ class MultiClientMCPRouter:
 
     def _get_mcp_core(self) -> Any:
         if self.mcp_core is None:
+<<<<<<< HEAD
+            if os.getenv("A2A_ROUTER_CORE", "numpy").strip().lower() == "torch":
+                import torch
+                from mcp_core import MCPCore
+
+                self.mcp_core = ("torch", torch, MCPCore())
+            else:
+                self.mcp_core = ("numpy", None, DeterministicMCPCore())
+=======
             from mcp_core import MCPCore
 
             self.mcp_core = MCPCore()
+>>>>>>> origin/main
         return self.mcp_core
 
     async def register_client(self, api_key: str, quota: int = 1_000_000) -> str:
@@ -280,11 +342,21 @@ class MultiClientMCPRouter:
             raise RuntimeError("torch is required to process MCP requests in multi-client router")
 
         mcp_token = await pipe.ingress(np.asarray(tokens, dtype=float))
+<<<<<<< HEAD
+        core_kind, torch_module, core = self._get_mcp_core()
+
+        if core_kind == "torch":
+            mcp_token_tensor = torch_module.from_numpy(_project_to_core_width(mcp_token)).float()
+            mcp_result = core(mcp_token_tensor)
+        else:
+            mcp_result = core(mcp_token)
+=======
         mcp_core = self._get_mcp_core()
 
         # Reshape to (1, 4096) for the MCPCore model
         mcp_token_tensor = torch.from_numpy(mcp_token.reshape(1, -1)).float()
         mcp_result = mcp_core(mcp_token_tensor)
+>>>>>>> origin/main
         return await pipe.egress(mcp_result)
 
     def register_handshake(
@@ -334,3 +406,20 @@ def _tenant_projection(tenant_id: str, shape: tuple[int, ...]) -> np.ndarray:
 
 def _array_hash(arr: np.ndarray) -> str:
     return hashlib.sha256(np.asarray(arr, dtype=float).tobytes()).hexdigest()[:16]
+
+
+def _project_to_core_width(arr: np.ndarray, width: int = 4096) -> np.ndarray:
+    source = np.asarray(arr, dtype=float).ravel()
+    if source.size == 0:
+        source = np.zeros(1, dtype=float)
+    return np.resize(source, width).reshape(1, width)
+
+
+def _to_numpy(value: Any) -> np.ndarray:
+    if hasattr(value, "detach"):
+        value = value.detach()
+    if hasattr(value, "cpu"):
+        value = value.cpu()
+    if hasattr(value, "numpy"):
+        value = value.numpy()
+    return np.asarray(value, dtype=float)

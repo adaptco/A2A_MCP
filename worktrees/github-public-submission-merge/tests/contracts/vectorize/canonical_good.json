@@ -1,0 +1,12 @@
+{
+  "request_id": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+  "model": "text-embedding-ada-002",
+  "generated_at": "2023-10-27T10:03:00Z",
+  "vectors": [
+    {
+      "chunk_id": "chunk-1",
+      "vector_id": "vec-1",
+      "dimensionality": 1536
+    }
+  ]
+}

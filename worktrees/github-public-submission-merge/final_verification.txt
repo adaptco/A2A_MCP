@@ -1,0 +1,105 @@
+﻿============================= test session starts =============================
+platform win32 -- Python 3.13.7, pytest-9.0.2, pluggy-1.6.0 -- C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP\.venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP
+configfile: pyproject.toml
+plugins: anyio-4.12.1, asyncio-1.3.0
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 48 items
+
+tests/test_cicd_pipeline.py::TestCICDPipeline::test_full_pipeline_run PASSED [  2%]
+tests/test_cicd_pipeline.py::TestCICDPipeline::test_artifact_traceability PASSED [  4%]
+tests/test_cicd_pipeline.py::TestCICDPipeline::test_chain_integrity PASSED [  6%]
+tests/test_cicd_pipeline.py::TestCICDPipeline::test_lora_config_persists PASSED [  8%]
+tests/test_cicd_pipeline.py::TestCICDPipeline::test_deterministic_replay PASSED [ 10%]
+tests/test_cicd_pipeline.py::TestCICDPipeline::test_weights_hash_preserved PASSED [ 12%]
+tests/test_cicd_pipeline.py::TestCICDPipeline::test_execution_report_format PASSED [ 14%]
+tests/test_cicd_pipeline.py::TestPipelineFailure::test_invalid_initial_state PASSED [ 16%]
+tests/test_full_pipeline.py::TestFullPipeline::test_happy_path_all_pass PASSED [ 18%]
+tests/test_full_pipeline.py::TestFullPipeline::test_self_healing_fail_then_pass PASSED [ 20%]
+tests/test_full_pipeline.py::TestFullPipeline::test_all_fail_reports_failure PASSED [ 22%]
+tests/test_full_pipeline.py::TestFullPipeline::test_artifact_counts PASSED [ 25%]
+tests/test_full_pipeline.py::TestFullPipeline::test_legacy_execute_plan_still_works PASSED [ 27%]
+tests/test_healing_loop.py::test_healing_loop_convergence PASSED         [ 29%]
+tests/test_ingestion_api.py::test_ingestion_with_valid_handshake PASSED  [ 31%]
+tests/test_ingestion_api.py::test_ingestion_missing_token PASSED         [ 33%]
+tests/test_intent_engine.py::test_pinn_deterministic_embedding_is_stable PASSED [ 35%]
+tests/test_intent_engine.py::test_intent_engine_executes_plan PASSED     [ 37%]
+tests/test_lora_harness.py::TestLoRADataSynthesis::test_synthesize_from_recovery_nodes PASSED [ 39%]
+tests/test_lora_harness.py::TestLoRADataSynthesis::test_instruction_format PASSED [ 41%]
+tests/test_lora_harness.py::TestLoRADataSynthesis::test_empty_nodes_produce_empty_data PASSED [ 43%]
+tests/test_lora_harness.py::TestLoRADataSynthesis::test_deterministic_synthesis PASSED [ 45%]
+tests/test_lora_harness.py::TestLoRAConfig::test_default_config PASSED   [ 47%]
+tests/test_lora_harness.py::TestLoRAConfig::test_custom_config PASSED    [ 50%]
+tests/test_lora_harness.py::TestLoRAWithStateTransition::test_lora_adapt_state PASSED [ 52%]
+tests/test_lora_harness.py::TestLoRAWithStateTransition::test_full_lifecycle_with_lora PASSED [ 54%]
+tests/test_plan_state_persistence.py::test_plan_state_save_load_roundtrip PASSED [ 56%]
+tests/test_rag_pipeline.py::TestRAGInjection::test_inject_documents PASSED [ 58%]
+tests/test_rag_pipeline.py::TestRAGInjection::test_dimension_mismatch_raises PASSED [ 60%]
+tests/test_rag_pipeline.py::TestRAGRetrieval::test_semantic_retrieval PASSED [ 62%]
+tests/test_rag_pipeline.py::TestRAGRetrieval::test_deterministic_retrieval PASSED [ 64%]
+tests/test_rag_pipeline.py::TestRAGWithModelArtifact::test_embed_then_query_transition PASSED [ 66%]
+tests/test_rag_pipeline.py::TestHashChainIntegrity::test_hash_chain PASSED [ 68%]
+tests/test_state_space.py::TestStateTransitions::test_init_to_embedding PASSED [ 70%]
+tests/test_state_space.py::TestStateTransitions::test_full_happy_path PASSED [ 72%]
+tests/test_state_space.py::TestStateTransitions::test_invalid_transition_raises PASSED [ 75%]
+tests/test_state_space.py::TestStateTransitions::test_healing_retry_loop PASSED [ 77%]
+tests/test_state_space.py::TestStateTransitions::test_failure_rollback PASSED [ 79%]
+tests/test_state_space.py::TestStateTransitions::test_converged_is_terminal PASSED [ 81%]
+tests/test_state_space.py::TestDeterminism::test_same_inputs_same_hash PASSED [ 83%]
+tests/test_state_space.py::TestDeterminism::test_artifact_immutability PASSED [ 85%]
+tests/test_state_space.py::TestDeterminism::test_parent_chain_integrity PASSED [ 87%]
+tests/test_state_space.py::TestLoRAConfig::test_attach_lora_config PASSED [ 89%]
+tests/test_state_space.py::TestLoRAConfig::test_lora_config_survives_transition PASSED [ 91%]
+tests/test_stateflow.py::test_happy_path PASSED                          [ 93%]
+tests/test_stateflow.py::test_retry_limit_exceeded PASSED                [ 95%]
+tests/test_stateflow.py::test_override_forward_only PASSED               [ 97%]
+tests/test_storage.py::test_artifact_persistence_lifecycle PASSED        [100%]
+
+============================== warnings summary ===============================
+schemas\database.py:6
+  C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP\schemas\database.py:6: MovedIn20Warning: The ``declarative_base()`` function is now available as sqlalchemy.orm.declarative_base(). (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    Base = declarative_base()
+
+agents\tester.py:6
+  C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP\agents\tester.py:6: PytestCollectionWarning: cannot collect test class 'TestReport' because it has a __init__ constructor (from: tests/test_full_pipeline.py)
+    class TestReport(BaseModel):
+
+agents\tester.py:6
+  C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP\agents\tester.py:6: PytestCollectionWarning: cannot collect test class 'TestReport' because it has a __init__ constructor (from: tests/test_intent_engine.py)
+    class TestReport(BaseModel):
+
+tests/test_cicd_pipeline.py: 8 warnings
+tests/test_lora_harness.py: 2 warnings
+tests/test_rag_pipeline.py: 1 warning
+tests/test_state_space.py: 10 warnings
+  C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP\schemas\model_artifact.py:65: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp: str = Field(default_factory=lambda: datetime.utcnow().isoformat())
+
+tests/test_cicd_pipeline.py: 40 warnings
+tests/test_lora_harness.py: 8 warnings
+tests/test_rag_pipeline.py: 2 warnings
+tests/test_state_space.py: 25 warnings
+  C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP\schemas\model_artifact.py:86: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    "timestamp": datetime.utcnow().isoformat()
+
+tests/test_full_pipeline.py: 81 warnings
+tests/test_storage.py: 1 warning
+  C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP\schemas\agent_artifacts.py:15: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp: str = Field(default_factory=lambda: datetime.utcnow().isoformat())
+
+tests/test_full_pipeline.py: 28 warnings
+  C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP\.venv\Lib\site-packages\pydantic\main.py:250: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    validated_self = self.__pydantic_validator__.validate_python(data, self_instance=self)
+
+tests/test_plan_state_persistence.py::test_plan_state_save_load_roundtrip
+tests/test_plan_state_persistence.py::test_plan_state_save_load_roundtrip
+tests/test_plan_state_persistence.py::test_plan_state_save_load_roundtrip
+tests/test_plan_state_persistence.py::test_plan_state_save_load_roundtrip
+tests/test_plan_state_persistence.py::test_plan_state_save_load_roundtrip
+tests/test_storage.py::test_artifact_persistence_lifecycle
+  C:\Users\eqhsp\.antigravity\A2A_MCP\A2A_MCP\.venv\Lib\site-packages\sqlalchemy\sql\schema.py:3624: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    return util.wrap_callable(lambda ctx: fn(), fn)  # type: ignore
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+====================== 48 passed, 215 warnings in 1.10s =======================

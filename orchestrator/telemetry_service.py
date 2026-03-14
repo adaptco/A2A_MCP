@@ -7,6 +7,7 @@ embeddings, and formal diagnostic reports for the A2A-MCP system.
 
 import uuid
 import logging
+import time
 from datetime import datetime
 from typing import Dict, List, Optional, Tuple, Any
 from scipy.spatial.distance import cosine
@@ -98,6 +99,83 @@ class TelemetryService:
             self._persist_event(event, artifact_id)
 
         return event
+
+    def start_timer(self) -> float:
+        """Return a monotonic timer value for latency measurement."""
+        return time.perf_counter()
+
+    def observe_protected_ingestion_latency(self, started_at: float, client_id: str) -> None:
+        """Capture protected-ingestion latency as a standard telemetry event."""
+        duration_ms = max(0.0, (time.perf_counter() - started_at) * 1000.0)
+        self.log_event(
+            component="protected_ingestion",
+            event_type="latency_observed",
+            metadata={"client_id": client_id},
+            duration_ms=duration_ms,
+        )
+
+    def record_request_outcome(
+        self,
+        *,
+        avatar_id: str,
+        client_id: str,
+        outcome: str,
+        rejection_reason: Optional[str],
+    ) -> None:
+        """Track protected ingestion outcomes in a compatibility-friendly shape."""
+        self.log_event(
+            component="protected_ingestion",
+            event_type="request_outcome",
+            metadata={
+                "avatar_id": avatar_id,
+                "client_id": client_id,
+                "outcome": outcome,
+                "rejection_reason": rejection_reason,
+            },
+            success=outcome == "accepted",
+            error_message=rejection_reason,
+        )
+
+    def record_token_shaping_stage(
+        self,
+        *,
+        stage: str,
+        tenant_id: str,
+        token_count: int,
+        embedding_hash: str,
+    ) -> None:
+        """Record deterministic token-shaping milestones for client isolation flows."""
+        self.log_event(
+            component="token_shaper",
+            event_type="token_shaping_stage",
+            metadata={
+                "stage": stage,
+                "tenant_id": tenant_id,
+                "token_count": token_count,
+                "embedding_hash": embedding_hash,
+            },
+        )
+
+    def record_hash_anomaly(
+        self,
+        *,
+        tenant_id: str,
+        stage: str,
+        embedding_hash: str,
+        anomaly: str,
+    ) -> None:
+        """Track hash anomalies without interrupting the request path."""
+        self.log_event(
+            component="token_shaper",
+            event_type="hash_anomaly",
+            metadata={
+                "tenant_id": tenant_id,
+                "stage": stage,
+                "embedding_hash": embedding_hash,
+            },
+            success=False,
+            error_message=anomaly,
+        )
 
     def _persist_event(self, event: TelemetryEvent, artifact_id: Optional[str] = None):
         """Persist telemetry event to database"""
@@ -520,4 +598,12 @@ def get_telemetry() -> TelemetryService:
     """Get global telemetry service instance"""
     if _telemetry_service is None:
         raise RuntimeError("Telemetry service not initialized. Call init_telemetry() first.")
+    return _telemetry_service
+
+
+def get_telemetry_service() -> TelemetryService:
+    """Compatibility accessor used by newer ingestion/runtime paths."""
+    global _telemetry_service
+    if _telemetry_service is None:
+        _telemetry_service = TelemetryService()
     return _telemetry_service

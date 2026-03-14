@@ -1,0 +1,53 @@
+{
+  "capsule_id": "capsule.rehearsal.scrollstream.v1",
+  "type": "RehearsalCapsule",
+  "version": "1.0.0",
+  "purpose": "Stage the scrollstream rehearsal braid cycling Celine, Luma, and Dot before seal ceremonies.",
+  "cycle": [
+    {
+      "phase": "audit.summary",
+      "agent": "Celine",
+      "role": "Architect",
+      "output_sample": "Celine threads the audit synopsis, aligning wind vectors with capsule intent for contributors to replay.",
+      "emotional_payload": "focused-calm",
+      "sabrina_spark": "pass"
+    },
+    {
+      "phase": "audit.proof",
+      "agent": "Luma",
+      "role": "Sentinel",
+      "output_sample": "Luma illuminates the proof lattice, casting post-entropy light across the rehearsal weave.",
+      "emotional_payload": "uplifted-clarity",
+      "sabrina_spark": "pass"
+    },
+    {
+      "phase": "audit.execution",
+      "agent": "Dot",
+      "role": "Guardian",
+      "output_sample": "Dot seals the execution strand, void-resetting drift while preserving the braid path.",
+      "emotional_payload": "stoic-assurance",
+      "sabrina_spark": "pass"
+    }
+  ],
+  "ledger_writes": {
+    "target": "scrollstream_ledger.jsonl",
+    "fields": ["t", "capsule", "phase", "agent", "role", "output"],
+    "notes": "Deterministic mode reuses a fixed timestamp for CI smoke tests."
+  },
+  "visual_feedback": {
+    "hud_shimmer": true,
+    "replay_glyph": "scrollstream.replay.pulse",
+    "qlock": "tick"
+  },
+  "training_mode": {
+    "deterministic_outputs": true,
+    "emotional_payload_scoring": true,
+    "sabrina_spark_test": "applied"
+  },
+  "status": "STAGED",
+  "attestation": {
+    "status": "STAGED",
+    "sealed_by": "Council",
+    "sealed_at": null
+  }
+}

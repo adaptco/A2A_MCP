@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="14" time="1.032" timestamp="2026-02-16T09:39:08.382249-05:00" hostname="Mac-Laptop"><testcase classname="tests.test_state_space.TestStateSpace" name="test_initialization" time="0.001" /><testcase classname="tests.test_state_space.TestStateSpace" name="test_legal_transitions" time="0.001" /><testcase classname="tests.test_state_space.TestStateSpace" name="test_illegal_transitions" time="0.001" /><testcase classname="tests.test_state_space.TestStateSpace" name="test_immutability" time="0.001" /><testcase classname="tests.test_state_space.TestStateSpace" name="test_lora_config" time="0.001" /><testcase classname="tests.test_rag_pipeline.TestRAGPipeline" name="test_document_ingestion" time="0.003" /><testcase classname="tests.test_rag_pipeline.TestRAGPipeline" name="test_retrieval_integrity" time="0.002" /><testcase classname="tests.test_cicd_pipeline.TestCICDPipeline" name="test_end_to_end_lifecycle" time="0.001" /><testcase classname="tests.test_cicd_pipeline.TestCICDPipeline" name="test_pipeline_failure_recovery" time="0.001" /><testcase classname="tests.test_mlops_ticker.TestMLOpsTicker" name="test_event_store_terminal_filtering" time="0.010" /><testcase classname="tests.test_mlops_ticker.TestMLOpsTicker" name="test_whatsapp_message_format" time="0.003" /><testcase classname="tests.test_mlops_ticker.TestMLOpsTicker" name="test_whatsapp_send_success" time="0.007" /><testcase classname="tests.test_middleware_runtime" name="test_agentic_runtime_end_to_end" time="0.004"><failure message="ValueError: Invalid transition: INIT -&gt; CONVERGED. Valid targets: ['EMBEDDING']">@pytest.mark.asyncio
+    async def test_agentic_runtime_end_to_end():
+        """Verify that AgenticRuntime correctly handles transitions, persistence, and notifications."""
+        mock_observer = MagicMock()
+        mock_observer.on_state_change = AsyncMock()
+    
+        mock_db = MagicMock()
+        mock_db.save_artifact.side_effect = lambda x: x
+    
+        with patch("middleware.events._db_manager", mock_db):
+            runtime = AgenticRuntime(observers=[mock_observer])
+    
+            # Initial artifact
+            artifact = ModelArtifact(
+                artifact_id="test-rt-1",
+                model_id="test",
+                weights_hash="h1",
+                embedding_dim=1,
+                state=AgentLifecycleState.INIT,
+                content="test"
+            )
+    
+            # 1. Emit INIT (non-terminal)
+            await runtime.emit_event(artifact)
+            mock_observer.on_state_change.assert_not_called()
+    
+            # 2. Transition to CONVERGED (terminal)
+            # Assuming transition() works and CONVERGED is terminal
+&gt;           new_artifact = await runtime.transition_and_emit(artifact, AgentLifecycleState.CONVERGED)
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_middleware_runtime.py:36: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+middleware\runtime.py:27: in transition_and_emit
+    new_artifact = artifact.transition(target_state)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = ModelArtifact(artifact_id='test-rt-1', type='model_artifact', content='test', timestamp='2026-02-16T14:39:09.296642', ...ntLifecycleState.INIT: 'INIT'&gt;, parent_artifact_id=None, agent_name='ModelRegistry', version='1.0.0', lora_config=None)
+target = &lt;AgentLifecycleState.CONVERGED: 'CONVERGED'&gt;
+
+    def transition(self, target: AgentLifecycleState) -&gt; "ModelArtifact":
+        """
+        Transition to a new state if valid.
+        Returns a new artifact with updated state (immutable pattern).
+        """
+        if not self.can_transition_to(target):
+&gt;           raise ValueError(
+                f"Invalid transition: {self.state.value} -&gt; {target.value}. "
+                f"Valid targets: {[s.value for s in STATE_TRANSITIONS.get(self.state, [])]}"
+            )
+E           ValueError: Invalid transition: INIT -&gt; CONVERGED. Valid targets: ['EMBEDDING']
+
+schemas\model_artifact.py:63: ValueError</failure></testcase><testcase classname="tests.test_middleware_runtime" name="test_runtime_registration" time="0.006" /></testsuite></testsuites>

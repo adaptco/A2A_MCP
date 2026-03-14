@@ -1,0 +1,408 @@
+name: Release & Deploy to GKE
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'vh2-docker/**'
+      - '.github/workflows/release-gke-deploy.yml'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+
+env:
+  REGISTRY: gcr.io
+  GKE_CLUSTER: vh2-sovereign-validator
+  GKE_ZONE: us-central1-a
+  DEPLOYMENT_NAME: vh2-backend
+  IMAGE_BACKEND: vh2-backend
+  IMAGE_FRONTEND: vh2-frontend
+
+jobs:
+  # ─────────────────────────────────────────────────────────────
+  # Test & Validate
+  # ─────────────────────────────────────────────────────────────
+
+  test:
+    name: Run Tests & Validate
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: 'vh2-docker/backend/package-lock.json'
+
+      - name: Install dependencies
+        run: |
+          cd vh2-docker/backend
+          npm ci
+
+      - name: Run unit tests
+        run: |
+          cd vh2-docker/backend
+          npm test
+        continue-on-error: false
+
+      - name: Validate YAML manifests
+        run: |
+          # Install kubectl for validation
+          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+          chmod +x kubectl
+          
+          # Validate all YAML files
+          for file in vh2-docker/k8s/*.yaml vh2-docker/argocd/*.yaml; do
+            echo "Validating $file..."
+            ./kubectl apply -f "$file" --dry-run=client --validate=true
+          done
+        continue-on-error: false
+
+      - name: Check Docker files
+        run: |
+          for dockerfile in vh2-docker/backend/Dockerfile vh2-docker/frontend/Dockerfile; do
+            echo "Checking $dockerfile..."
+            [ -f "$dockerfile" ] && echo "✓ Found" || (echo "✗ Not found" && exit 1)
+          done
+
+  # ─────────────────────────────────────────────────────────────
+  # Build Docker Images
+  # ─────────────────────────────────────────────────────────────
+
+  build:
+    name: Build & Push Docker Images
+    runs-on: ubuntu-latest
+    needs: test
+    permissions:
+      contents: read
+      id-token: write
+    outputs:
+      backend-image: ${{ steps.image-urls.outputs.backend-image }}
+      frontend-image: ${{ steps.image-urls.outputs.frontend-image }}
+      image-tag: ${{ steps.image-tag.outputs.tag }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set image tag
+        id: image-tag
+        run: |
+          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            echo "tag=${{ github.sha }}" >> $GITHUB_OUTPUT
+            echo "tag-latest=latest" >> $GITHUB_OUTPUT
+          else
+            echo "tag=${{ github.ref_name }}-${{ github.sha }}" >> $GITHUB_OUTPUT
+            echo "tag-latest=" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Setup Cloud SDK
+        uses: google-github-actions/setup-gcloud@v1
+        with:
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          export_default_credentials: true
+
+      - name: Configure Docker for GCR
+        run: |
+          gcloud auth configure-docker
+
+      - name: Build backend image
+        run: |
+          docker build \
+            -t ${{ env.REGISTRY }}/${{ secrets.GCP_PROJECT_ID }}/${{ env.IMAGE_BACKEND }}:${{ steps.image-tag.outputs.tag }} \
+            -t ${{ env.REGISTRY }}/${{ secrets.GCP_PROJECT_ID }}/${{ env.IMAGE_BACKEND }}:latest \
+            -f vh2-docker/backend/Dockerfile \
+            vh2-docker/backend
+
+      - name: Build frontend image
+        run: |
+          docker build \
+            -t ${{ env.REGISTRY }}/${{ secrets.GCP_PROJECT_ID }}/${{ env.IMAGE_FRONTEND }}:${{ steps.image-tag.outputs.tag }} \
+            -t ${{ env.REGISTRY }}/${{ secrets.GCP_PROJECT_ID }}/${{ env.IMAGE_FRONTEND }}:latest \
+            -f vh2-docker/frontend/Dockerfile \
+            vh2-docker/frontend
+
+      - name: Push backend image
+        run: |
+          docker push ${{ env.REGISTRY }}/${{ secrets.GCP_PROJECT_ID }}/${{ env.IMAGE_BACKEND }}:${{ steps.image-tag.outputs.tag }}
+          docker push ${{ env.REGISTRY }}/${{ secrets.GCP_PROJECT_ID }}/${{ env.IMAGE_BACKEND }}:latest
+
+      - name: Push frontend image
+        run: |
+          docker push ${{ env.REGISTRY }}/${{ secrets.GCP_PROJECT_ID }}/${{ env.IMAGE_FRONTEND }}:${{ steps.image-tag.outputs.tag }}
+          docker push ${{ env.REGISTRY }}/${{ secrets.GCP_PROJECT_ID }}/${{ env.IMAGE_FRONTEND }}:latest
+
+      - name: Output image URLs
+        id: image-urls
+        run: |
+          echo "backend-image=${{ env.REGISTRY }}/${{ secrets.GCP_PROJECT_ID }}/${{ env.IMAGE_BACKEND }}:${{ steps.image-tag.outputs.tag }}" >> $GITHUB_OUTPUT
+          echo "frontend-image=${{ env.REGISTRY }}/${{ secrets.GCP_PROJECT_ID }}/${{ env.IMAGE_FRONTEND }}:${{ steps.image-tag.outputs.tag }}" >> $GITHUB_OUTPUT
+
+  # ─────────────────────────────────────────────────────────────
+  # Deploy to GKE
+  # ─────────────────────────────────────────────────────────────
+
+  deploy:
+    name: Deploy to GKE
+    runs-on: ubuntu-latest
+    needs: build
+    permissions:
+      contents: read
+      id-token: write
+    environment:
+      name: production
+      url: https://vh2-validator.example.com
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Cloud SDK
+        uses: google-github-actions/setup-gcloud@v1
+        with:
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+
+      - name: Get GKE credentials
+        run: |
+          gcloud container clusters get-credentials ${{ env.GKE_CLUSTER }} \
+            --zone ${{ env.GKE_ZONE }} \
+            --project ${{ secrets.GCP_PROJECT_ID }}
+
+      - name: Install kubectl
+        run: |
+          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+          chmod +x kubectl
+          sudo mv kubectl /usr/local/bin/
+
+      - name: Update image references in kustomization.yaml
+        run: |
+          cd vh2-docker/k8s
+          # Create kustomization with updated image tags
+          cat > kustomization.yaml << EOF
+          apiVersion: kustomize.config.k8s.io/v1beta1
+          kind: Kustomization
+          
+          namespace: vh2-prod
+          
+          commonLabels:
+            app.kubernetes.io/managed-by: argocd
+            app.kubernetes.io/part-of: vh2-sovereign-validator
+          
+          resources:
+            - namespace.yaml
+            - configmap-spec.yaml
+            - backend-deployment.yaml
+            - frontend-deployment.yaml
+            - ingress.yaml
+            - network-policy.yaml
+            - tests-job.yaml
+          
+          images:
+            - name: vh2-backend
+              newName: ${{ needs.build.outputs.backend-image }}
+              newTag: "${{ needs.build.outputs.image-tag }}"
+            - name: vh2-frontend
+              newName: ${{ needs.build.outputs.frontend-image }}
+              newTag: "${{ needs.build.outputs.image-tag }}"
+          EOF
+
+      - name: Create namespace if not exists
+        run: |
+          kubectl create namespace vh2-prod --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: Apply Kustomize manifests
+        run: |
+          kubectl apply -k vh2-docker/k8s/
+
+      - name: Wait for backend deployment
+        run: |
+          kubectl rollout status deployment/vh2-backend -n vh2-prod --timeout=5m
+
+      - name: Wait for frontend deployment
+        run: |
+          kubectl rollout status deployment/vh2-frontend -n vh2-prod --timeout=5m
+
+      - name: Verify pods are running
+        run: |
+          kubectl get pods -n vh2-prod
+          kubectl get pods -n vh2-prod -o jsonpath='{.items[*].status.phase}' | grep -q "Running" && echo "✓ Pods running" || exit 1
+
+      - name: Check service endpoints
+        run: |
+          kubectl get svc -n vh2-prod
+          kubectl get endpoints -n vh2-prod
+
+  # ─────────────────────────────────────────────────────────────
+  # Smoke Tests
+  # ─────────────────────────────────────────────────────────────
+
+  smoke-test:
+    name: Run Smoke Tests
+    runs-on: ubuntu-latest
+    needs: deploy
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Cloud SDK
+        uses: google-github-actions/setup-gcloud@v1
+        with:
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+
+      - name: Get GKE credentials
+        run: |
+          gcloud container clusters get-credentials ${{ env.GKE_CLUSTER }} \
+            --zone ${{ env.GKE_ZONE }} \
+            --project ${{ secrets.GCP_PROJECT_ID }}
+
+      - name: Install kubectl
+        run: |
+          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+          chmod +x kubectl
+          sudo mv kubectl /usr/local/bin/
+
+      - name: Wait for backend pod to be ready
+        run: |
+          kubectl wait --for=condition=ready pod \
+            -l app=vh2-backend \
+            -n vh2-prod \
+            --timeout=300s
+
+      - name: Port-forward to backend
+        run: |
+          kubectl port-forward svc/vh2-backend 3001:3001 -n vh2-prod &
+          sleep 3
+
+      - name: Test /health endpoint
+        run: |
+          curl -v http://localhost:3001/health
+          curl -f http://localhost:3001/health || exit 1
+
+      - name: Test /ready endpoint
+        run: |
+          curl -v http://localhost:3001/ready
+          curl -f http://localhost:3001/ready || exit 1
+
+      - name: Test /validate endpoint
+        run: |
+          curl -X POST http://localhost:3001/validate \
+            -H "Content-Type: application/json" \
+            -d '{"vehicle":"vh2","wheels":{"front_et":29,"rear_et":22}}' \
+            -f
+
+      - name: Check response contains SOVEREIGN_PASS
+        run: |
+          response=$(curl -s -X POST http://localhost:3001/validate \
+            -H "Content-Type: application/json" \
+            -d '{"vehicle":"vh2","wheels":{"front_et":29,"rear_et":22}}')
+          echo "$response" | grep -q "SOVEREIGN_PASS" && echo "✓ Validation passed" || (echo "✗ Validation failed" && echo "$response" && exit 1)
+
+      - name: Run PostSync test job
+        run: |
+          kubectl create job --from=cronjob/vh2-smoke-test vh2-smoke-test-${{ github.run_id }} -n vh2-prod || true
+          sleep 5
+          kubectl wait --for=condition=complete job/vh2-smoke-test-${{ github.run_id }} -n vh2-prod --timeout=60s || true
+          kubectl logs -n vh2-prod -l job-name=vh2-smoke-test-${{ github.run_id }} || true
+
+  # ─────────────────────────────────────────────────────────────
+  # ArgoCD Sync (Optional)
+  # ─────────────────────────────────────────────────────────────
+
+  argocd-sync:
+    name: Sync with ArgoCD
+    runs-on: ubuntu-latest
+    needs: smoke-test
+    if: github.ref == 'refs/heads/main'
+    permissions:
+      contents: read
+    steps:
+      - name: Install ArgoCD CLI
+        run: |
+          curl -sSL -o /usr/local/bin/argocd https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
+          chmod +x /usr/local/bin/argocd
+
+      - name: Sync ArgoCD application
+        run: |
+          argocd app sync vh2-sovereign-validator \
+            --server ${{ secrets.ARGOCD_SERVER }} \
+            --auth-token ${{ secrets.ARGOCD_TOKEN }} \
+            --prune
+
+      - name: Wait for ArgoCD sync
+        run: |
+          argocd app wait vh2-sovereign-validator \
+            --server ${{ secrets.ARGOCD_SERVER }} \
+            --auth-token ${{ secrets.ARGOCD_TOKEN }}
+
+  # ─────────────────────────────────────────────────────────────
+  # Notification & Status
+  # ─────────────────────────────────────────────────────────────
+
+  notify:
+    name: Send Notification
+    runs-on: ubuntu-latest
+    if: always()
+    needs: [test, build, deploy, smoke-test]
+    steps:
+      - name: Determine status
+        id: status
+        run: |
+          if [[ "${{ needs.test.result }}" == "success" && \
+                "${{ needs.build.result }}" == "success" && \
+                "${{ needs.deploy.result }}" == "success" && \
+                "${{ needs.smoke-test.result }}" == "success" ]]; then
+            echo "status=✅ Deployment Successful" >> $GITHUB_OUTPUT
+            echo "color=good" >> $GITHUB_OUTPUT
+          else
+            echo "status=❌ Deployment Failed" >> $GITHUB_OUTPUT
+            echo "color=danger" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Notify Slack
+        if: env.SLACK_WEBHOOK_URL != ''
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
+          payload: |
+            {
+              "text": "${{ steps.status.outputs.status }}",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*VH2 Deployment Report*\n${{ steps.status.outputs.status }}\n\nCommit: ${{ github.sha }}\nRef: ${{ github.ref }}\nAuthor: ${{ github.actor }}"
+                  }
+                }
+              ]
+            }
+
+      - name: Comment on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const status = '${{ steps.status.outputs.status }}';
+            const body = `## Deployment Check\n${status}\n\n- Test: ${{ needs.test.result }}\n- Build: ${{ needs.build.result }}\n- Deploy: ${{ needs.deploy.result }}\n- Smoke Tests: ${{ needs.smoke-test.result }}`;
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });

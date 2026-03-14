@@ -1,1 +1,0 @@
-# MoA runtime package initializer.

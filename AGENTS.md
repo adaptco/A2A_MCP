@@ -1,4 +1,6 @@
-# AGENTS.md
+# 🤖 Agent Catalog
+
+This document defines the specialized agent personas available in the Agentic Factory.
 
 ## Project overview
 A2A_MCP is a multi-module repository that combines agent orchestration, model governance, runtime middleware, and game/Unity-focused MLOps workflows.
@@ -22,16 +24,21 @@ Artifacts written by the command:
 - `runtime/rbac/frontier_rbac_tokens.local.json` (local token bundle; do not commit)
 
 ## Agent cards (roles with embedded skills)
-| Agent ID | Frontier LLM | RBAC role | Embedded skills | MCP tool pull scope |
-| --- | --- | --- | --- | --- |
-| `agent:frontier.endpoint.gpt` | `endpoint / gpt-4o-mini` | `pipeline_operator` | planning, implementation, integration, code_generation | full MCP tool scope |
-| `agent:frontier.anthropic.claude` | `anthropic / claude-3-5-sonnet-latest` | `admin` | governance, policy_enforcement, orchestration, release_governance | full MCP tool scope |
-| `agent:frontier.vertex.gemini` | `vertex / gemini-1.5-pro` | `pipeline_operator` | architecture_mapping, context_synthesis, integration | full MCP tool scope |
-| `agent:frontier.ollama.llama` | `ollama / llama3.1` | `healer` | regression_triage, self_healing, patch_synthesis, verification | healing + read-oriented MCP tools |
-| `agent:frontier.reviewer` | `endpoint / gpt-4o-mini` | `observer` | code_review, security_audit, performance_analysis | full MCP tool scope |
+| Agent ID | Frontier LLM | RBAC role | RBAC Token | Embedded skills | MCP tool pull scope |
+| --- | --- | --- | --- | --- | --- |
+| `agent:frontier.endpoint.gpt` | `endpoint / gpt-4o-mini` | `pipeline_operator` | `A2A_MCP_GPT_V1` | planning, implementation, integration, code_generation | full MCP tool scope |
+| `agent:frontier.anthropic.claude` | `anthropic / claude-3-5-sonnet-latest` | `admin` | `A2A_MCP_CLAUDE_ADMIN` | governance, policy_enforcement, orchestration, release_governance | full MCP tool scope |
+| `agent:frontier.vertex.gemini` | `vertex / gemini-1.5-pro` | `pipeline_operator` | `A2A_MCP_GEMINI_V1` | architecture_mapping, context_synthesis, integration | full MCP tool scope |
+| `agent:frontier.ollama.llama` | `ollama / llama3.1` | `healer` | `A2A_MCP_LLAMA_HEAL` | regression_triage, self_healing, patch_synthesis, verification | healing + read-oriented MCP tools |
+| `agent:frontier.reviewer` | `endpoint / gpt-4o-mini` | `observer` | `A2A_MCP_REVIEWER_V1` | code_review, security_audit, performance_analysis | full MCP tool scope |
 
 ## Build and test commands
 Use the smallest command set needed for the files you touched.
+
+```bash
+# Run managing agent unit tests
+pytest tests/test_coder_agent.py -v
+```
 
 ### Local automation runtime (Docker compose helper)
 - Start (with build): `.\scripts\automation_runtime.ps1 -Action up -Build`
@@ -97,11 +104,11 @@ The A2A_MCP implements a multi-tiered agent orchestration system designed to man
 - **Verification Layer**: The `PINNAgent` (Physics-Informed Neural Network Agent) acts as the deterministic verifier, enforcing invariants and RFC8785 canonicalization.
 
 ### Data Flow & State Management
-1. **Ingress**: `ManagingAgent` ingests the objective, categorizes the domain, and initializes the WorldModel state.
-2. **Decomposition**: The `OrchestrationAgent` builds an action sequence (Blueprint) stored in the context KV store.
-3. **Execution**: Target agents retrieve atomic tasks from the context broker, perform actions, and commit state deltas.
-4. **Validation**: The `TesterAgent` triggers continuous self-healing loops upon detection of failure states.
-5. **Egress**: The `PINNAgent` validates the final artifact against the strict compliance matrix before emitting the terminal event.
+ 1. **Ingress**: `ManagingAgent` ingests the objective, categorizes the domain, and initializes the WorldModel state.
+ 2. **Decomposition**: The `OrchestrationAgent` builds an action sequence (Blueprint) stored in the context KV store.
+ 3. **Execution**: Target agents retrieve atomic tasks from the context broker, perform actions, and commit state deltas.
+ 4. **Validation**: The `TesterAgent` triggers continuous self-healing loops upon detection of failure states.
+ 5. **Egress**: The `PINNAgent` validates the final artifact against the strict compliance matrix before emitting the terminal event.
 
 ### Deployment & Middleware
 - Communication uses the Model Context Protocol (MCP) acting as the message bus.
@@ -110,11 +117,11 @@ The A2A_MCP implements a multi-tiered agent orchestration system designed to man
 ### Local Skill Extensions
 - `skills/mcp-entropy-template-router`: Generates API skill tokens for avatar runtime shell, computes enthalpy/entropy style temperature, and routes deterministic frontend/backend/fullstack template actions via uniform dotproduct scoring.
 
-<!-- avatar-engine:auto:start -->
-## Avatar-Engine Production Pipeline
+ <!-- avatar-engine:auto:start -->
+ ## Avatar-Engine Production Pipeline
 
-- Use `.github/workflows/avatar-engine.yml` as the production artifact pipeline.
-- The scheduled upskill job regenerates `skills/SKILL.md`, syncs docs, and opens/updates a PR automatically.
-- Auto-merge is configured in safe mode only (`gh pr merge --auto --squash`) and depends on green required checks.
-- Secrets are consumed from GitHub Actions secrets only (not plaintext files): `AVATAR_ENGINE_AUTOMATION_PAT`.
-<!-- avatar-engine:auto:end -->
+ - Use `.github/workflows/avatar-engine.yml` as the production artifact pipeline.
+ - The scheduled upskill job regenerates `skills/SKILL.md`, syncs docs, and opens/updates a PR automatically.
+ - Auto-merge is configured in safe mode only (`gh pr merge --auto --squash`) and depends on green required checks.
+ - Secrets are consumed from GitHub Actions secrets only (not plaintext files): `AVATAR_ENGINE_AUTOMATION_PAT`.
+ <!-- avatar-engine:auto:end -->

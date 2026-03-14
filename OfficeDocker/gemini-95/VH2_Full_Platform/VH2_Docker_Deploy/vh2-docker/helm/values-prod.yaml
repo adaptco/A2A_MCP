@@ -1,0 +1,273 @@
+# VH2 Sovereign Validator — Helm Values (Production)
+# 
+# This values file defines production configurations for the VH2 platform.
+# Deployed via ArgoCD GitOps from the main branch.
+
+# ═════════════════════════════════════════════════════════════════════════
+# GLOBAL SETTINGS
+# ═════════════════════════════════════════════════════════════════════════
+global:
+  environment: production
+  domain: yourdomain.com
+  region: us-east-1
+  
+  # ── Image Registry ────────────────────────────────────────────────────
+  image:
+    registry: your-registry.azurecr.io
+    pullPolicy: IfNotPresent
+    pullSecrets:
+      - name: regcred
+  
+  # ── Annotations & Labels ──────────────────────────────────────────────
+  labels:
+    app: vh2-validator
+    managed-by: argocd
+    env: production
+    sovereign: "et29-et22-c5"
+  
+  annotations:
+    company: yourcompany
+    project: vh2-sovereign-validator
+    contact: infrastructure@yourcompany.com
+
+# ═════════════════════════════════════════════════════════════════════════
+# BACKEND SERVICE
+# ═════════════════════════════════════════════════════════════════════════
+backend:
+  enabled: true
+  
+  # ── Deployment ────────────────────────────────────────────────────────
+  replicaCount: 5
+  
+  image:
+    repository: your-registry/vh2-backend
+    tag: v1.0.1
+    pullPolicy: IfNotPresent
+  
+  # ── Resources ─────────────────────────────────────────────────────────
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  
+  # ── Autoscaling ───────────────────────────────────────────────────────
+  autoscaling:
+    enabled: true
+    minReplicas: 3
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 70
+    targetMemoryUtilizationPercentage: 80
+  
+  # ── Health Checks ─────────────────────────────────────────────────────
+  healthCheck:
+    enabled: true
+    livenessProbe:
+      initialDelaySeconds: 15
+      periodSeconds: 20
+      timeoutSeconds: 5
+      failureThreshold: 3
+    readinessProbe:
+      initialDelaySeconds: 10
+      periodSeconds: 10
+      timeoutSeconds: 5
+      failureThreshold: 2
+  
+  # ── Environment ───────────────────────────────────────────────────────
+  env:
+    NODE_ENV: production
+    PORT: "3001"
+    HOST: "0.0.0.0"
+    LOG_LEVEL: info
+    ALLOWED_ORIGIN: "https://yourdomain.com"
+  
+  # ── Security ──────────────────────────────────────────────────────────
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1001
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+  
+  # ── Pod Anti-Affinity ─────────────────────────────────────────────────
+  affinity:
+    podAntiAffinity: preferred
+
+# ═════════════════════════════════════════════════════════════════════════
+# FRONTEND SERVICE
+# ═════════════════════════════════════════════════════════════════════════
+frontend:
+  enabled: true
+  
+  # ── Deployment ────────────────────────────────────────────────────────
+  replicaCount: 2
+  
+  image:
+    repository: your-registry/vh2-frontend
+    tag: v1.0.1
+    pullPolicy: IfNotPresent
+  
+  # ── Resources ─────────────────────────────────────────────────────────
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 250m
+      memory: 256Mi
+  
+  # ── Autoscaling ───────────────────────────────────────────────────────
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 5
+    targetCPUUtilizationPercentage: 60
+  
+  # ── Environment ───────────────────────────────────────────────────────
+  env:
+    NODE_ENV: production
+    PORT: "3000"
+    HOST: "0.0.0.0"
+    LOG_LEVEL: info
+  
+  # ── Security ──────────────────────────────────────────────────────────
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1001
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+
+# ═════════════════════════════════════════════════════════════════════════
+# INGRESS & NETWORKING
+# ═════════════════════════════════════════════════════════════════════════
+ingress:
+  enabled: true
+  className: nginx
+  
+  # ── Hosts ─────────────────────────────────────────────────────────────
+  hosts:
+  - host: vh2-prod.yourdomain.com
+    paths:
+    - path: /
+      pathType: Prefix
+      backend: frontend
+    - path: /api
+      pathType: Prefix
+      backend: backend
+    - path: /tests
+      pathType: Prefix
+      backend: frontend
+  
+  # ── TLS ───────────────────────────────────────────────────────────────
+  tls:
+    enabled: true
+    certManager:
+      enabled: true
+      issuer: letsencrypt-prod
+    secretName: vh2-tls-prod
+  
+  # ── Annotations ───────────────────────────────────────────────────────
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/rate-limit: "1000"
+    nginx.ingress.kubernetes.io/rate-limit-burst: "2000"
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+
+# ═════════════════════════════════════════════════════════════════════════
+# PERSISTENT DATA & CONFIGMAPS
+# ═════════════════════════════════════════════════════════════════════════
+configMap:
+  enabled: true
+  
+  spec:
+    schema: VH2_Full_v1
+    spoke_count: 5
+    rim_diameter_in: 19
+    front_et_mm: 29
+    rear_et_mm: 22
+    kpi_deg: 12.5
+    scrub_radius_mm: 45
+    c5_sector_deg: 72
+    concavity_front: 0.150
+    concavity_rear: 0.185
+    wheelbase_mm: 2600
+    track_mm: 1460
+    material: RSM_PBR_D4AF37
+    sovereignty: SAINTLY_HONESTY_TRUE
+
+# ═════════════════════════════════════════════════════════════════════════
+# TESTING & VALIDATION
+# ═════════════════════════════════════════════════════════════════════════
+testing:
+  enabled: true
+  
+  smokeTests:
+    enabled: true
+    schedule: "0 * * * *"  # Hourly
+    image: curlimages/curl:latest
+  
+  unitTests:
+    enabled: true
+    runOnDeploy: true
+    timeout: 300s
+
+# ═════════════════════════════════════════════════════════════════════════
+# OBSERVABILITY
+# ═════════════════════════════════════════════════════════════════════════
+monitoring:
+  enabled: true
+  prometheus:
+    enabled: true
+    scrape_interval: 30s
+  
+  logging:
+    enabled: true
+    fluentBit:
+      enabled: true
+      image: fluent/fluent-bit:latest
+
+# ═════════════════════════════════════════════════════════════════════════
+# SECURITY & RBAC
+# ═════════════════════════════════════════════════════════════════════════
+rbac:
+  enabled: true
+
+networkPolicy:
+  enabled: true
+  policyTypes:
+  - Ingress
+  - Egress
+  defaultDeny: true
+
+podSecurityPolicy:
+  enabled: true
+  enforce: restricted
+
+# ═════════════════════════════════════════════════════════════════════════
+# SERVICE MESH (Optional: Istio)
+# ═════════════════════════════════════════════════════════════════════════
+serviceMesh:
+  enabled: false
+  istio:
+    virtualService:
+      enabled: false
+    destinationRule:
+      enabled: false
+
+# ═════════════════════════════════════════════════════════════════════════
+# ARGOCD SYNC SETTINGS
+# ═════════════════════════════════════════════════════════════════════════
+argocd:
+  project: default
+  syncPolicy:
+    automated: true
+    prune: true
+    selfHeal: true
+  notification:
+    enabled: true
+    slack:
+      enabled: true
+      webhook: https://hooks.slack.com/services/YOUR/WEBHOOK/URL

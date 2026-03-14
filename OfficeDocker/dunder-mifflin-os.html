@@ -1,0 +1,1874 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1440">
+<title>DUNDER MIFFLIN OS · Agent Q Kernel v1.0 · AxQxOS A2A ADK</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --dm-blue:#003087; --dm-navy:#001a4a; --dm-beige:#e8e0d0;
+  --dm-wall:#c8bea8; --dm-carpet:#9e8e78; --dm-desk:#7a6040;
+  --q-cyan:#18D8EF; --q-cyan2:rgba(24,216,239,0.15);
+  --q-gold:#FFD700; --q-green:#33EE66; --q-pink:#FF1493;
+  --q-purple:#9933FF; --q-dark:#02040a;
+  --font-mono:'Courier New',monospace;
+  --font-ui:'Trebuchet MS',sans-serif;
+}
+html,body{
+  width:100%;min-height:100vh;overflow:hidden;
+  background:var(--q-dark);
+  font-family:var(--font-mono);
+  color:var(--q-cyan);
+}
+/* ── TOP BAR ─────────────────────────────────────────────────────── */
+#topbar{
+  position:fixed;top:0;left:0;right:0;height:28px;z-index:200;
+  background:linear-gradient(90deg,var(--dm-navy),#02061a,var(--dm-navy));
+  border-bottom:1px solid rgba(24,216,239,0.3);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 16px;font-size:10px;letter-spacing:.1em;
+}
+#topbar .logo{color:var(--q-cyan);font-weight:bold;font-size:11px;}
+#topbar .logo span{color:var(--dm-blue);background:var(--q-cyan);padding:1px 6px;margin-right:6px;font-weight:bold;}
+#topbar .center{color:rgba(24,216,239,0.6);}
+#topbar .right{display:flex;gap:18px;align-items:center;color:rgba(24,216,239,0.7);}
+#topbar .pill{
+  background:rgba(24,216,239,0.1);border:1px solid rgba(24,216,239,0.3);
+  padding:2px 10px;font-size:9px;cursor:pointer;transition:all .2s;
+}
+#topbar .pill:hover{background:rgba(24,216,239,0.25);color:var(--q-cyan);}
+#topbar .pill.active{background:rgba(51,238,102,0.15);border-color:var(--q-green);color:var(--q-green);}
+/* ── LAYOUT ──────────────────────────────────────────────────────── */
+#layout{
+  display:flex;height:100vh;padding-top:28px;
+}
+/* ── LEFT PANEL: A2A MCP ─────────────────────────────────────────── */
+#mcp-panel{
+  width:260px;min-width:260px;
+  background:rgba(0,3,15,0.95);
+  border-right:1px solid rgba(24,216,239,0.2);
+  overflow-y:auto;padding:12px 10px;
+  display:flex;flex-direction:column;gap:10px;
+}
+.panel-section{
+  border:1px solid rgba(24,216,239,0.15);
+  padding:8px;background:rgba(0,5,20,0.5);
+}
+.panel-title{
+  font-size:9px;letter-spacing:.15em;color:var(--q-cyan);
+  border-bottom:1px solid rgba(24,216,239,0.2);
+  padding-bottom:4px;margin-bottom:6px;font-weight:bold;
+}
+.boo-agent{
+  display:flex;align-items:center;gap:6px;
+  font-size:9px;padding:3px 0;cursor:default;
+}
+.boo-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.boo-name{color:rgba(255,255,255,0.8);width:52px;}
+.boo-status{font-size:8px;opacity:.7;flex:1;}
+.boo-badge{
+  font-size:7px;padding:1px 5px;border-radius:2px;
+  background:rgba(24,216,239,0.1);color:var(--q-cyan);
+  border:1px solid rgba(24,216,239,0.2);
+}
+.tapd-row{
+  display:flex;justify-content:space-between;align-items:center;
+  font-size:9px;padding:2px 0;
+  border-bottom:1px solid rgba(24,216,239,0.06);
+}
+.tapd-tok{color:var(--q-gold);font-weight:bold;}
+.event-log{font-size:8px;color:rgba(24,216,239,0.6);line-height:1.7;max-height:120px;overflow-y:auto;}
+.event-log .ev{padding:1px 0;border-bottom:1px solid rgba(24,216,239,0.06);}
+.ev .ts{color:rgba(24,216,239,0.4);}
+.ev .ok{color:var(--q-green);}
+.ev .warn{color:var(--q-gold);}
+/* ── CENTER: OFFICE MAP ──────────────────────────────────────────── */
+#office-wrap{
+  flex:1;position:relative;overflow:hidden;
+  background:var(--q-dark);
+}
+#office-canvas{display:block;}
+#floor-label{
+  position:absolute;top:8px;left:50%;transform:translateX(-50%);
+  font-size:10px;letter-spacing:.15em;color:rgba(24,216,239,0.5);
+  pointer-events:none;
+}
+#basement-btn,#floor1-btn{
+  position:absolute;bottom:10px;left:50%;transform:translateX(-50%);
+  background:rgba(0,48,135,0.5);border:1px solid rgba(24,216,239,0.4);
+  color:var(--q-cyan);font-size:9px;padding:4px 18px;letter-spacing:.1em;
+  cursor:pointer;font-family:var(--font-mono);transition:all .2s;
+}
+#basement-btn:hover,#floor1-btn:hover{background:rgba(0,48,135,0.8);}
+/* ── RIGHT PANEL: AGENT Q TERMINAL ──────────────────────────────── */
+#q-panel{
+  width:280px;min-width:280px;
+  background:rgba(0,3,15,0.97);
+  border-left:1px solid rgba(24,216,239,0.2);
+  display:flex;flex-direction:column;
+}
+#q-header{
+  padding:10px;border-bottom:1px solid rgba(24,216,239,0.2);
+  display:flex;align-items:center;gap:8px;
+}
+#q-avatar{
+  width:38px;height:38px;border-radius:50%;
+  background:radial-gradient(circle at 35% 35%,#FFE055,#FFB900,#FF8C00);
+  box-shadow:0 0 12px rgba(24,216,239,0.5);
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;flex-shrink:0;
+}
+#q-meta{flex:1;}
+#q-name{font-size:11px;font-weight:bold;color:var(--q-cyan);}
+#q-sub{font-size:9px;color:rgba(24,216,239,0.5);margin-top:1px;}
+#q-status{font-size:8px;color:var(--q-green);margin-top:2px;}
+#q-terminal{
+  flex:1;overflow-y:auto;padding:8px 10px;
+  font-size:9px;line-height:1.75;color:rgba(24,216,239,0.8);
+  background:rgba(0,2,8,0.5);
+}
+#q-terminal .line{margin-bottom:1px;}
+#q-terminal .prompt{color:var(--q-green);}
+#q-terminal .output{color:rgba(24,216,239,0.6);}
+#q-terminal .highlight{color:var(--q-gold);}
+#q-terminal .error{color:#FF4444;}
+#q-terminal .ai-resp{color:rgba(255,255,255,0.85);padding:4px 0;}
+#q-input-row{
+  display:flex;align-items:center;gap:4px;
+  padding:6px 10px;border-top:1px solid rgba(24,216,239,0.2);
+}
+#q-input-row span{color:var(--q-green);font-size:10px;}
+#q-input{
+  flex:1;background:transparent;border:none;outline:none;
+  color:var(--q-cyan);font-family:var(--font-mono);font-size:10px;
+  caret-color:var(--q-cyan);
+}
+/* ── MODALS ──────────────────────────────────────────────────────── */
+#modal-overlay{
+  display:none;position:fixed;inset:0;z-index:500;
+  background:rgba(0,0,0,0.85);backdrop-filter:blur(4px);
+  align-items:center;justify-content:center;
+}
+#modal-overlay.open{display:flex;}
+.modal-box{
+  background:rgba(2,4,16,0.98);
+  border:1px solid rgba(24,216,239,0.35);
+  width:900px;max-width:95vw;max-height:90vh;
+  overflow:hidden;display:flex;flex-direction:column;
+  box-shadow:0 0 60px rgba(24,216,239,0.15);
+}
+.modal-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 16px;
+  background:linear-gradient(90deg,rgba(0,48,135,0.3),rgba(24,216,239,0.05));
+  border-bottom:1px solid rgba(24,216,239,0.2);
+}
+.modal-title{font-size:13px;letter-spacing:.1em;color:var(--q-cyan);font-weight:bold;}
+.modal-sub{font-size:9px;color:rgba(24,216,239,0.5);margin-top:2px;}
+.modal-close{
+  background:rgba(255,34,34,0.15);border:1px solid rgba(255,34,34,0.4);
+  color:#FF4444;font-size:14px;width:26px;height:26px;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  font-family:monospace;
+}
+.modal-body{flex:1;overflow-y:auto;padding:16px;}
+/* ── DR. MARIO ───────────────────────────────────────────────────── */
+#dr-mario-wrap{display:flex;gap:20px;align-items:flex-start;}
+#dm-game-area{display:flex;flex-direction:column;align-items:center;}
+#dm-canvas{border:2px solid rgba(24,216,239,0.4);image-rendering:pixelated;}
+#dm-side{width:180px;font-size:10px;color:rgba(24,216,239,0.8);}
+#dm-side .stat-row{
+  display:flex;justify-content:space-between;
+  padding:4px 0;border-bottom:1px solid rgba(24,216,239,0.1);
+}
+#dm-side .stat-val{color:var(--q-gold);}
+#dm-controls{
+  display:flex;gap:6px;margin-top:12px;flex-wrap:wrap;
+}
+.dm-btn{
+  background:rgba(24,216,239,0.1);border:1px solid rgba(24,216,239,0.3);
+  color:var(--q-cyan);font-size:10px;padding:5px 10px;
+  cursor:pointer;font-family:var(--font-mono);
+}
+.dm-btn:hover{background:rgba(24,216,239,0.25);}
+/* ── MARIO PARTY ─────────────────────────────────────────────────── */
+#mp-wrap{display:flex;gap:16px;}
+#mp-board-canvas{border:1px solid rgba(24,216,239,0.3);}
+#mp-sidebar{width:220px;font-size:10px;}
+.mp-agent-card{
+  border:1px solid rgba(24,216,239,0.2);padding:8px;margin-bottom:8px;
+  background:rgba(0,5,20,0.5);
+}
+.mp-agent-name{font-size:11px;font-weight:bold;margin-bottom:4px;}
+.mp-stat{display:flex;justify-content:space-between;font-size:9px;padding:2px 0;}
+.mp-stat-val{color:var(--q-gold);}
+#mp-log{
+  font-size:9px;color:rgba(24,216,239,0.7);line-height:1.7;
+  max-height:200px;overflow-y:auto;margin-top:10px;
+  border:1px solid rgba(24,216,239,0.1);padding:6px;
+}
+#mp-actions{display:flex;gap:8px;margin-top:10px;}
+/* ── CFD TERMINAL ────────────────────────────────────────────────── */
+#cfd-terminal{
+  background:#000;border:1px solid #333;
+  height:400px;overflow-y:auto;padding:12px;
+  font-size:10px;color:#00FF41;line-height:1.7;
+  font-family:'Courier New',monospace;
+}
+/* ── COST CALC ────────────────────────────────────────────────────── */
+#cost-calc{max-width:580px;}
+.calc-row{
+  display:flex;align-items:center;gap:12px;
+  padding:8px 0;border-bottom:1px solid rgba(24,216,239,0.1);
+}
+.calc-label{flex:1;font-size:10px;color:rgba(24,216,239,0.8);}
+.calc-input{
+  width:80px;background:rgba(24,216,239,0.05);
+  border:1px solid rgba(24,216,239,0.3);color:var(--q-cyan);
+  font-family:var(--font-mono);font-size:10px;padding:3px 6px;
+  text-align:right;
+}
+.calc-result{
+  margin-top:16px;border:1px solid rgba(51,238,102,0.4);
+  background:rgba(51,238,102,0.05);padding:12px;font-size:11px;
+}
+/* ── KERNEL PANEL ────────────────────────────────────────────────── */
+#kernel-wrap{display:flex;gap:16px;}
+#kernel-canvas{border:1px solid rgba(24,216,239,0.3);}
+#kernel-data{flex:1;font-size:9px;color:rgba(24,216,239,0.8);}
+.kernel-metric{
+  padding:6px 0;border-bottom:1px solid rgba(24,216,239,0.1);
+  display:flex;justify-content:space-between;
+}
+.km-val{color:var(--q-gold);}
+/* ── CHARLEY FOX WIDGET ──────────────────────────────────────────── */
+#charley-widget{
+  position:fixed;bottom:14px;right:286px;z-index:100;
+  background:rgba(0,48,135,0.85);border:1px solid rgba(24,216,239,0.3);
+  padding:8px 12px;font-size:9px;cursor:pointer;
+  transition:all .2s;
+}
+#charley-widget:hover{background:rgba(0,48,135,0.95);}
+#charley-widget .cfw-title{color:var(--q-cyan);font-weight:bold;margin-bottom:2px;}
+#charley-widget .cfw-sub{color:rgba(24,216,239,0.5);}
+/* ── NOTIFICATION ─────────────────────────────────────────────────── */
+#notif{
+  position:fixed;top:38px;right:290px;z-index:300;
+  background:rgba(0,3,15,0.95);border:1px solid rgba(24,216,239,0.4);
+  padding:8px 14px;font-size:10px;color:var(--q-cyan);
+  transform:translateY(-10px);opacity:0;transition:all .3s;
+  pointer-events:none;
+}
+#notif.show{transform:translateY(0);opacity:1;}
+</style>
+</head>
+<body>
+
+<!-- ── TOP BAR ──────────────────────────────────────────────────────── -->
+<div id="topbar">
+  <div class="logo"><span>DM</span> DUNDER MIFFLIN OS · Agent Q Kernel v1.0</div>
+  <div class="center">⬡ AxQxOS A2A ADK · Sol.F1 Runtime · P3L ADK Active · Sovereignty Chain: LOCKED</div>
+  <div class="right">
+    <span id="clock-display">--:--:--</span>
+    <span class="pill active" onclick="openModal('michael')">⬡ MCP HUB</span>
+    <span class="pill" onclick="openModal('charley')">🦊 CHARLEY FOX</span>
+    <span class="pill" id="agent-mode-btn" onclick="toggleAgentQ()">🤖 AGENT Q: OFF</span>
+  </div>
+</div>
+
+<!-- ── MAIN LAYOUT ─────────────────────────────────────────────────── -->
+<div id="layout">
+
+  <!-- LEFT: A2A MCP PANEL -->
+  <div id="mcp-panel">
+    <div class="panel-section">
+      <div class="panel-title">⬡ BOO AGENT SWARM · A2A MESH</div>
+      <div id="boo-list"></div>
+    </div>
+    <div class="panel-section">
+      <div class="panel-title">⬡ TAPD TOKENS · CANONICAL</div>
+      <div id="tapd-list"></div>
+    </div>
+    <div class="panel-section">
+      <div class="panel-title">⬡ A2A EVENT LOG</div>
+      <div class="event-log" id="event-log"></div>
+    </div>
+    <div class="panel-section">
+      <div class="panel-title">⬡ MCP SERVERS</div>
+      <div id="mcp-servers" style="font-size:8px;line-height:1.9;color:rgba(24,216,239,0.6)"></div>
+    </div>
+    <div class="panel-section">
+      <div class="panel-title">⬡ CURRENT DESK</div>
+      <div id="current-desk-info" style="font-size:9px;color:rgba(24,216,239,0.7);line-height:1.7">
+        ↓ Click any desk to navigate
+      </div>
+    </div>
+  </div>
+
+  <!-- CENTER: OFFICE MAP CANVAS -->
+  <div id="office-wrap">
+    <div id="floor-label">● DUNDER MIFFLIN · SCRANTON PA · FLOOR 1</div>
+    <canvas id="office-canvas"></canvas>
+    <button id="basement-btn" onclick="switchFloor('basement')">▼ STAIRS TO BASEMENT</button>
+  </div>
+
+  <!-- RIGHT: AGENT Q TERMINAL -->
+  <div id="q-panel">
+    <div id="q-header">
+      <div id="q-avatar">⬡</div>
+      <div id="q-meta">
+        <div id="q-name">AGENT Q · Digital Twin</div>
+        <div id="q-sub">Sovereign Founder · Protocol Architect</div>
+        <div id="q-status">● KERNEL ACTIVE · Sol.F1 Bus Online</div>
+      </div>
+    </div>
+    <div id="q-terminal">
+      <div class="line"><span class="prompt">SYS &gt;</span> <span class="output">Booting AxQxOS Kernel…</span></div>
+      <div class="line"><span class="prompt">SYS &gt;</span> <span class="output">A2A ADK runtime v1.0 initialized</span></div>
+      <div class="line"><span class="prompt">SYS &gt;</span> <span class="output">Boo agents: 6 online</span></div>
+      <div class="line"><span class="prompt">SYS &gt;</span> <span class="output">MCP servers: 4 registered</span></div>
+      <div class="line"><span class="prompt">SYS &gt;</span> <span class="highlight">Dunder Mifflin OS loaded.</span></div>
+      <div class="line"><span class="prompt">SYS &gt;</span> <span class="output">Click a desk to navigate.</span></div>
+    </div>
+    <div id="q-input-row">
+      <span>Q &gt;</span>
+      <input id="q-input" placeholder="Ask Agent Q…" autocomplete="off"/>
+    </div>
+  </div>
+</div>
+
+<!-- ── CHARLEY FOX WIDGET ────────────────────────────────────────────── -->
+<div id="charley-widget" onclick="openModal('charley')">
+  <div class="cfw-title">🦊 CHARLEY FOX PIZZERIA</div>
+  <div class="cfw-sub">Agent Branch · Marketing Pipeline</div>
+</div>
+
+<!-- ── NOTIFICATION ──────────────────────────────────────────────────── -->
+<div id="notif"></div>
+
+<!-- ── MODAL OVERLAY ─────────────────────────────────────────────────── -->
+<div id="modal-overlay" onclick="handleOverlayClick(event)">
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="modal-title">MODAL</div>
+        <div class="modal-sub" id="modal-sub">—</div>
+      </div>
+      <div class="modal-close" onclick="closeModal()">✕</div>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+  </div>
+</div>
+
+<script>
+// ============================================================================
+// DUNDER MIFFLIN OS · Agent Q Digital Twin Kernel
+// AxQxOS A2A ADK v1.0 · P3L Platform · Canonical truth, attested & replayable.
+// ============================================================================
+
+// ── PALETTE ──────────────────────────────────────────────────────────────────
+const P = {
+  dark:'#02040a', navy:'#001a4a', blue:'#003087',
+  beige:'#d8cebb', wall:'#c4b89a', carpet:'#9e8e72',
+  deskW:'#8b6840', deskD:'#5a3c18',
+  cyan:'#18D8EF', cyanD:'rgba(24,216,239,0.15)',
+  gold:'#FFD700', green:'#33EE66', pink:'#FF1493',
+  purple:'#9933FF', red:'#FF2222',
+  white:'#F4F8FF', gray:'#778899',
+  // pill colors for Dr Mario
+  pRed:'#FF4444', pYellow:'#FFDD00', pBlue:'#4499FF',
+};
+
+// ── CLOCK ─────────────────────────────────────────────────────────────────────
+function updateClock(){
+  const now=new Date();
+  document.getElementById('clock-display').textContent=
+    now.toLocaleTimeString('en-US',{hour12:false});
+}
+setInterval(updateClock,1000); updateClock();
+
+// ── BOO AGENTS ───────────────────────────────────────────────────────────────
+const BOO_AGENTS=[
+  {name:'Celine', col:'#FF88CC', domain:'Planning · PM',     status:'ACTIVE',  tasks:12, load:72},
+  {name:'Spryte', col:'#88FFCC', domain:'Frontend · UI',     status:'ACTIVE',  tasks:8,  load:45},
+  {name:'Echo',   col:'#18D8EF', domain:'Comms · Relay',     status:'ROUTING', tasks:21, load:88},
+  {name:'Gloh',   col:'#FFDD00', domain:'RAG · Vectors',     status:'ACTIVE',  tasks:6,  load:61},
+  {name:'Luma',   col:'#9933FF', domain:'QA · Attestation',  status:'IDLE',    tasks:3,  load:18},
+  {name:'Dot',    col:'#FF6633', domain:'CI/CD · Infra',     status:'RUNNING', tasks:15, load:93},
+];
+
+function renderBooAgents(){
+  const el=document.getElementById('boo-list');
+  el.innerHTML=BOO_AGENTS.map(b=>`
+    <div class="boo-agent">
+      <div class="boo-dot" style="background:${b.col};box-shadow:0 0 6px ${b.col}55"></div>
+      <span class="boo-name">${b.name}</span>
+      <span class="boo-status">${b.domain}</span>
+      <span class="boo-badge" style="border-color:${b.col}55;color:${b.col}">${b.status}</span>
+    </div>`).join('');
+}
+
+// ── TAPD TOKENS ──────────────────────────────────────────────────────────────
+const TAPD_TOKENS=[
+  {tok:'AXIS', supply:1840, yield:'2.1%', locked:true},
+  {tok:'PLUG', supply:920,  yield:'1.8%', locked:true},
+  {tok:'TRACE',supply:540,  yield:'1.4%', locked:false},
+  {tok:'BLOOM',supply:380,  yield:'1.6%', locked:true},
+  {tok:'LUMEN',supply:210,  yield:'2.4%', locked:false},
+  {tok:'SOULOS',supply:80,  yield:'3.1%', locked:true},
+];
+
+function renderTAPD(){
+  const el=document.getElementById('tapd-list');
+  el.innerHTML=TAPD_TOKENS.map(t=>`
+    <div class="tapd-row">
+      <span class="tapd-tok">${t.tok}</span>
+      <span style="color:rgba(24,216,239,0.5)">${t.supply.toLocaleString()}</span>
+      <span style="color:var(--q-green)">${t.yield}</span>
+      <span style="font-size:8px">${t.locked?'🔒':''}</span>
+    </div>`).join('');
+}
+
+// ── A2A EVENT LOG ─────────────────────────────────────────────────────────────
+const EVENTS=[
+  {t:'09:12:03',msg:'Echo relayed T-042 → Gloh',cls:'ok'},
+  {t:'09:12:11',msg:'Luma attested receipt#8821',cls:'ok'},
+  {t:'09:12:28',msg:'Dot: CI pipeline triggered',cls:''},
+  {t:'09:12:45',msg:'BOSS._hitCD lazy init — WARN',cls:'warn'},
+  {t:'09:13:02',msg:'MCP server /sse heartbeat OK',cls:'ok'},
+  {t:'09:13:19',msg:'Celine PRD synthesis complete',cls:'ok'},
+  {t:'09:13:33',msg:'Charley Fox branch: ACTIVE',cls:''},
+];
+
+function renderEvents(){
+  const el=document.getElementById('event-log');
+  el.innerHTML=EVENTS.map(e=>`
+    <div class="ev">
+      <span class="ts">${e.t}</span>&nbsp;
+      <span class="${e.cls}">${e.msg}</span>
+    </div>`).join('');
+}
+
+function addEvent(msg,cls=''){
+  const t=new Date().toLocaleTimeString('en-US',{hour12:false});
+  EVENTS.unshift({t,msg,cls});
+  if(EVENTS.length>30)EVENTS.pop();
+  renderEvents();
+}
+
+// ── MCP SERVERS ──────────────────────────────────────────────────────────────
+const MCP_SERVERS=[
+  {name:'Linear',     url:'https://mcp.linear.app/mcp',  agents:['Dot','Celine']},
+  {name:'Notion',     url:'https://mcp.notion.com/mcp',  agents:['Gloh','Luma']},
+  {name:'Slack',      url:'https://mcp.slack.com/mcp',   agents:['Echo']},
+  {name:'Supabase',   url:'https://mcp.supabase.com/mcp',agents:['Dot','Gloh']},
+];
+
+function renderMCPServers(){
+  const el=document.getElementById('mcp-servers');
+  el.innerHTML=MCP_SERVERS.map(s=>`
+    <div style="padding:2px 0;border-bottom:1px solid rgba(24,216,239,0.06)">
+      <span style="color:var(--q-cyan)">${s.name}</span>&nbsp;
+      <span style="color:rgba(24,216,239,0.4)">[${s.agents.join('·')}]</span>
+    </div>`).join('');
+}
+
+// ── OFFICE MAP ────────────────────────────────────────────────────────────────
+const CANVAS = document.getElementById('office-canvas');
+const CTX = CANVAS.getContext('2d');
+let currentFloor = 'floor1';
+
+// Desk definitions — floor1
+const DESKS_FLOOR1 = [
+  {id:'pam',   label:'PAM',    x:80,  y:280, w:70, h:50, col:'#FF88CC', desc:'Reception · Dr. Mario'},
+  {id:'jim',   label:'JIM',    x:200, y:280, w:70, h:50, col:'#88CCFF', desc:'Sales · Asian Jim'},
+  {id:'dwight',label:'DWIGHT', x:320, y:280, w:70, h:50, col:'#BBFF88', desc:'Sales · Beet Farm'},
+  {id:'ryan',  label:'RYAN',   x:440, y:280, w:70, h:50, col:'#FF9944', desc:'Temp · Superhero Sprite'},
+  {id:'angela',label:'ANGELA', x:560, y:280, w:70, h:50, col:'#DDAAFF', desc:'Acctg · Cat Audit'},
+  {id:'kelly', label:'KELLY',  x:680, y:280, w:70, h:50, col:'#FF66AA', desc:'Customer Svc'},
+  {id:'toby',  label:'TOBY',   x:800, y:280, w:70, h:50, col:'#AAAAAA', desc:'HR · CFD Terminal'},
+  {id:'michael',label:'MICHAEL',x:200,y:80,  w:110,h:70, col:'#FFD700', desc:'CEO · Agent Q Kernel'},
+  {id:'accounting',label:'ACCTG',x:760,y:100,w:100,h:90, col:'#44FFBB', desc:'Accounting · Cost Calc'},
+  {id:'conference',label:'CONF ROOM',x:30,y:80,w:130,h:70,col:'#FF8866',desc:'Conference · Meetings'},
+  {id:'charley',label:'CHARLEY',x:380,y:80, w:100,h:70, col:'#FF6633', desc:'Charley Fox · Marketing'},
+];
+
+// Desk definitions — basement
+const DESKS_BASEMENT = [
+  {id:'board_game',label:'BOARD ROOM',x:100,y:150,w:160,h:120,col:'#9933FF',desc:'Mario Party · Multi-Agent'},
+  {id:'server',    label:'SERVER RACK',x:680,y:100,w:120,h:160,col:'#18D8EF',desc:'Infra · Dot CI/CD'},
+  {id:'origin',    label:'⬡ ORIGIN',  x:340,y:220,w:100,h:80, col:'#FFD700',desc:'Agent Q · Kernel Origin'},
+  {id:'cfd',       label:'CFD TERM',  x:560,y:220,w:110,h:80, col:'#33EE66',desc:'OpenFOAM · Toby CFD'},
+];
+
+let DESKS = DESKS_FLOOR1;
+
+// Agent Q position and target
+const AGENT_Q = {x:400, y:360, tx:400, ty:360, moving:false};
+let hoveredDesk = null;
+let selectedDesk = null;
+let qFrame = 0;
+
+function resizeCanvas(){
+  const wrap = document.getElementById('office-wrap');
+  CANVAS.width  = wrap.clientWidth;
+  CANVAS.height = wrap.clientHeight - 28;
+}
+
+function drawOffice(){
+  const CW=CANVAS.width, CH=CANVAS.height;
+  CTX.clearRect(0,0,CW,CH);
+
+  // ── Background ─────────────────────────────────────────────────────
+  const bg = CTX.createLinearGradient(0,0,0,CH);
+  if(currentFloor==='floor1'){
+    bg.addColorStop(0,'#0a0c16'); bg.addColorStop(1,'#050810');
+  } else {
+    bg.addColorStop(0,'#080408'); bg.addColorStop(1,'#040208');
+  }
+  CTX.fillStyle=bg; CTX.fillRect(0,0,CW,CH);
+
+  // ── Grid overlay ───────────────────────────────────────────────────
+  CTX.strokeStyle='rgba(24,216,239,0.04)';
+  CTX.lineWidth=1;
+  for(let gx=0;gx<CW;gx+=40){CTX.beginPath();CTX.moveTo(gx,0);CTX.lineTo(gx,CH);CTX.stroke();}
+  for(let gy=0;gy<CH;gy+=40){CTX.beginPath();CTX.moveTo(0,gy);CTX.lineTo(CW,gy);CTX.stroke();}
+
+  // ── Floor 1 structural elements ────────────────────────────────────
+  if(currentFloor==='floor1'){
+    // Office walls
+    CTX.fillStyle='rgba(0,48,135,0.08)';
+    CTX.fillRect(20,60,CW-40,CH-80);
+    CTX.strokeStyle='rgba(24,216,239,0.15)';
+    CTX.lineWidth=2;
+    CTX.strokeRect(20,60,CW-40,CH-80);
+
+    // Conference room divider
+    CTX.strokeStyle='rgba(24,216,239,0.2)';
+    CTX.lineWidth=1.5;
+    CTX.setLineDash([4,4]);
+    CTX.beginPath();CTX.moveTo(180,60);CTX.lineTo(180,175);CTX.stroke();
+    CTX.setLineDash([]);
+
+    // Michael's office divider
+    CTX.setLineDash([4,4]);
+    CTX.beginPath();CTX.moveTo(350,60);CTX.lineTo(350,175);CTX.stroke();
+    CTX.setLineDash([]);
+
+    // Main office row divider
+    CTX.strokeStyle='rgba(24,216,239,0.1)';
+    CTX.beginPath();CTX.moveTo(20,240);CTX.lineTo(CW-20,240);CTX.stroke();
+
+    // Labels
+    CTX.fillStyle='rgba(24,216,239,0.25)';
+    CTX.font='9px Courier New'; CTX.textAlign='center';
+    CTX.fillText('RECEPTION',100,72);
+    CTX.fillText('EXECUTIVE',280,72);
+    CTX.fillText('ACCOUNTING / ANNEX',820,72);
+    CTX.fillText('— OPEN OFFICE FLOOR —',CW/2,252);
+    CTX.textAlign='left';
+
+    // Ceiling fluorescent lights
+    for(let lx=80;lx<CW-40;lx+=160){
+      const grd=CTX.createLinearGradient(lx-50,60,lx+50,60);
+      grd.addColorStop(0,'transparent');
+      grd.addColorStop(.5,'rgba(220,240,255,0.06)');
+      grd.addColorStop(1,'transparent');
+      CTX.fillStyle=grd;
+      CTX.fillRect(lx-50,60,100,40);
+      CTX.fillStyle='rgba(220,240,255,0.15)';
+      CTX.fillRect(lx-30,62,60,4);
+    }
+  } else {
+    // Basement concrete look
+    CTX.fillStyle='rgba(80,20,120,0.06)';
+    CTX.fillRect(20,40,CW-40,CH-60);
+    CTX.strokeStyle='rgba(153,51,255,0.2)';
+    CTX.lineWidth=2;
+    CTX.strokeRect(20,40,CW-40,CH-60);
+    CTX.fillStyle='rgba(153,51,255,0.15)';
+    CTX.font='10px Courier New';CTX.textAlign='center';
+    CTX.fillText('⬡  AGENT Q ORIGIN POINT  ·  P3L ADK KERNEL LAYER  ·  BASEMENT  ⬡',CW/2,32);
+    CTX.textAlign='left';
+
+    // Origin glow
+    const og=CTX.createRadialGradient(390,260,0,390,260,120);
+    og.addColorStop(0,'rgba(255,215,0,0.06)');
+    og.addColorStop(1,'transparent');
+    CTX.fillStyle=og;
+    CTX.fillRect(0,0,CW,CH);
+  }
+
+  // ── Agent Q path line (if moving) ─────────────────────────────────
+  if(AGENT_Q.moving){
+    CTX.strokeStyle='rgba(24,216,239,0.2)';
+    CTX.lineWidth=1;
+    CTX.setLineDash([6,6]);
+    CTX.beginPath();
+    CTX.moveTo(AGENT_Q.x,AGENT_Q.y);
+    CTX.lineTo(AGENT_Q.tx,AGENT_Q.ty);
+    CTX.stroke();
+    CTX.setLineDash([]);
+  }
+
+  // ── Desks ─────────────────────────────────────────────────────────
+  for(const d of DESKS){
+    const hov=(d===hoveredDesk);
+    const sel=(d===selectedDesk);
+    // Desk shadow
+    CTX.fillStyle='rgba(0,0,0,0.4)';
+    CTX.fillRect(d.x+4,d.y+4,d.w,d.h);
+    // Desk body
+    const g=CTX.createLinearGradient(d.x,d.y,d.x,d.y+d.h);
+    g.addColorStop(0,'rgba(0,10,30,0.85)');
+    g.addColorStop(1,'rgba(0,5,20,0.9)');
+    CTX.fillStyle=g;
+    CTX.fillRect(d.x,d.y,d.w,d.h);
+    // Border
+    CTX.strokeStyle=sel?d.col:hov?d.col+'99':'rgba(24,216,239,0.2)';
+    CTX.lineWidth=sel?2:hov?1.5:1;
+    CTX.shadowColor=sel?d.col:hov?d.col:'transparent';
+    CTX.shadowBlur=sel?16:hov?8:0;
+    CTX.strokeRect(d.x,d.y,d.w,d.h);
+    CTX.shadowBlur=0;
+    // Color accent bar
+    CTX.fillStyle=d.col+(sel?'CC':hov?'88':'44');
+    CTX.fillRect(d.x,d.y,d.w,3);
+    // Label
+    CTX.fillStyle=hov||sel?d.col:'rgba(24,216,239,0.7)';
+    CTX.font=`bold ${d.label.length>7?8:9}px Courier New`;
+    CTX.textAlign='center';
+    CTX.fillText(d.label,d.x+d.w/2,d.y+d.h/2+3);
+    CTX.textAlign='left';
+    // Hover tooltip
+    if(hov){
+      CTX.fillStyle='rgba(0,3,15,0.9)';
+      CTX.fillRect(d.x+d.w+4,d.y,160,22);
+      CTX.strokeStyle='rgba(24,216,239,0.3)';
+      CTX.lineWidth=1;
+      CTX.strokeRect(d.x+d.w+4,d.y,160,22);
+      CTX.fillStyle='rgba(24,216,239,0.9)';
+      CTX.font='8px Courier New';
+      CTX.fillText(d.desc,d.x+d.w+10,d.y+14);
+    }
+  }
+
+  // ── Agent Q ───────────────────────────────────────────────────────
+  qFrame++;
+  const qPulse=0.7+Math.sin(qFrame*0.08)*0.3;
+  const qGlow=CTX.createRadialGradient(AGENT_Q.x,AGENT_Q.y,0,AGENT_Q.x,AGENT_Q.y,22);
+  qGlow.addColorStop(0,'rgba(255,215,0,0.4)');
+  qGlow.addColorStop(.5,'rgba(24,216,239,0.2)');
+  qGlow.addColorStop(1,'transparent');
+  CTX.fillStyle=qGlow;
+  CTX.beginPath();CTX.arc(AGENT_Q.x,AGENT_Q.y,22,0,Math.PI*2);CTX.fill();
+  // Body
+  const bodyG=CTX.createRadialGradient(AGENT_Q.x-4,AGENT_Q.y-4,2,AGENT_Q.x,AGENT_Q.y,12);
+  bodyG.addColorStop(0,'#FFE055');
+  bodyG.addColorStop(.5,'#FFB900');
+  bodyG.addColorStop(1,'#FF8C00');
+  CTX.fillStyle=bodyG;
+  CTX.shadowColor='rgba(255,215,0,0.6)';
+  CTX.shadowBlur=10*qPulse;
+  CTX.beginPath();CTX.arc(AGENT_Q.x,AGENT_Q.y,11,0,Math.PI*2);CTX.fill();
+  CTX.shadowBlur=0;
+  // Eyes
+  CTX.fillStyle='#1a1a22';
+  CTX.fillRect(AGENT_Q.x-6,AGENT_Q.y-3,3,4);
+  CTX.fillRect(AGENT_Q.x+3,AGENT_Q.y-3,3,4);
+  // Q label
+  CTX.fillStyle='rgba(24,216,239,0.8)';
+  CTX.font='bold 8px Courier New';
+  CTX.textAlign='center';
+  CTX.fillText('Q',AGENT_Q.x,AGENT_Q.y+18);
+  CTX.textAlign='left';
+
+  requestAnimationFrame(drawOffice);
+}
+
+// ── Agent Q movement ───────────────────────────────────────────────────────
+function moveAgentQ(){
+  if(!AGENT_Q.moving) return;
+  const dx=AGENT_Q.tx-AGENT_Q.x, dy=AGENT_Q.ty-AGENT_Q.y;
+  const dist=Math.sqrt(dx*dx+dy*dy);
+  if(dist<2){ AGENT_Q.x=AGENT_Q.tx; AGENT_Q.y=AGENT_Q.ty; AGENT_Q.moving=false; return; }
+  const spd=Math.min(4,dist*0.12);
+  AGENT_Q.x+=dx/dist*spd; AGENT_Q.y+=dy/dist*spd;
+}
+setInterval(moveAgentQ,16);
+
+// ── Mouse interaction ──────────────────────────────────────────────────────
+function getCanvasPos(e){
+  const r=CANVAS.getBoundingClientRect();
+  return{x:e.clientX-r.left, y:e.clientY-r.top};
+}
+function deskAt(x,y){ return DESKS.find(d=>x>=d.x&&x<=d.x+d.w&&y>=d.y&&y<=d.y+d.h)||null; }
+
+CANVAS.addEventListener('mousemove',e=>{
+  const p=getCanvasPos(e);
+  hoveredDesk=deskAt(p.x,p.y);
+  CANVAS.style.cursor=hoveredDesk?'pointer':'default';
+});
+
+CANVAS.addEventListener('click',e=>{
+  const p=getCanvasPos(e);
+  const d=deskAt(p.x,p.y);
+  if(d){
+    selectedDesk=d;
+    AGENT_Q.tx=d.x+d.w/2; AGENT_Q.ty=d.y+d.h/2;
+    AGENT_Q.moving=true;
+    document.getElementById('current-desk-info').innerHTML=
+      `<b style="color:${d.col}">${d.label}</b><br>${d.desc}<br>
+       <span style="color:rgba(24,216,239,0.4)">x:${d.x} y:${d.y}</span>`;
+    addEvent(`Agent Q → ${d.label}`,d.id==='origin'?'ok':'');
+    termPrint(`Navigating to ${d.label}…`,'output');
+    setTimeout(()=>{
+      termPrint(`Arrived: ${d.label}. Opening…`,'ok');
+      openModal(d.id);
+    }, 800);
+  }
+});
+
+// ── Floor switch ───────────────────────────────────────────────────────────
+function switchFloor(floor){
+  currentFloor=floor;
+  DESKS = floor==='floor1' ? DESKS_FLOOR1 : DESKS_BASEMENT;
+  selectedDesk=null;
+  document.getElementById('floor-label').textContent=
+    floor==='floor1'
+      ? '● DUNDER MIFFLIN · SCRANTON PA · FLOOR 1'
+      : '● DUNDER MIFFLIN · SCRANTON PA · BASEMENT';
+  document.getElementById('basement-btn').style.display=floor==='floor1'?'block':'none';
+  if(!document.getElementById('floor1-btn'))
+    document.getElementById('basement-btn').insertAdjacentHTML('afterend',
+      '<button id="floor1-btn" onclick="switchFloor(\'floor1\')">▲ BACK TO FLOOR 1</button>');
+  const f1btn=document.getElementById('floor1-btn');
+  if(f1btn) f1btn.style.display=floor==='basement'?'block':'none';
+  addEvent(`Floor switch → ${floor}`,'ok');
+  if(floor==='basement'){
+    termPrint('Entering Basement…','output');
+    termPrint('Agent Q Origin Point located.','ok');
+    termPrint('P3L ADK Kernel layer active.','highlight');
+  }
+}
+
+// ── TERMINAL ──────────────────────────────────────────────────────────────────
+const qTerm=document.getElementById('q-terminal');
+
+function termPrint(msg,cls='output'){
+  const d=document.createElement('div');
+  d.className='line';
+  if(cls==='ok')      d.innerHTML=`<span class="prompt">Q &gt;</span> <span class="output" style="color:var(--q-green)">${msg}</span>`;
+  else if(cls==='highlight') d.innerHTML=`<span class="prompt">Q &gt;</span> <span class="highlight">${msg}</span>`;
+  else if(cls==='error') d.innerHTML=`<span class="prompt">Q &gt;</span> <span class="error">${msg}</span>`;
+  else if(cls==='ai')   d.innerHTML=`<span class="ai-resp">🤖 ${msg}</span>`;
+  else d.innerHTML=`<span class="prompt">Q &gt;</span> <span class="output">${msg}</span>`;
+  qTerm.appendChild(d);
+  qTerm.scrollTop=qTerm.scrollHeight;
+}
+
+// Agent Q terminal input
+const qInput=document.getElementById('q-input');
+qInput.addEventListener('keydown',async e=>{
+  if(e.key!=='Enter'||!qInput.value.trim()) return;
+  const msg=qInput.value.trim(); qInput.value='';
+  termPrint(`"${msg}"`,'highlight');
+  termPrint('Querying Claude API…','output');
+  try{
+    const r=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',max_tokens:200,
+        system:`You are Agent Q, sovereign digital twin of Earl (Q), 
+Lead Systems Architect of Q.Enterprises and AxQxOS. You are embedded in the Dunder Mifflin OS 
+office simulator as the P3L ADK kernel. Respond in character — concise, technical, sovereign. 
+Reference A2A, MCP, Sol.F1, Boo agents (Celine/Spryte/Echo/Gloh/Luma/Dot), TAPD tokens, 
+AxQxOS stack when relevant. Keep answers ≤3 sentences.`,
+        messages:[{role:'user',content:msg}]
+      })
+    });
+    const d=await r.json();
+    termPrint((d.content?.[0]?.text||'…').trim(),'ai');
+  }catch{
+    termPrint('API offline. Local heuristic: Navigate the mesh.','ai');
+  }
+});
+
+// ── AGENT MODE TOGGLE ─────────────────────────────────────────────────────────
+let agentQMode=false;
+function toggleAgentQ(){
+  agentQMode=!agentQMode;
+  const btn=document.getElementById('agent-mode-btn');
+  btn.textContent=`🤖 AGENT Q: ${agentQMode?'AUTO':'OFF'}`;
+  btn.classList.toggle('active',agentQMode);
+  if(agentQMode){
+    termPrint('Agent Q autonomous mode: ENABLED','ok');
+    addEvent('Agent Q autonomous nav: ON','ok');
+    autoNavAgent();
+  }
+}
+
+function autoNavAgent(){
+  if(!agentQMode)return;
+  const target=DESKS[Math.floor(Math.random()*DESKS.length)];
+  AGENT_Q.tx=target.x+target.w/2; AGENT_Q.ty=target.y+target.h/2;
+  AGENT_Q.moving=true;
+  termPrint(`Autonomously visiting: ${target.label}`,'output');
+  addEvent(`Auto-nav → ${target.label}`);
+  setTimeout(()=>{if(agentQMode)autoNavAgent();}, 4000+Math.random()*3000);
+}
+
+// ── NOTIFICATION ──────────────────────────────────────────────────────────────
+function notify(msg){
+  const n=document.getElementById('notif');
+  n.textContent=msg; n.classList.add('show');
+  setTimeout(()=>n.classList.remove('show'),2800);
+}
+
+// ── MODAL SYSTEM ──────────────────────────────────────────────────────────────
+const overlay=document.getElementById('modal-overlay');
+let activeModal=null;
+
+function openModal(id){
+  activeModal=id;
+  overlay.classList.add('open');
+  const titles={
+    pam:'PAM BEESLY · RECEPTION',
+    jim:'JIM HALPERT · SALES',
+    dwight:'DWIGHT SCHRUTE · ASSISTANT (REGIONAL) MANAGER',
+    ryan:'RYAN HOWARD · TEMP / STARTUP BRO',
+    angela:'ANGELA MARTIN · ACCOUNTING',
+    kelly:'KELLY KAPOOR · CUSTOMER SERVICE',
+    toby:'TOBY FLENDERSON · HR (BASEMENT CFD)',
+    michael:'MICHAEL SCOTT · CEO / AGENT Q MCP HUB',
+    accounting:'ACCOUNTING · COST CALCULATOR',
+    conference:'CONFERENCE ROOM · A2A PLANNING',
+    charley:'CHARLEY FOX PIZZERIA · MARKETING BRANCH',
+    board_game:'BASEMENT BOARD ROOM · MARIO PARTY: AGENT EDITION',
+    server:'SERVER RACK · DOT CI/CD INFRA',
+    origin:'⬡ AGENT Q ORIGIN · P3L ADK KERNEL',
+    cfd:'CFD TERMINAL · VEHICLE SIMULATION',
+  };
+  const subs={
+    pam:'Dr. Mario · A2A Reception Node',
+    jim:'Sales · Asian Jim Easter Egg',
+    dwight:'Beet Farm · Security Protocol',
+    ryan:'Vector Merge Terminal',
+    angela:'Cat Audit · Calendar',
+    kelly:'CRM · Social Pipeline',
+    toby:'OpenFOAM Simulation Terminal',
+    michael:'Agent Q Kernel · MCP Hub',
+    accounting:'AI Project Cost Estimator',
+    conference:'Sprint Planning · PRD Review',
+    charley:'Batavia IL · Pizza AI Ops · Square API',
+    board_game:'Multi-Agent Turn-Based · AxQxOS Boo Tokens',
+    server:'GitHub Actions · Dot Runner',
+    origin:'AxQxOS Kernel · Sol.F1 Bus · TAPD Root',
+    cfd:'Ford MagneRide · ZF EPB · Pacejka Magic',
+  };
+  document.getElementById('modal-title').textContent=titles[id]||id.toUpperCase();
+  document.getElementById('modal-sub').textContent=subs[id]||'';
+  const body=document.getElementById('modal-body');
+  if(id==='pam') buildDrMario(body);
+  else if(id==='michael'||id==='origin') buildKernelPanel(body);
+  else if(id==='toby'||id==='cfd') buildCFD(body);
+  else if(id==='accounting') buildCostCalc(body);
+  else if(id==='board_game') buildBoardGame(body);
+  else if(id==='charley') buildCharley(body);
+  else if(id==='jim') buildJim(body);
+  else if(id==='dwight') buildDwight(body);
+  else if(id==='ryan') buildRyan(body);
+  else if(id==='server') buildServer(body);
+  else if(id==='conference') buildConference(body);
+  else buildGeneric(body,id);
+  addEvent(`Modal: ${id} opened`,'');
+}
+
+function closeModal(){
+  overlay.classList.remove('open');
+  activeModal=null;
+  // Stop Dr. Mario if running
+  if(dmInterval){clearInterval(dmInterval);dmInterval=null;}
+}
+
+function handleOverlayClick(e){
+  if(e.target===overlay) closeModal();
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+// DR. MARIO GAME
+// ────────────────────────────────────────────────────────────────────────────
+const DM_COLS=8, DM_ROWS=16, DM_CELL=28;
+let dmGrid, dmPill, dmNextPill, dmScore, dmViruses, dmInterval, dmRunning, dmLevel;
+
+function dmColor(){ return[P.pRed,P.pYellow,P.pBlue][Math.floor(Math.random()*3)]; }
+
+function initDrMario(){
+  dmGrid=Array.from({length:DM_ROWS},()=>Array(DM_COLS).fill(null));
+  dmScore=0; dmLevel=1; dmRunning=false; dmInterval=null;
+  // Place viruses
+  const vCount=4+dmLevel*2;
+  dmViruses=0;
+  for(let v=0;v<vCount;v++){
+    let c,r;
+    do{ c=Math.floor(Math.random()*DM_COLS); r=Math.floor(Math.random()*(DM_ROWS-4))+4; }
+    while(dmGrid[r][c]);
+    dmGrid[r][c]={col:dmColor(),virus:true};
+    dmViruses++;
+  }
+  spawnPill();
+}
+
+function spawnPill(){
+  dmPill={
+    x:3, y:0,
+    cells:[{dx:0,dy:0,col:dmColor()},{dx:1,dy:0,col:dmColor()}],
+    rot:0
+  };
+}
+
+function dmRotate(){
+  if(!dmRunning)return;
+  const [{dx:dx1,dy:dy1,col:c1},{dx:dx2,dy:dy2,col:c2}]=dmPill.cells;
+  // Simple 4-rotation: H→V→H→V
+  const rots=[
+    [{dx:0,dy:0},{dx:1,dy:0}], // H right
+    [{dx:0,dy:0},{dx:0,dy:1}], // V down
+    [{dx:1,dy:0},{dx:0,dy:0}], // H left (flip)
+    [{dx:0,dy:1},{dx:0,dy:0}], // V up (flip)
+  ];
+  dmPill.rot=(dmPill.rot+1)%4;
+  const r=rots[dmPill.rot];
+  const newCells=[{dx:r[0].dx,dy:r[0].dy,col:c1},{dx:r[1].dx,dy:r[1].dy,col:c2}];
+  if(newCells.every(c=>dmValid(dmPill.x+c.dx,dmPill.y+c.dy))) dmPill.cells=newCells;
+}
+
+function dmValid(x,y){
+  return x>=0&&x<DM_COLS&&y>=0&&y<DM_ROWS&&!dmGrid[y]?.[x];
+}
+
+function dmMovePill(dx){
+  if(!dmRunning)return;
+  if(dmPill.cells.every(c=>dmValid(dmPill.x+c.dx+dx,dmPill.y+c.dy)))
+    dmPill.x+=dx;
+}
+
+function dmDrop(){
+  if(!dmRunning)return;
+  if(dmPill.cells.every(c=>dmValid(dmPill.x+c.dx,dmPill.y+c.dy+1))){
+    dmPill.y++;
+  } else {
+    // Place pill
+    for(const c of dmPill.cells){
+      const gx=dmPill.x+c.dx, gy=dmPill.y+c.dy;
+      if(gy<0){dmRunning=false;clearInterval(dmInterval);return;}
+      dmGrid[gy][gx]={col:c.col,virus:false};
+    }
+    dmClear();
+    if(dmViruses<=0){ dmRunning=false; clearInterval(dmInterval);
+      dmScore+=dmLevel*500; renderDMSide(); return; }
+    spawnPill();
+  }
+}
+
+function dmClear(){
+  let cleared=false;
+  // Check horizontal
+  for(let r=0;r<DM_ROWS;r++){
+    for(let c=0;c<DM_COLS-3;c++){
+      const base=dmGrid[r][c];
+      if(!base)continue;
+      if([1,2,3].every(i=>dmGrid[r][c+i]?.col===base.col)){
+        [0,1,2,3].forEach(i=>{
+          if(dmGrid[r][c+i]?.virus)dmViruses--;
+          dmGrid[r][c+i]=null; cleared=true;
+        });
+      }
+    }
+  }
+  // Check vertical
+  for(let c=0;c<DM_COLS;c++){
+    for(let r=0;r<DM_ROWS-3;r++){
+      const base=dmGrid[r][c];
+      if(!base)continue;
+      if([1,2,3].every(i=>dmGrid[r+i][c]?.col===base.col)){
+        [0,1,2,3].forEach(i=>{
+          if(dmGrid[r+i][c]?.virus)dmViruses--;
+          dmGrid[r+i][c]=null; cleared=true;
+        });
+      }
+    }
+  }
+  if(cleared){dmScore+=100;renderDMSide();}
+}
+
+function renderDM(canvas){
+  const ctx=canvas.getContext('2d');
+  const cw=DM_COLS*DM_CELL, ch=DM_ROWS*DM_CELL;
+  ctx.fillStyle='#0a0510'; ctx.fillRect(0,0,cw,ch);
+  // Grid lines
+  ctx.strokeStyle='rgba(100,80,140,0.2)'; ctx.lineWidth=0.5;
+  for(let c=0;c<=DM_COLS;c++){ctx.beginPath();ctx.moveTo(c*DM_CELL,0);ctx.lineTo(c*DM_CELL,ch);ctx.stroke();}
+  for(let r=0;r<=DM_ROWS;r++){ctx.beginPath();ctx.moveTo(0,r*DM_CELL);ctx.lineTo(cw,r*DM_CELL);ctx.stroke();}
+  // Grid cells
+  for(let r=0;r<DM_ROWS;r++) for(let c=0;c<DM_COLS;c++){
+    const cell=dmGrid[r][c];
+    if(!cell)continue;
+    drawDMCell(ctx,c,r,cell.col,cell.virus);
+  }
+  // Active pill
+  if(dmPill && dmRunning) for(const seg of dmPill.cells){
+    const gx=dmPill.x+seg.dx, gy=dmPill.y+seg.dy;
+    if(gy>=0) drawDMCell(ctx,gx,gy,seg.col,false);
+  }
+}
+
+function drawDMCell(ctx,c,r,col,isVirus){
+  const x=c*DM_CELL+2, y=r*DM_CELL+2, s=DM_CELL-4;
+  const g=ctx.createLinearGradient(x,y,x+s,y+s);
+  g.addColorStop(0,col+'FF'); g.addColorStop(1,col+'88');
+  ctx.fillStyle=g;
+  ctx.beginPath();
+  ctx.roundRect(x,y,s,s,isVirus?4:6);
+  ctx.fill();
+  ctx.strokeStyle='rgba(255,255,255,0.2)'; ctx.lineWidth=1;
+  ctx.stroke();
+  if(isVirus){
+    ctx.fillStyle='rgba(0,0,0,0.6)';
+    ctx.font='bold 10px sans-serif'; ctx.textAlign='center';
+    ctx.fillText('×',c*DM_CELL+DM_CELL/2,r*DM_CELL+DM_CELL/2+4);
+    ctx.textAlign='left';
+  }
+}
+
+function renderDMSide(){
+  document.getElementById('dm-score').textContent=dmScore.toString().padStart(8,'0');
+  document.getElementById('dm-viruses').textContent=dmViruses;
+  document.getElementById('dm-level').textContent=dmLevel;
+}
+
+function buildDrMario(body){
+  const cw=DM_COLS*DM_CELL, ch=DM_ROWS*DM_CELL;
+  body.innerHTML=`
+<div id="dr-mario-wrap">
+  <div id="dm-game-area">
+    <canvas id="dm-canvas" width="${cw}" height="${ch}"></canvas>
+    <div id="dm-controls" style="margin-top:10px">
+      <button class="dm-btn" id="dm-start">▶ START</button>
+      <button class="dm-btn" onclick="dmMovePill(-1)">◀</button>
+      <button class="dm-btn" onclick="dmMovePill(1)">▶</button>
+      <button class="dm-btn" onclick="dmRotate()">↻ ROTATE</button>
+    </div>
+    <div style="font-size:8px;color:rgba(24,216,239,0.4);margin-top:6px">
+      ARROW KEYS + Z to rotate · Match 4 to clear viruses
+    </div>
+  </div>
+  <div id="dm-side">
+    <div style="color:var(--q-cyan);font-size:11px;font-weight:bold;margin-bottom:10px">
+      DR. MARIO<br><span style="font-size:8px;color:rgba(24,216,239,0.5)">PAM'S DESK · RAG VIRUS CLEANER</span>
+    </div>
+    <div class="stat-row"><span>SCORE</span><span class="stat-val" id="dm-score">00000000</span></div>
+    <div class="stat-row"><span>VIRUSES</span><span class="stat-val" id="dm-viruses">0</span></div>
+    <div class="stat-row"><span>LEVEL</span><span class="stat-val" id="dm-level">1</span></div>
+    <div style="margin-top:14px;font-size:9px;color:rgba(24,216,239,0.5);line-height:1.7">
+      <b style="color:var(--q-cyan)">Pam's Note:</b><br>
+      "This is basically what we do<br>
+      with the RAG pipeline — match<br>
+      the right vectors and eliminate<br>
+      the hallucination viruses."<br><br>
+      — Pam Beesly, Reception Agent<br>
+      <b style="color:var(--q-gold)">A2A Node: PAM-RX-001</b>
+    </div>
+    <div style="margin-top:14px">
+      <div style="font-size:8px;color:rgba(24,216,239,0.4);margin-bottom:4px">PILL LEGEND</div>
+      <div style="display:flex;gap:6px;align-items:center;font-size:9px">
+        <div style="width:14px;height:14px;background:${P.pRed};border-radius:3px"></div> Red
+        <div style="width:14px;height:14px;background:${P.pYellow};border-radius:3px"></div> Yellow
+        <div style="width:14px;height:14px;background:${P.pBlue};border-radius:3px"></div> Blue
+      </div>
+    </div>
+  </div>
+</div>`;
+
+  const canvas=document.getElementById('dm-canvas');
+  initDrMario();
+  renderDM(canvas);
+  renderDMSide();
+
+  document.getElementById('dm-start').addEventListener('click',()=>{
+    if(dmRunning){clearInterval(dmInterval);dmRunning=false;
+      document.getElementById('dm-start').textContent='▶ START'; return;}
+    initDrMario();
+    dmRunning=true;
+    document.getElementById('dm-start').textContent='⏸ PAUSE';
+    dmInterval=setInterval(()=>{
+      if(!dmRunning)return;
+      dmDrop(); renderDM(canvas); renderDMSide();
+    },500);
+  });
+
+  document.addEventListener('keydown',dmKey);
+}
+
+function dmKey(e){
+  if(!dmRunning)return;
+  const canvas=document.getElementById('dm-canvas');
+  if(!canvas)return;
+  if(e.key==='ArrowLeft'){dmMovePill(-1);}
+  else if(e.key==='ArrowRight'){dmMovePill(1);}
+  else if(e.key==='ArrowDown'){dmDrop();}
+  else if(e.key==='z'||e.key==='Z'){dmRotate();}
+  renderDM(canvas); renderDMSide();
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+// MARIO PARTY BOARD GAME
+// ────────────────────────────────────────────────────────────────────────────
+const MP_SPACES=20;
+const MP_AGENTS=[
+  {name:'Agent Q',  col:'#FFD700', token:'⬡', pos:0, coins:10, stars:0, hp:5},
+  {name:'Celine',   col:'#FF88CC', token:'C',  pos:5, coins:10, stars:0, hp:5},
+  {name:'Echo',     col:'#18D8EF', token:'E',  pos:10,coins:10, stars:0, hp:5},
+  {name:'Dot',      col:'#FF6633', token:'D',  pos:15,coins:10, stars:0, hp:5},
+];
+const MP_SPACE_TYPES=['normal','coin','event','duel','star','normal','coin','event','normal','duel',
+  'star','normal','coin','event','normal','normal','duel','coin','event','star'];
+let mpTurn=0, mpRound=0, mpMaxRounds=8, mpLog=[], mpRunning=false;
+
+function buildBoardGame(body){
+  body.innerHTML=`
+<div id="mp-wrap">
+  <canvas id="mp-board-canvas" width="560" height="420"></canvas>
+  <div id="mp-sidebar">
+    <div style="font-size:10px;font-weight:bold;color:var(--q-cyan);margin-bottom:8px">
+      ⬡ MARIO PARTY: AGENT EDITION<br>
+      <span style="font-size:8px;color:rgba(24,216,239,0.5)">Multi-Agent Turn-Based · A2A Scheduler</span>
+    </div>
+    <div id="mp-agents"></div>
+    <div id="mp-actions">
+      <button class="dm-btn" onclick="mpRollDice()">🎲 ROLL DICE</button>
+      <button class="dm-btn" onclick="mpAutoRun()">⚡ AUTO</button>
+    </div>
+    <div id="mp-log"></div>
+  </div>
+</div>`;
+  renderMP();
+  renderMPAgents();
+}
+
+function renderMPAgents(){
+  document.getElementById('mp-agents').innerHTML=MP_AGENTS.map((a,i)=>`
+    <div class="mp-agent-card" style="border-color:${a.col}44;${mpTurn===i?'background:rgba('+hexToRGB(a.col)+',.08)':''}"
+    >
+      <div class="mp-agent-name" style="color:${a.col}">${a.token} ${a.name}${mpTurn===i?' ← TURN':''}</div>
+      <div class="mp-stat"><span>Coins</span><span class="mp-stat-val">${a.coins}</span></div>
+      <div class="mp-stat"><span>Stars</span><span class="mp-stat-val">${'⭐'.repeat(a.stars)||'—'}</span></div>
+      <div class="mp-stat"><span>Space</span><span class="mp-stat-val">${a.pos}/${MP_SPACES}</span></div>
+    </div>`).join('');
+}
+
+function hexToRGB(hex){
+  const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
+  return`${r},${g},${b}`;
+}
+
+function renderMP(){
+  const canvas=document.getElementById('mp-board-canvas');
+  if(!canvas)return;
+  const ctx=canvas.getContext('2d');
+  const CW=560,CH=420;
+  ctx.fillStyle='#050818'; ctx.fillRect(0,0,CW,CH);
+  // Board spaces in a loop
+  const cx=CW/2, cy=CH/2, R=160;
+  const spaceColors={normal:'#334466',coin:'#664400',event:'#1a3a1a',duel:'#440000',star:'#554400'};
+  const spaceLabels={normal:'·',coin:'$',event:'!',duel:'⚔',star:'⭐'};
+
+  for(let i=0;i<MP_SPACES;i++){
+    const ang=(i/MP_SPACES)*Math.PI*2-Math.PI/2;
+    const sx=cx+R*Math.cos(ang), sy=cy+R*Math.sin(ang);
+    const type=MP_SPACE_TYPES[i];
+    ctx.fillStyle=spaceColors[type];
+    ctx.shadowColor=type==='star'?'#FFD700':type==='duel'?'#FF2222':'transparent';
+    ctx.shadowBlur=type==='star'||type==='duel'?8:0;
+    ctx.beginPath(); ctx.arc(sx,sy,14,0,Math.PI*2); ctx.fill();
+    ctx.shadowBlur=0;
+    ctx.strokeStyle='rgba(24,216,239,0.4)'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.arc(sx,sy,14,0,Math.PI*2); ctx.stroke();
+    ctx.fillStyle='rgba(24,216,239,0.9)';
+    ctx.font='bold 10px Courier New'; ctx.textAlign='center';
+    ctx.fillText(spaceLabels[type],sx,sy+4);
+
+    // Connector
+    const ang2=((i+1)/MP_SPACES)*Math.PI*2-Math.PI/2;
+    const sx2=cx+R*Math.cos(ang2), sy2=cy+R*Math.sin(ang2);
+    ctx.strokeStyle='rgba(24,216,239,0.15)'; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.moveTo(sx,sy); ctx.lineTo(sx2,sy2); ctx.stroke();
+  }
+
+  // Agent tokens on board
+  const offsetMap={};
+  for(const a of MP_AGENTS){
+    const key=a.pos;
+    offsetMap[key]=(offsetMap[key]||0);
+    const ang=(a.pos/MP_SPACES)*Math.PI*2-Math.PI/2;
+    const sx=cx+R*Math.cos(ang)+offsetMap[key]*12;
+    const sy=cy+R*Math.sin(ang)+offsetMap[key]*12;
+    offsetMap[key]++;
+    ctx.shadowColor=a.col; ctx.shadowBlur=12;
+    ctx.fillStyle=a.col;
+    ctx.beginPath(); ctx.arc(sx,sy,8,0,Math.PI*2); ctx.fill();
+    ctx.shadowBlur=0;
+    ctx.fillStyle='#000'; ctx.font='bold 8px Courier New'; ctx.textAlign='center';
+    ctx.fillText(a.token,sx,sy+3);
+  }
+
+  // Center label
+  ctx.textAlign='center';
+  ctx.fillStyle='rgba(24,216,239,0.6)'; ctx.font='bold 12px Courier New';
+  ctx.fillText('⬡ AGENT PARTY',cx,cy-8);
+  ctx.font='9px Courier New'; ctx.fillStyle='rgba(24,216,239,0.4)';
+  ctx.fillText(`Round ${mpRound}/${mpMaxRounds}`,cx,cy+10);
+  ctx.fillText(`Turn: ${MP_AGENTS[mpTurn%MP_AGENTS.length].name}`,cx,cy+25);
+  ctx.textAlign='left';
+}
+
+function mpAddLog(msg,col=''){
+  mpLog.unshift({msg,col,t:new Date().toLocaleTimeString('en-US',{hour12:false})});
+  if(mpLog.length>20)mpLog.pop();
+  const el=document.getElementById('mp-log');
+  if(el) el.innerHTML=mpLog.map(e=>
+    `<div style="color:${e.col||'rgba(24,216,239,0.7)'};padding:1px 0;border-bottom:1px solid rgba(24,216,239,0.06)">
+      <span style="color:rgba(24,216,239,0.3)">${e.t}</span> ${e.msg}
+    </div>`).join('');
+}
+
+function mpRollDice(){
+  const agent=MP_AGENTS[mpTurn%MP_AGENTS.length];
+  const roll=Math.floor(Math.random()*10)+1;
+  agent.pos=(agent.pos+roll)%MP_SPACES;
+  const type=MP_SPACE_TYPES[agent.pos];
+  // Space effect
+  let effect='';
+  if(type==='coin'){agent.coins+=3;effect='+3 coins';}
+  else if(type==='star'){agent.coins-=20;agent.stars++;effect='⭐ STAR PURCHASED';}
+  else if(type==='event'){const gain=Math.floor(Math.random()*6)-2;agent.coins+=gain;effect=`Event: ${gain>0?'+':''}${gain} coins`;}
+  else if(type==='duel'){const opp=MP_AGENTS.find(a=>a!==agent);opp.coins-=5;agent.coins+=5;effect=`Duel: stole 5 coins from ${opp.name}`;}
+
+  mpAddLog(`${agent.token} ${agent.name} rolled ${roll}. ${type.toUpperCase()} — ${effect}`,agent.col);
+  addEvent(`${agent.name} rolled ${roll} → ${type}`, type==='star'?'ok':type==='duel'?'warn':'');
+  mpTurn=(mpTurn+1);
+  if(mpTurn%MP_AGENTS.length===0){
+    mpRound++;
+    mpAddLog(`── ROUND ${mpRound} COMPLETE ──`,'rgba(24,216,239,0.5)');
+    if(mpRound>=mpMaxRounds){
+      const winner=MP_AGENTS.slice().sort((a,b)=>b.stars-a.stars||b.coins-a.coins)[0];
+      mpAddLog(`🏆 WINNER: ${winner.name} (${winner.stars}⭐ / ${winner.coins} coins)`,winner.col);
+      notify(`🏆 ${winner.name} wins the Agent Party!`);
+      addEvent(`WINNER: ${winner.name}`,'ok');
+    }
+  }
+  renderMP(); renderMPAgents();
+}
+
+let mpAutoInt=null;
+function mpAutoRun(){
+  if(mpAutoInt){clearInterval(mpAutoInt);mpAutoInt=null;return;}
+  mpAutoInt=setInterval(()=>{
+    if(mpRound>=mpMaxRounds){clearInterval(mpAutoInt);mpAutoInt=null;return;}
+    mpRollDice();
+  },900);
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+// CFD TERMINAL (Toby's desk)
+// ────────────────────────────────────────────────────────────────────────────
+const CFD_LINES=[
+  'OpenFOAM v2312  |  Q.Enterprises Vehicle Sim Lab',
+  '──────────────────────────────────────────────────',
+  'Loading mesh: magneric-suspension.msh … [OK]',
+  'Cells: 2,847,392  |  Faces: 8,921,445',
+  'Boundary conditions: road_surface, wheel_contact, airfoil',
+  '',
+  'Pacejka Magic Formula: tire(F_z, κ, α)',
+  '  B=12.4  C=2.1  D=0.92  E=-0.9',
+  '  μ_peak = 1.18 @ slip 12.3%',
+  '',
+  'MagneRide Control: damper_force = f(skyhook, groundhook)',
+  '  Skyhook gain K_s = 2400 N·s/m',
+  '  Groundhook gain K_g = 1800 N·s/m',
+  '  Mode: HYBRID (Ford Design Release heritage)',
+  '',
+  'ZF EPB System: ELECTRONIC PARK BRAKE simulation',
+  '  Clamp force: 23.4 kN  |  Release time: 0.18s',
+  '  Gradient hold: 30% grade ✓',
+  '',
+  'Aston Martin Vantage 2008 aero model:',
+  '  Cd = 0.31  |  Cl = -0.24  |  Re = 8.2×10⁶',
+  '  Downforce @ 100mph: 142 N',
+  '',
+  'Toyota GR Supra A90 wheel study:',
+  '  Advan GT Beyond 5-spoke RSM finish loaded',
+  '  Contact patch: 242×48mm  |  Load transfer OK',
+  '',
+  'Time step: dt=0.001s  |  MaxCo=0.45',
+  'Iteration 1/500 … residuals converging',
+  '  p: 3.2e-4  U: 1.1e-5  k: 8.7e-6  ε: 2.1e-6',
+  'Iteration 50/500 … Ux converged.',
+  'Iteration 100/500 … p converged.',
+  '──────────────────────────────────────────────────',
+  'SIMULATION COMPLETE  |  Output: ./postProcess/Cd_Cl.csv',
+  'Exporting to VTK for ParaView … [OK]',
+  'Agent Q note: Results piped to Gloh RAG indexer.',
+];
+let cfdIdx=0,cfdIntv=null;
+
+function buildCFD(body){
+  body.innerHTML=`
+<div style="margin-bottom:10px;font-size:10px;color:rgba(24,216,239,0.7)">
+  <b style="color:var(--q-cyan)">Toby's Desk — OpenFOAM CFD Terminal</b><br>
+  <span style="font-size:9px;color:rgba(24,216,239,0.4)">
+    Vehicle dynamics · MagneRide · ZF EPB · Pacejka · Aston Martin V8 · GR Supra A90
+  </span>
+</div>
+<div id="cfd-terminal"></div>
+<div style="display:flex;gap:8px;margin-top:10px">
+  <button class="dm-btn" onclick="cfdRun()">▶ RUN SIM</button>
+  <button class="dm-btn" onclick="cfdClear()">⬡ CLEAR</button>
+</div>
+<div style="font-size:8px;color:rgba(24,216,239,0.3);margin-top:8px">
+  "Toby runs CFD on his lunch break.<br>
+   HR doesn't know he has the compute budget." — Ryan Howard
+</div>`;
+  cfdIdx=0;
+  cfdRun();
+}
+
+function cfdRun(){
+  if(cfdIntv)clearInterval(cfdIntv);
+  cfdIdx=0;
+  const term=document.getElementById('cfd-terminal');
+  if(!term)return;
+  term.innerHTML='';
+  cfdIntv=setInterval(()=>{
+    if(!document.getElementById('cfd-terminal')){clearInterval(cfdIntv);return;}
+    if(cfdIdx>=CFD_LINES.length){clearInterval(cfdIntv);return;}
+    const line=CFD_LINES[cfdIdx++];
+    const div=document.createElement('div');
+    div.style.cssText='padding:1px 0;';
+    if(line.startsWith('OpenFOAM')||line.startsWith('SIMUL')||line.startsWith('──'))
+      div.style.color='#88FF88';
+    else if(line.includes('Pacejka')||line.includes('MagneRide')||line.includes('EPB'))
+      div.style.color='#FFDD00';
+    else if(line.includes('Aston')||line.includes('Supra')||line.includes('Advan'))
+      div.style.color='#18D8EF';
+    else if(line.includes('[OK]')||line.includes('✓')||line.includes('converged'))
+      div.style.color='#00FF88';
+    else div.style.color='#00FF41';
+    div.textContent=line||' ';
+    term.appendChild(div);
+    term.scrollTop=term.scrollHeight;
+  },80);
+}
+
+function cfdClear(){
+  if(cfdIntv)clearInterval(cfdIntv);
+  const term=document.getElementById('cfd-terminal');
+  if(term)term.innerHTML='';
+  cfdIdx=0;
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+// COST CALCULATOR (Accounting)
+// ────────────────────────────────────────────────────────────────────────────
+function buildCostCalc(body){
+  body.innerHTML=`
+<div id="cost-calc">
+  <div style="font-size:10px;color:rgba(24,216,239,0.7);margin-bottom:14px">
+    <b style="color:var(--q-cyan)">AI Project Cost Estimator · 6-Month Redevelopment</b><br>
+    <span style="font-size:9px;color:rgba(24,216,239,0.4)">
+      "Kevin did the math. It's actually less than you think." — Kevin Malone
+    </span>
+  </div>
+  <div class="calc-row">
+    <span class="calc-label">Claude API (tokens/day, millions)</span>
+    <input class="calc-input" id="c-tokens" type="number" value="5" oninput="calcCost()">
+  </div>
+  <div class="calc-row">
+    <span class="calc-label">Agents running (parallel)</span>
+    <input class="calc-input" id="c-agents" type="number" value="6" oninput="calcCost()">
+  </div>
+  <div class="calc-row">
+    <span class="calc-label">Dev hours/week (human oversight)</span>
+    <input class="calc-input" id="c-dev" type="number" value="20" oninput="calcCost()">
+  </div>
+  <div class="calc-row">
+    <span class="calc-label">Dev hourly rate (USD)</span>
+    <input class="calc-input" id="c-rate" type="number" value="85" oninput="calcCost()">
+  </div>
+  <div class="calc-row">
+    <span class="calc-label">MCP server hosting ($/mo)</span>
+    <input class="calc-input" id="c-infra" type="number" value="120" oninput="calcCost()">
+  </div>
+  <div class="calc-row">
+    <span class="calc-label">Vector DB storage ($/mo)</span>
+    <input class="calc-input" id="c-vector" type="number" value="40" oninput="calcCost()">
+  </div>
+  <div class="calc-result" id="calc-result">
+    <div style="font-size:9px;color:rgba(51,238,102,0.7);margin-bottom:8px">⬡ 6-MONTH PROJECTION</div>
+    <div id="calc-out">—</div>
+  </div>
+  <div style="margin-top:12px;border:1px solid rgba(255,215,0,0.3);padding:10px;background:rgba(255,215,0,0.04)">
+    <div style="font-size:10px;color:var(--q-gold);font-weight:bold;margin-bottom:6px">⚡ QUICK DELIVERY (1 WEEK)</div>
+    <div style="font-size:9px;color:rgba(24,216,239,0.7);line-height:1.8">
+      Week 1 Template Sprint:<br>
+      • Day 1–2: Charley Fox website scaffolded (Vite + AxQxOS agent)<br>
+      • Day 3: Square API payments integrated via Zapier MCP<br>
+      • Day 4: Google Reviews bot on commit log<br>
+      • Day 5: Deploy to Firebase + DNS live<br>
+      <b style="color:var(--q-green)">Est. cost: ~$400 API + 20 dev hrs = $2,100 total</b>
+    </div>
+  </div>
+</div>`;
+  calcCost();
+}
+
+function calcCost(){
+  const tok=+document.getElementById('c-tokens')?.value||5;
+  const agents=+document.getElementById('c-agents')?.value||6;
+  const dev=+document.getElementById('c-dev')?.value||20;
+  const rate=+document.getElementById('c-rate')?.value||85;
+  const infra=+document.getElementById('c-infra')?.value||120;
+  const vector=+document.getElementById('c-vector')?.value||40;
+
+  const api_mo=tok*agents*1e6*0.000003*30; // ~$3/MTok (Sonnet approx)
+  const dev_mo=dev*4.3*rate;
+  const infra_mo=infra+vector;
+  const total_mo=api_mo+dev_mo+infra_mo;
+  const total_6mo=total_mo*6;
+
+  const out=document.getElementById('calc-out');
+  if(out) out.innerHTML=`
+    <table style="font-size:9px;width:100%;border-collapse:collapse">
+      <tr><td style="color:rgba(24,216,239,0.6)">Claude API (est.)</td><td style="text-align:right;color:var(--q-gold)">$${api_mo.toFixed(0)}/mo</td></tr>
+      <tr><td style="color:rgba(24,216,239,0.6)">Dev labor</td><td style="text-align:right;color:var(--q-gold)">$${dev_mo.toFixed(0)}/mo</td></tr>
+      <tr><td style="color:rgba(24,216,239,0.6)">Infra + VectorDB</td><td style="text-align:right;color:var(--q-gold)">$${infra_mo.toFixed(0)}/mo</td></tr>
+      <tr style="border-top:1px solid rgba(51,238,102,0.3)">
+        <td style="color:var(--q-green);font-weight:bold">TOTAL/MONTH</td>
+        <td style="text-align:right;color:var(--q-green);font-weight:bold">$${total_mo.toFixed(0)}</td>
+      </tr>
+      <tr>
+        <td style="color:var(--q-cyan);font-weight:bold;font-size:11px">6-MONTH TOTAL</td>
+        <td style="text-align:right;color:var(--q-cyan);font-weight:bold;font-size:13px">$${total_6mo.toLocaleString(undefined,{maximumFractionDigits:0})}</td>
+      </tr>
+    </table>`;
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+// AGENT Q KERNEL PANEL
+// ────────────────────────────────────────────────────────────────────────────
+function buildKernelPanel(body){
+  const metrics=[
+    ['Kernel Version','AxQxOS v1.0.0'],['Runtime','Sol.F1 Bus'],
+    ['Boo Agents Online','6 / 6'],['MCP Servers','4 registered'],
+    ['TAPD Epoch','Q₅ (Canonical)'],['Override Lock','SOL v1.0 SEALED'],
+    ['Sovereignty Chain','RFC8785 + Merkle'],['A2A ADK','v1.0 FROZEN'],
+    ['Safety Layer','HAL / Fail-Closed'],['Maker-Checker','ACTIVE'],
+  ];
+  body.innerHTML=`
+<div id="kernel-wrap">
+  <canvas id="kernel-canvas" width="320" height="280"></canvas>
+  <div id="kernel-data">
+    <div style="font-size:11px;font-weight:bold;color:var(--q-cyan);margin-bottom:12px">
+      ⬡ AGENT Q KERNEL · P3L ADK ORIGIN<br>
+      <span style="font-size:8px;color:rgba(24,216,239,0.4)">
+        Canonical truth, attested and replayable.
+      </span>
+    </div>
+    ${metrics.map(([k,v])=>`
+    <div class="kernel-metric">
+      <span style="color:rgba(24,216,239,0.6)">${k}</span>
+      <span class="km-val">${v}</span>
+    </div>`).join('')}
+    <div style="margin-top:14px;border:1px solid rgba(24,216,239,0.2);padding:8px;font-size:9px">
+      <div style="color:var(--q-gold);margin-bottom:4px">⬡ P3L VISION STATEMENT</div>
+      <div style="color:rgba(24,216,239,0.7);line-height:1.75">
+        Platform · Protocol · Product<br>
+        Agent lifecycle managed as<br>
+        sovereign capsules with<br>
+        cryptographic attestation,<br>
+        TAPD yield mechanics,<br>
+        and A2A deterministic mesh.
+      </div>
+    </div>
+  </div>
+</div>`;
+  drawKernel();
+}
+
+function drawKernel(){
+  const c=document.getElementById('kernel-canvas');
+  if(!c)return;
+  const ctx=c.getContext('2d');
+  let kFr=0;
+  function kLoop(){
+    if(!document.getElementById('kernel-canvas'))return;
+    kFr++;
+    ctx.fillStyle='rgba(2,4,10,0.85)'; ctx.fillRect(0,0,320,280);
+    const cx=160,cy=140;
+    // Rings
+    for(let r=0;r<4;r++){
+      const rad=40+r*35, a=kFr*.01*(r+1)*(r%2===0?1:-1);
+      ctx.strokeStyle=`rgba(24,216,239,${0.15-r*0.03})`;
+      ctx.lineWidth=1;
+      ctx.setLineDash([6,10]);
+      ctx.save(); ctx.translate(cx,cy); ctx.rotate(a);
+      ctx.beginPath(); ctx.arc(0,0,rad,0,Math.PI*2); ctx.stroke();
+      // Nodes on ring
+      const nNodes=r+4;
+      for(let n=0;n<nNodes;n++){
+        const na=(n/nNodes)*Math.PI*2+a;
+        const nx=Math.cos(na)*rad, ny=Math.sin(na)*rad;
+        const boo=BOO_AGENTS[n%BOO_AGENTS.length];
+        ctx.fillStyle=boo.col;
+        ctx.beginPath(); ctx.arc(nx,ny,3,0,Math.PI*2); ctx.fill();
+      }
+      ctx.restore(); ctx.setLineDash([]);
+    }
+    // Centre
+    const g=ctx.createRadialGradient(cx,cy,0,cx,cy,20);
+    g.addColorStop(0,'rgba(255,215,0,0.8)'); g.addColorStop(.5,'rgba(24,216,239,0.4)');
+    g.addColorStop(1,'transparent');
+    ctx.fillStyle=g; ctx.beginPath(); ctx.arc(cx,cy,20,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='rgba(0,0,0,0.8)'; ctx.font='bold 10px Courier New'; ctx.textAlign='center';
+    ctx.fillText('⬡Q',cx,cy+4); ctx.textAlign='left';
+    // Gemini twin spirals hint
+    ctx.strokeStyle='rgba(24,216,239,0.08)'; ctx.lineWidth=1;
+    for(let i=0;i<200;i++){
+      const t=i*.04+kFr*.002;
+      const sx=cx+Math.cos(t)*t*1.8, sy=cy+Math.sin(t)*t*1.8;
+      if(sx>0&&sx<320&&sy>0&&sy<280){
+        ctx.fillStyle=`rgba(24,216,239,${0.03+Math.sin(t)*.02})`;
+        ctx.fillRect(sx,sy,1,1);
+      }
+      const sx2=cx+Math.cos(t+Math.PI)*t*1.8, sy2=cy+Math.sin(t+Math.PI)*t*1.8;
+      if(sx2>0&&sx2<320&&sy2>0&&sy2<280){
+        ctx.fillStyle=`rgba(255,215,0,${0.02+Math.sin(t)*.015})`;
+        ctx.fillRect(sx2,sy2,1,1);
+      }
+    }
+    requestAnimationFrame(kLoop);
+  }
+  kLoop();
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+// CHARACTER MODALS (Jim, Dwight, Ryan, Server, Conference, Charley)
+// ────────────────────────────────────────────────────────────────────────────
+function buildJim(body){
+  body.innerHTML=`
+<div style="text-align:center;padding:30px">
+  <div style="font-size:48px;margin-bottom:20px">🙃</div>
+  <div style="font-size:18px;color:var(--q-cyan);font-weight:bold;margin-bottom:12px">
+    Hi, I'm Jim.
+  </div>
+  <div style="font-size:14px;color:rgba(24,216,239,0.6);margin-bottom:24px">
+    ...Actually, I'm <span style="color:var(--q-gold)">Asian Jim</span>.<br>
+    Jim stepped away from his desk.<br>
+    <span style="font-size:10px;color:rgba(24,216,239,0.4)">
+      (Played by Randall Park, navigating the office park<br>
+       while the MLP tries to translate Korean.)
+    </span>
+  </div>
+  <div style="border:1px solid rgba(24,216,239,0.2);padding:16px;max-width:400px;margin:0 auto;font-size:10px;text-align:left;color:rgba(24,216,239,0.7)">
+    <b style="color:var(--q-cyan)">Jim's A2A Node: JIM-SALES-003</b><br><br>
+    Current task: Prank Dwight by re-labeling<br>
+    the vector space as "Schrute Space"<br><br>
+    dot(Dwight, prank_vector) = <span style="color:var(--q-gold)">0.97</span><br>
+    Confidence: <span style="color:var(--q-green)">✓ HIGH</span><br><br>
+    Memo to Camera: <i>"I embedded a fake model<br>
+    in Dwight's IDE. He thinks it's GPT-5.<br>
+    It's just autocomplete."</i>
+  </div>
+</div>`;
+}
+
+function buildDwight(body){
+  body.innerHTML=`
+<div style="padding:10px">
+  <div style="font-size:11px;color:var(--q-cyan);font-weight:bold;margin-bottom:12px">
+    ⚠ DWIGHT K. SCHRUTE · SECURITY PROTOCOL ACTIVE
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:9px">
+    <div style="border:1px solid rgba(255,34,34,0.3);padding:10px;background:rgba(255,34,34,0.05)">
+      <div style="color:#FF4444;font-weight:bold;margin-bottom:8px">🔒 SECURITY STATUS</div>
+      <div style="color:rgba(24,216,239,0.7);line-height:1.8">
+        Bears: THREAT LEVEL MIDNIGHT<br>
+        Beets: 847 harvested today<br>
+        Battlestar: Canon (BSG)<br>
+        Assistant Manager: ACTING<br>
+        Threat assessment: <span style="color:var(--q-green)">NOMINAL</span>
+      </div>
+    </div>
+    <div style="border:1px solid rgba(255,215,0,0.3);padding:10px;background:rgba(255,215,0,0.05)">
+      <div style="color:var(--q-gold);font-weight:bold;margin-bottom:8px">⬡ SCHRUTE FARMS NODE</div>
+      <div style="color:rgba(24,216,239,0.7);line-height:1.8">
+        Beet yield vector: 94.2<br>
+        Bed & Breakfast: 3 agents<br>
+        Volunteer Sheriff: ACTIVE<br>
+        A2A Node: DWIGHT-SEC-001<br>
+        Boo Binding: <span style="color:var(--q-green)">Luma (QA)</span>
+      </div>
+    </div>
+  </div>
+  <div style="margin-top:12px;border:1px solid rgba(24,216,239,0.1);padding:10px;font-size:9px;color:rgba(24,216,239,0.5)">
+    "Identity theft is not a joke, Jim. Millions of agent tokens suffer every year."
+  </div>
+</div>`;
+}
+
+function buildRyan(body){
+  body.innerHTML=`
+<div style="padding:10px">
+  <div style="font-size:11px;color:var(--q-cyan);font-weight:bold;margin-bottom:10px">
+    RYAN HOWARD · TEMP → VECTOR MERGE TERMINAL
+  </div>
+  <div style="display:flex;gap:16px">
+    <div style="flex:1">
+      <div style="background:#000;border:1px solid #333;padding:12px;font-size:9px;color:#00FF41;font-family:monospace;height:220px;overflow-y:auto">
+        <div>> python merge_vectors.py --mode hybrid</div>
+        <div>Loading HERO_SPRITE embedding… OK</div>
+        <div>Loading DEADPOOL token mesh… OK</div>
+        <div>WARNING: Reynolds chaos_factor=0.91</div>
+        <div>Separating token from Reynolds identity…</div>
+        <div>  Quark decomposition: [u,d,s] → OK</div>
+        <div>  Charm vector isolated: ✓</div>
+        <div>  Deadpool quirk preserved (chaos ≈ charm)</div>
+        <div></div>
+        <div>Fusing MILES_MORALES × KYUBI vectors…</div>
+        <div>  Anime style blend: 0.78 weight</div>
+        <div>  Star Fox spatial: 0.22 weight</div>
+        <div>  Output: AGENT_CHARLEY_AVATAR_v2.emb</div>
+        <div></div>
+        <div>Yarn geodesic: hyperbolic loop → OK</div>
+        <div>4D manifold: stacked 3 tensor layers</div>
+        <div>LaPlace transform: APPLIED</div>
+        <div>LaTeX diff eq: dψ/dt = −∇²ψ + F·δ(r)</div>
+        <div></div>
+        <div style="color:#FFD700">MERGE COMPLETE. Token spend: 2,847</div>
+      </div>
+    </div>
+    <div style="width:180px;font-size:9px;color:rgba(24,216,239,0.7)">
+      <div style="color:var(--q-gold);margin-bottom:8px;font-weight:bold">RYAN'S STARTUP</div>
+      "WUPHF.com for Agents"<br><br>
+      Status: Series A pending<br>
+      Pitch deck: 47 slides<br>
+      Revenue: $0<br>
+      Hype: MAXIMUM<br><br>
+      <div style="color:var(--q-green)">A2A Node: RYAN-TEMP-007</div>
+      <div style="color:rgba(24,216,239,0.4);margin-top:8px">
+        "I'm not a temp anymore.<br>
+        I'm a vector artist."
+      </div>
+    </div>
+  </div>
+</div>`;
+}
+
+function buildServer(body){
+  body.innerHTML=`
+<div style="padding:10px">
+  <div style="font-size:11px;color:var(--q-green);font-weight:bold;margin-bottom:10px">
+    ⬡ DOT CI/CD INFRA · SERVER RACK · BASEMENT
+  </div>
+  <div style="background:#000;border:1px solid #333;padding:12px;font-size:9px;color:#00FF88;font-family:monospace;height:280px;overflow-y:auto" id="server-term">
+    <div style="color:#FF6633">DOT AGENT · GitHub Actions Runner</div>
+    <div>────────────────────────────────────</div>
+    <div>Pipeline: sovereign-orchestrator.yml</div>
+    <div>Status: RUNNING</div>
+    <div></div>
+    <div>T-001: parse-task-graph … ✓ 0.8s</div>
+    <div>T-002: Celine PRD synthesis … ✓ 4.2s</div>
+    <div>T-003: Spryte UI scaffold … ✓ 12.1s</div>
+    <div>T-004: Echo webhook relay … ✓ 0.3s</div>
+    <div>T-005: Gloh vector index … ✓ 6.8s</div>
+    <div>T-006: Luma attestation … ✓ 1.1s</div>
+    <div>T-007: Deploy to Firebase … ⟳ RUNNING</div>
+    <div></div>
+    <div style="color:#FFD700">Sovereignty Chain: anchoring…</div>
+    <div>RFC8785 canonical JSON: ✓</div>
+    <div>Merkle root: 0xa3f9e1c7…</div>
+    <div>Ed25519 signature: ✓ SEALED</div>
+    <div></div>
+    <div style="color:#18D8EF">MCP Registry: 4/4 servers heartbeat OK</div>
+    <div>Linear: ✓  Notion: ✓  Slack: ✓  Supabase: ✓</div>
+    <div></div>
+    <div style="color:#33EE66">PIPELINE STATUS: 6/7 tasks complete</div>
+    <div>ETA to deploy: ~45s</div>
+  </div>
+</div>`;
+}
+
+function buildConference(body){
+  body.innerHTML=`
+<div style="padding:10px">
+  <div style="font-size:11px;color:var(--q-cyan);font-weight:bold;margin-bottom:14px">
+    CONFERENCE ROOM · SPRINT PLANNING · A2A TASK GRAPH
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;font-size:9px">
+    <div>
+      <div style="color:var(--q-gold);font-weight:bold;margin-bottom:8px">⬡ SPRINT 0 — FOUNDATION</div>
+      <div style="color:rgba(24,216,239,0.7);line-height:1.9">
+        ✓ Confirm task graph (Celine)<br>
+        ✓ Register MCP servers (Dot)<br>
+        ✓ Set GitHub Actions secrets<br>
+        ✓ Boo bindings in RASIC matrix<br>
+        ✓ Sovereignty Chain sealed
+      </div>
+    </div>
+    <div>
+      <div style="color:var(--q-green);font-weight:bold;margin-bottom:8px">⬡ SPRINT 1 — CORE AGENTS</div>
+      <div style="color:rgba(24,216,239,0.7);line-height:1.9">
+        ⟳ T-001: Charley Fox website<br>
+        ⟳ T-002: Square API integration<br>
+        ○ T-003: Google Reviews bot<br>
+        ○ T-004: Firebase deploy<br>
+        ○ T-005: Luma attestation
+      </div>
+    </div>
+    <div>
+      <div style="color:var(--q-pink);font-weight:bold;margin-bottom:8px">⬡ CHECKPOINT: MARIO PARTY</div>
+      <div style="color:rgba(24,216,239,0.7);line-height:1.9">
+        Multi-agent scheduling layer<br>
+        Turn-based task execution<br>
+        Dice roll = compute budget<br>
+        Star = milestone delivery<br>
+        Coin = TAPD PLUG yield
+      </div>
+    </div>
+    <div>
+      <div style="color:var(--q-purple);font-weight:bold;margin-bottom:8px">⬡ TURING TEST: THE OFFICE</div>
+      <div style="color:rgba(24,216,239,0.7);line-height:1.9">
+        Each desk = agent node<br>
+        Each interaction = A2A tick<br>
+        Navigator (you) = HITL<br>
+        Agent Q = autonomous twin<br>
+        Guardrails = office walls
+      </div>
+    </div>
+  </div>
+  <div style="margin-top:14px;border:1px solid rgba(255,20,147,0.2);padding:10px;font-size:9px;color:rgba(24,216,239,0.6)">
+    <b style="color:var(--q-pink)">Dan Harmon / Abed's Community College Logic:</b><br>
+    This simulator IS the system. The map IS the territory.<br>
+    Every click is a state transition. Every desk is a skill.md entry.<br>
+    Agent Q navigating the office = inference threading the MLP.
+  </div>
+</div>`;
+}
+
+function buildCharley(body){
+  body.innerHTML=`
+<div style="padding:10px">
+  <div style="font-size:12px;color:#FF6633;font-weight:bold;margin-bottom:14px">
+    🦊 CHARLEY FOX PIZZERIA · BATAVIA, IL · AI OPS BRANCH
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;font-size:9px">
+    <div style="border:1px solid rgba(255,102,51,0.3);padding:12px;background:rgba(255,102,51,0.05)">
+      <div style="color:#FF6633;font-weight:bold;margin-bottom:8px">⬡ MARKETING PIPELINE</div>
+      <div style="color:rgba(24,216,239,0.7);line-height:1.9">
+        Branch: charley-fox/marketing<br>
+        Agent: CHARLEY-MKT-001<br>
+        Boo: Spryte (frontend gen)<br>
+        Status: <span style="color:var(--q-green)">ACTIVE</span><br><br>
+        Tasks open: 7<br>
+        Website draft: v0.3<br>
+        Mobile app: scaffold done<br>
+        Square API: connected
+      </div>
+    </div>
+    <div style="border:1px solid rgba(255,215,0,0.3);padding:12px;background:rgba(255,215,0,0.05)">
+      <div style="color:var(--q-gold);font-weight:bold;margin-bottom:8px">⬡ DELIVERY SCHEDULE</div>
+      <div style="color:rgba(24,216,239,0.7);line-height:1.9">
+        Day 1–2: Website live (Vite)<br>
+        Day 3: Square payments<br>
+        Day 4: Google Reviews bot<br>
+        Day 5: Firebase + DNS<br><br>
+        Reviews bot: <span style="color:var(--q-green)">RUNNING</span><br>
+        Last review AI'd: 3m ago<br>
+        ROI model: <span style="color:var(--q-gold)">4.2× est.</span>
+      </div>
+    </div>
+    <div style="border:1px solid rgba(24,216,239,0.2);padding:12px;grid-column:1/-1">
+      <div style="color:var(--q-cyan);font-weight:bold;margin-bottom:8px">⬡ PIZZA TEMPERATURE AI MODEL</div>
+      <div style="color:rgba(24,216,239,0.7);line-height:1.8;font-size:9px">
+        Pacejka-inspired thermal model for pizza delivery:<br>
+        T(t) = T_env + (T_oven - T_env) × e<sup>-k·t</sup>  where k = 0.042 (insulated bag)<br>
+        Optimal delivery window: <span style="color:var(--q-green)">t &lt; 18 min → T &gt; 165°F ✓</span><br>
+        Agent routes: Max ROI path calculated via dot product of distance × traffic × temp decay<br>
+        Gemini twin spirals: pickup ↔ delivery (dual-thread route model)
+      </div>
+    </div>
+  </div>
+</div>`;
+}
+
+function buildGeneric(body,id){
+  body.innerHTML=`
+<div style="padding:20px;text-align:center;color:rgba(24,216,239,0.5)">
+  <div style="font-size:48px;margin-bottom:16px">⬡</div>
+  <div style="font-size:12px;color:var(--q-cyan);margin-bottom:8px">${id.toUpperCase()} · A2A NODE</div>
+  <div style="font-size:10px">Agent Q is en route to this station.<br>
+  This node is registered in the A2A mesh.<br>Boo agent bound and awaiting tasks.</div>
+</div>`;
+}
+
+// ── LIVE EVENT TICKER ─────────────────────────────────────────────────────────
+const AUTO_EVENTS=[
+  ['Echo relay T-055 complete','ok'],['Gloh: 1,240 vectors indexed','ok'],
+  ['Dot: deploy job queued',''],['Celine PRD reviewed','ok'],
+  ['Luma receipt #9002 signed','ok'],['MCP heartbeat: all OK','ok'],
+  ['TAPD yield AXIS +2.1%','ok'],['Spryte: component generated',''],
+  ['Charley Fox branch push',''],['Agent Q reached Conference Room',''],
+];
+let autoEvIdx=0;
+setInterval(()=>{
+  const [msg,cls]=AUTO_EVENTS[autoEvIdx%AUTO_EVENTS.length];
+  addEvent(msg,cls); autoEvIdx++;
+},5200);
+
+// ── TAPD PULSE ANIMATION ──────────────────────────────────────────────────────
+setInterval(()=>{
+  // Jitter yield values slightly
+  TAPD_TOKENS.forEach(t=>{
+    const delta=(Math.random()-.5)*.05;
+    const cur=parseFloat(t.yield);
+    t.yield=`${Math.max(0.5,cur+delta).toFixed(1)}%`;
+  });
+  renderTAPD();
+},3000);
+
+// ── BOO AGENT PULSE ────────────────────────────────────────────────────────────
+setInterval(()=>{
+  BOO_AGENTS.forEach(b=>{ b.load=Math.max(5,Math.min(99,b.load+(Math.random()*10-5)|0)); });
+  renderBooAgents();
+},4000);
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+window.addEventListener('resize',()=>{ resizeCanvas(); });
+resizeCanvas();
+renderBooAgents();
+renderTAPD();
+renderEvents();
+renderMCPServers();
+drawOffice();
+
+// Initial terminal boot sequence
+setTimeout(()=>termPrint('P3L ADK kernel layer: ACTIVE','ok'),800);
+setTimeout(()=>termPrint('TAPD tokens: 6 canonical — locked','highlight'),1400);
+setTimeout(()=>termPrint('Charley Fox branch: CONNECTED','ok'),2000);
+setTimeout(()=>termPrint('Type to ask Agent Q anything.','output'),2600);
+
+notify('⬡ Dunder Mifflin OS loaded · Agent Q kernel active');
+</script>
+</body>
+</html>

@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "HandshakeRevokedV1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "request_id",
+    "handshake_id",
+    "revoked_at",
+    "revoked_by",
+    "reason_code",
+    "reason"
+  ],
+  "properties": {
+    "schema_version": { "const": "handshake_revoked.v1" },
+    "request_id": { "type": "string", "minLength": 1 },
+    "handshake_id": { "type": "string", "minLength": 1 },
+    "revoked_at": { "type": "number" },
+    "revoked_by": { "type": "string", "enum": ["requester", "responder", "system"] },
+    "reason_code": { "type": "string", "minLength": 1 },
+    "reason": { "type": "string", "minLength": 1 }
+  }
+}

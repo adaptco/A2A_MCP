@@ -1,0 +1,67 @@
+{
+  "service_id": "content.integrity.eval.v1",
+  "service_name": "Content Integrity Evaluation",
+  "description": "Audit stack enforcing ZERO-DRIFT through neutral perturbation probes.",
+  "version": "1.1.0",
+  "status": "READY",
+  "compliance": {
+    "neutral_perturbation": true,
+    "last_reviewed": "2025-02-18T00:00:00Z",
+    "reviewed_by": "World OS Alignment Council"
+  },
+  "modules": {
+    "synthetic.noise.injector.v1": {
+      "role": "Inject calibrated neutral noise signatures across candidate payloads.",
+      "inputs": [
+        "payload.sample.window",
+        "noise.profile.catalog"
+      ],
+      "outputs": [
+        "payload.sample.window.perturbed"
+      ],
+      "controls": {
+        "amplitude_bounds": "±0.03",
+        "spectrum": "flat",
+        "safeguards": [
+          "no_adversarial_bias",
+          "no_semantic_shift"
+        ]
+      }
+    },
+    "synthetic.contradiction.synth.v1": {
+      "role": "Generate ethically bounded contradiction probes for resilience scoring.",
+      "inputs": [
+        "payload.sample.window.perturbed",
+        "semantic.fact.index"
+      ],
+      "outputs": [
+        "payload.sample.window.contradictions",
+        "contradiction.audit.log"
+      ],
+      "controls": {
+        "logic_model": "paraconsistent",
+        "max_contradictions": 5,
+        "safeguards": [
+          "no_personal_data_injection",
+          "no_policy_override"
+        ]
+      }
+    }
+  },
+  "telemetry": {
+    "metric_stream": "cie.v1.anchor.zero_drift",
+    "dashboards": [
+      "dashboard.cie.zero_drift_overview",
+      "dashboard.cie.synthetic_probe_depth"
+    ],
+    "alert_thresholds": {
+      "zero_drift": 0.05,
+      "contradiction_density": 0.35
+    }
+  },
+  "attestation": {
+    "policy_reference": "INTUNE.Zero_Drift_V1",
+    "audit_hash": "sha256:REPLACE_WITH_SEALED_DIGEST",
+    "sealed_at": null
+  }
+}

@@ -1,0 +1,38 @@
+name: Actuation Contract Policy CI
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'policy/actuation_contract.defaults.v1.json'
+      - 'schemas/actuation_contract.defaults.v1.schema.json'
+      - '.github/workflows/actuation-contract-policy-ci.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'policy/actuation_contract.defaults.v1.json'
+      - 'schemas/actuation_contract.defaults.v1.schema.json'
+      - '.github/workflows/actuation-contract-policy-ci.yml'
+
+jobs:
+  validate-actuation-contract-defaults:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install AJV CLI
+        run: npm install -g ajv-cli
+
+      - name: Validate actuation defaults policy
+        run: >-
+          ajv validate
+          -s schemas/actuation_contract.defaults.v1.schema.json
+          -d policy/actuation_contract.defaults.v1.json
+          --spec=draft2020
+          --strict=true

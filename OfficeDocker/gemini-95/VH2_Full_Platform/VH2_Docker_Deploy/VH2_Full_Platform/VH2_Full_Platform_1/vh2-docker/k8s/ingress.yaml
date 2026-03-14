@@ -1,0 +1,83 @@
+##############################################################################
+# VH2 INGRESS — TLS terminated, routes:
+#   /api/*     → vh2-backend-svc:3001
+#   /health    → vh2-backend-svc:3001
+#   /*         → vh2-frontend-svc:3000
+#
+# Prerequisites: cert-manager, nginx ingress controller
+##############################################################################
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: vh2-ingress
+  namespace: vh2-prod
+  labels:
+    app.kubernetes.io/name: vh2-sovereign-validator
+    app.kubernetes.io/component: ingress
+  annotations:
+    # ── NGINX CONTROLLER ──────────────────────────────────────────────────
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/proxy-body-size: "4m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "30"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "30"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "10"
+
+    # ── COMPRESSION ───────────────────────────────────────────────────────
+    nginx.ingress.kubernetes.io/enable-gzip: "true"
+    nginx.ingress.kubernetes.io/gzip-min-length: "1024"
+    nginx.ingress.kubernetes.io/gzip-types: >-
+      text/plain text/css text/javascript application/javascript
+      application/json application/xml image/svg+xml
+
+    # ── SECURITY HEADERS ──────────────────────────────────────────────────
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      add_header X-Frame-Options "SAMEORIGIN" always;
+      add_header X-Content-Type-Options "nosniff" always;
+      add_header X-XSS-Protection "1; mode=block" always;
+      add_header Referrer-Policy "no-referrer" always;
+      add_header Permissions-Policy "geolocation=(), camera=()" always;
+
+    # ── TLS / CERT-MANAGER ────────────────────────────────────────────────
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+
+    # ── RATE LIMITING (anti-DDoS) ─────────────────────────────────────────
+    nginx.ingress.kubernetes.io/limit-rps: "50"
+
+    # ── PLUGIN JS: cross-origin (embeddable by third-party sites) ─────────
+    nginx.ingress.kubernetes.io/cors-allow-origin: "*"
+
+spec:
+  tls:
+    - hosts:
+        - vh2.yourdomain.com          # ← replace with your domain
+      secretName: vh2-tls-secret
+
+  rules:
+    - host: vh2.yourdomain.com        # ← replace with your domain
+      http:
+        paths:
+          # API socket → backend
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: vh2-backend-svc
+                port: { number: 3001 }
+
+          # Health probe → backend
+          - path: /health
+            pathType: Exact
+            backend:
+              service:
+                name: vh2-backend-svc
+                port: { number: 3001 }
+
+          # Everything else → frontend (plugin, sim, tests)
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: vh2-frontend-svc
+                port: { number: 3000 }

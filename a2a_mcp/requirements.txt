@@ -1,2 +1,0 @@
-# Compatibility wrapper: canonical dependencies are defined in pyproject.toml.
-.[dev,integrations]

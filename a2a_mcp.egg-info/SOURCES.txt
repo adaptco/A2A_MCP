@@ -7,6 +7,10 @@ A2A_MCP/__init__.py
 A2A_MCP/client_token_pipe.py
 A2A_MCP/mcp_core.py
 a2a_mcp/__init__.py
+<<<<<<< HEAD
+a2a_mcp/client_token_pipe.py
+a2a_mcp/mcp_core.py
+=======
 a2a_mcp/bootstrap.py
 a2a_mcp/career_moe_router.py
 a2a_mcp/check_base44.py
@@ -33,12 +37,15 @@ a2a_mcp/runtime.py
 a2a_mcp/runtime_mcp_server.py
 a2a_mcp/server.py
 a2a_mcp/train_cici_vision.py
+>>>>>>> origin/main
 a2a_mcp.egg-info/PKG-INFO
 a2a_mcp.egg-info/SOURCES.txt
 a2a_mcp.egg-info/dependency_links.txt
 a2a_mcp.egg-info/entry_points.txt
 a2a_mcp.egg-info/requires.txt
 a2a_mcp.egg-info/top_level.txt
+<<<<<<< HEAD
+=======
 a2a_mcp/a2a_mcp/__init__.py
 a2a_mcp/a2a_mcp/bootstrap.py
 a2a_mcp/a2a_mcp/career_moe_router.py
@@ -1225,6 +1232,7 @@ a2a_mcp/workers/smoke_test_job.py
 a2a_mcp/world_vectors/__init__.py
 a2a_mcp/world_vectors/encoder.py
 a2a_mcp/world_vectors/vault.py
+>>>>>>> origin/main
 adaptco-core-orchestrator/temporal_stabilizer.py
 agents/__init__.py
 agents/architecture_agent.py
@@ -1237,19 +1245,28 @@ agents/pinn_agent.py
 agents/production_agent.py
 agents/ralph_agent.py
 agents/researcher.py
+<<<<<<< HEAD
+=======
 agents/reviewer.py
+>>>>>>> origin/main
 agents/tester.py
 agents/trained_model_agent.py
 app/__init__.py
 app/adk_main.py
+<<<<<<< HEAD
+=======
 app/agent_shell.py
+>>>>>>> origin/main
 app/app_logging.py
 app/config.py
 app/deps.py
 app/main.py
 app/managing_agent.py
 app/mcp_gateway.py
+<<<<<<< HEAD
+=======
 app/mcp_rest_endpoint.py
+>>>>>>> origin/main
 app/mcp_tooling.py
 app/merge_model.py
 app/multi_client_api.py
@@ -1259,7 +1276,10 @@ app/orchestrator_agent.py
 app/scrollstream_rehearsal.py
 app/server.py
 app/vector_ingestion.py
+<<<<<<< HEAD
+=======
 app/world_model_skill.py
+>>>>>>> origin/main
 app/api/__init__.py
 app/api/actions.py
 app/clients/__init__.py
@@ -1283,18 +1303,26 @@ app/routes/health.py
 app/routes/webhooks.py
 app/schemas/__init__.py
 app/schemas/events.py
+<<<<<<< HEAD
+=======
 app/schemas/music_video.py
+>>>>>>> origin/main
 app/schemas/task.py
 app/schemas/website_agent.py
 app/security/__init__.py
 app/security/avatar_token_shape.py
 app/security/oidc.py
 app/services/__init__.py
+<<<<<<< HEAD
+app/services/auth_middleware.py
+app/services/gates.py
+=======
 app/services/auth_broker.py
 app/services/auth_middleware.py
 app/services/gates.py
 app/services/handshake_service.py
 app/services/music_video_generator.py
+>>>>>>> origin/main
 app/services/normalize.py
 app/services/proposals.py
 app/services/sync.py
@@ -1550,6 +1578,11 @@ orchestrator/actions_gateway.py
 orchestrator/adapter_normalizer.py
 orchestrator/api.py
 orchestrator/auth.py
+<<<<<<< HEAD
+orchestrator/dot_product.py
+orchestrator/end_to_end_orchestration.py
+orchestrator/fsm_persistence.py
+=======
 orchestrator/avatar_wasm_runtime_scenario.py
 orchestrator/capsule_store.py
 orchestrator/capsule_verifier.py
@@ -1559,11 +1592,19 @@ orchestrator/dot_product.py
 orchestrator/end_to_end_orchestration.py
 orchestrator/fsm_persistence.py
 orchestrator/handshake_client.py
+>>>>>>> origin/main
 orchestrator/intent_engine.py
 orchestrator/judge_orchestrator.py
 orchestrator/llm_util.py
 orchestrator/logging_util.py
 orchestrator/main.py
+<<<<<<< HEAD
+orchestrator/metrics.py
+orchestrator/multimodal_worldline.py
+orchestrator/notifier.py
+orchestrator/policy_composer.py
+orchestrator/release_orchestrator.py
+=======
 orchestrator/mcp_core.py
 orchestrator/metrics.py
 orchestrator/multimodal_rag_workflow.py
@@ -1574,6 +1615,7 @@ orchestrator/policy_composer.py
 orchestrator/qube_kernel_bridge.py
 orchestrator/release_orchestrator.py
 orchestrator/runtime_bridge.py
+>>>>>>> origin/main
 orchestrator/runtime_thread.py
 orchestrator/scheduler.py
 orchestrator/settlement.py
@@ -1639,7 +1681,10 @@ rbac/__init__.py
 rbac/client.py
 rbac/models.py
 rbac/rbac_service.py
+<<<<<<< HEAD
+=======
 rbac/token_service.py
+>>>>>>> origin/main
 runtime/replay/gct_plan_release_candidate.py
 runtime/simulation/content_integrity_eval_harness.py
 schemas/__init__.py
@@ -1648,11 +1693,17 @@ schemas/agent_artifacts.py
 schemas/avatar_spec.py
 schemas/database.py
 schemas/game_model.py
+<<<<<<< HEAD
+schemas/model_artifact.py
+schemas/project_plan.py
+schemas/prompt_inputs.py
+=======
 schemas/handshake.py
 schemas/model_artifact.py
 schemas/project_plan.py
 schemas/prompt_inputs.py
 schemas/qube_kernel_bridge.py
+>>>>>>> origin/main
 schemas/runtime_bridge.py
 schemas/runtime_event.py
 schemas/runtime_scenario.py
@@ -1753,6 +1804,11 @@ tests/test_0path.py
 tests/test_a2a_mcp.py
 tests/test_a2a_mcp_compat.py
 tests/test_agent_context_tokens.py
+<<<<<<< HEAD
+tests/test_api.py
+tests/test_api_health_prime_directive.py
+tests/test_architecture_agent.py
+=======
 tests/test_agent_shell.py
 tests/test_agent_style_entropy.py
 tests/test_api.py
@@ -1760,22 +1816,30 @@ tests/test_api_health_prime_directive.py
 tests/test_architecture_agent.py
 tests/test_auth_handshake_flow.py
 tests/test_auth_middleware.py
+>>>>>>> origin/main
 tests/test_avatar_integration.py
 tests/test_avatar_token_shape.py
 tests/test_base44.py
 tests/test_base44_standalone.py
+<<<<<<< HEAD
+tests/test_canonical_json.py
+=======
 tests/test_blackmamba_planner.py
 tests/test_blackmamba_preferences.py
 tests/test_canonical_json.py
 tests/test_capsule_store.py
 tests/test_capsule_verifier.py
+>>>>>>> origin/main
 tests/test_cicd_pipeline.py
 tests/test_client_token_pipe.py
 tests/test_clients_monday.py
 tests/test_coder_agent.py
 tests/test_codex_qernel.py
 tests/test_coherence_gate_visualization.py
+<<<<<<< HEAD
+=======
 tests/test_common_thread_map.py
+>>>>>>> origin/main
 tests/test_contracts.py
 tests/test_database_profiles.py
 tests/test_decision_engine.py
@@ -1784,12 +1848,16 @@ tests/test_dot_product.py
 tests/test_drift_gate.py
 tests/test_embed_control_plane.py
 tests/test_end_to_end_orchestration.py
+<<<<<<< HEAD
+tests/test_fim.py
+=======
 tests/test_enterprise_agent_map.py
 tests/test_enterprise_runtime_artifacts.py
 tests/test_fim.py
 tests/test_frontier_agent_index_blackmamba.py
 tests/test_frontier_index_paths.py
 tests/test_frontier_preferences.py
+>>>>>>> origin/main
 tests/test_fsm_persistence.py
 tests/test_full_pipeline.py
 tests/test_game_model.py
@@ -1802,7 +1870,10 @@ tests/test_gemini_wrapper.py
 tests/test_ghost_void_spoke.py
 tests/test_github_dispatch.py
 tests/test_gke_release.py
+<<<<<<< HEAD
+=======
 tests/test_handshake_client.py
+>>>>>>> origin/main
 tests/test_healing_loop.py
 tests/test_hybrid_chunking_pipeline.py
 tests/test_ingestion_api.py
@@ -1812,24 +1883,36 @@ tests/test_llm_util.py
 tests/test_lora_harness.py
 tests/test_managing_agent.py
 tests/test_mcp_agents.py
+<<<<<<< HEAD
+=======
 tests/test_mcp_chatgpt_tools.py
+>>>>>>> origin/main
 tests/test_mcp_core.py
 tests/test_mcp_core_extended.py
 tests/test_mcp_core_tools.py
 tests/test_mcp_gateway_tools_call.py
+<<<<<<< HEAD
+=======
 tests/test_mcp_oauth_auth.py
 tests/test_mcp_rest_endpoint.py
+>>>>>>> origin/main
 tests/test_mcp_runtime_bus.py
 tests/test_mcp_server.py
 tests/test_mcp_token.py
 tests/test_mcp_tooling_security.py
 tests/test_merge_model.py
 tests/test_mlops_unity_pipeline.py
+<<<<<<< HEAD
+tests/test_multi_client_router.py
+tests/test_multimodal_rag_workflow.py
+tests/test_multimodal_worldline.py
+=======
 tests/test_monotonicity_validator.py
 tests/test_multi_client_router.py
 tests/test_multimodal_rag_workflow.py
 tests/test_multimodal_worldline.py
 tests/test_music_video_generator.py
+>>>>>>> origin/main
 tests/test_notification_agent.py
 tests/test_notification_app.py
 tests/test_notifier.py
@@ -1837,7 +1920,10 @@ tests/test_oidc.py
 tests/test_oidc_startup.py
 tests/test_oidc_validation.py
 tests/test_optimize_complexity_skill.py
+<<<<<<< HEAD
+=======
 tests/test_option_b.py
+>>>>>>> origin/main
 tests/test_orchestration_agent.py
 tests/test_orchestrator_agent.py
 tests/test_orchestrator_api.py
@@ -1846,7 +1932,10 @@ tests/test_plan_state_persistence.py
 tests/test_production_agent.py
 tests/test_prompt_composition.py
 tests/test_qube_forensics_validate.py
+<<<<<<< HEAD
+=======
 tests/test_qube_kernel_bridge.py
+>>>>>>> origin/main
 tests/test_rag_pipeline.py
 tests/test_rbac.py
 tests/test_release_orchestrator.py
@@ -1855,13 +1944,19 @@ tests/test_release_token_shaping_gates.py
 tests/test_router.py
 tests/test_routes_webhooks.py
 tests/test_runtime_bridge_contract.py
+<<<<<<< HEAD
+=======
 tests/test_runtime_env_contract.py
+>>>>>>> origin/main
 tests/test_runtime_event_orchestration.py
 tests/test_runtime_mcp_server.py
 tests/test_runtime_scenario_api.py
 tests/test_runtime_scenario_contract.py
 tests/test_runtime_thread.py
+<<<<<<< HEAD
+=======
 tests/test_runtime_worker_assignment_avatar.py
+>>>>>>> origin/main
 tests/test_server.py
 tests/test_settlement_verification.py
 tests/test_sovereignty_chain.py
@@ -1879,7 +1974,10 @@ tests/test_webhook_handshake.py
 tests/test_website_builder_agent.py
 tests/test_whatsapp_integration.py
 tests/test_workflow_actions.py
+<<<<<<< HEAD
+=======
 tests/test_world_foundation_model_root.py
+>>>>>>> origin/main
 tests/test_world_model_ingress.py
 tests/test_worldline_ingestion.py
 tests/test_ws_protocol.py

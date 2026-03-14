@@ -1,0 +1,48 @@
+{
+  "name": "@world-os/sdk",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./browser": {
+      "types": "./dist/browser.d.ts",
+      "import": "./dist/browser.js",
+      "default": "./dist/browser.js"
+    },
+    "./pam": {
+      "types": "./dist/pam.d.ts",
+      "import": "./dist/pam.js",
+      "default": "./dist/pam.js"
+    },
+    "./wham": {
+      "types": "./dist/wham.d.ts",
+      "import": "./dist/wham.js",
+      "default": "./dist/wham.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsc -w -p tsconfig.json",
+    "lint": "eslint src --ext .ts",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "axios": "^1.7.7",
+    "ajv": "^8.17.1",
+    "viem": "^2.22.6",
+    "@world-os/kernel": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.5.1",
+    "typescript": "^5.5.4",
+    "vitest": "^2.0.5"
+  }
+}

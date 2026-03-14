@@ -1,4 +1,10 @@
 interface:
+<<<<<<< HEAD
+  display_name: "A2A MCP Bridge Router"
+  short_description: "Routes embedding-aware A2A_MCP Node.js MCP bridge templates"
+  default_prompt: "Use $mcp-entropy-template-router to route the A2A_MCP /mcp bridge as a Node.js or TypeScript template and generate `api_skill_tokens`, `style_temperature_profile`, and `template_route`."
+=======
   display_name: "MCP Entropy Router"
   short_description: "Deterministic entropy and template routing for MCP"
   default_prompt: "Use $mcp-entropy-template-router to generate API skill tokens, style temperature controls, and deterministic template actions."
+>>>>>>> origin/main

@@ -1,0 +1,46 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.neon {
+  @apply border border-[#00eaff] bg-[#00141e]/60 backdrop-blur-sm shadow-[0_0_12px_rgba(0,234,255,0.5)];
+}
+
+.hero-container {
+  @apply flex justify-between bg-[radial-gradient(circle_at_center,_#001018,_#000)] h-screen w-screen overflow-hidden p-8;
+}
+
+.iso-grid {
+  width: 300px;
+  height: 200px;
+  background: repeating-linear-gradient(
+    45deg,
+    rgba(0, 234, 255, 0.13),
+    rgba(0, 234, 255, 0.13) 2px,
+    transparent 2px,
+    transparent 20px
+  );
+  transform: rotateX(60deg) rotateZ(45deg);
+  border: 2px solid rgba(0, 234, 255, 0.3);
+  box-shadow: 0 0 20px rgba(0, 234, 255, 0.2);
+}
+
+.sprite-idle {
+  @apply w-32 h-32 bg-cyan-400 animate-pulse rounded-full blur-[2px];
+}
+
+.sprite-walk {
+  @apply w-32 h-32 bg-purple-500 animate-bounce rounded-full blur-[2px];
+}
+
+.sprite-interact {
+  @apply w-32 h-32 bg-yellow-400 animate-spin rounded-full blur-[2px];
+}
+
+/* 3D Canvas Handling */
+canvas {
+  touch-action: none;
+  width: 100% !important;
+  height: 100% !important;
+  outline: none;
+}

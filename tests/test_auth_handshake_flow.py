@@ -1,6 +1,10 @@
 from __future__ import annotations
 
+<<<<<<< HEAD
+from datetime import datetime, timezone
+=======
 from datetime import datetime, timedelta, timezone
+>>>>>>> origin/main
 import json
 
 import pytest
@@ -154,6 +158,8 @@ def test_a2a_auth_broker_fails_closed_on_gemini_token_failure() -> None:
         )
 
 
+<<<<<<< HEAD
+=======
 
 
 def test_runtime_tokens_unavailable_after_finalize() -> None:
@@ -204,6 +210,7 @@ def test_runtime_tokens_unavailable_after_ttl_expiry(monkeypatch: pytest.MonkeyP
     monkeypatch.setattr("app.services.handshake_service._utc_now", lambda: issued_at + timedelta(seconds=61))
     assert service.get_runtime_tokens(envelope.handshake_id) == {}
 
+>>>>>>> origin/main
 def test_handshake_api_round_trip_stores_only_token_refs() -> None:
     get_router.cache_clear()
     get_handshake_service.cache_clear()
@@ -255,7 +262,10 @@ def test_handshake_api_round_trip_stores_only_token_refs() -> None:
         )
         assert finalize_response.status_code == 200
         assert finalize_response.json()["status"] == "finalized"
+<<<<<<< HEAD
+=======
         assert service.get_runtime_tokens(handshake_id) == {}
+>>>>>>> origin/main
     finally:
         app.dependency_overrides.pop(get_handshake_service, None)
         get_handshake_service.cache_clear()

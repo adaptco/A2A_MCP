@@ -1,0 +1,133 @@
+{
+  "scenario_id": "charley-fox-gemini-dot.runtime.v1",
+  "execution_id": "exec-5609c004734d2d2a",
+  "created_at": "2026-03-12T06:33:16.820169+00:00",
+  "mission": {
+    "prompt": "Use Agent Charley Fox to stop at the CD rest point immediately after build-and-test in Antigravity's root GitHub Actions pipeline, map API tokens to Gemini, emit an Agents.md A2A skill card, normalize exchange payloads as dot-product vectors for Dot, and define a chat embedding endpoint that anchors 3D-origin arrays as tensor coordinates.",
+    "repository": "Antigravity/.github",
+    "commit_sha": "workspace-no-git",
+    "actor": "CharleyFox",
+    "goal": "Pause the CD graph at Dot's rest point, publish a Gemini-ready A2A skill card, and project embedding vectors into a 3D tensor origin for Charley Fox.",
+    "rest_point": {
+      "workflow": ".github/workflows/deploy-pipeline.yml",
+      "job": "dot-runtime-rest-point",
+      "after": "build-and-test",
+      "before": [
+        "push-to-registry",
+        "security-scan"
+      ],
+      "owner": "Dot"
+    }
+  },
+  "avatars": [
+    {
+      "agent_name": "CharleyFox",
+      "avatar_name": "Charley Fox",
+      "style": "fox_operator",
+      "role": "repo_reasoner"
+    },
+    {
+      "agent_name": "Dot",
+      "avatar_name": "Dot",
+      "style": "signal_runner",
+      "role": "ci_cd_rest_point"
+    },
+    {
+      "agent_name": "GeminiBridge",
+      "avatar_name": "Gemini Bridge",
+      "style": "prism_router",
+      "role": "token_mapper"
+    },
+    {
+      "agent_name": "TensorOrigin",
+      "avatar_name": "Tensor Origin",
+      "style": "lattice_anchor",
+      "role": "embedding_projector"
+    }
+  ],
+  "wasm_runtime": {
+    "engine": "WASD GameEngine",
+    "shell": "wasm",
+    "demo_models": [
+      "WHAM_A90",
+      "WHAM_SF23",
+      "WHAM_W14"
+    ],
+    "navigation_space": {
+      "type": "tensor_origin",
+      "dimensions": 3,
+      "origin": [
+        0,
+        0,
+        0
+      ]
+    },
+    "wasd_control_module": {
+      "path": "runtime/wasm/charley_fox_gemini_dot_wasd_control_module.ts",
+      "language": "typescript",
+      "source_hash": "5ddb7a81dacac567"
+    }
+  },
+  "lora_reward_mechanism": {
+    "weights": {
+      "goal_progress": 0.35,
+      "release_safety": 0.25,
+      "dot_alignment": 0.2,
+      "tensor_stability": 0.2
+    },
+    "update_policy": {
+      "method": "bounded_online_lora",
+      "rank": 16,
+      "alpha": 32.0,
+      "min_samples": 32
+    }
+  },
+  "rag_api_scaffold": {
+    "gateway": {
+      "method": "POST",
+      "path": "/tools/call"
+    },
+    "tool_chain": [
+      "load_agents_skill_card",
+      "resolve_cd_rest_point",
+      "map_gemini_tokens",
+      "normalize_dot_exchange",
+      "project_embedding_tensor",
+      "submit_runtime_assignment"
+    ],
+    "runtime_contract": "runtime.assignment.v1",
+    "provider_routes": [
+      {
+        "provider": "gemini",
+        "auth_env": "GEMINI_API_KEY",
+        "chat_endpoint": "/gemini/chat",
+        "embedding_endpoint": "/gemini/embeddings"
+      }
+    ],
+    "normal_format": {
+      "schema": "a2a.skill-card.normal.v1",
+      "exchange_id": "dot.tensor.exchange.v1",
+      "metric": "dot_product",
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "tensor_axes": [
+        "x",
+        "y",
+        "z"
+      ],
+      "value_shape": [
+        "batch",
+        "axis",
+        "component"
+      ]
+    }
+  },
+  "artifacts": {
+    "agents_card": "Agents.md",
+    "workflow": ".github/workflows/deploy-pipeline.yml",
+    "rest_point_job": "dot-runtime-rest-point"
+  }
+}

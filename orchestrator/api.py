@@ -4,9 +4,13 @@ from __future__ import annotations
 
 import logging
 import os
+<<<<<<< HEAD
+from typing import Any, Optional
+=======
 import time
 from collections import OrderedDict
 from typing import Any, Callable, Optional
+>>>>>>> origin/main
 from uuid import uuid4
 
 from fastapi import FastAPI, HTTPException, Query, Depends, Header, Request
@@ -39,6 +43,7 @@ def validate_orchestrator_config():
 validate_orchestrator_config()
 
 logger = logging.getLogger(__name__)
+_IDEMPOTENCY_CACHE: dict[str, dict[str, Any]] = {}
 
 
 class _IdempotencyCache:
@@ -171,6 +176,14 @@ async def orchestrate(
     auth: dict = Depends(authenticate_user),
 ) -> dict[str, Any]:
     """Run the full multi-agent pipeline for a user query."""
+<<<<<<< HEAD
+    if x_idempotency_key and x_idempotency_key in _IDEMPOTENCY_CACHE:
+        return _IDEMPOTENCY_CACHE[x_idempotency_key]
+
+    trace_id = str(request.headers.get("x-request-id") or request.headers.get("x-correlation-id") or uuid4())
+    resolved_requester = _resolve_requester(auth, requester)
+
+=======
     trace_id = str(request.headers.get("x-request-id") or request.headers.get("x-correlation-id") or uuid4())
     resolved_requester = _resolve_requester(auth, requester)
 
@@ -182,6 +195,7 @@ async def orchestrate(
         if cached_response is not None:
             return cached_response
 
+>>>>>>> origin/main
     optionb_service: OptionBService | None = None
     run_id: str | None = None
     run_record_id: str | None = None
@@ -270,11 +284,15 @@ async def orchestrate(
             )
 
         if x_idempotency_key:
+<<<<<<< HEAD
+            _IDEMPOTENCY_CACHE[x_idempotency_key] = response
+=======
             _IDEMPOTENCY_CACHE.set(
                 idempotency_key=x_idempotency_key,
                 actor=resolved_requester,
                 response=response,
             )
+>>>>>>> origin/main
         return response
     except (OptionBConfigError, OptionBRemoteError) as exc:
         logger.exception("option-b orchestration failure")

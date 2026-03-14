@@ -1,0 +1,60 @@
+{
+  "capsule_id": "sol.f1.previz.v1",
+  "scene": "scene_variante_chicane",
+  "fps": 12,
+  "style_capsules": [
+    "material.abs.v1",
+    "camera.tiltshift.v1",
+    "lighting.cinematic.cool"
+  ],
+  "frames": [
+    {
+      "frame": 0,
+      "cars": {
+        "car_1": {"x": 28.0, "y": 2.1, "yaw": 12.0},
+        "car_2": {"x": 29.4, "y": -1.7, "yaw": -8.0}
+      },
+      "camera": {"pan": 12.5, "tilt": 20.5, "zoom": 1.1}
+    },
+    {
+      "frame": 8,
+      "cars": {
+        "car_1": {"x": 34.6, "y": 2.6, "yaw": 15.5},
+        "car_2": {"x": 35.8, "y": -2.1, "yaw": -10.5}
+      },
+      "camera": {"pan": 14.8, "tilt": 19.8, "zoom": 1.12}
+    },
+    {
+      "frame": 16,
+      "cars": {
+        "car_1": {"x": 41.2, "y": 3.4, "yaw": 18.0},
+        "car_2": {"x": 42.1, "y": -2.6, "yaw": -13.5}
+      },
+      "camera": {"pan": 18.0, "tilt": 18.5, "zoom": 1.14}
+    },
+    {
+      "frame": 24,
+      "cars": {
+        "car_1": {"x": 47.8, "y": 4.2, "yaw": 21.0},
+        "car_2": {"x": 48.5, "y": -3.1, "yaw": -16.0}
+      },
+      "camera": {"pan": 21.5, "tilt": 17.0, "zoom": 1.15}
+    },
+    {
+      "frame": 32,
+      "cars": {
+        "car_1": {"x": 54.3, "y": 4.8, "yaw": 24.5},
+        "car_2": {"x": 54.7, "y": -3.5, "yaw": -18.4}
+      },
+      "camera": {"pan": 24.8, "tilt": 16.2, "zoom": 1.17}
+    },
+    {
+      "frame": 40,
+      "cars": {
+        "car_1": {"x": 60.5, "y": 5.4, "yaw": 27.0},
+        "car_2": {"x": 60.7, "y": -3.8, "yaw": -20.8}
+      },
+      "camera": {"pan": 28.0, "tilt": 15.5, "zoom": 1.18}
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+changes:
+  - file: requirements.txt
+    type: modified
+    added:
+      - torch
+      - numpy
+  - file: tests/test_wham_game_engine.py
+    type: created
+    description: "New test file for WHAMGameEngine"
+    test_cases:
+      - test_initialization
+      - test_run_frame_movement_d
+      - test_run_frame_movement_a
+      - test_run_frame_movement_w
+      - test_run_frame_movement_s
+      - test_run_frame_movement_no_movement
+      - test_compile_to_wasm

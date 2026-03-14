@@ -1,0 +1,31 @@
+# ════════════════════════════════════════════════════════════════════════
+# VH2 PRODUCTION OVERRIDE
+# Usage: docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+# ════════════════════════════════════════════════════════════════════════
+
+services:
+  backend:
+    restart: always
+    environment:
+      NODE_ENV: production
+      ALLOWED_ORIGIN: "${ALLOWED_ORIGIN:-https://yourdomain.com}"
+    deploy:
+      resources:
+        limits:   { cpus: '0.50', memory: 256M }
+        reservations: { cpus: '0.10', memory: 64M }
+
+  frontend:
+    restart: always
+    deploy:
+      resources:
+        limits:   { cpus: '0.25', memory: 128M }
+        reservations: { cpus: '0.05', memory: 32M }
+
+  nginx:
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"     # add TLS termination in nginx.conf for production
+    deploy:
+      resources:
+        limits:   { cpus: '0.25', memory: 64M }

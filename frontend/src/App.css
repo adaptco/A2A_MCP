@@ -40,6 +40,70 @@ textarea {
   min-height: 100vh;
 }
 
+<<<<<<< HEAD
+.app-shell {
+  min-height: 100vh;
+}
+
+.shell-nav {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  width: min(1500px, calc(100vw - 32px));
+  margin: 0 auto;
+  padding: 18px 0 0;
+}
+
+.shell-brand h1 {
+  margin: 4px 0 0;
+  font-family: "Georgia", "Times New Roman", serif;
+  font-size: clamp(1.4rem, 2vw, 2.1rem);
+}
+
+.shell-nav-actions {
+  display: inline-flex;
+  gap: 10px;
+  padding: 8px;
+  border-radius: 999px;
+  backdrop-filter: blur(18px);
+  background: rgba(10, 18, 32, 0.68);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: var(--shadow);
+}
+
+.shell-nav-button {
+  border: none;
+  border-radius: 999px;
+  padding: 11px 16px;
+  color: var(--muted);
+  background: transparent;
+  cursor: pointer;
+  transition:
+    background-color 160ms ease,
+    color 160ms ease,
+    transform 160ms ease;
+}
+
+.shell-nav-button.active {
+  color: #0a1220;
+  background: linear-gradient(135deg, var(--accent), #c9fff1);
+  font-weight: 700;
+}
+
+.shell-nav-button:hover {
+  transform: translateY(-1px);
+}
+
+.surface-shell {
+  padding-bottom: 36px;
+}
+
+=======
+>>>>>>> origin/main
 .shell {
   width: min(1500px, calc(100vw - 32px));
   margin: 0 auto;
@@ -358,6 +422,14 @@ textarea {
   margin: 8px 0;
 }
 
+<<<<<<< HEAD
+.avatar-card.is-selected {
+  border-color: rgba(131, 240, 211, 0.36);
+  box-shadow: inset 0 0 0 1px rgba(131, 240, 211, 0.18);
+}
+
+=======
+>>>>>>> origin/main
 .artifact-grid {
   margin-top: 14px;
 }
@@ -396,6 +468,13 @@ textarea {
   background: rgba(255, 255, 255, 0.03);
 }
 
+<<<<<<< HEAD
+.empty-state.compact {
+  min-height: 160px;
+}
+
+=======
+>>>>>>> origin/main
 pre {
   margin: 12px 0 0;
   padding: 14px;
@@ -411,7 +490,216 @@ pre {
   line-height: 1.55;
 }
 
+<<<<<<< HEAD
+.simulator-shell {
+  width: min(1500px, calc(100vw - 32px));
+  margin: 0 auto;
+  padding: 18px 0 48px;
+}
+
+.simulator-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.simulator-header h1 {
+  margin: 4px 0 0;
+  max-width: 16ch;
+  font-family: "Georgia", "Times New Roman", serif;
+  font-size: clamp(2rem, 3vw, 3.25rem);
+  line-height: 1.02;
+}
+
+.simulator-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.mode-pill {
+  border-radius: 999px;
+  border: 1px solid rgba(131, 240, 211, 0.24);
+  padding: 12px 18px;
+  background: rgba(131, 240, 211, 0.12);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.mode-pill.active {
+  background: linear-gradient(135deg, rgba(131, 240, 211, 0.24), rgba(201, 255, 241, 0.1));
+}
+
+.simulator-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(320px, 0.86fr);
+  gap: 20px;
+}
+
+.simulator-stage-card {
+  backdrop-filter: blur(18px);
+  background: rgba(7, 16, 30, 0.78);
+  border: 1px solid rgba(160, 210, 255, 0.16);
+  box-shadow: var(--shadow);
+  border-radius: var(--radius-xl);
+  padding: 18px;
+}
+
+.simulator-stage {
+  position: relative;
+  min-height: 760px;
+  border-radius: calc(var(--radius-xl) - 6px);
+  overflow: hidden;
+  background:
+    radial-gradient(circle at top left, rgba(137, 198, 255, 0.2), transparent 28%),
+    linear-gradient(180deg, rgba(2, 7, 15, 0.08), rgba(2, 7, 15, 0.36));
+}
+
+.simulator-canvas {
+  display: block;
+  width: 100%;
+  height: 760px;
+}
+
+.start-overlay,
+.simulator-overlay,
+.simulator-console {
+  position: absolute;
+  inset-inline: 0;
+}
+
+.start-overlay {
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgba(3, 9, 18, 0.46);
+  backdrop-filter: blur(8px);
+}
+
+.start-card {
+  max-width: 460px;
+  padding: 28px;
+  border-radius: var(--radius-xl);
+  background: rgba(8, 17, 30, 0.92);
+  border: 1px solid rgba(131, 240, 211, 0.18);
+  box-shadow: var(--shadow);
+}
+
+.start-card h2 {
+  margin: 6px 0 12px;
+  font-family: "Georgia", "Times New Roman", serif;
+  font-size: 2rem;
+}
+
+.start-card p {
+  margin: 0 0 18px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.simulator-overlay {
+  top: 18px;
+  padding: 0 18px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  pointer-events: none;
+}
+
+.status-card,
+.telemetry-card {
+  min-width: 180px;
+  padding: 14px 16px;
+  border-radius: var(--radius-lg);
+  background: rgba(7, 17, 31, 0.76);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(14px);
+}
+
+.telemetry-card {
+  max-width: 260px;
+}
+
+.telemetry-card h3 {
+  margin: 4px 0;
+}
+
+.hud-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 4px 0;
+  color: var(--muted);
+}
+
+.hud-row strong {
+  color: var(--text);
+}
+
+.simulator-console {
+  bottom: 0;
+  padding: 18px;
+}
+
+.prompt-bar {
+  display: flex;
+  gap: 10px;
+  padding: 10px;
+  border-radius: 18px;
+  background: rgba(7, 17, 31, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(16px);
+}
+
+.prompt-bar input {
+  width: 100%;
+  border: none;
+  border-radius: 12px;
+  padding: 14px 16px;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text);
+}
+
+.prompt-bar input:focus {
+  outline: 2px solid rgba(131, 240, 211, 0.42);
+}
+
+.simulator-sidebar {
+  display: grid;
+  gap: 20px;
+}
+
+.simulator-panel {
+  padding: 20px;
+}
+
+.simulator-runtime-grid {
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.simulator-summary {
+  font-size: 0.92rem;
+  word-break: break-word;
+}
+
+.simulator-banner {
+  margin-top: 14px;
+}
+
+.simulator-shot-list {
+  margin-top: 14px;
+}
+
 @media (max-width: 1180px) {
+  .simulator-layout,
+=======
+@media (max-width: 1180px) {
+>>>>>>> origin/main
   .hero-panel,
   .workspace-grid {
     grid-template-columns: 1fr;
@@ -423,8 +711,18 @@ pre {
 }
 
 @media (max-width: 760px) {
+<<<<<<< HEAD
+  .shell-nav,
   .shell {
     width: min(100vw - 20px, 100%);
+  }
+
+  .shell,
+  .simulator-shell {
+=======
+  .shell {
+    width: min(100vw - 20px, 100%);
+>>>>>>> origin/main
     padding-top: 16px;
   }
 
@@ -433,11 +731,31 @@ pre {
     padding: 18px;
   }
 
+<<<<<<< HEAD
+  .simulator-header,
+  .simulator-overlay,
+  .simulator-actions,
+  .prompt-bar {
+    flex-direction: column;
+  }
+
+  .simulator-stage,
+  .simulator-canvas {
+    min-height: 620px;
+    height: 620px;
+  }
+
+=======
+>>>>>>> origin/main
   .field-grid,
   .field-grid.three-up {
     grid-template-columns: 1fr;
   }
 
+<<<<<<< HEAD
+  .shell-nav,
+=======
+>>>>>>> origin/main
   .panel-header,
   .section-header,
   .source-strip-header {

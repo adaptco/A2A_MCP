@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Solar System Explorer</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #070b15;
+      --panel-bg: rgba(10, 14, 26, 0.9);
+      --panel-border: rgba(255, 255, 255, 0.08);
+      --accent: #8fd8ff;
+      --accent-strong: #4bc0ff;
+      --text: #e6f0ff;
+      --muted: #76809b;
+      font-size: clamp(14px, 1vw + 12px, 16px);
+    }
+
+    * {
+      box-sizing: border-box;
+      user-select: none;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Inter", "Segoe UI", system-ui, sans-serif;
+      background: radial-gradient(circle at 20% 20%, #111a33, #04070e);
+      color: var(--text);
+      overflow: hidden;
+    }
+
+    #app {
+      position: relative;
+      display: grid;
+      grid-template-columns: minmax(280px, 22vw) 1fr;
+      gap: 0;
+      height: 100vh;
+    }
+
+    #control-panel {
+      background: var(--panel-bg);
+      border-right: 1px solid var(--panel-border);
+      padding: 1.75rem 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      box-shadow: 0 0 24px rgba(9, 18, 40, 0.65);
+      backdrop-filter: blur(12px);
+      z-index: 5;
+    }
+
+    .panel-header {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+    .panel-header h1 {
+      font-size: 1.5rem;
+      margin: 0;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+    }
+
+    .panel-header span {
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .panel-section {
+      border: 1px solid var(--panel-border);
+      border-radius: 18px;
+      padding: 1.1rem 1.25rem;
+      background: rgba(8, 13, 23, 0.72);
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+    }
+
+    .panel-section h2 {
+      margin: 0;
+      font-size: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--muted);
+    }
+
+    .button-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+      gap: 0.65rem;
+    }
+
+    .control-button {
+      border: 1px solid var(--panel-border);
+      border-radius: 999px;
+      padding: 0.6rem 0.9rem;
+      text-align: center;
+      font-size: 0.95rem;
+      letter-spacing: 0.04em;
+      background: rgba(9, 16, 29, 0.9);
+      color: var(--muted);
+      transition: all 160ms ease;
+      cursor: pointer;
+    }
+
+    .control-button:hover {
+      border-color: rgba(79, 167, 255, 0.65);
+      color: var(--text);
+      box-shadow: 0 0 0 1px rgba(79, 167, 255, 0.3), 0 10px 22px rgba(0, 0, 0, 0.3);
+    }
+
+    .control-button.active {
+      color: #08111f;
+      background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+      border-color: transparent;
+      box-shadow: 0 14px 30px rgba(79, 167, 255, 0.3);
+    }
+
+    .control-row {
+      display: flex;
+      gap: 0.65rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    label.toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(9, 16, 29, 0.9);
+      padding: 0.55rem 0.9rem;
+      border-radius: 999px;
+      border: 1px solid var(--panel-border);
+      font-size: 0.95rem;
+      letter-spacing: 0.05em;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 160ms ease;
+    }
+
+    label.toggle input {
+      appearance: none;
+      width: 1.25rem;
+      height: 1.25rem;
+      border-radius: 50%;
+      border: 2px solid var(--panel-border);
+      display: grid;
+      place-items: center;
+      position: relative;
+    }
+
+    label.toggle input::before {
+      content: "";
+      width: 0.65rem;
+      height: 0.65rem;
+      border-radius: 50%;
+      background: transparent;
+      transition: background 160ms ease;
+    }
+
+    label.toggle input:checked {
+      border-color: var(--accent);
+    }
+
+    label.toggle input:checked::before {
+      background: var(--accent);
+    }
+
+    label.toggle:hover {
+      border-color: rgba(79, 167, 255, 0.65);
+      color: var(--text);
+    }
+
+    #canvas-wrapper {
+      position: relative;
+      width: 100%;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    #distortionCanvas {
+      mix-blend-mode: screen;
+      opacity: 0;
+      transition: opacity 240ms ease;
+      pointer-events: none;
+    }
+
+    #distortionCanvas.active {
+      opacity: 0.75;
+    }
+
+    #hud {
+      position: absolute;
+      right: 1.8rem;
+      top: 1.8rem;
+      background: rgba(8, 12, 23, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 18px;
+      padding: 1rem 1.3rem;
+      min-width: 220px;
+      z-index: 6;
+      backdrop-filter: blur(14px);
+      box-shadow: 0 20px 45px rgba(0, 0, 0, 0.35);
+      display: grid;
+      gap: 0.35rem;
+    }
+
+    #hud h3 {
+      margin: 0;
+      font-size: 0.9rem;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+
+    #hud span {
+      font-size: 0.95rem;
+      letter-spacing: 0.03em;
+    }
+
+    @media (max-width: 960px) {
+      #app {
+        grid-template-columns: 1fr;
+      }
+
+      #control-panel {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: max-content;
+        z-index: 10;
+        border-right: none;
+        border-bottom: 1px solid var(--panel-border);
+        background: rgba(8, 12, 24, 0.94);
+        padding: 1rem;
+        gap: 1rem;
+      }
+
+      #canvas-wrapper {
+        margin-top: 310px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <aside id="control-panel">
+      <div class="panel-header">
+        <h1>Solar System Explorer</h1>
+        <span>Navigate orbital mechanics across multiple perceptual frames.</span>
+      </div>
+
+      <section class="panel-section" id="scale-controls">
+        <h2>Scaling Modes</h2>
+        <div class="button-grid">
+          <button class="control-button" data-mode="linear">Linear</button>
+          <button class="control-button" data-mode="logarithmic">Logarithmic</button>
+          <button class="control-button" data-mode="spacetime4d">4D Spacetime</button>
+        </div>
+      </section>
+
+      <section class="panel-section" id="visual-controls">
+        <h2>Visualization</h2>
+        <div class="button-grid">
+          <button class="control-button" id="centerSun">Center Sun</button>
+          <button class="control-button" id="centerEarth">Center Earth</button>
+          <button class="control-button" id="resetView">Reset View</button>
+        </div>
+        <div class="control-row">
+          <label class="toggle"><input type="checkbox" id="toggleOrbits" checked />Orbits</label>
+          <label class="toggle"><input type="checkbox" id="toggleLabels" checked />Labels</label>
+          <label class="toggle"><input type="checkbox" id="toggleTrails" checked />Trails</label>
+        </div>
+        <div class="control-row">
+          <button class="control-button" id="warpField">Warp Field</button>
+          <button class="control-button" id="pauseSim">Pause</button>
+        </div>
+      </section>
+
+      <section class="panel-section" id="time-controls">
+        <h2>Temporal Frame</h2>
+        <div class="control-row">
+          <label class="toggle"><input type="range" id="timeScale" min="0.2" max="5" step="0.1" value="1.2" /></label>
+          <span id="timeScaleValue">×1.2</span>
+        </div>
+        <p style="margin:0; color:var(--muted); font-size:0.9rem; line-height:1.5;">
+          Adjust the cadence of orbital progression. 4D Spacetime mode compresses spatial scale while dilating orbital timelines to highlight gravitational curvature.
+        </p>
+      </section>
+    </aside>
+
+    <section id="canvas-wrapper">
+      <canvas id="distortionCanvas"></canvas>
+      <canvas id="mainCanvas"></canvas>
+      <div id="hud">
+        <h3>Frame Readout</h3>
+        <span id="hudMode">Linear scale</span>
+        <span id="hudFocus">Focus: Barycenter</span>
+        <span id="hudTime">Δt: 1.2×</span>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('mainCanvas');
+    const ctx = canvas.getContext('2d');
+    const distortionCanvas = document.getElementById('distortionCanvas');
+    const dtx = distortionCanvas.getContext('2d');
+
+    const warpFieldBtn = document.getElementById('warpField');
+    const pauseBtn = document.getElementById('pauseSim');
+    const centerSunBtn = document.getElementById('centerSun');
+    const centerEarthBtn = document.getElementById('centerEarth');
+    const resetViewBtn = document.getElementById('resetView');
+
+    const toggleOrbits = document.getElementById('toggleOrbits');
+    const toggleLabels = document.getElementById('toggleLabels');
+    const toggleTrails = document.getElementById('toggleTrails');
+
+    const timeScaleSlider = document.getElementById('timeScale');
+    const timeScaleValue = document.getElementById('timeScaleValue');
+
+    const hudMode = document.getElementById('hudMode');
+    const hudFocus = document.getElementById('hudFocus');
+    const hudTime = document.getElementById('hudTime');
+
+    const buttons = Array.from(document.querySelectorAll('[data-mode]'));
+
+    const starField = Array.from({ length: 320 }, () => ({
+      x: Math.random(),
+      y: Math.random(),
+      size: Math.random() * 1.2,
+      alpha: 0.3 + Math.random() * 0.7
+    }));
+
+    const AU = 149597870.7; // km
+    const bodies = [
+      { name: 'Sun', color: '#fcca46', radius: 696340, distance: 0, orbitalPeriod: Infinity, mass: 1.9885e30 },
+      { name: 'Mercury', color: '#b9b6b2', radius: 2439.7, distance: 0.39 * AU, orbitalPeriod: 88, mass: 3.3011e23 },
+      { name: 'Venus', color: '#e1c16e', radius: 6051.8, distance: 0.72 * AU, orbitalPeriod: 224.7, mass: 4.8675e24 },
+      { name: 'Earth', color: '#4fa7ff', radius: 6371, distance: AU, orbitalPeriod: 365.25, mass: 5.9724e24 },
+      { name: 'Mars', color: '#f0803c', radius: 3389.5, distance: 1.52 * AU, orbitalPeriod: 687, mass: 6.4171e23 },
+      { name: 'Jupiter', color: '#d9b382', radius: 69911, distance: 5.2 * AU, orbitalPeriod: 4331, mass: 1.898e27 },
+      { name: 'Saturn', color: '#f5deb3', radius: 58232, distance: 9.54 * AU, orbitalPeriod: 10747, mass: 5.683e26 },
+      { name: 'Uranus', color: '#99e2ff', radius: 25362, distance: 19.2 * AU, orbitalPeriod: 30589, mass: 8.681e25 },
+      { name: 'Neptune', color: '#6f8cff', radius: 24622, distance: 30.05 * AU, orbitalPeriod: 59800, mass: 1.024e26 }
+    ];
+
+    const mainBodies = {
+      sun: bodies[0],
+      jupiter: bodies[5],
+      earth: bodies[3]
+    };
+
+    const state = {
+      scaleMode: 'linear',
+      timeScale: 1.2,
+      warpFieldActive: false,
+      paused: false,
+      focus: { type: 'barycenter', body: null, label: 'Barycenter' },
+      trails: new Map(),
+      camera: {
+        x: 0,
+        y: 0,
+        targetX: 0,
+        targetY: 0,
+        zoom: 1,
+        targetZoom: 1,
+        dragging: false,
+        lastX: 0,
+        lastY: 0
+      },
+      simulationTime: 0,
+      lastFrame: performance.now()
+    };
+
+    const scalingModes = {
+      linear: distance => distance / AU * 180,
+      logarithmic: distance => Math.log10(distance / AU + 1) * 260,
+      spacetime4d: distance => Math.pow(distance / AU, 0.45) * 320
+    };
+
+    const timeWarp = {
+      linear: 1,
+      logarithmic: 0.65,
+      spacetime4d: 0.35
+    };
+
+    function resize() {
+      const dpr = window.devicePixelRatio || 1;
+      const { clientWidth, clientHeight } = canvas;
+      canvas.width = clientWidth * dpr;
+      canvas.height = clientHeight * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      distortionCanvas.width = clientWidth * dpr;
+      distortionCanvas.height = clientHeight * dpr;
+      dtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+
+    window.addEventListener('resize', resize);
+    resize();
+
+    function worldToScreen(x, y) {
+      const scale = state.camera.zoom;
+      const cx = canvas.width / (window.devicePixelRatio || 1) / 2;
+      const cy = canvas.height / (window.devicePixelRatio || 1) / 2;
+      return {
+        x: cx + (x - state.camera.x) * scale,
+        y: cy + (y - state.camera.y) * scale
+      };
+    }
+
+    function clearDistortion() {
+      dtx.save();
+      dtx.setTransform(1, 0, 0, 1, 0, 0);
+      dtx.clearRect(0, 0, distortionCanvas.width, distortionCanvas.height);
+      dtx.restore();
+    }
+
+    function getFlatten() {
+      return state.scaleMode === 'spacetime4d' ? 0.85 : 1;
+    }
+
+    function getBodyPosition(body) {
+      if (body.orbitalPeriod === Infinity) {
+        return { x: 0, y: 0 };
+      }
+      const radius = scalingModes[state.scaleMode](body.distance);
+      const angle = (state.simulationTime / body.orbitalPeriod) * Math.PI * 2;
+      const flatten = getFlatten();
+      return {
+        x: Math.cos(angle) * radius,
+        y: Math.sin(angle) * radius * flatten
+      };
+    }
+
+    function getFocusPoint() {
+      if (state.focus.type === 'body' && state.focus.body) {
+        return getBodyPosition(state.focus.body);
+      }
+      if (state.focus.type === 'manual') {
+        return { x: state.camera.targetX, y: state.camera.targetY };
+      }
+      return { x: 0, y: 0 };
+    }
+
+    function drawOrbits() {
+      ctx.save();
+      ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+      ctx.lineWidth = 1;
+      const steps = 140;
+      const flatten = getFlatten();
+      bodies.slice(1).forEach(body => {
+        const radius = scalingModes[state.scaleMode](body.distance);
+        ctx.beginPath();
+        for (let i = 0; i <= steps; i++) {
+          const angle = (i / steps) * Math.PI * 2;
+          const worldX = Math.cos(angle) * radius;
+          const worldY = Math.sin(angle) * radius * flatten;
+          const screen = worldToScreen(worldX, worldY);
+          if (i === 0) ctx.moveTo(screen.x, screen.y);
+          else ctx.lineTo(screen.x, screen.y);
+        }
+        ctx.stroke();
+      });
+      ctx.restore();
+    }
+
+    function updateTrails(name, point) {
+      if (!state.trails.has(name)) {
+        state.trails.set(name, []);
+      }
+      const trail = state.trails.get(name);
+      trail.push(point);
+      if (trail.length > 180) trail.shift();
+    }
+
+    function drawTrails() {
+      ctx.save();
+      ctx.lineWidth = 2;
+      state.trails.forEach((trail, name) => {
+        const body = bodies.find(b => b.name === name);
+        if (!body) return;
+        ctx.beginPath();
+        trail.forEach((p, idx) => {
+          const { x, y } = worldToScreen(p.x, p.y);
+          if (idx === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        });
+        ctx.strokeStyle = body.color + '80';
+        ctx.stroke();
+      });
+      ctx.restore();
+    }
+
+    function drawBodies() {
+      ctx.font = '12px "Inter", system-ui';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'top';
+
+      bodies.forEach(body => {
+        const stationary = body.orbitalPeriod === Infinity;
+        const position = stationary ? { x: 0, y: 0 } : getBodyPosition(body);
+        if (toggleTrails.checked && !stationary) {
+          updateTrails(body.name, position);
+        }
+
+        const screen = worldToScreen(position.x, position.y);
+        const size = Math.max(3, Math.pow(body.radius, 0.3) * 0.6);
+
+        ctx.beginPath();
+        ctx.fillStyle = body.color;
+        ctx.arc(screen.x, screen.y, size, 0, Math.PI * 2);
+        ctx.fill();
+
+        if (toggleLabels.checked) {
+          ctx.fillStyle = '#c9d8ff';
+          ctx.fillText(body.name, screen.x, screen.y + size + 6);
+        }
+      });
+    }
+
+    function drawBackground() {
+      ctx.save();
+      const dpr = window.devicePixelRatio || 1;
+      const screenWidth = canvas.width / dpr;
+      const screenHeight = canvas.height / dpr;
+
+      ctx.fillStyle = '#02040a';
+      ctx.fillRect(0, 0, screenWidth, screenHeight);
+      ctx.restore();
+
+      ctx.save();
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
+      starField.forEach(star => {
+        ctx.globalAlpha = star.alpha;
+        const x = star.x * screenWidth;
+        const y = star.y * screenHeight;
+        ctx.fillRect(x, y, star.size, star.size);
+      });
+      ctx.restore();
+    }
+
+    let warpRenderAccumulator = 0;
+
+    function renderWarpField(deltaMs) {
+      warpRenderAccumulator += deltaMs;
+      if (warpRenderAccumulator < 32) return; // ~30 FPS for the overlay to reduce load
+      warpRenderAccumulator = 0;
+
+      clearDistortion();
+      const dpr = window.devicePixelRatio || 1;
+      const screenWidth = distortionCanvas.width / dpr;
+      const screenHeight = distortionCanvas.height / dpr;
+
+      dtx.lineWidth = 1;
+
+      const screenGridSpacing = 110;
+      const worldSpacing = screenGridSpacing / state.camera.zoom;
+      const worldSpacingY = worldSpacing * getFlatten();
+      const massSources = [mainBodies.sun, mainBodies.jupiter];
+      const influenceScale = state.scaleMode === 'spacetime4d' ? 1.8 : 1.2;
+
+      const focusX = state.camera.x;
+      const focusY = state.camera.y;
+      const halfColumns = Math.ceil(screenWidth / screenGridSpacing) + 3;
+      const halfRows = Math.ceil(screenHeight / screenGridSpacing) + 3;
+      const maxWarpLength = worldSpacing * 1.5;
+
+      const massPositions = massSources.map(body => ({
+        massRatio: body.mass / mainBodies.sun.mass,
+        position: body.orbitalPeriod === Infinity ? { x: 0, y: 0 } : getBodyPosition(body)
+      }));
+
+      for (let gx = -halfColumns; gx <= halfColumns; gx++) {
+        for (let gy = -halfRows; gy <= halfRows; gy++) {
+          const worldX = focusX + gx * worldSpacing;
+          const worldY = focusY + gy * worldSpacingY;
+
+          let warpX = 0;
+          let warpY = 0;
+
+          massPositions.forEach(({ massRatio, position }) => {
+            const dx = position.x - worldX;
+            const dy = position.y - worldY;
+            const distSq = dx * dx + dy * dy + 1e6;
+            const influence = (massRatio / distSq) * influenceScale * 1e6;
+            warpX += dx * influence;
+            warpY += dy * influence;
+          });
+
+          const offsetMagnitude = Math.hypot(warpX, warpY);
+          const clampFactor = Math.min(1, maxWarpLength / (offsetMagnitude || 1));
+          warpX *= clampFactor;
+          warpY *= clampFactor;
+
+          const intensity = Math.min(1, offsetMagnitude / maxWarpLength);
+          dtx.strokeStyle = `rgba(79, 167, 255, ${0.22 + 0.55 * intensity})`;
+
+          const screenStart = worldToScreen(worldX, worldY);
+          const screenEnd = worldToScreen(worldX + warpX, worldY + warpY);
+
+          dtx.beginPath();
+          dtx.moveTo(screenStart.x, screenStart.y);
+          dtx.lineTo(screenEnd.x, screenEnd.y);
+          dtx.stroke();
+        }
+      }
+    }
+
+    const baseDaysPerSecond = 24;
+
+    function animate(timestamp) {
+      const elapsed = timestamp - state.lastFrame;
+      state.lastFrame = timestamp;
+      const dt = state.paused ? 0 : state.timeScale * timeWarp[state.scaleMode];
+      const deltaDays = (elapsed / 1000) * baseDaysPerSecond * dt;
+      state.simulationTime += deltaDays;
+
+      drawBackground();
+
+      state.camera.x += (state.camera.targetX - state.camera.x) * 0.15;
+      state.camera.y += (state.camera.targetY - state.camera.y) * 0.15;
+
+      if (state.focus.type === 'body' && state.focus.body) {
+        const focusPosition = getBodyPosition(state.focus.body);
+        state.camera.targetX = focusPosition.x;
+        state.camera.targetY = focusPosition.y;
+      } else if (state.focus.type === 'barycenter') {
+        state.camera.targetX = 0;
+        state.camera.targetY = 0;
+      }
+
+      if (toggleOrbits.checked) drawOrbits();
+      if (toggleTrails.checked) drawTrails();
+      drawBodies();
+
+      if (state.warpFieldActive) {
+        renderWarpField(elapsed);
+      } else {
+        clearDistortion();
+      }
+
+      state.camera.zoom += (state.camera.targetZoom - state.camera.zoom) * 0.12;
+
+      requestAnimationFrame(animate);
+    }
+
+    function setScaleMode(mode) {
+      state.scaleMode = mode;
+      buttons.forEach(btn => btn.classList.toggle('active', btn.dataset.mode === mode));
+      hudMode.textContent = `${mode === 'spacetime4d' ? '4D Spacetime' : mode.charAt(0).toUpperCase() + mode.slice(1)} scale`;
+      state.trails.clear();
+      const focusPoint = getFocusPoint();
+      state.camera.targetX = focusPoint.x;
+      state.camera.targetY = focusPoint.y;
+      state.camera.x = focusPoint.x;
+      state.camera.y = focusPoint.y;
+    }
+
+    buttons.forEach(btn => {
+      btn.addEventListener('click', () => setScaleMode(btn.dataset.mode));
+    });
+
+    function setFocus(body) {
+      if (!body) {
+        state.focus = { type: 'barycenter', body: null, label: 'Barycenter' };
+        state.camera.targetX = 0;
+        state.camera.targetY = 0;
+      } else {
+        state.focus = { type: 'body', body, label: body.name };
+        const position = getBodyPosition(body);
+        state.camera.targetX = position.x;
+        state.camera.targetY = position.y;
+      }
+      state.camera.x = state.camera.targetX;
+      state.camera.y = state.camera.targetY;
+      hudFocus.textContent = `Focus: ${state.focus.label}`;
+    }
+
+    centerSunBtn.addEventListener('click', () => setFocus(mainBodies.sun));
+    centerEarthBtn.addEventListener('click', () => setFocus(mainBodies.earth));
+    resetViewBtn.addEventListener('click', () => {
+      state.camera.x = 0;
+      state.camera.y = 0;
+      state.camera.targetX = 0;
+      state.camera.targetY = 0;
+      state.camera.targetZoom = 1;
+      setFocus();
+    });
+
+    warpFieldBtn.addEventListener('click', () => {
+      state.warpFieldActive = !state.warpFieldActive;
+      warpFieldBtn.classList.toggle('active', state.warpFieldActive);
+      distortionCanvas.classList.toggle('active', state.warpFieldActive);
+      if (state.warpFieldActive) {
+        warpRenderAccumulator = 32; // force an immediate render on activation
+      }
+    });
+
+    pauseBtn.addEventListener('click', () => {
+      state.paused = !state.paused;
+      pauseBtn.classList.toggle('active', state.paused);
+      pauseBtn.textContent = state.paused ? 'Resume' : 'Pause';
+    });
+
+    timeScaleSlider.addEventListener('input', () => {
+      state.timeScale = parseFloat(timeScaleSlider.value);
+      timeScaleValue.textContent = `×${state.timeScale.toFixed(1)}`;
+      hudTime.textContent = `Δt: ${state.timeScale.toFixed(1)}×`;
+    });
+
+    toggleTrails.addEventListener('change', () => {
+      if (!toggleTrails.checked) {
+        state.trails.clear();
+      }
+    });
+
+    canvas.addEventListener('mousedown', event => {
+      state.camera.dragging = true;
+      state.camera.lastX = event.clientX;
+      state.camera.lastY = event.clientY;
+      state.focus = { type: 'manual', body: null, label: 'Manual drift' };
+      hudFocus.textContent = `Focus: ${state.focus.label}`;
+      state.camera.targetX = state.camera.x;
+      state.camera.targetY = state.camera.y;
+    });
+
+    window.addEventListener('mouseup', () => {
+      state.camera.dragging = false;
+    });
+
+    window.addEventListener('mousemove', event => {
+      if (!state.camera.dragging) return;
+      const dx = (event.clientX - state.camera.lastX) / state.camera.zoom;
+      const dy = (event.clientY - state.camera.lastY) / state.camera.zoom;
+      state.camera.x -= dx;
+      state.camera.y -= dy;
+      state.camera.targetX = state.camera.x;
+      state.camera.targetY = state.camera.y;
+      state.camera.lastX = event.clientX;
+      state.camera.lastY = event.clientY;
+    });
+
+    canvas.addEventListener('wheel', event => {
+      event.preventDefault();
+      const zoomFactor = Math.exp(-event.deltaY * 0.0012);
+      state.camera.targetZoom = Math.min(6, Math.max(0.35, state.camera.targetZoom * zoomFactor));
+    }, { passive: false });
+
+    setScaleMode('linear');
+    requestAnimationFrame(animate);
+  </script>
+</body>
+</html>

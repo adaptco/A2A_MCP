@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="https://www.omg.org/spec/DMN/20191111/MODEL/" xmlns:dmndi="https://www.omg.org/spec/DMN/20191111/DMNDI/" xmlns:dc="http://www.omg.org/spec/DMN/20180521/DC/" id="ManagingAgentWorkflow" name="Managing Agent Workflow" namespace="http://camunda.org/schema/1.0/dmn">
+  <decision id="agent_routing_decision" name="Agent Routing Decision">
+    <decisionTable id="decisionTable_1">
+      <input id="input_1" label="Task Type">
+        <inputExpression id="inputExpression_1" typeRef="string">
+          <text>taskType</text>
+        </inputExpression>
+      </input>
+      <input id="input_2" label="Priority">
+        <inputExpression id="inputExpression_2" typeRef="integer">
+          <text>priority</text>
+        </inputExpression>
+      </input>
+      <output id="output_1" label="Assigned Agent" name="assignedAgent" typeRef="string" />
+      <rule id="DecisionRule_1">
+        <inputEntry id="UnaryTests_1">
+          <text>"code_review"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_2">
+          <text>&gt; 5</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1">
+          <text>"senior_developer_agent"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_2">
+        <inputEntry id="UnaryTests_3">
+          <text>"bug_fix"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_4">
+          <text>any</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_2">
+          <text>"maintenance_agent"</text>
+        </outputEntry>
+      </rule>
+    </decisionTable>
+  </decision>
+</definitions>

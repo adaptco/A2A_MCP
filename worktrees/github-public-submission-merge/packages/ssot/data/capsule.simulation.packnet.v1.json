@@ -1,0 +1,75 @@
+{
+  "capsule_id": "capsule.simulation.packnet.v1",
+  "type": "SimulationScaffold",
+  "version": "1.0.0",
+  "author": "Sol.F1 + PackNet Cooperative",
+  "issued_at": "2025-10-05T00:05:00Z",
+  "logline": "PackNet/TAMS rehearsal scaffold translating the lineage fork into auditable workflow nodes and timed overlays.",
+  "simulation": {
+    "engine": "PackNet",
+    "overlay": "TAMS",
+    "duration_seconds": 120,
+    "phases": [
+      {
+        "phase": "ingest",
+        "description": "Load forked script, storyboard set, and ledger capsules into the PackNet graph.",
+        "inputs": [
+          "script.qube.lineage_fork.v1",
+          "storyboard.monza.grid.v1",
+          "sol.f1.previz.packnet_rehearsal.v1"
+        ],
+        "outputs": ["graph.nodes.proof", "graph.nodes.flow"]
+      },
+      {
+        "phase": "stabilize",
+        "description": "CiCi and TAMS harmonize emotional tone and tempo registers for rehearsal playback.",
+        "inputs": ["avatar:cici", "avatar:tams"],
+        "outputs": ["register.tone.resolute", "tempo.overlay.72bpm"]
+      },
+      {
+        "phase": "rehearse",
+        "description": "PackNet streams ghost-ledger motion while Queen Boo validates fail-closed checkpoints.",
+        "inputs": ["avatar:queen_boo", "ledger:scene_packnet_rehearsal"],
+        "outputs": ["snapshot.packnet.001", "snapshot.packnet.002"]
+      }
+    ],
+    "success_conditions": [
+      "all snapshots hashed and stored in SSOT",
+      "simulation overlay passes maker-checker",
+      "relay alignment delta == 0"
+    ]
+  },
+  "tams_overlay": {
+    "hud_layers": [
+      {
+        "layer": "payload_map",
+        "description": "Visualize loyalty → legacy chain across the forked relay",
+        "source": "capsule.fork.lineage.v1"
+      },
+      {
+        "layer": "motion_trace",
+        "description": "Stop-motion ghost car path with PackNet timing markers",
+        "source": "sol.f1.previz.packnet_rehearsal.v1"
+      }
+    ],
+    "audit_log": {
+      "ledger": "data/.out/scrollstream_ledger.jsonl",
+      "fields": ["t", "event", "capsule", "digest", "status"]
+    }
+  },
+  "governance": {
+    "maker": "Queen Boo",
+    "checker": "CiCi",
+    "stewards": ["PackNet", "TAMS"],
+    "quorum": ["Queen Boo", "CiCi", "Sol.F1", "PackNet"],
+    "enforcement": "fail-closed",
+    "override": "denied_without_quorum"
+  },
+  "attestation": {
+    "status": "STAGED",
+    "sealed_by": null,
+    "sealed_at": null,
+    "content_hash": "sha256:57978520655839bda9934adfcd5d2b8882d4556bf1a49ff8c77b43e3ae8c8f54"
+  },
+  "status": "STAGED"
+}

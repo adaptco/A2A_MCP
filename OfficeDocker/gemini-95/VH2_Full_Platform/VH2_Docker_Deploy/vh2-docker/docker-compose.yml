@@ -1,0 +1,117 @@
+# ════════════════════════════════════════════════════════════════════════
+# VH2 SOVEREIGN SUSPENSION RIG — Docker Compose
+#
+# Services:
+#   backend  — Validation API socket  (port 3001, internal only)
+#   frontend — Static + plugin socket (port 3000, internal only)
+#   nginx    — Reverse proxy          (port 80, public)
+#
+# Usage:
+#   docker compose up --build       # development
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up
+# ════════════════════════════════════════════════════════════════════════
+
+networks:
+  vh2-internal:
+    driver: bridge
+    internal: true        # backend never exposed directly
+  vh2-public:
+    driver: bridge
+
+services:
+
+  # ── BACKEND SOCKET (Validation API + SHA-256 Witness) ─────────────────
+  backend:
+    build:
+      context: ./backend
+      target: production
+    container_name: vh2-backend
+    restart: unless-stopped
+    networks:
+      - vh2-internal
+    environment:
+      NODE_ENV:        production
+      PORT:            3001
+      ALLOWED_ORIGIN:  "http://localhost"
+    expose:
+      - "3001"
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3001/health', (r)=>{if(r.statusCode===200)process.exit(0); process.exit(1)}).on('error',()=>process.exit(1))"]
+      interval: 20s
+      timeout:  5s
+      retries:  3
+      start_period: 10s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+
+  # ── FRONTEND SOCKET (Plugin + Static Files) ────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      target: production
+    container_name: vh2-frontend
+    restart: unless-stopped
+    networks:
+      - vh2-internal
+    environment:
+      NODE_ENV: production
+      PORT:     3000
+    expose:
+      - "3000"
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/', (r)=>{if(r.statusCode===200)process.exit(0); process.exit(1)}).on('error',()=>process.exit(1))"]
+      interval: 20s
+      timeout:  5s
+      retries:  3
+      start_period: 8s
+    volumes:
+      # Mount vehicle artifacts at runtime (no rebuild needed to swap models)
+      - ./frontend/public:/app/public:ro
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+
+  # ── NGINX (Reverse Proxy — the public face) ────────────────────────────
+  nginx:
+    image: nginx:1.25-alpine
+    container_name: vh2-nginx
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+      frontend:
+        condition: service_healthy
+    networks:
+      - vh2-internal
+      - vh2-public
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    healthcheck:
+      test: ["CMD", "nginx", "-t"]
+      interval: 30s
+      timeout:  5s
+      retries:  3
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    security_opt:
+      - no-new-privileges:true

@@ -57,8 +57,11 @@ class RLTrainingConfig:
     extra_cli_args: List[str] = field(default_factory=list)
     training_mode: str = "online"
     offline_dataset_path: Optional[str] = None
+<<<<<<< HEAD
+=======
     token_alignment_slices: int = 5
     merkle_seed: str = "0x1984_Q9"
+>>>>>>> origin/main
 
 
 @dataclass
@@ -199,8 +202,11 @@ class UnityMLOpsOrchestrator:
         mode = job.rl_config.training_mode.lower()
         if mode not in {"online", "offline", "hybrid"}:
             raise ValueError("training_mode must be one of: online, offline, hybrid")
+<<<<<<< HEAD
+=======
         if job.rl_config.token_alignment_slices < 1:
             raise ValueError("token_alignment_slices must be >= 1")
+>>>>>>> origin/main
 
         dataset_path: Optional[str] = None
         if mode in {"offline", "hybrid"}:
@@ -209,7 +215,11 @@ class UnityMLOpsOrchestrator:
             dataset = Path(job.rl_config.offline_dataset_path)
             if not dataset.exists():
                 raise FileNotFoundError(f"offline dataset not found: {dataset}")
+<<<<<<< HEAD
+            dataset_path = str(dataset.resolve())
+=======
             dataset_path = dataset.resolve().as_posix()
+>>>>>>> origin/main
 
         run_id = f"{job.rl_config.run_id_prefix}-{job.job_id}-{uuid4().hex[:8]}"
         model_dir = output_dir / "models" / run_id
@@ -225,10 +235,13 @@ class UnityMLOpsOrchestrator:
             "time_scale": job.rl_config.time_scale,
             "training_mode": mode,
             "offline_dataset_path": dataset_path,
+<<<<<<< HEAD
+=======
             "token_alignment_slices": job.rl_config.token_alignment_slices,
             "merkle_seed": job.rl_config.merkle_seed,
             "merkle_hash": merkle_hash,
             "nested_alignment_report": alignment_report,
+>>>>>>> origin/main
             "generated_at": datetime.now(timezone.utc).isoformat(),
         }
         (model_dir / "training_summary.json").write_text(json.dumps(summary, indent=2), encoding="utf-8")

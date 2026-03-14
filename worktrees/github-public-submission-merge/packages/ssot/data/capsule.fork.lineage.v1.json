@@ -1,0 +1,61 @@
+{
+  "capsule_id": "capsule.fork.lineage.v1",
+  "type": "LineageFork",
+  "version": "1.0.0",
+  "author": "Queen Boo Writers Council",
+  "issued_at": "2025-10-05T00:00:00Z",
+  "origin_capsule": "qube.p3l.v1",
+  "logline": "Fork the sovereign cinematic braid into a lineage chain that binds new emotional payloads and prepares the PackNet/TAMS rehearsal overlay.",
+  "branch": {
+    "source_script": "script.qube.cinematic.v1",
+    "fork_script": "script.qube.lineage_fork.v1",
+    "mission_chain": [
+      {
+        "stage": "proof",
+        "description": "Reaffirm the sovereign ledger and inherit Merkle anchors from the cinematic capsule.",
+        "ssot_refs": ["artifact:script.qube.cinematic.v1", "artifact:design.lattice.lingerie.v1"],
+        "policy": ["maker_checker", "no_drift"]
+      },
+      {
+        "stage": "flow",
+        "description": "Route the forked capsule through storyboard, asset, and motion ledger checkpoints.",
+        "ssot_refs": ["artifact:storyboard.monza.grid.v1", "artifact:assets.monza.abs_livery.v1"],
+        "orchestrator_refs": ["flow:script>storyboard>asset>motion_ledger>clip>relay"],
+        "previz_refs": ["scene_origin_braid", "scene_variante_chicane"]
+      },
+      {
+        "stage": "execution",
+        "description": "Prepare relay capsules and register PackNet rehearsal overlays for verification.",
+        "ssot_refs": ["artifact:clip.monza.launch.v1"],
+        "previz_refs": ["scene_packnet_rehearsal"],
+        "relay_refs": ["capsule.simulation.packnet.v1"]
+      }
+    ],
+    "payload_mapping": {
+      "loyalty": "relay.scene.i",
+      "courage": "relay.scene.ii",
+      "transformation": "relay.scene.iii",
+      "legacy": "relay.scene.iv"
+    }
+  },
+  "relay_alignment": {
+    "ssot_registry": "ssot.registry.v1",
+    "orchestrator_capsule": "qube.orchestrator.v1",
+    "previz_library": ["scene_origin_braid", "scene_variante_chicane", "scene_pitlane_recovery", "scene_packnet_rehearsal"],
+    "simulation_overlay": "capsule.simulation.packnet.v1"
+  },
+  "governance": {
+    "maker": "Queen Boo",
+    "checker": "CiCi",
+    "quorum": ["Queen Boo", "CiCi", "Sol.F1"],
+    "enforcement": "fail-closed",
+    "override": "denied_without_quorum"
+  },
+  "attestation": {
+    "status": "STAGED",
+    "sealed_by": null,
+    "sealed_at": null,
+    "content_hash": "sha256:15478d70bdcc68c71394f8a09629ed6c9e380a4e0ad269310fac51d51fc9d177"
+  },
+  "status": "STAGED"
+}

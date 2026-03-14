@@ -1,0 +1,7 @@
+{
+  "request_id": "missing-entities",
+  "source_ref": { "url": "https://valid.com", "tab_id": 1 },
+  "extracted_at": "2023-10-27T10:01:00Z",
+  "entities": [],
+  "evidence": []
+}

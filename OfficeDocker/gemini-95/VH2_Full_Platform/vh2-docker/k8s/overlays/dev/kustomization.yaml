@@ -1,0 +1,108 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Base is k8s/ (parent of overlays/)
+resources:
+  - ../..
+  - namespace-dev.yaml
+
+# vh2-dev namespace (overrides base vh2-prod)
+namespace: vh2-dev
+
+# dev- prefix prevents prod name collisions
+namePrefix: dev-
+
+# Local dev image tags
+images:
+  - name: vh2-backend
+    newTag: dev
+  - name: vh2-frontend
+    newTag: dev
+
+patches:
+  # 1 replica each — no autoscaling in dev
+  - patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: vh2-backend
+      spec:
+        replicas: 1
+    target:
+      kind: Deployment
+      name: vh2-backend
+
+  - patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: vh2-frontend
+      spec:
+        replicas: 1
+    target:
+      kind: Deployment
+      name: vh2-frontend
+
+  # Relaxed resource limits for dev cluster
+  - patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: vh2-backend
+      spec:
+        template:
+          spec:
+            containers:
+              - name: backend
+                resources:
+                  requests:
+                    cpu: "25m"
+                    memory: "64Mi"
+                  limits:
+                    cpu: "200m"
+                    memory: "128Mi"
+    target:
+      kind: Deployment
+      name: vh2-backend
+
+  # Pin HPA to 1/1 — effectively disables scaling in dev
+  - patch: |-
+      apiVersion: autoscaling/v2
+      kind: HorizontalPodAutoscaler
+      metadata:
+        name: vh2-backend-hpa
+      spec:
+        minReplicas: 1
+        maxReplicas: 1
+    target:
+      kind: HorizontalPodAutoscaler
+      name: vh2-backend-hpa
+
+  - patch: |-
+      apiVersion: autoscaling/v2
+      kind: HorizontalPodAutoscaler
+      metadata:
+        name: vh2-frontend-hpa
+      spec:
+        minReplicas: 1
+        maxReplicas: 1
+    target:
+      kind: HorizontalPodAutoscaler
+      name: vh2-frontend-hpa
+
+  # Strip ArgoCD PostSync hook from smoke-test — run manually in dev
+  - patch: |-
+      apiVersion: batch/v1
+      kind: Job
+      metadata:
+        name: vh2-smoke-test
+        annotations:
+          argocd.argoproj.io/hook: ""
+          argocd.argoproj.io/hook-delete-policy: ""
+    target:
+      kind: Job
+      name: vh2-smoke-test
+
+commonLabels:
+  environment: dev
+  app.kubernetes.io/managed-by: kubectl

@@ -1,0 +1,40 @@
+name: Vehicle MCP Release
+
+on:
+  push:
+    paths:
+      - 'production/**'
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract Version
+        id: version
+        run: echo "VERSION=$(cat production/VERSION)" >> $GITHUB_OUTPUT
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: production
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository }}/vehicle-mcp:${{ steps.version.outputs.VERSION }}
+            ghcr.io/${{ github.repository }}/vehicle-mcp:latest

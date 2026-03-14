@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://q.enterprises/schemas/handshake.v1.schema.json",
+  "type": "object",
+  "required": [
+    "kind",
+    "session_id",
+    "event_id",
+    "entropy_threshold",
+    "han_eigenvalue",
+    "lineage_witness"
+  ],
+  "properties": {
+    "kind": { "type": "string", "pattern": "^handshake\\." },
+    "session_id": { "type": "string", "minLength": 1 },
+    "event_id": { "type": "string", "minLength": 1 },
+    "prev": { "type": "string" },
+    "entropy_threshold": { "type": "number", "minimum": 0, "maximum": 1 },
+    "han_eigenvalue": { "type": "number", "minimum": 0, "maximum": 1 },
+    "lineage_witness": {
+      "type": "object",
+      "required": ["format", "line_number", "stream_id"],
+      "properties": {
+        "format": { "const": "ndjson" },
+        "line_number": { "type": "integer", "minimum": 1 },
+        "stream_id": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}

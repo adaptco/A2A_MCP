@@ -1,0 +1,8 @@
+# CI/CD Configuration
+# The actual workflow is located at .github/workflows/vehicle-mcp-ci.yml
+# This file serves as a reference for the production package structure.
+workflow: GitHub Actions
+trigger: push to production/**
+steps:
+  - build docker image
+  - push to ghcr.io

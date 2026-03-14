@@ -14,7 +14,28 @@ from urllib.parse import parse_qs, urlparse
 from typing import Optional # Fixes 'Optional' is undefined
 from pathlib import Path
 from codex_qernel import CodexQernel, QernelConfig
+<<<<<<< HEAD
+# Provide a minimal merge model fallback used by this module.
+
+
+class MergeModel:
+    """Lightweight merge-model wrapper for server bootstrap."""
+
+    def __init__(self, version: str = "empty") -> None:
+        self.version = version
+
+    @classmethod
+    def from_file(cls, model_path: Path) -> "MergeModel":
+        raw = json.loads(model_path.read_text(encoding="utf-8"))
+        version = str(raw.get("version", "unknown"))
+        return cls(version=version)
+
+    @classmethod
+    def empty(cls) -> "MergeModel":
+        return cls()
+=======
 # Ensure MergeModel is either imported or defined before use on line 91
+>>>>>>> origin/main
 
 
 logger = logging.getLogger("core_orchestrator.server")
@@ -248,6 +269,10 @@ class RequestHandler(BaseHTTPRequestHandler):
     def _send_response(self, status_code: int, payload: Dict[str, Any]) -> None:
         body = json.dumps(payload).encode("utf-8")
         self.send_response(status_code)
+<<<<<<< HEAD
+        content_type = "application/json"
+=======
+>>>>>>> origin/main
         self.send_header("Content-Type", content_type)
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()

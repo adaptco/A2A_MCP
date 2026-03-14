@@ -152,7 +152,7 @@ class RuntimeScenarioService:
     @staticmethod
     def hash_payload(prev_hash: str | None, payload: dict[str, Any]) -> str:
         """Public helper to support deterministic hash assertions in tests."""
-        return compute_lineage(prev_hash, payload)
+        return compute_lineage(prev_hash, "ENVELOPE", payload)
 
     def create_scenario(
         self,
@@ -555,7 +555,9 @@ class RuntimeScenarioService:
             state=state,
             payload=payload,
             hash_prev=previous.hash_current if previous else None,
-            hash_current=compute_lineage(previous.hash_current if previous else None, payload),
+            hash_current=compute_lineage(
+                previous.hash_current if previous else None, state, payload
+            ),
             created_at=_now_iso(),
         )
         record.events.append(event)

@@ -1,0 +1,171 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres
+  namespace: charley-fox
+  labels:
+    app: charley-fox
+    component: postgres
+spec:
+  serviceName: postgres-headless
+  replicas: 1
+  selector:
+    matchLabels:
+      app: charley-fox
+      component: postgres
+  template:
+    metadata:
+      labels:
+        app: charley-fox
+        component: postgres
+    spec:
+      securityContext:
+        fsGroup: 999
+        runAsNonRoot: true
+        runAsUser: 999
+      containers:
+      - name: postgres
+        image: postgres:16-alpine
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: false
+          capabilities:
+            drop:
+              - ALL
+            add:
+              - NET_BIND_SERVICE
+        ports:
+        - name: postgres
+          containerPort: 5432
+          protocol: TCP
+        env:
+        - name: POSTGRES_USER
+          value: "charley"
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: charley-fox-secrets
+              key: DB_PASSWORD
+        - name: POSTGRES_DB
+          value: "charley_fox"
+        - name: POSTGRES_INITDB_ARGS
+          value: >
+            -c max_connections=500
+            -c shared_buffers=1GB
+            -c effective_cache_size=3GB
+            -c maintenance_work_mem=256MB
+            -c checkpoint_completion_target=0.9
+            -c wal_buffers=16MB
+            -c default_statistics_target=100
+            -c random_page_cost=1.1
+            -c effective_io_concurrency=200
+            -c work_mem=4MB
+            -c min_wal_size=2GB
+            -c max_wal_size=8GB
+        resources:
+          requests:
+            cpu: 1000m
+            memory: 2Gi
+          limits:
+            cpu: 4000m
+            memory: 4Gi
+        livenessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - pg_isready -U charley -d charley_fox
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - pg_isready -U charley -d charley_fox
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 5
+          failureThreshold: 3
+        volumeMounts:
+        - name: postgres-data
+          mountPath: /var/lib/postgresql/data
+        - name: init-scripts
+          mountPath: /docker-entrypoint-initdb.d
+      volumes:
+      - name: init-scripts
+        configMap:
+          name: postgres-init-scripts
+      terminationGracePeriodSeconds: 30
+  volumeClaimTemplates:
+  - metadata:
+      name: postgres-data
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: standard
+      resources:
+        requests:
+          storage: 10Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  namespace: charley-fox
+  labels:
+    app: charley-fox
+    component: postgres
+spec:
+  type: ClusterIP
+  selector:
+    app: charley-fox
+    component: postgres
+  ports:
+  - name: postgres
+    port: 5432
+    targetPort: 5432
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-headless
+  namespace: charley-fox
+  labels:
+    app: charley-fox
+    component: postgres
+spec:
+  type: ClusterIP
+  clusterIP: None
+  selector:
+    app: charley-fox
+    component: postgres
+  ports:
+  - name: postgres
+    port: 5432
+    targetPort: 5432
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-init-scripts
+  namespace: charley-fox
+data:
+  01-init.sql: |
+    CREATE TABLE IF NOT EXISTS sessions (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        party_name VARCHAR(255) NOT NULL DEFAULT 'Charley Fox Guild',
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        completed_quests TEXT[] DEFAULT '{}',
+        gold INTEGER DEFAULT 0,
+        heat INTEGER DEFAULT 28,
+        progress INTEGER DEFAULT 0,
+        notes TEXT DEFAULT '',
+        current_phase VARCHAR(50) DEFAULT 'opening'
+    );
+    
+    CREATE INDEX IF NOT EXISTS idx_sessions_created_at ON sessions(created_at);
+    CREATE INDEX IF NOT EXISTS idx_sessions_updated_at ON sessions(updated_at);

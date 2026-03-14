@@ -18,7 +18,10 @@ name = "a2a-mcp"
 version = "0.2.0"
 source = { editable = "." }
 dependencies = [
+<<<<<<< HEAD
+=======
     { name = "croniter" },
+>>>>>>> origin/main
     { name = "fastapi" },
     { name = "httpx" },
     { name = "jsonschema" },
@@ -29,7 +32,10 @@ dependencies = [
     { name = "pydantic-settings" },
     { name = "pyjwt" },
     { name = "python-dotenv" },
+<<<<<<< HEAD
+=======
     { name = "pyyaml" },
+>>>>>>> origin/main
     { name = "requests" },
     { name = "scipy" },
     { name = "sqlalchemy" },
@@ -40,7 +46,10 @@ dependencies = [
 dev = [
     { name = "pytest" },
     { name = "pytest-asyncio" },
+<<<<<<< HEAD
+=======
     { name = "pytest-cov" },
+>>>>>>> origin/main
 ]
 integrations = [
     { name = "aiohttp" },
@@ -53,7 +62,10 @@ integrations = [
 [package.metadata]
 requires-dist = [
     { name = "aiohttp", marker = "extra == 'integrations'" },
+<<<<<<< HEAD
+=======
     { name = "croniter" },
+>>>>>>> origin/main
     { name = "fastapi" },
     { name = "google-generativeai", marker = "extra == 'integrations'" },
     { name = "httpx" },
@@ -69,10 +81,15 @@ requires-dist = [
     { name = "pynacl", marker = "extra == 'integrations'" },
     { name = "pytest", marker = "extra == 'dev'" },
     { name = "pytest-asyncio", marker = "extra == 'dev'" },
+<<<<<<< HEAD
+    { name = "python-dotenv" },
+    { name = "requests" },
+=======
     { name = "pytest-cov", marker = "extra == 'dev'" },
     { name = "python-dotenv" },
     { name = "pyyaml" },
     { name = "requests", specifier = ">=2.31.0" },
+>>>>>>> origin/main
     { name = "scipy" },
     { name = "sqlalchemy" },
     { name = "uvicorn" },
@@ -499,6 +516,8 @@ wheels = [
 ]
 
 [[package]]
+<<<<<<< HEAD
+=======
 name = "coverage"
 version = "7.13.4"
 source = { registry = "https://pypi.org/simple" }
@@ -616,6 +635,7 @@ wheels = [
 ]
 
 [[package]]
+>>>>>>> origin/main
 name = "cryptography"
 version = "46.0.5"
 source = { registry = "https://pypi.org/simple" }
@@ -685,7 +705,11 @@ wheels = [
 
 [[package]]
 name = "fastapi"
+<<<<<<< HEAD
+version = "0.135.0"
+=======
 version = "0.135.1"
+>>>>>>> origin/main
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "annotated-doc" },
@@ -694,9 +718,15 @@ dependencies = [
     { name = "typing-extensions" },
     { name = "typing-inspection" },
 ]
+<<<<<<< HEAD
+sdist = { url = "https://files.pythonhosted.org/packages/a2/b5/386a9579a299a32365b34097e4eac6a0544ce0d7aa4bb95ce0d71607a999/fastapi-0.135.0.tar.gz", hash = "sha256:bd37903acf014d1284bda027096e460814dca9699f9dacfe11c275749d949f4d", size = 393855, upload-time = "2026-03-01T09:28:46.714Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/56/38/fa5dd0e677e1e2e38f858933c4a125e80103e551151f1f661dd4f227210d/fastapi-0.135.0-py3-none-any.whl", hash = "sha256:31e2ddc78d6406c6f7d5d7b9996a057985e2600fbe7e9ba6ace8205d48dff688", size = 114496, upload-time = "2026-03-01T09:28:48.162Z" },
+=======
 sdist = { url = "https://files.pythonhosted.org/packages/e7/7b/f8e0211e9380f7195ba3f3d40c292594fd81ba8ec4629e3854c353aaca45/fastapi-0.135.1.tar.gz", hash = "sha256:d04115b508d936d254cea545b7312ecaa58a7b3a0f84952535b4c9afae7668cd", size = 394962, upload-time = "2026-03-01T18:18:29.369Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/e4/72/42e900510195b23a56bde950d26a51f8b723846bfcaa0286e90287f0422b/fastapi-0.135.1-py3-none-any.whl", hash = "sha256:46e2fc5745924b7c840f71ddd277382af29ce1cdb7d5eab5bf697e3fb9999c9e", size = 116999, upload-time = "2026-03-01T18:18:30.831Z" },
+>>>>>>> origin/main
 ]
 
 [[package]]
@@ -2175,6 +2205,8 @@ wheels = [
 ]
 
 [[package]]
+<<<<<<< HEAD
+=======
 name = "pytest-cov"
 version = "7.0.0"
 source = { registry = "https://pypi.org/simple" }
@@ -2189,6 +2221,7 @@ wheels = [
 ]
 
 [[package]]
+>>>>>>> origin/main
 name = "python-dateutil"
 version = "2.9.0.post0"
 source = { registry = "https://pypi.org/simple" }
@@ -2219,6 +2252,8 @@ wheels = [
 ]
 
 [[package]]
+<<<<<<< HEAD
+=======
 name = "pytz"
 version = "2026.1.post1"
 source = { registry = "https://pypi.org/simple" }
@@ -2228,6 +2263,7 @@ wheels = [
 ]
 
 [[package]]
+>>>>>>> origin/main
 name = "pywin32"
 version = "311"
 source = { registry = "https://pypi.org/simple" }
@@ -2247,6 +2283,8 @@ wheels = [
 ]
 
 [[package]]
+<<<<<<< HEAD
+=======
 name = "pyyaml"
 version = "6.0.3"
 source = { registry = "https://pypi.org/simple" }
@@ -2302,6 +2340,7 @@ wheels = [
 ]
 
 [[package]]
+>>>>>>> origin/main
 name = "referencing"
 version = "0.37.0"
 source = { registry = "https://pypi.org/simple" }
@@ -2632,6 +2671,8 @@ wheels = [
 ]
 
 [[package]]
+<<<<<<< HEAD
+=======
 name = "tomli"
 version = "2.4.0"
 source = { registry = "https://pypi.org/simple" }
@@ -2686,6 +2727,7 @@ wheels = [
 ]
 
 [[package]]
+>>>>>>> origin/main
 name = "tqdm"
 version = "4.67.3"
 source = { registry = "https://pypi.org/simple" }

@@ -1,0 +1,70 @@
+{
+  "capsule_id": "capsule.rehearsal.boo.v2",
+  "type": "RehearsalCapsule",
+  "version": "2.0.0",
+  "issued_at": "2025-10-01T00:05:00Z",
+  "purpose": "Stage a synchronized rehearsal across all Boo shards prior to sovereign deployment.",
+  "stages": [
+    {
+      "phase": "sync-call",
+      "description": "Assemble shards on the braid and lock pose alignment.",
+      "overlays": ["hud.overlay.queenboo.command.v1", "hud.overlay.cici.telemetry.v1"],
+      "telemetry": {
+        "clock": "hud.qdot.delta",
+        "pose_lock": "fluid-stance-v1"
+      }
+    },
+    {
+      "phase": "sensory-chorus",
+      "description": "Run multi-modal choreography with LoRA weight blending for cross-modal verification.",
+      "modalities": [
+        {
+          "name": "governance",
+          "shard": "QueenBoo",
+          "script": "relay.scene.directive.v1"
+        },
+        {
+          "name": "telemetry",
+          "shard": "CiCi",
+          "script": "wave.glyph.sync.v2"
+        },
+        {
+          "name": "audit",
+          "shard": "Spryte",
+          "script": "seal.trace rehearsal"
+        },
+        {
+          "name": "ignition",
+          "shard": "Gloh",
+          "script": "spark.loop rehearsal"
+        }
+      ]
+    },
+    {
+      "phase": "quorum-check",
+      "description": "Validate Merkle rehearsal outputs and simulate Boos quorum signatures.",
+      "artifacts": {
+        "merkle_root": "mock:rehearsal-root",
+        "ledger_entry": "ops/v7_seal_root.sh --dry-run"
+      }
+    },
+    {
+      "phase": "debrief",
+      "description": "Collect sensory deltas, adjust LoRA weights, and finalize braid offsets before ignition.",
+      "outputs": [
+        "boo.lora.map.v1",
+        "capsule.relay.scene.fork.v2"
+      ]
+    }
+  ],
+  "hooks": {
+    "on_start": "wave.glyph",
+    "on_complete": "scrollstream.append rehearsal.log"
+  },
+  "attestation": {
+    "status": "STAGED",
+    "sealed_by": null,
+    "sealed_at": null,
+    "content_hash": "sha256:TO_COMPUTE"
+  }
+}

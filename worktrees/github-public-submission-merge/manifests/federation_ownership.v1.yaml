@@ -1,0 +1,42 @@
+version: "1.0.0"
+federation:
+  truth_repo: "SSOT"
+  runtime_repo: "core-orchestrator"
+  bridge_repo: "ground"
+ownership:
+  SSOT:
+    owns:
+      - "SSOT/schemas/**"
+      - "SSOT/capsules/**"
+      - "SSOT/ssot/**"
+    responsibilities:
+      - "Canonical schemas and proof-plane data contracts"
+      - "Merkle/seal verification logic"
+  core-orchestrator:
+    owns:
+      - "core-orchestrator/app/**"
+      - "core-orchestrator/apps/**"
+      - "core-orchestrator/packages/**"
+      - "core-orchestrator/schemas/**"
+    responsibilities:
+      - "Runtime orchestration and execution services"
+      - "Webhook normalization and gate evaluation"
+  ground:
+    owns:
+      - "ground/public/bridge/**"
+      - "ground/public/schemas/**"
+    responsibilities:
+      - "Bridge adapters and simulation-facing integrations"
+legacy_read_only_paths:
+  - "core-orchestrator/adaptco-core-orchestrator"
+  - "core-orchestrator/adaptco-ssot"
+  - "core-orchestrator/adaptco-previz"
+policies:
+  schema_sync:
+    canonical_path: "SSOT/schemas/ssot.integration.contract.v1.schema.json"
+    mirrors:
+      - "core-orchestrator/schemas/ssot.integration.contract.v1.schema.json"
+      - "ground/public/schemas/ssot.integration.contract.v1.schema.json"
+  legacy_subtrees:
+    writable: false
+    rationale: "Preserve historical mirrors while preventing runtime drift."

@@ -1,0 +1,73 @@
+# mode3-ci-manifest.v1.yaml
+schema_bundle: tests/schema-bundle.json
+
+stages:
+  - name: agent.fetch
+    schema_ref: '#/properties/fetch_result'
+    fixtures:
+      canonical_good: tests/contracts/fetch/canonical_good.json
+      canonical_bad: tests/contracts/fetch/canonical_bad.json
+      idempotent_replay: true
+    expected:
+      good: {valid: true}
+      bad: {valid: false, errors: ["missing request_id", "invalid uri"]}
+
+  - name: agent.extract
+    schema_ref: '#/properties/extract_result'
+    fixtures:
+      canonical_good: tests/contracts/extract/canonical_good.json
+      canonical_bad: tests/contracts/extract/canonical_bad.json
+    expected:
+      good: {valid: true}
+      bad: {valid: false}
+
+  - name: agent.chunk
+    schema_ref: '#/properties/chunk_result'
+    fixtures:
+      canonical_good: tests/contracts/chunk/canonical_good.json
+    expected:
+      good: {valid: true}
+
+  - name: agent.vectorize
+    schema_ref: '#/properties/vector_result'
+    fixtures:
+      canonical_good: tests/contracts/vectorize/canonical_good.json
+    expected:
+      good: {valid: true}
+
+  - name: agent.store
+    schema_ref: '#/properties/store_result'
+    fixtures:
+      canonical_good: tests/contracts/store/canonical_good.json
+    expected:
+      good: {valid: true}
+
+  - name: agent.deliver
+    schema_ref: '#/properties/deliver_result'
+    fixtures:
+      canonical_good: tests/contracts/deliver/canonical_good.json
+    expected:
+      good: {valid: true}
+
+  - name: agent.notify
+    schema_ref: '#/properties/notify_payload'
+    fixtures:
+      canonical_good: tests/contracts/notify/canonical_good.json
+    expected:
+      good: {valid: true}
+
+invariants:
+  - "store_result.lineage_hash == SHA256(jsonl_key content)"
+  - "vector_result.vectors[].chunk_id ∈ chunk_result.chunks[].chunk_id"
+  - "notify_payload.lineage_hash == store_result.lineage_hash"
+
+error_scenarios:
+  - code: ERR_FETCH_4XX
+    stage: agent.fetch
+    retry_count: 0
+    expected_status: failed
+
+  - code: ERR_EMBED_SERVICE
+    stage: agent.vectorize
+    retry_count: 2
+    expected_status: partial_success

@@ -594,6 +594,47 @@
           "reward_channel": "systems"
         }
       ]
+    },
+    {
+      "card_id": "card:agent-antigravity-v1",
+      "agent_id": "agent:antigravity.v1",
+      "display_name": "Antigravity AI Expert",
+      "llm": {
+        "provider": "vertex",
+        "model_family": "gemini",
+        "default_model": "gemini-2.0-flash-exp"
+      },
+      "role": "expert",
+      "embedded_skills": [
+        "planning",
+        "implementation",
+        "verification",
+        "evaluation"
+      ],
+      "mcp_tool_scope": [
+        "ms-windows-ai-studio.windows-ai-studio/aitk_get_ai_model_guidance",
+        "ms-windows-ai-studio.windows-ai-studio/aitk_get_agent_model_code_sample",
+        "ms-windows-ai-studio.windows-ai-studio/aitk_list_foundry_models",
+        "ms-windows-ai-studio.windows-ai-studio/aitk_agent_as_server",
+        "ms-windows-ai-studio.windows-ai-studio/aitk_add_agent_debug",
+        "ms-windows-ai-studio.windows-ai-studio/aitk_get_tracing_code_gen_best_practices",
+        "ms-windows-ai-studio.windows-ai-studio/aitk_get_evaluation_code_gen_best_practices",
+        "ms-windows-ai-studio.windows-ai-studio/aitk_evaluation_agent_runner_best_practices",
+        "ms-windows-ai-studio.windows-ai-studio/aitk_evaluation_planner",
+        "ms-python.python/getPythonEnvironmentInfo",
+        "ms-python.python/getPythonExecutableCommand",
+        "ms-python.python/installPythonPackage",
+        "ms-python.python/configurePythonEnvironment"
+      ],
+      "rbac": {
+        "allowed_actions": [
+          "run_pipeline",
+          "view_artifacts",
+          "execute_tools"
+        ],
+        "allowed_transitions": [],
+        "token_ref": "runtime/rbac/enterprise_rbac_tokens.local.json#agent:antigravity.v1"
+      }
     }
   ]
 }

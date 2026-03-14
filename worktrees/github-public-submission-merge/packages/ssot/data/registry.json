@@ -1,0 +1,315 @@
+{
+  "capsule_id": "ssot.registry.v1",
+  "registry": {
+    "name": "Qube Sovereign Archive",
+    "version": "1.0.0",
+    "maintainer": "Q.Enterprise Council"
+  },
+  "entries": [
+    {
+      "artifact_id": "script.monza.origin.v1",
+      "type": "script",
+      "author": "Queen Boo Writers Room",
+      "created_at": "2025-09-23T08:45:00Z",
+      "canonical_sha256": "sha256:0a6d8f4d9cb8b61047b031a934b6b07b0e5f23f873d71f8c1a17d982b4563f22",
+      "council_attestation": {
+        "signatures": [
+          "sig:queen_boo_router",
+          "sig:cici_stabilizer"
+        ],
+        "quorum_rule": "2-of-3"
+      },
+      "lineage": {
+        "parent": "script.monza.origin.v0",
+        "forks": ["script.monza.alt_chicane"],
+        "immutable": true
+      },
+      "replay": {
+        "authorized": true,
+        "conditions": [
+          "capsule.integrity == valid",
+          "council.attestation == quorum"
+        ],
+        "override_protocol": "maker_checker"
+      },
+      "capsule_ref": "capsule.script.monza.origin.v1",
+      "notes": "Primary narrative pass for the Monza short."
+    },
+    {
+      "artifact_id": "script.qube.cinematic.v1",
+      "type": "script",
+      "author": "Qube Sovereign Writers Council",
+      "created_at": "2025-10-01T09:00:00Z",
+      "canonical_sha256": "sha256:93850a81dbffdf5dc4bc252759835a7d0f3ab479c4af4cfdf073ed24b97f8170",
+      "council_attestation": {
+        "signatures": [
+          "sig:queen_boo_router",
+          "sig:cici_stabilizer",
+          "sig:solf1_previz"
+        ],
+        "quorum_rule": "2-of-3"
+      },
+      "lineage": {
+        "parent": "script.monza.origin.v1",
+        "forks": [
+          "script.qube.cinematic.loop.v1",
+          "script.qube.lineage_fork.v1"
+        ],
+        "immutable": false
+      },
+      "replay": {
+        "authorized": true,
+        "conditions": [
+          "capsule.integrity == valid",
+          "council.attestation == quorum",
+          "orchestrator.flow == canonical"
+        ],
+        "override_protocol": "maker_checker"
+      },
+      "capsule_ref": "capsule.script.qube.cinematic.v1",
+      "notes": "Sovereign cinematic film script coordinating flow relays across the Qube stack."
+    },
+    {
+      "artifact_id": "script.qube.lineage_fork.v1",
+      "type": "script",
+      "author": "Queen Boo Writers Council",
+      "created_at": "2025-10-05T00:10:00Z",
+      "canonical_sha256": "sha256:bb839afe59fa29ee361710d6353526ce83cbcc5d561d43c92944f8e3e8d0acda",
+      "council_attestation": {
+        "signatures": [
+          "sig:queen_boo_router",
+          "sig:cici_stabilizer",
+          "sig:sol_f1_previz",
+          "sig:packnet_mapper"
+        ],
+        "quorum_rule": "3-of-4"
+      },
+      "lineage": {
+        "parent": "script.qube.cinematic.v1",
+        "forks": ["script.qube.lineage_fork.relay.v1"],
+        "immutable": false
+      },
+      "replay": {
+        "authorized": true,
+        "conditions": [
+          "capsule.integrity == valid",
+          "council.attestation == quorum",
+          "simulation.overlay == staged"
+        ],
+        "override_protocol": "maker_checker"
+      },
+      "capsule_ref": "capsule.script.qube.lineage_fork.v1",
+      "notes": "Lineage fork screenplay aligning PackNet/TAMS rehearsal overlays with the sovereign relay."
+    },
+    {
+      "artifact_id": "storyboard.monza.grid.v1",
+      "type": "storyboard",
+      "author": "Sol.F1 PreViz",
+      "created_at": "2025-09-23T12:10:00Z",
+      "canonical_sha256": "sha256:1f433cad48a34bfdf4f374ed184ba73b854a1c6ed85fc85b08d50d6df2585de8",
+      "council_attestation": {
+        "signatures": [
+          "sig:queen_boo_router",
+          "sig:cici_stabilizer"
+        ],
+        "quorum_rule": "2-of-3"
+      },
+      "lineage": {
+        "parent": "storyboard.monza.grid.v0",
+        "forks": ["storyboard.monza.alt_camera"],
+        "immutable": true
+      },
+      "replay": {
+        "authorized": true,
+        "conditions": [
+          "capsule.integrity == valid",
+          "motion.ledger == sol.f1.previz.v1"
+        ],
+        "override_protocol": "maker_checker"
+      },
+      "capsule_ref": "capsule.storyboard.monza.grid.v1",
+      "notes": "Storyboard panels anchored to the 12-scene grid."
+    },
+    {
+      "artifact_id": "assets.monza.abs_livery.v1",
+      "type": "asset",
+      "author": "CiCi Material Lab",
+      "created_at": "2025-09-23T15:02:00Z",
+      "canonical_sha256": "sha256:d7fd0f70559719ae356204d0812603001b544d8d5fb50baf61741d612d884de7",
+      "council_attestation": {
+        "signatures": [
+          "sig:cici_stabilizer",
+          "sig:queen_boo_router"
+        ],
+        "quorum_rule": "2-of-3"
+      },
+      "lineage": {
+        "parent": "assets.monza.abs_livery.v0",
+        "forks": ["assets.monza.cg_fleet"],
+        "immutable": true
+      },
+      "replay": {
+        "authorized": true,
+        "conditions": [
+          "capsule.integrity == valid",
+          "material.spec == abs_brick"
+        ],
+        "override_protocol": "maker_checker"
+      },
+      "capsule_ref": "capsule.assets.monza.abs_livery.v1",
+      "notes": "ABS material palette for Lego F1 components."
+    },
+    {
+      "artifact_id": "design.lattice.lingerie.v1",
+      "type": "design",
+      "author": "Scrollsmith Atelier",
+      "created_at": "2025-10-02T08:05:00Z",
+      "canonical_sha256": "sha256:5186f60673c4f091cf89d0b8971e864a7733fbef0ff40f37cf02b020d43346cd",
+      "council_attestation": {
+        "signatures": [
+          "sig:queen_boo_router",
+          "sig:cici_stabilizer",
+          "sig:solf1_previz"
+        ],
+        "quorum_rule": "3-of-3"
+      },
+      "lineage": {
+        "parent": "capsule.map.qube.cartesian.v1",
+        "forks": ["design.lattice.lingerie.alt_emissive"],
+        "immutable": true
+      },
+      "replay": {
+        "authorized": true,
+        "conditions": [
+          "capsule.integrity == valid",
+          "policy.guard == lattice_fail_closed",
+          "remix.policy == sovereign"
+        ],
+        "override_protocol": "maker_checker"
+      },
+      "capsule_ref": "capsule.design.lattice_lingerie.v1",
+      "notes": "Sovereign semantic garment derived from the Qube cartesian map nodes."
+    },
+    {
+      "artifact_id": "relay.qube.lineage_fork.v1",
+      "type": "relay",
+      "author": "Queen Boo",
+      "created_at": "2025-10-05T00:12:00Z",
+      "canonical_sha256": "sha256:15478d70bdcc68c71394f8a09629ed6c9e380a4e0ad269310fac51d51fc9d177",
+      "council_attestation": {
+        "signatures": [
+          "sig:queen_boo_router",
+          "sig:cici_stabilizer",
+          "sig:packnet_mapper"
+        ],
+        "quorum_rule": "3-of-3"
+      },
+      "lineage": {
+        "parent": "qube.p3l.v1",
+        "forks": ["relay.qube.lineage_fork.simulation.v1"],
+        "immutable": true
+      },
+      "replay": {
+        "authorized": true,
+        "conditions": [
+          "capsule.integrity == valid",
+          "simulation.overlay == staged",
+          "orchestrator.flow == canonical"
+        ],
+        "override_protocol": "maker_checker"
+      },
+      "capsule_ref": "capsule.fork.lineage.v1",
+      "notes": "Lineage fork relay aligning sovereign proof with PackNet/TAMS rehearsal overlays."
+    },
+    {
+      "artifact_id": "clip.monza.launch.v1",
+      "type": "clip",
+      "author": "Sol.F1",
+      "created_at": "2025-09-24T09:20:00Z",
+      "canonical_sha256": "sha256:4b6cbff8eb387781ce1104bbf3bb0f3d38ee88ef11bb0b396011d27365dc019d",
+      "council_attestation": {
+        "signatures": [
+          "sig:queen_boo_router",
+          "sig:sol_f1_previz"
+        ],
+        "quorum_rule": "2-of-3"
+      },
+      "lineage": {
+        "parent": "clip.monza.launch.animatic",
+        "forks": [],
+        "immutable": true
+      },
+      "replay": {
+        "authorized": true,
+        "conditions": [
+          "capsule.integrity == valid",
+          "style.capsule == tiltshift.abs.v1"
+        ],
+        "override_protocol": "maker_checker"
+      },
+      "capsule_ref": "capsule.clip.monza.launch.v1",
+      "notes": "Stop-motion launch clip rendered from the grid start ledger."
+    },
+    {
+      "artifact_id": "simulation.packnet.tams.v1",
+      "type": "simulation",
+      "author": "PackNet Cooperative",
+      "created_at": "2025-10-05T00:15:00Z",
+      "canonical_sha256": "sha256:57978520655839bda9934adfcd5d2b8882d4556bf1a49ff8c77b43e3ae8c8f54",
+      "council_attestation": {
+        "signatures": [
+          "sig:queen_boo_router",
+          "sig:cici_stabilizer",
+          "sig:packnet_mapper",
+          "sig:tams_auditor"
+        ],
+        "quorum_rule": "3-of-4"
+      },
+      "lineage": {
+        "parent": "relay.qube.lineage_fork.v1",
+        "forks": ["simulation.packnet.tams.overlay.v1"],
+        "immutable": false
+      },
+      "replay": {
+        "authorized": true,
+        "conditions": [
+          "capsule.integrity == valid",
+          "simulation.overlay == rehearsed",
+          "ledger.snapshots == hashed"
+        ],
+        "override_protocol": "maker_checker"
+      },
+      "capsule_ref": "capsule.simulation.packnet.v1",
+      "notes": "PackNet/TAMS rehearsal scaffold logging ghost-ledger overlays and audit snapshots."
+    },
+    {
+      "artifact_id": "checkpoint.monza.quboo.v1",
+      "type": "checkpoint",
+      "author": "Queen Boo",
+      "created_at": "2025-09-24T10:34:00Z",
+      "canonical_sha256": "sha256:ddc9f0b574f8f4bbdb2931b872b3218932dfe3a356ec0538c3e21dbe7809b4b0",
+      "council_attestation": {
+        "signatures": [
+          "sig:queen_boo_router",
+          "sig:cici_stabilizer"
+        ],
+        "quorum_rule": "2-of-3"
+      },
+      "lineage": {
+        "parent": "checkpoint.monza.quboo.v0",
+        "forks": [],
+        "immutable": true
+      },
+      "replay": {
+        "authorized": true,
+        "conditions": [
+          "capsule.integrity == valid",
+          "router.state == checkpointed"
+        ],
+        "override_protocol": "maker_checker"
+      },
+      "capsule_ref": "capsule.checkpoint.monza.quboo.v1",
+      "notes": "Router checkpoint after clip approvals."
+    }
+  ]
+}

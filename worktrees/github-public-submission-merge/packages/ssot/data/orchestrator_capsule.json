@@ -1,0 +1,26 @@
+{
+  "capsule_id": "qube.orchestrator.v1",
+  "router": {
+    "avatar": "queen_boo",
+    "checkpoint_ref": "queen_boo.chkpt.2025-09-24T10:34Z",
+    "policies": ["maker_checker", "no_drift", "ssot_enforced", "simulation_ready"]
+  },
+  "stabilizer": {
+    "avatar": "cici",
+    "payload_register": {
+      "emotional_tone": "resolute",
+      "guidance_vector": "tiltshift.abs",
+      "stability": "high",
+      "simulation_overlay": "packnet_tams"
+    }
+  },
+  "flow_order": [
+    "script_capsule",
+    "storyboard_capsule",
+    "asset_capsule",
+    "motion_ledger",
+    "clip_capsule",
+    "relay_capsule",
+    "simulation_overlay"
+  ]
+}

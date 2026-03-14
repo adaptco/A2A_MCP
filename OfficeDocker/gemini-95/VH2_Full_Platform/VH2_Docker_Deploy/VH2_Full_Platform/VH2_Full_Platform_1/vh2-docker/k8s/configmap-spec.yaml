@@ -1,0 +1,50 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vh2-spec
+  namespace: vh2-prod
+  labels:
+    app.kubernetes.io/name: vh2-sovereign-validator
+    app.kubernetes.io/component: config
+data:
+  # ── CANONICAL SPEC (fail-closed — any mutation = SYSTEM HALT) ──────────
+  VH2_SCHEMA:          "VH2_Full_v1"
+  SPOKE_COUNT:         "5"
+  RIM_DIAMETER_IN:     "19"
+  FRONT_ET_MM:         "29"
+  REAR_ET_MM:          "22"
+  KPI_DEG:             "12.5"
+  SCRUB_RADIUS_MM:     "45"
+  C5_SECTOR_DEG:       "72"
+  CONCAVITY_FRONT:     "0.150"
+  CONCAVITY_REAR:      "0.185"
+  WHEELBASE_MM:        "2600"
+  TRACK_MM:            "1460"
+  MATERIAL:            "RSM_PBR_D4AF37"
+  SOVEREIGNTY:         "SAINTLY_HONESTY_TRUE"
+
+  # ── METROLOGICAL INVARIANTS ────────────────────────────────────────────
+  HAN_EIGENVALUE_MM:   "0.82"
+  HAUSDORFF_MM:        "0.20"
+  ISING_UNIVERSALITY:  "0.9982"
+
+  # ── SPEC JSON (used by validator init container) ───────────────────────
+  spec.json: |
+    {
+      "schema":          "VH2_Full_v1",
+      "spoke_count":     5,
+      "rim_diameter_in": 19,
+      "front_et_mm":     29,
+      "rear_et_mm":      22,
+      "kpi_deg":         12.5,
+      "scrub_radius_mm": 45,
+      "c5_sector_deg":   72,
+      "concavity_front": 0.150,
+      "concavity_rear":  0.185,
+      "wheelbase_mm":    2600,
+      "track_mm":        1460,
+      "material":        "RSM_PBR_D4AF37",
+      "sovereignty":     "SAINTLY_HONESTY_TRUE",
+      "han_eigenvalue":  0.82,
+      "hausdorff_mm":    0.20
+    }

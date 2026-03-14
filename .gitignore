@@ -60,9 +60,38 @@ specs/tmpclaude-*-cwd
 test_output*.txt
 test_results*.txt
 test_full_output*.txt
+test_fail*.txt
+test_webhook_err*.txt
+test_ghost.txt
+test_mcp.txt
+test_runtime.txt
+test_catalog_result.txt
+test_gemini_*.txt
+rbac_test_output.txt
 
-# Pytest
+# Pytest logs and dumps
 .pytest_cache/
+pytest_full_run*.log
+pytest_failures.txt
+pytest_full_output.txt
+pytest_output.txt
+pytest_path.txt
+pytest_sys_path.txt
+pytest_runtime_trace.txt
+pytest_final_summary.log
+full_test_result*.txt
+
+# Patch files (should never be committed)
+*.patch
+
+# Database dump snapshots (committed db lives in data/ only)
+a2a_mcp.db
+fossil_chain.db
+
+# Misc accumulated junk
+learnings.txt
+branches.txt
+refs.txt
 
 # Spectral & API-Diff caches
 .spectral/

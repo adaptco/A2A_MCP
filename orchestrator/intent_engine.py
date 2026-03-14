@@ -235,6 +235,16 @@ class IntentEngine:
             ))
             artifact_ids.append(test_id)
 
+<<<<<<< HEAD
+            pinn_id = str(uuid.uuid4())
+            token = await self.pinn.ingest_artifact(artifact_id=pinn_id, content=artifact.content, parent_id=artifact.artifact_id)
+            self.db.save_artifact(SimpleNamespace(
+                artifact_id=pinn_id, parent_artifact_id=artifact.artifact_id,
+                agent_name=self.pinn.agent_name, version="1.0.0", type="vector_token",
+                content=token.model_dump_json(), metadata={}
+            ))
+            artifact_ids.append(pinn_id)
+=======
             # 3. Save Test Report
             test_artifact_id = str(uuid.uuid4())
             report_artifact = MCPArtifact(
@@ -247,6 +257,7 @@ class IntentEngine:
             )
             self.db.save_artifact(report_artifact)
             artifact_ids.append(test_artifact_id)
+>>>>>>> origin/main
 
             # 4. Ingest into PINN (Vector Store)
             pinn_artifact_id = str(uuid.uuid4())

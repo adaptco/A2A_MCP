@@ -1,0 +1,172 @@
+##############################################################################
+# VH2 — PrometheusRule (Alertmanager rules)
+# All alert expressions reference ONLY metrics that actually exist in /metrics:
+#   vh2_validator_requests_total{result=...}
+#   vh2_validator_system_halt_total{constraint=...}
+#   vh2_validator_latency_ms_bucket / _sum / _count
+#   vh2_endpoint_requests_total{endpoint=...}
+#   vh2_process_uptime_ms
+##############################################################################
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: dev-vh2-alerts
+  namespace: vh2-dev
+  labels:
+    release: prometheus
+    app.kubernetes.io/name: vh2-sovereign-validator
+    environment: dev
+spec:
+  groups:
+
+    # ── GROUP 1: Validation correctness ──────────────────────────────────────
+    - name: vh2.validation
+      interval: 30s
+      rules:
+
+        # Any SYSTEM_HALT reaching the endpoint is worth knowing about in dev
+        - alert: VH2SystemHaltDetected
+          expr: |
+            rate(vh2_validator_requests_total{result="system_halt"}[5m]) > 0
+          for: 0m    # fire immediately — no tolerance in dev
+          labels:
+            severity: warning
+            namespace: vh2-dev
+          annotations:
+            summary: "VH2 SYSTEM_HALT: constraint violation detected"
+            description: >
+              POST /api/validate is returning SYSTEM_HALT.
+              Check vh2_validator_system_halt_total{constraint=...} for which
+              constraint is being violated.
+              Rate: {{ $value | humanize }} halts/sec
+
+        # Which constraint is most frequently violated
+        - alert: VH2ConstraintViolationFrequent
+          expr: |
+            topk(1,
+              rate(vh2_validator_system_halt_total[5m])
+            ) > 0.1
+          for: 2m
+          labels:
+            severity: warning
+            namespace: vh2-dev
+          annotations:
+            summary: "VH2 constraint {{ $labels.constraint }} violated frequently"
+            description: >
+              Constraint '{{ $labels.constraint }}' is being violated at
+              {{ $value | humanizePercentage }} of validate requests over 5m.
+
+        # Zero traffic for 5 min (endpoint may be down or misconfigured)
+        - alert: VH2ValidatorNoTraffic
+          expr: |
+            rate(vh2_validator_requests_total[5m]) == 0
+              and on() (vh2_process_uptime_ms / 1000) > 300
+          for: 5m
+          labels:
+            severity: info
+            namespace: vh2-dev
+          annotations:
+            summary: "VH2 validator receiving no traffic"
+            description: >
+              No requests to POST /api/validate in the last 5 minutes,
+              but the process has been up for >5 minutes.
+
+    # ── GROUP 2: Latency ─────────────────────────────────────────────────────
+    - name: vh2.latency
+      interval: 30s
+      rules:
+
+        # p99 latency > 50ms (validator is pure in-process, should be <5ms)
+        - alert: VH2ValidatorHighLatency
+          expr: |
+            histogram_quantile(0.99,
+              rate(vh2_validator_latency_ms_bucket[5m])
+            ) > 50
+          for: 2m
+          labels:
+            severity: warning
+            namespace: vh2-dev
+          annotations:
+            summary: "VH2 validator p99 latency > 50ms"
+            description: >
+              POST /api/validate p99 latency is {{ $value }}ms.
+              Validation is pure in-process (no I/O) — this suggests GC pause
+              or resource starvation. Check node CPU/memory.
+
+        # p99 > 100ms — more urgent
+        - alert: VH2ValidatorCriticalLatency
+          expr: |
+            histogram_quantile(0.99,
+              rate(vh2_validator_latency_ms_bucket[5m])
+            ) > 100
+          for: 1m
+          labels:
+            severity: critical
+            namespace: vh2-dev
+          annotations:
+            summary: "VH2 validator p99 latency > 100ms (critical)"
+            description: >
+              POST /api/validate p99 latency is {{ $value }}ms.
+              SLO breach threshold crossed.
+
+    # ── GROUP 3: Process health ───────────────────────────────────────────────
+    - name: vh2.process
+      interval: 60s
+      rules:
+
+        # Scrape target down (pod crashed or /metrics unreachable)
+        - alert: VH2BackendDown
+          expr: |
+            up{job="dev-vh2-backend"} == 0
+          for: 1m
+          labels:
+            severity: critical
+            namespace: vh2-dev
+          annotations:
+            summary: "VH2 backend scrape target is down"
+            description: >
+              Prometheus cannot scrape {{ $labels.instance }}.
+              Check pod status: kubectl get pods -n vh2-dev
+
+        # High error rate (5xx from /api/validate try/catch path)
+        - alert: VH2ValidatorInternalErrors
+          expr: |
+            rate(vh2_validator_requests_total{result="error"}[5m]) > 0
+          for: 0m
+          labels:
+            severity: critical
+            namespace: vh2-dev
+          annotations:
+            summary: "VH2 validator throwing internal errors"
+            description: >
+              The validate() function threw an uncaught exception.
+              This should never happen with valid JSON input — indicates
+              a code regression. Rate: {{ $value }}/sec.
+
+    # ── GROUP 4: Sovereign pass rate (SLO recording rule) ────────────────────
+    - name: vh2.slo
+      interval: 30s
+      rules:
+
+        # Recording rule: sovereign pass rate (ratio over 5m)
+        # Use this in Grafana dashboards as the primary SLO signal
+        - record: vh2:sovereign_pass_rate5m
+          expr: |
+            rate(vh2_validator_requests_total{result="sovereign_pass"}[5m])
+              /
+            rate(vh2_validator_requests_total[5m])
+
+        # Alert if pass rate drops below 80% (dev tolerance)
+        - alert: VH2LowSovereignPassRate
+          expr: |
+            vh2:sovereign_pass_rate5m < 0.80
+          for: 3m
+          labels:
+            severity: warning
+            namespace: vh2-dev
+          annotations:
+            summary: "VH2 sovereign pass rate < 80%"
+            description: >
+              Only {{ $value | humanizePercentage }} of validate requests
+              are returning SOVEREIGN_PASS over the last 5 minutes.
+              Check what specs are being submitted.

@@ -2,7 +2,11 @@
 
 from __future__ import annotations
 
+<<<<<<< HEAD
+from datetime import datetime, timezone
+=======
 from datetime import datetime, timedelta, timezone
+>>>>>>> origin/main
 import hashlib
 import json
 import threading
@@ -47,11 +51,15 @@ DEFAULT_CAPABILITIES = [
 
 
 def _now_iso() -> str:
+<<<<<<< HEAD
+    return datetime.now(timezone.utc).isoformat()
+=======
     return _utc_now().isoformat()
 
 
 def _utc_now() -> datetime:
     return datetime.now(timezone.utc)
+>>>>>>> origin/main
 
 
 def _sha256_text(value: str) -> str:
@@ -78,7 +86,11 @@ class A2AHandshakeService:
     def __init__(self, *, broker: A2AAuthBroker | None = None) -> None:
         self._broker = broker or A2AAuthBroker()
         self._handshakes: dict[str, A2AHandshakeEnvelope] = {}
+<<<<<<< HEAD
+        self._volatile_tokens: dict[str, dict[str, str]] = {}
+=======
         self._volatile_tokens: dict[str, dict[str, Any]] = {}
+>>>>>>> origin/main
         self._lock = threading.RLock()
 
     def init_handshake(
@@ -165,6 +177,11 @@ class A2AHandshakeService:
         )
         with self._lock:
             self._handshakes[handshake_id] = updated
+<<<<<<< HEAD
+            self._volatile_tokens[handshake_id] = {
+                "rbac_access_token": auth_result["rbac_access_token"],
+                "gemini_access_token": auth_result["gemini_access_token"],
+=======
             issued_at = _utc_now()
             proposal_ttl_seconds = max(int(proposal.ttl_seconds), 0)
             gemini_expires_in = max(int(auth_result.get("gemini_expires_in", 0)), 0)
@@ -174,6 +191,7 @@ class A2AHandshakeService:
                 "issued_at": issued_at,
                 "rbac_expires_at": issued_at + timedelta(seconds=proposal_ttl_seconds),
                 "gemini_expires_at": issued_at + timedelta(seconds=gemini_expires_in),
+>>>>>>> origin/main
             }
         return updated
 
@@ -192,7 +210,10 @@ class A2AHandshakeService:
                 }
             )
             self._handshakes[handshake_id] = updated
+<<<<<<< HEAD
+=======
             self._volatile_tokens.pop(handshake_id, None)
+>>>>>>> origin/main
             return updated
 
     def get_handshake(self, handshake_id: str) -> A2AHandshakeEnvelope:
@@ -206,6 +227,9 @@ class A2AHandshakeService:
         """Return volatile runtime tokens (never persisted in envelope artifacts)."""
 
         with self._lock:
+<<<<<<< HEAD
+            return dict(self._volatile_tokens.get(handshake_id, {}))
+=======
             envelope = self._handshakes.get(handshake_id)
             if envelope is None or envelope.status == "finalized":
                 self._volatile_tokens.pop(handshake_id, None)
@@ -228,6 +252,7 @@ class A2AHandshakeService:
                 "rbac_access_token": str(token_bundle["rbac_access_token"]),
                 "gemini_access_token": str(token_bundle["gemini_access_token"]),
             }
+>>>>>>> origin/main
 
     @staticmethod
     def _score_capabilities(
@@ -244,3 +269,7 @@ class A2AHandshakeService:
             cap_vector = _deterministic_vector([capability])
             scores[capability] = round(normalized_dot_product(query_vector, cap_vector), 8)
         return scores
+<<<<<<< HEAD
+
+=======
+>>>>>>> origin/main

@@ -1,0 +1,259 @@
+:root {
+    --pd-bg: #040B14;
+    --pd-panel: #070F1C;
+    --pd-panel-hi: #0C1828;
+    --pd-border: rgba(24, 216, 239, 0.09);
+    --pd-border-hi: rgba(24, 216, 239, 0.33);
+    --pd-cyan: #18d8ef;
+    --pd-green: #00c893;
+    --pd-amber: #ffb800;
+    --pd-red: #ff3d3d;
+    --pd-purple: #7c3aed;
+    --pd-text-hi: #f0f4f8;
+    --pd-text: #a0aec0;
+    --pd-dim: #4a5568;
+}
+
+.production-dashboard {
+    background: var(--pd-bg);
+    color: var(--pd-text);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.pd-header {
+    padding: 10px 20px;
+    background: rgba(12, 24, 40, 0.6);
+    border-bottom: 1px solid var(--pd-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+}
+
+.pd-header-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--pd-cyan);
+    letter-spacing: 2px;
+    text-shadow: 0 0 10px rgba(24, 216, 239, 0.4);
+}
+
+.pd-header-subtitle {
+    font-size: 8px;
+    color: var(--pd-dim);
+    letter-spacing: 1px;
+}
+
+.pd-kpi-container {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.pd-kpi-pill {
+    border-radius: 3px;
+    padding: 4px 12px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+}
+
+.pd-kpi-label {
+    font-size: 7px;
+    color: var(--pd-dim);
+    letter-spacing: 2px;
+}
+
+.pd-kpi-value {
+    font-size: 14px;
+}
+
+.pd-governance-status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border-radius: 3px;
+    padding: 4px 12px;
+}
+
+.pd-status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.pd-status-text {
+    font-size: 9px;
+    letter-spacing: 2px;
+}
+
+.pd-live-toggle {
+    font-size: 8px;
+    padding: 5px 10px;
+    cursor: pointer;
+    border-radius: 2px;
+    letter-spacing: 2px;
+    transition: all 0.2s;
+}
+
+.pd-main-grid {
+    display: grid;
+    grid-template-columns: 220px 1fr 1.6fr;
+    gap: 8px;
+    padding: 8px;
+    flex-shrink: 0;
+}
+
+.pd-panel {
+    border-radius: 4px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+}
+
+.pd-panel-header {
+    padding: 8px 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.pd-panel-title {
+    font-size: 9px;
+    letter-spacing: 3px;
+}
+
+.pd-stat-pill {
+    border-radius: 4px;
+    padding: 10px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.pd-stat-label {
+    font-size: 8px;
+    color: var(--pd-dim);
+    letter-spacing: 2px;
+}
+
+.pd-stat-value {
+    font-size: 18px;
+    line-height: 1;
+}
+
+.pd-intensity-cell {
+    height: 28px;
+    border-radius: 2px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s;
+    position: relative;
+}
+
+.pd-decision-row {
+    display: grid;
+    grid-template-columns: 70px 1fr 60px 64px 90px;
+    gap: 8px;
+    align-items: center;
+    padding: 6px 12px;
+    border-bottom: 1px solid var(--pd-border);
+}
+
+.pd-decision-header {
+    display: grid;
+    grid-template-columns: 70px 1fr 60px 64px 90px;
+    gap: 8px;
+    padding: 5px 12px;
+    border-bottom: 1px solid var(--pd-border);
+    font-size: 7px;
+    color: var(--pd-dim);
+    letter-spacing: 1px;
+    background: var(--pd-panel-hi);
+}
+
+.pd-injector-form {
+    padding: 10px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    height: 100%;
+}
+
+.pd-footer {
+    border-top: 1px solid var(--pd-border);
+    padding: 4px 20px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 7px;
+    color: var(--pd-dim);
+    flex-shrink: 0;
+}
+
+.pd-actions-container {
+    display: flex;
+    gap: 4px;
+    width: 100%;
+}
+
+.pd-btn-auto,
+.pd-btn-approve,
+.pd-btn-reject {
+    flex: 1;
+    padding: 3px 0;
+    background: transparent;
+    font-family: monospace;
+    font-size: 7px;
+    cursor: pointer;
+    border-radius: 2px;
+    letter-spacing: 1px;
+}
+
+.pd-btn-auto {
+    border: 1px solid rgba(24, 216, 239, 0.4);
+    background: rgba(24, 216, 239, 0.13);
+    color: var(--pd-cyan);
+}
+
+.pd-btn-approve {
+    border: 1px solid rgba(0, 200, 147, 0.4);
+    color: var(--pd-green);
+}
+
+.pd-btn-reject {
+    border: 1px solid rgba(255, 61, 61, 0.4);
+    color: var(--pd-red);
+}
+
+.pd-sealed-text {
+    font-family: monospace;
+    font-size: 7px;
+    color: var(--pd-dim);
+    width: 100%;
+    text-align: center;
+}
+
+@keyframes pulse {
+    0% {
+        opacity: 0.6;
+    }
+
+    50% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0.6;
+    }
+}

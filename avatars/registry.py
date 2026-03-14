@@ -3,7 +3,11 @@
 from __future__ import annotations
 
 from typing import Dict, Optional, List
+<<<<<<< HEAD
+from avatars.avatar import Avatar, AvatarProfile
+=======
 from avatars.avatar import Avatar, AvatarProfile, AvatarStyle
+>>>>>>> origin/main
 
 
 class AvatarRegistry:

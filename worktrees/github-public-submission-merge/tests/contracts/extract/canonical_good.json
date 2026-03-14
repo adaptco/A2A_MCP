@@ -1,0 +1,27 @@
+{
+  "request_id": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+  "source_ref": {
+    "url": "https://example.com/research-paper",
+    "tab_id": 42
+  },
+  "extracted_at": "2023-10-27T10:01:00Z",
+  "entities": [
+    {
+      "id": "ent-1",
+      "type": "organization",
+      "name": "Acme Corp",
+      "aliases": ["Acme"],
+      "confidence": "high"
+    }
+  ],
+  "evidence": [
+    {
+      "snippet": "Acme Corp announced...",
+      "offset": 105,
+      "provenance": {
+        "url": "https://example.com/research-paper",
+        "tab_id": 42
+      }
+    }
+  ]
+}

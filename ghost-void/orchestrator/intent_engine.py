@@ -14,7 +14,11 @@ from __future__ import annotations
 import logging
 import os
 from dataclasses import dataclass, field
+<<<<<<< HEAD
+from typing import Any, Dict, List, Optional
+=======
 from typing import Dict, List, Optional
+>>>>>>> origin/main
 
 from agents.architecture_agent import ArchitectureAgent
 from agents.coder import CoderAgent

@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "HandshakeRefusalV1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "request_id", "refused_at", "refusal"],
+  "properties": {
+    "schema_version": { "const": "handshake_refusal.v1" },
+    "request_id": { "type": "string", "minLength": 1 },
+    "refused_at": { "type": "number" },
+    "refusal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "message", "retryable"],
+      "properties": {
+        "code": {
+          "type": "string",
+          "enum": [
+            "invalid_request",
+            "unsupported_protocol",
+            "unauthorized",
+            "conflict",
+            "rate_limited",
+            "internal_error"
+          ]
+        },
+        "message": { "type": "string", "minLength": 1 },
+        "retryable": { "type": "boolean" },
+        "details": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "field": { "type": "string", "minLength": 1 },
+            "expected": { "type": "string", "minLength": 1 },
+            "received": { "type": "string", "minLength": 1 }
+          }
+        }
+      }
+    }
+  }
+}

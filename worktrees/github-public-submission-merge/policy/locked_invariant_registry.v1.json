@@ -1,0 +1,59 @@
+{
+  "schema_version": "locked_invariant_registry.v1",
+  "description": "Locked CI invariants with explicit pass/fail criteria.",
+  "invariants": [
+    {
+      "id": "INV-PR-ONLY-AUTOMATION-OUTPUT",
+      "name": "PR-only output policy for automation events",
+      "locked": true,
+      "hard": true,
+      "criteria": "For automation events (schedule/workflow_dispatch/repository_dispatch), AUTOMATION_OUTPUT_POLICY must equal 'pr-only'.",
+      "automation_events": [
+        "schedule",
+        "workflow_dispatch",
+        "repository_dispatch"
+      ],
+      "expected_policy": "pr-only"
+    },
+    {
+      "id": "INV-HERMETIC-FINGERPRINT",
+      "name": "Hermetic fingerprint match against router-pinned value",
+      "locked": true,
+      "hard": true,
+      "criteria": "HERMETIC_FINGERPRINT must be set and match ROUTER_PINNED_FINGERPRINT exactly."
+    },
+    {
+      "id": "INV-NO-OUTBOUND-NETWORK",
+      "name": "No outbound network in hermetic mode",
+      "locked": true,
+      "hard": true,
+      "criteria": "When HERMETIC_MODE=true, OUTBOUND_NETWORK_ALLOWED must be false."
+    },
+    {
+      "id": "INV-SECRET-SCAN-GATE",
+      "name": "Secret scan gate",
+      "locked": true,
+      "hard": true,
+      "criteria": "SECRET_SCAN_STATUS must indicate pass.",
+      "passing_values": [
+        "pass",
+        "passed",
+        "success"
+      ]
+    },
+    {
+      "id": "INV-POLICY-ZONING-QUORUM",
+      "name": "Policy-zoning reviewer quorum + required checks",
+      "locked": true,
+      "hard": true,
+      "criteria": "POLICY_ZONE_APPROVALS and POLICY_ZONE_QUORUM must be set and approvals must be >= quorum; POLICY_REQUIRED_CHECKS_PASSED must be true."
+    },
+    {
+      "id": "INV-DETERMINISTIC-ARTIFACT-HASH",
+      "name": "Deterministic artifact hash verification",
+      "locked": true,
+      "hard": true,
+      "criteria": "EXPECTED_ARTIFACT_HASH and ACTUAL_ARTIFACT_HASH must be set and equal exactly."
+    }
+  ]
+}

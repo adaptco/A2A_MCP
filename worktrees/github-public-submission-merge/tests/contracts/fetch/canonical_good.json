@@ -1,0 +1,16 @@
+{
+  "request_id": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+  "source": {
+    "url": "https://example.com/research-paper",
+    "tab_id": 42
+  },
+  "retrieved_at": "2023-10-27T10:00:00Z",
+  "content_type": "text/html",
+  "content_snippet": "<html><body><h1>Research Findings</h1>...</body></html>",
+  "full_content_pointer": "s3://bucket/raw/a1b2c3d4.html",
+  "http_status": 200,
+  "provenance": {
+    "fetch_agent": "browser-agent-v1",
+    "fetch_method": "headless-chrome"
+  }
+}

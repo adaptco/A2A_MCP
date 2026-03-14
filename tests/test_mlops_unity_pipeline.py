@@ -46,10 +46,14 @@ def test_offline_training_writes_dataset_path() -> None:
         summary_path = Path(result.trained_model_path) / "training_summary.json"
         summary_text = summary_path.read_text(encoding="utf-8")
         assert '"training_mode": "offline"' in summary_text
+<<<<<<< HEAD
+        assert str(dataset.resolve()) in summary_text
+=======
         assert dataset.resolve().as_posix() in summary_text
 
         assert '"merkle_seed": "0x1984_Q9"' in summary_text
         assert '"nested_alignment_report"' in summary_text
+>>>>>>> origin/main
 
 
 def test_offline_training_requires_dataset() -> None:
@@ -73,6 +77,8 @@ def test_offline_training_requires_dataset() -> None:
 
         assert result.status == "failed"
         assert "offline_dataset_path is required" in (result.error or "")
+<<<<<<< HEAD
+=======
 
 
 def test_merkle_hash_is_deterministic_for_same_inputs() -> None:
@@ -133,3 +139,4 @@ def test_invalid_alignment_slice_count_fails() -> None:
 
         assert result.status == "failed"
         assert "token_alignment_slices must be >= 1" in (result.error or "")
+>>>>>>> origin/main

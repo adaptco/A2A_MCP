@@ -1,0 +1,53 @@
+{
+  "version": "1.0.0",
+  "actuation_payload_defaults": {
+    "trigger_reason": "review_comment",
+    "mode": "repair",
+    "policy_zone": "hermetic",
+    "max_entropy_budget": 0,
+    "acceptance_invariants": [
+      "INV.MAKER_CHECKER.PR_ONLY",
+      "INV.FINGERPRINT.MATCH_HERMETIC",
+      "INV.NETWORK.NO_EGRESS_HERMETIC",
+      "INV.SECRETS.NONE",
+      "INV.POLICY_ZONING.REVIEW_QUORUM",
+      "INV.ARTIFACTS.DETERMINISTIC"
+    ]
+  },
+  "cost_weights": {
+    "latency": 0.2,
+    "compute": 0.3,
+    "risk": 0.5
+  },
+  "invariants": {
+    "INV.MAKER_CHECKER.PR_ONLY": {
+      "description": "Mutating actions are only allowed on PR branches.",
+      "locked": true
+    },
+    "INV.FINGERPRINT.MATCH_HERMETIC": {
+      "description": "Execution fingerprint must match hermetic policy constraints.",
+      "locked": true
+    },
+    "INV.NETWORK.NO_EGRESS_HERMETIC": {
+      "description": "No network egress is allowed when policy zone is hermetic.",
+      "locked": true
+    },
+    "INV.SECRETS.NONE": {
+      "description": "Secrets must not be present in payloads, logs, or artifacts.",
+      "locked": true
+    },
+    "INV.POLICY_ZONING.REVIEW_QUORUM": {
+      "description": "Policy zoning decisions must include review quorum evidence.",
+      "locked": true
+    },
+    "INV.ARTIFACTS.DETERMINISTIC": {
+      "description": "Artifact generation must be deterministic for identical inputs.",
+      "locked": true
+    }
+  },
+  "enums": {
+    "trigger_reason": ["review_comment", "manual_request", "scheduled_enforcement"],
+    "mode": ["repair", "validate", "observe"],
+    "policy_zone": ["hermetic", "restricted", "open"]
+  }
+}

@@ -1,0 +1,10 @@
+packages:
+  - "apps/*"
+  - "packages/*"
+  - "ui/**"
+  - "api/**"
+  - "tools/**"
+  - "!tools/nanobanana"
+  - "!adaptco-core-orchestrator/**"
+  - "!adaptco-ssot/**"
+  - "!adaptco-previz/**"

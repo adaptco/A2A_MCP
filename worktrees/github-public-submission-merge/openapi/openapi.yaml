@@ -1,0 +1,689 @@
+openapi: 3.0.3
+info:
+  title: Core Orchestrator API
+  version: 1.1.0
+  description: >-
+    HTTP interface for the Core Orchestrator capsule. Provides service health
+    introspection along with branch merge planning metadata, automation hooks,
+    and middleware contract discovery for cockpit and CI consumers.
+  contact:
+    name: Protocol Automation Team
+    url: https://example.com/core-orchestrator
+    email: ops@example.com
+servers:
+  - url: http://localhost:8080
+tags:
+  - name: health
+    description: Liveness and readiness status endpoints.
+  - name: txtordr
+    description: Txtordr intake and routing endpoints.
+  - name: pos
+    description: POS order intake and deterministic idempotency handling.
+  - name: handshake
+    description: Session handshake lifecycle endpoints with attestation checks.
+paths:
+  /health:
+    get:
+      summary: Service health probe
+      operationId: getHealth
+      description: Retrieve the live readiness state of the orchestrator capsule.
+      tags:
+        - health
+      responses:
+        '200':
+          description: Service status information.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - status
+                properties:
+                  status:
+                    type: string
+                    description: Service status indicator.
+                    enum:
+                      - ok
+  /txtordr/intake:
+    post:
+      summary: Submit a Txtordr payload
+      description: Receive and route structured Txtordr payloads.
+      operationId: postTxtordrIntake
+      tags:
+        - txtordr
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+              description: Sovereign Txtordr intake payload v1.
+      responses:
+        '202':
+          description: Accepted and routed
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - capsule
+                  - ledger
+                  - events
+                properties:
+                  ok:
+                    type: boolean
+                  order_id:
+                    type: string
+                  capsule:
+                    type: string
+                    description: Capsule identifier.
+                    example: capsule.rehearsal.scrollstream.v1
+                  ledger:
+                    type: string
+                    description: Ledger channel receiving the rehearsal events.
+                    example: scrollstream_ledger
+                  events:
+                    type: array
+                    description: Ordered rehearsal events.
+                    items:
+                      type: object
+                      required: [timestamp, stage, agent, output]
+                      properties:
+                        timestamp:
+                          type: string
+                          format: date-time
+                        stage:
+                          type: string
+                        agent:
+                          type: string
+                        output:
+                          type: string
+                          description: Narrative payload captured for the rehearsal ledger.
+                        hud_feedback:
+                          type: string
+                          description: HUD animation feedback triggered by the event.
+                          example: shimmer
+                        training_mode:
+                          type: boolean
+                          description: Indicates that the event was emitted in training mode.
+                        emotional_payload:
+                          type: string
+                          description: Emotional signature associated with the glyph.
+                          example: anticipation
+                        sabrina_spark_test:
+                          type: string
+                          description: Sabrina Spark Test outcome for the glyph.
+                          example: pass
+                  ok:
+                    type: boolean
+                  order_id:
+                    type: string
+        '400':
+          description: Invalid payload or HMAC
+        '409':
+          description: Duplicate idempotency key
+        '500':
+          description: Internal error
+      security:
+        - hmacAuth: []
+  /pos/order:
+    post:
+      summary: Submit a normalized POS order EventEnvelope
+      description: >-
+        Accepts Sovereign EventEnvelope payloads emitted by the Codex Connector. Idempotency
+        is enforced via deterministic UUIDv5 anchors built from store, register, and sequence
+        identifiers. Duplicate envelopes return HTTP 409 with the previously recorded resource
+        identifier to prevent state drift.
+      operationId: postPosOrder
+      tags:
+        - pos
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EventEnvelope'
+      responses:
+        '202':
+          description: Accepted and routed to the Order Service
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - ok
+                  - idempotencyKey
+                properties:
+                  ok:
+                    type: boolean
+                    example: true
+                  idempotencyKey:
+                    type: string
+                    format: uuid
+                    description: Deterministic UUIDv5 anchor returned for audit chaining.
+        '400':
+          description: Invalid envelope structure
+        '409':
+          description: Duplicate idempotency key already recorded in the Audit Ledger
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - error
+                  - idempotencyKey
+                properties:
+                  error:
+                    type: string
+                    example: duplicate_idempotency_key
+                  idempotencyKey:
+                    type: string
+                    format: uuid
+                    description: The deterministic UUIDv5 submitted by the client.
+          headers:
+            X-Resource-ID:
+              description: Previously persisted resource identifier for legacy POS verification.
+              schema:
+                type: string
+        '500':
+          description: Internal error
+      security:
+        - hmacAuth: []
+  /handshake/initiate:
+    post:
+      summary: Initiate a handshake session
+      operationId: postHandshakeInitiate
+      description: Open a new handshake session after verifying the caller attestation.
+      tags:
+        - handshake
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HandshakeInitiateRequest'
+            examples:
+              initiate:
+                value:
+                  handshake_version: v1
+                  client_nonce: sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+                  lock_phrase: lock::core-orchestrator::v1
+                  attestation:
+                    attestation_id: attest-9d4ef2ce
+                    attestation_digest: sha256:abcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcd
+      responses:
+        '202':
+          description: Handshake session created and awaiting validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HandshakeAcceptedResponse'
+              examples:
+                accepted:
+                  value:
+                    handshake_version: v1
+                    session_id: hs_01J7K58W6CTE6QJ8Y4AFVQ3A4N
+                    status: initiated
+                    server_nonce: sha256:1111111111111111111111111111111111111111111111111111111111111111
+                    expires_at: 2026-01-15T22:10:00Z
+        '400':
+          description: Request body failed schema validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HandshakeRefusal'
+              examples:
+                schemaViolation:
+                  value:
+                    handshake_version: v1
+                    status: refused
+                    refusal:
+                      code: schema_violation
+                      reason: client_nonce must match pattern sha256:<hex64>
+                      detail:
+                        field: client_nonce
+        '401':
+          description: Missing or invalid authentication credentials.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HandshakeRefusal'
+              examples:
+                unauthorized:
+                  value:
+                    handshake_version: v1
+                    status: refused
+                    refusal:
+                      code: auth_failed
+                      reason: signature verification failed
+                      detail:
+                        auth_scheme: hmac
+        '403':
+          description: Attestation could not be trusted for handshake initiation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HandshakeRefusal'
+              examples:
+                attestationRejected:
+                  value:
+                    handshake_version: v1
+                    status: refused
+                    refusal:
+                      code: attestation_failed
+                      reason: attestation digest not recognized
+                      detail:
+                        attestation_digest: sha256:abcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcd
+        '409':
+          description: Replay or session conflict detected.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HandshakeRefusal'
+              examples:
+                replay:
+                  value:
+                    handshake_version: v1
+                    status: refused
+                    refusal:
+                      code: replay_conflict
+                      reason: nonce has already been used
+                      detail:
+                        client_nonce: sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+        '410':
+          description: Session has already been revoked.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HandshakeRefusal'
+              examples:
+                revoked:
+                  value:
+                    handshake_version: v1
+                    status: refused
+                    refusal:
+                      code: session_revoked
+                      reason: handshake session has been revoked
+                      detail:
+                        session_id: hs_01J7K58W6CTE6QJ8Y4AFVQ3A4N
+  /handshake/validate:
+    post:
+      summary: Validate an existing handshake session
+      operationId: postHandshakeValidate
+      description: Validate challenge evidence prior to binding.
+      tags:
+        - handshake
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HandshakeValidateRequest'
+            examples:
+              validate:
+                value:
+                  handshake_version: v1
+                  session_id: hs_01J7K58W6CTE6QJ8Y4AFVQ3A4N
+                  lock_phrase: lock::core-orchestrator::v1
+                  proof_digest: sha256:2222222222222222222222222222222222222222222222222222222222222222
+      responses:
+        '200':
+          description: Session evidence validated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HandshakeAcceptedResponse'
+              examples:
+                validated:
+                  value:
+                    handshake_version: v1
+                    session_id: hs_01J7K58W6CTE6QJ8Y4AFVQ3A4N
+                    status: validated
+                    server_nonce: sha256:1111111111111111111111111111111111111111111111111111111111111111
+                    expires_at: 2026-01-15T22:10:00Z
+        '400':
+          description: Request body failed schema validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HandshakeRefusal'
+        '401':
+          description: Missing or invalid authentication credentials.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HandshakeRefusal'
+        '403':
+          description: Challenge proof or attestation verification failed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HandshakeRefusal'
+        '409':
+          description: Replay or session conflict detected.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HandshakeRefusal'
+        '410':
+          description: Session has already been revoked.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HandshakeRefusal'
+  /handshake/bind:
+    post:
+      summary: Bind a validated handshake session
+      operationId: postHandshakeBind
+      description: Bind validated session context and mark it active.
+      tags:
+        - handshake
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HandshakeBindRequest'
+            examples:
+              bind:
+                value:
+                  handshake_version: v1
+                  session_id: hs_01J7K58W6CTE6QJ8Y4AFVQ3A4N
+                  lock_phrase: lock::core-orchestrator::v1
+                  binding_digest: sha256:3333333333333333333333333333333333333333333333333333333333333333
+      responses:
+        '200':
+          description: Session bound and active.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HandshakeAcceptedResponse'
+              examples:
+                bound:
+                  value:
+                    handshake_version: v1
+                    session_id: hs_01J7K58W6CTE6QJ8Y4AFVQ3A4N
+                    status: bound
+                    server_nonce: sha256:1111111111111111111111111111111111111111111111111111111111111111
+                    expires_at: 2026-01-15T22:10:00Z
+        '400':
+          description: Request body failed schema validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HandshakeRefusal'
+        '401':
+          description: Missing or invalid authentication credentials.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HandshakeRefusal'
+        '403':
+          description: Attestation scope is not authorized for binding.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HandshakeRefusal'
+        '409':
+          description: Replay or session conflict detected.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HandshakeRefusal'
+        '410':
+          description: Session has already been revoked.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HandshakeRefusal'
+  /handshake/revoke:
+    post:
+      summary: Revoke a handshake session
+      operationId: postHandshakeRevoke
+      description: Revoke an initiated, validated, or bound handshake session.
+      tags:
+        - handshake
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HandshakeRevokeRequest'
+            examples:
+              revoke:
+                value:
+                  handshake_version: v1
+                  session_id: hs_01J7K58W6CTE6QJ8Y4AFVQ3A4N
+                  lock_phrase: lock::core-orchestrator::v1
+                  revoke_digest: sha256:4444444444444444444444444444444444444444444444444444444444444444
+      responses:
+        '200':
+          description: Session revoked successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HandshakeAcceptedResponse'
+              examples:
+                revoked:
+                  value:
+                    handshake_version: v1
+                    session_id: hs_01J7K58W6CTE6QJ8Y4AFVQ3A4N
+                    status: revoked
+                    server_nonce: sha256:1111111111111111111111111111111111111111111111111111111111111111
+                    expires_at: 2026-01-15T22:10:00Z
+        '400':
+          description: Request body failed schema validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HandshakeRefusal'
+        '401':
+          description: Missing or invalid authentication credentials.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HandshakeRefusal'
+        '403':
+          description: Caller is not authorized to revoke this session.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HandshakeRefusal'
+        '409':
+          description: Replay or session conflict detected.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HandshakeRefusal'
+        '410':
+          description: Session has already been revoked.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HandshakeRefusal'
+components:
+  securitySchemes:
+    hmacAuth:
+      type: apiKey
+      in: header
+      name: X-Txtordr-HMAC
+  schemas:
+    EventEnvelope:
+      type: object
+      required: [header, payload]
+      additionalProperties: false
+      properties:
+        header:
+          type: object
+          required: [idempotencyKey, traceId, timestamp, version]
+          additionalProperties: false
+          properties:
+            idempotencyKey:
+              type: string
+              format: uuid
+              description: Deterministic UUIDv5 generated from the Codex Connector anchor string.
+            traceId:
+              type: string
+              format: uuid
+              description: Distributed trace identifier.
+            timestamp:
+              type: string
+              format: date-time
+            version:
+              type: string
+              enum: ["1.0.0"]
+        payload:
+          type: object
+          description: Sovereign normalized order data emitted by the Codex Connector.
+          additionalProperties: true
+    HandshakeDigest:
+      type: string
+      pattern: '^sha256:[0-9a-f]{64}$'
+      example: sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+    HandshakeInitiateRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - handshake_version
+        - client_nonce
+        - lock_phrase
+        - attestation
+      properties:
+        handshake_version:
+          type: string
+          const: v1
+        client_nonce:
+          $ref: '#/components/schemas/HandshakeDigest'
+        lock_phrase:
+          type: string
+          const: lock::core-orchestrator::v1
+        attestation:
+          type: object
+          additionalProperties: false
+          required:
+            - attestation_id
+            - attestation_digest
+          properties:
+            attestation_id:
+              type: string
+            attestation_digest:
+              $ref: '#/components/schemas/HandshakeDigest'
+    HandshakeValidateRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - handshake_version
+        - session_id
+        - lock_phrase
+        - proof_digest
+      properties:
+        handshake_version:
+          type: string
+          const: v1
+        session_id:
+          type: string
+        lock_phrase:
+          type: string
+          const: lock::core-orchestrator::v1
+        proof_digest:
+          $ref: '#/components/schemas/HandshakeDigest'
+    HandshakeBindRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - handshake_version
+        - session_id
+        - lock_phrase
+        - binding_digest
+      properties:
+        handshake_version:
+          type: string
+          const: v1
+        session_id:
+          type: string
+        lock_phrase:
+          type: string
+          const: lock::core-orchestrator::v1
+        binding_digest:
+          $ref: '#/components/schemas/HandshakeDigest'
+    HandshakeRevokeRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - handshake_version
+        - session_id
+        - lock_phrase
+        - revoke_digest
+      properties:
+        handshake_version:
+          type: string
+          const: v1
+        session_id:
+          type: string
+        lock_phrase:
+          type: string
+          const: lock::core-orchestrator::v1
+        revoke_digest:
+          $ref: '#/components/schemas/HandshakeDigest'
+    HandshakeAcceptedResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - handshake_version
+        - session_id
+        - status
+        - server_nonce
+        - expires_at
+      properties:
+        handshake_version:
+          type: string
+          const: v1
+        session_id:
+          type: string
+        status:
+          type: string
+          enum:
+            - initiated
+            - validated
+            - bound
+            - revoked
+        server_nonce:
+          $ref: '#/components/schemas/HandshakeDigest'
+        expires_at:
+          type: string
+          format: date-time
+    HandshakeRefusal:
+      type: object
+      additionalProperties: false
+      required:
+        - handshake_version
+        - status
+        - refusal
+      properties:
+        handshake_version:
+          type: string
+          const: v1
+        status:
+          type: string
+          const: refused
+        refusal:
+          type: object
+          additionalProperties: false
+          required:
+            - code
+            - reason
+          properties:
+            code:
+              type: string
+              enum:
+                - schema_violation
+                - auth_failed
+                - attestation_failed
+                - replay_conflict
+                - session_revoked
+            reason:
+              type: string
+            detail:
+              type: object
+              additionalProperties: true

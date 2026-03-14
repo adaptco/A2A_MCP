@@ -1,0 +1,3 @@
+Replace this line with any extra details and file context required to complete the task
+
+Update the SPEC according to the above stated details and then continue with the next required steps. As you make significant changes, make updates to the SPEC and check in with the senior dev that is over-watching this as required when it makes sense to. Before checking in with the senior dev you should always update the SPEC with the current state, current file structure, required next steps, current issues, and the changelog. Take your time with these changes to ensure that we implement this correctly according to the markdown spec.

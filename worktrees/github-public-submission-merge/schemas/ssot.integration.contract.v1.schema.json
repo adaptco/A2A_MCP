@@ -1,0 +1,199 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://q.enterprises/schemas/ssot.integration.contract.v1.schema.json",
+  "title": "SSOT Integration Contract v1",
+  "description": "Canonical cross-repo contract for core-orchestrator, SSOT, and ground integration.",
+  "type": "object",
+  "required": [
+    "contract_version",
+    "ownership",
+    "artifact_envelope",
+    "orchestration_event",
+    "avatar_binding"
+  ],
+  "properties": {
+    "contract_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "ownership": {
+      "$ref": "#/$defs/ownershipBoundary"
+    },
+    "artifact_envelope": {
+      "$ref": "#/$defs/artifactEnvelope"
+    },
+    "orchestration_event": {
+      "$ref": "#/$defs/orchestrationEvent"
+    },
+    "avatar_binding": {
+      "$ref": "#/$defs/avatarBinding"
+    }
+  },
+  "$defs": {
+    "repoId": {
+      "type": "string",
+      "enum": [
+        "core-orchestrator",
+        "SSOT",
+        "ground"
+      ]
+    },
+    "ownershipBoundary": {
+      "type": "object",
+      "required": [
+        "truth_repo",
+        "runtime_repo",
+        "bridge_repo"
+      ],
+      "properties": {
+        "truth_repo": {
+          "$ref": "#/$defs/repoId",
+          "const": "SSOT"
+        },
+        "runtime_repo": {
+          "$ref": "#/$defs/repoId",
+          "const": "core-orchestrator"
+        },
+        "bridge_repo": {
+          "$ref": "#/$defs/repoId",
+          "const": "ground"
+        },
+        "legacy_read_only_paths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "artifactEnvelope": {
+      "type": "object",
+      "required": [
+        "artifact_id",
+        "source_repo",
+        "schema_uri",
+        "content_sha256",
+        "created_at"
+      ],
+      "properties": {
+        "artifact_id": {
+          "type": "string",
+          "pattern": "^[a-z0-9._-]+$"
+        },
+        "source_repo": {
+          "$ref": "#/$defs/repoId"
+        },
+        "schema_uri": {
+          "type": "string"
+        },
+        "content_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "lineage": {
+          "type": "object",
+          "properties": {
+            "parent_artifact_id": {
+              "type": "string"
+            },
+            "merkle_root": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "orchestrationEvent": {
+      "type": "object",
+      "required": [
+        "event_type",
+        "actor_id",
+        "trace_id",
+        "artifact_ref"
+      ],
+      "properties": {
+        "event_type": {
+          "type": "string",
+          "enum": [
+            "agent_deployment",
+            "simulation_tick",
+            "qube_artifact_loomed",
+            "identity_retrieved",
+            "compliance_check",
+            "calibration_complete"
+          ]
+        },
+        "actor_id": {
+          "type": "string"
+        },
+        "trace_id": {
+          "type": "string"
+        },
+        "artifact_ref": {
+          "type": "string"
+        },
+        "payload": {
+          "type": "object"
+        }
+      },
+      "additionalProperties": false
+    },
+    "avatarBinding": {
+      "type": "object",
+      "required": [
+        "avatar_id",
+        "agent_id",
+        "federation_id",
+        "capsule_hash"
+      ],
+      "properties": {
+        "avatar_id": {
+          "type": "string"
+        },
+        "agent_id": {
+          "type": "string"
+        },
+        "federation_id": {
+          "type": "string"
+        },
+        "capsule_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "quorum_approval": {
+          "type": "object",
+          "properties": {
+            "session_id": {
+              "type": "string"
+            },
+            "approvers": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "threshold": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          "required": [
+            "session_id",
+            "approvers",
+            "threshold"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

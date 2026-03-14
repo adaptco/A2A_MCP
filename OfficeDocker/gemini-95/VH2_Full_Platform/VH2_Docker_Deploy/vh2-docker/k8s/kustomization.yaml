@@ -1,0 +1,128 @@
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# ═════════════════════════════════════════════════════════════════════════
+# VH2 SOVEREIGN VALIDATOR — KUSTOMIZATION
+# 
+# Composites:
+#   - Namespace (vh2-prod)
+#   - ConfigMaps (spec, constraints, KPI math)
+#   - Backend Deployment (with test-gating init container)
+#   - Frontend Deployment (static assets)
+#   - Services & Ingress
+#   - HPA autoscaling
+#   - NetworkPolicy (zero-trust)
+#   - Smoke test Job
+# ═════════════════════════════════════════════════════════════════════════
+
+namespace: vh2-prod
+
+metadata:
+  name: vh2-sovereign-validator
+  namespace: vh2-prod
+
+# ── MANIFESTS ─────────────────────────────────────────────────────────────
+resources:
+- namespace.yaml
+- configmap-spec.yaml
+- backend-deployment.yaml
+- frontend-deployment.yaml
+- ingress.yaml
+- network-policy.yaml
+- tests-job.yaml
+
+# ── COMMON LABELS ─────────────────────────────────────────────────────────
+commonLabels:
+  app: vh2-validator
+  managed-by: argocd
+  tier: application
+  env: production
+  version: v1
+
+# ── COMMON ANNOTATIONS ────────────────────────────────────────────────────
+commonAnnotations:
+  argocd.argoproj.io/sync-wave: "0"
+  description: "VH2 Sovereign Validator — ET29/22 Fail-Closed Physics Engine"
+  repo: "https://github.com/yourorg/vh2-docker"
+
+# ── IMAGE REPLACEMENTS ────────────────────────────────────────────────────
+# Override image tags via kustomize build --load-restrictor=LoadRestrictionsNone
+# or via ArgoCD Helm values overlay
+images:
+- name: node
+  newTag: "20-alpine"
+- name: curlimages/curl
+  newTag: latest
+- name: vh2-docker-backend
+  newName: your-registry/vh2-backend
+  newTag: v1.0.1
+- name: vh2-docker-frontend
+  newName: your-registry/vh2-frontend
+  newTag: v1.0.1
+
+# ── REPLICA OVERRIDES ─────────────────────────────────────────────────────
+replicas:
+- name: vh2-backend
+  count: 5
+- name: vh2-frontend
+  count: 2
+
+# ── STRATEGIC MERGE PATCHES ───────────────────────────────────────────────
+# Customize specific fields per environment without full file replacement
+patchesStrategicMerge:
+- |-
+  apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    name: vh2-backend
+  spec:
+    template:
+      spec:
+        containers:
+        - name: backend
+          resources:
+            limits:
+              memory: 512Mi
+              cpu: 500m
+
+# ── JSON PATCHES ──────────────────────────────────────────────────────────
+# Fine-grained surgical patches for specific paths
+patchesJson6902: []
+
+# ── NAMESPACE PROPAGATION ────────────────────────────────────────────────
+namePrefix: ""
+nameSuffix: ""
+
+# ── VARS FOR STRING REPLACEMENT ───────────────────────────────────────────
+vars:
+- name: NAMESPACE
+  objref:
+    kind: Namespace
+    name: vh2-prod
+  fieldref:
+    fieldpath: metadata.name
+- name: BACKEND_SERVICE
+  objref:
+    kind: Service
+    name: vh2-backend
+  fieldref:
+    fieldpath: metadata.name
+- name: FRONTEND_SERVICE
+  objref:
+    kind: Service
+    name: vh2-frontend
+  fieldref:
+    fieldpath: metadata.name
+
+# ── SORT OPTIONS ──────────────────────────────────────────────────────────
+sortOptions:
+  order: fifo
+
+# ── VALIDATION ────────────────────────────────────────────────────────────
+# Ensure manifests pass validation before deployment
+configMapGenerator: []
+
+# ── EXTENSIONS ────────────────────────────────────────────────────────────
+# Reference for plugins or remote configurations
+configurations: []

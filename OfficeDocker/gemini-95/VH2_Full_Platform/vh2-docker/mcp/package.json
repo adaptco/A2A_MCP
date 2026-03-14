@@ -1,0 +1,17 @@
+{
+  "name": "vh2-mcp-server",
+  "version": "1.0.0",
+  "description": "VH2 Sovereign Validator — MCP Server (StdioServerTransport, zero external dependencies)",
+  "type": "module",
+  "main": "src/index.js",
+  "bin": { "vh2-mcp": "src/index.js" },
+  "scripts": {
+    "start":   "node src/index.js",
+    "dev":     "node --watch src/index.js",
+    "test":    "node tests/mcp-verify.test.js",
+    "inspect": "npx @modelcontextprotocol/inspector node src/index.js"
+  },
+  "dependencies": {},
+  "engines": { "node": ">=18.0.0" },
+  "keywords": ["mcp", "vh2", "ackermann", "kingpin", "wheel-geometry"]
+}

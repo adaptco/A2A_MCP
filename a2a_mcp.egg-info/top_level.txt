@@ -1,4 +1,7 @@
+<<<<<<< HEAD
+=======
 a2a_mcp
+>>>>>>> origin/main
 agents
 app
 orchestrator

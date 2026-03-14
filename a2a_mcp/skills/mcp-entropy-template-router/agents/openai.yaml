@@ -1,4 +1,0 @@
-interface:
-  display_name: "MCP Entropy Router"
-  short_description: "Deterministic entropy and template routing for MCP"
-  default_prompt: "Use $mcp-entropy-template-router to generate API skill tokens, style temperature controls, and deterministic template actions."

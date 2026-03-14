@@ -10,7 +10,10 @@ Requires-Dist: psycopg2-binary
 Requires-Dist: pydantic
 Requires-Dist: pydantic-settings
 Requires-Dist: PyJWT
+<<<<<<< HEAD
+=======
 Requires-Dist: PyYAML
+>>>>>>> origin/main
 Requires-Dist: python-dotenv
 Requires-Dist: fastapi
 Requires-Dist: uvicorn
@@ -20,7 +23,10 @@ Requires-Dist: jsonschema
 Requires-Dist: mcp[cli]
 Requires-Dist: numpy>=1.24
 Requires-Dist: scipy
+<<<<<<< HEAD
+=======
 Requires-Dist: croniter
+>>>>>>> origin/main
 Provides-Extra: dev
 Requires-Dist: pytest; extra == "dev"
 Requires-Dist: pytest-asyncio; extra == "dev"

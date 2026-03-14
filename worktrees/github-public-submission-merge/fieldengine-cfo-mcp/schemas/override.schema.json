@@ -1,0 +1,73 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "AxQxOS Override Schema",
+    "type": "object",
+    "properties": {
+        "metadata": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "seed": {
+                    "type": "string"
+                },
+                "schema_version": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "id",
+                "seed"
+            ]
+        },
+        "drift_parameters": {
+            "type": "object",
+            "properties": {
+                "score": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                },
+                "tokens": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "path": {
+                                "type": "string"
+                            },
+                            "weight": {
+                                "type": "number"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "hitl_state": {
+            "type": "string",
+            "enum": [
+                "pending",
+                "approved",
+                "rejected",
+                "sealed"
+            ]
+        },
+        "pam_policy": {
+            "type": "object",
+            "properties": {
+                "auto_fix_enabled": {
+                    "type": "boolean"
+                },
+                "drift_threshold": {
+                    "type": "number"
+                }
+            }
+        }
+    },
+    "required": [
+        "metadata",
+        "hitl_state"
+    ]
+}

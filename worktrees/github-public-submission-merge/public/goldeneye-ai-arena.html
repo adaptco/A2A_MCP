@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GoldenEye AI Arena + Compliance Topology</title>
+    <style>
+      body { font-family: system-ui, sans-serif; background: #111827; color: #e5e7eb; margin: 0; }
+      .wrap { max-width: 1080px; margin: 0 auto; padding: 16px; }
+      canvas { width: 100%; background: #1f2937; border: 1px solid #374151; border-radius: 8px; }
+      .hud { display: flex; gap: 10px; flex-wrap: wrap; margin: 10px 0; }
+      .chip { background: #374151; border-radius: 999px; padding: 6px 10px; font-size: 14px; }
+      .panel { margin-top: 10px; padding: 10px; background: #0f172a; border-radius: 8px; border: 1px solid #334155; }
+      code { color: #93c5fd; }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <h1>GoldenEye AI Arena + Compliance Topology</h1>
+      <p>
+        AI-vs-AI duel with optional player join. Keys: <strong>J</strong> join, <strong>W/A/D + Space</strong> play,
+        <strong>I</strong> Inspector, <strong>C</strong> Corrector, <strong>N</strong> Negotiator level gate.
+      </p>
+      <div class="hud">
+        <div id="tick" class="chip">Tick: 0</div>
+        <div id="level" class="chip">Level: L0</div>
+        <div id="alpha" class="chip">Alpha score: 0</div>
+        <div id="bravo" class="chip">Bravo score: 0</div>
+        <div id="player" class="chip">Player: not joined</div>
+      </div>
+      <canvas id="arena" width="960" height="540"></canvas>
+
+      <div class="panel">
+        <div><strong>Governance:</strong> C5 symmetry + Obsidian Black required for level ascension.</div>
+        <div id="status">Status: awaiting inspector run</div>
+        <div id="beacons">Beacons: 0</div>
+      </div>
+    </div>
+
+    <script>
+      const canvas = document.getElementById('arena');
+      const ctx = canvas.getContext('2d');
+      const state = {
+        tick: 0,
+        level: 0,
+        joined: false,
+        requiredMaterial: 'Obsidian Black',
+        beacons: [],
+        agents: {
+          alpha: { x: 120, y: 120, heading: 0, hp: 100, score: 0, color: '#60a5fa', symmetrySpokes: 5, material: 'Obsidian Black' },
+          bravo: { x: 800, y: 420, heading: Math.PI, hp: 100, score: 0, color: '#f87171', symmetrySpokes: 5, material: 'Obsidian Black' },
+        },
+        controls: { forward: false, left: false, right: false, fire: false },
+      };
+
+      const keys = new Set();
+      window.addEventListener('keydown', (e) => {
+        keys.add(e.code);
+        if (e.code === 'KeyJ' && !state.joined) {
+          state.joined = true;
+          state.agents.player = { x: 480, y: 270, heading: -1.57, hp: 100, score: 0, color: '#34d399', symmetrySpokes: 5, material: 'Obsidian Black' };
+        }
+        if (e.code === 'KeyI') inspector();
+        if (e.code === 'KeyC') corrector();
+        if (e.code === 'KeyN') negotiator();
+      });
+      window.addEventListener('keyup', (e) => keys.delete(e.code));
+
+      function dist(a, b) { return Math.hypot(a.x - b.x, a.y - b.y); }
+      function wrap(a) {
+        a.x = Math.max(8, Math.min(canvas.width - 8, a.x));
+        a.y = Math.max(8, Math.min(canvas.height - 8, a.y));
+      }
+
+      function aiControl(me, target) {
+        const targetAngle = Math.atan2(target.y - me.y, target.x - me.x);
+        const delta = ((targetAngle - me.heading + Math.PI) % (Math.PI * 2)) - Math.PI;
+        return { forward: true, left: delta < -0.15, right: delta > 0.15, fire: Math.abs(delta) < 0.15 };
+      }
+
+      function applyControl(agent, control) {
+        if (control.left) agent.heading -= 0.08;
+        if (control.right) agent.heading += 0.08;
+        if (control.forward) {
+          agent.x += Math.cos(agent.heading) * 2.6;
+          agent.y += Math.sin(agent.heading) * 2.6;
+          wrap(agent);
+        }
+      }
+
+      function stepCombat(shooter, target, fire) {
+        if (!fire) return;
+        if (dist(shooter, target) < 95) {
+          target.hp = Math.max(0, target.hp - 4);
+          if (target.hp === 0) {
+            shooter.score += 1;
+            target.hp = 100;
+            target.x = 40 + Math.random() * (canvas.width - 80);
+            target.y = 40 + Math.random() * (canvas.height - 80);
+            // Inject occasional drift to demonstrate inspector/corrector loop.
+            if (Math.random() < 0.35) {
+              target.symmetrySpokes = 6;
+              target.material = 'Racing Sand Metallic';
+            }
+          }
+        }
+      }
+
+      function inspector() {
+        const receipts = [];
+        Object.entries(state.agents).forEach(([name, agent]) => {
+          const compliant = agent.symmetrySpokes === 5 && agent.material === state.requiredMaterial;
+          state.beacons.push({
+            x: agent.x,
+            y: agent.y,
+            status: compliant ? 'green' : 'red',
+            tick: state.tick,
+            reason: compliant ? 'C5_SYMMETRY OK' : 'Symmetry/Material drift',
+          });
+          receipts.push(`${name}:${compliant ? 'ok' : 'drift'}`);
+        });
+        document.getElementById('status').textContent = `Inspector receipts @${state.tick}: ${receipts.join(', ')}`;
+      }
+
+      function corrector() {
+        Object.values(state.agents).forEach((agent) => {
+          agent.symmetrySpokes = 5;
+          agent.material = state.requiredMaterial;
+        });
+        document.getElementById('status').textContent = `Corrector remediated all agents at tick ${state.tick}`;
+      }
+
+      function negotiator() {
+        const compliant = Object.values(state.agents)
+          .every((a) => a.symmetrySpokes === 5 && a.material === state.requiredMaterial);
+        if (compliant) {
+          state.level = Math.min(5, state.level + 1);
+          document.getElementById('status').textContent = `Negotiator advanced corridor to L${state.level}`;
+        } else {
+          document.getElementById('status').textContent = `Negotiator blocked ascent; run inspector/corrector.`;
+        }
+      }
+
+      function tick() {
+        state.tick += 1;
+        state.controls = {
+          forward: keys.has('KeyW'),
+          left: keys.has('KeyA'),
+          right: keys.has('KeyD'),
+          fire: keys.has('Space'),
+        };
+
+        const actors = Object.keys(state.agents);
+        for (const name of actors) {
+          const me = state.agents[name];
+          const others = actors.filter((n) => n !== name).map((n) => state.agents[n]);
+          if (!others.length) continue;
+          const nearest = others.reduce((best, cur) => (dist(me, cur) < dist(me, best) ? cur : best), others[0]);
+          const control = name === 'player' ? state.controls : aiControl(me, nearest);
+          applyControl(me, control);
+          stepCombat(me, nearest, control.fire);
+        }
+      }
+
+      function drawAgent(name, agent) {
+        ctx.save();
+        ctx.translate(agent.x, agent.y);
+        ctx.rotate(agent.heading);
+        ctx.fillStyle = agent.color;
+        ctx.fillRect(-8, -6, 16, 12);
+        ctx.fillStyle = '#f9fafb';
+        ctx.fillRect(0, -2, 12, 4);
+        ctx.restore();
+
+        ctx.fillStyle = '#e5e7eb';
+        ctx.font = '12px sans-serif';
+        ctx.fillText(`${name} HP ${agent.hp}`, agent.x - 24, agent.y - 15);
+        if (agent.symmetrySpokes !== 5 || agent.material !== state.requiredMaterial) {
+          ctx.fillStyle = '#fca5a5';
+          ctx.fillText('DRIFT', agent.x - 16, agent.y + 22);
+        }
+      }
+
+      function drawBeacons() {
+        const recent = state.beacons.slice(-20);
+        recent.forEach((beacon) => {
+          ctx.beginPath();
+          ctx.arc(beacon.x, beacon.y, 4, 0, Math.PI * 2);
+          ctx.fillStyle = beacon.status === 'green' ? '#22c55e' : '#ef4444';
+          ctx.fill();
+        });
+      }
+
+      function render() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#1f2937';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        drawBeacons();
+        Object.entries(state.agents).forEach(([name, agent]) => drawAgent(name, agent));
+
+        document.getElementById('tick').textContent = `Tick: ${state.tick}`;
+        document.getElementById('level').textContent = `Level: L${state.level}`;
+        document.getElementById('alpha').textContent = `Alpha score: ${state.agents.alpha.score}`;
+        document.getElementById('bravo').textContent = `Bravo score: ${state.agents.bravo.score}`;
+        document.getElementById('beacons').textContent = `Beacons: ${state.beacons.length}`;
+        document.getElementById('player').textContent = state.joined
+          ? `Player score: ${state.agents.player.score}`
+          : 'Player: press J to join';
+
+        requestAnimationFrame(loop);
+      }
+
+      let last = performance.now();
+      function loop(now) {
+        if (now - last > 16) {
+          tick();
+          last = now;
+        }
+        render();
+      }
+      requestAnimationFrame(loop);
+    </script>
+  </body>
+</html>

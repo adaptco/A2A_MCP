@@ -1,6 +1,6 @@
 {
   "version": "v1",
-  "generated_at": "2026-03-05T13:48:18Z",
+  "generated_at": "2026-03-13T23:42:36Z",
   "cards": [
     {
       "card_id": "card:agent-frontier-endpoint-gpt",
@@ -21,10 +21,12 @@
         "task_planning"
       ],
       "mcp_tool_scope": [
+        "build_local_world_foundation_model",
         "embed_dispatch_batch",
         "embed_lookup",
         "embed_status",
         "embed_submit",
+        "get_coding_agent_avatar_cast",
         "get_runtime_assignment",
         "ingest_avatar_token_stream",
         "ingest_repository_data",
@@ -67,10 +69,12 @@
         "release_governance"
       ],
       "mcp_tool_scope": [
+        "build_local_world_foundation_model",
         "embed_dispatch_batch",
         "embed_lookup",
         "embed_status",
         "embed_submit",
+        "get_coding_agent_avatar_cast",
         "get_runtime_assignment",
         "ingest_avatar_token_stream",
         "ingest_repository_data",
@@ -120,10 +124,12 @@
         "context_synthesis"
       ],
       "mcp_tool_scope": [
+        "build_local_world_foundation_model",
         "embed_dispatch_batch",
         "embed_lookup",
         "embed_status",
         "embed_submit",
+        "get_coding_agent_avatar_cast",
         "get_runtime_assignment",
         "ingest_avatar_token_stream",
         "ingest_repository_data",
@@ -184,6 +190,35 @@
           "LORA_ADAPT\u2192HEALING"
         ],
         "token_ref": "runtime/rbac/frontier_rbac_tokens.local.json#agent:frontier.ollama.llama"
+      }
+    },
+    {
+      "card_id": "card:agent-frontier-reviewer",
+      "agent_id": "agent:frontier.reviewer",
+      "display_name": "Frontier Reviewer",
+      "llm": {
+        "provider": "endpoint",
+        "model_family": "gpt",
+        "default_model": "gpt-4o-mini"
+      },
+      "role": "observer",
+      "embedded_skills": [
+        "artifact_review",
+        "audit_logging",
+        "code_review",
+        "security_audit"
+      ],
+      "mcp_tool_scope": [
+        "get_coding_agent_avatar_cast",
+        "get_runtime_assignment",
+        "list_runtime_assignments"
+      ],
+      "rbac": {
+        "allowed_actions": [
+          "view_artifacts"
+        ],
+        "allowed_transitions": [],
+        "token_ref": "runtime/rbac/frontier_rbac_tokens.local.json#agent:frontier.reviewer"
       }
     }
   ]

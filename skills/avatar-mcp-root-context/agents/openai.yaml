@@ -1,0 +1,4 @@
+interface:
+  display_name: "Avatar MCP Root Context"
+  short_description: "Build A2A avatar MCP launch context"
+  default_prompt: "Use $avatar-mcp-root-context to build a zero-shot avatar launch packet from the A2A_MCP repo root."

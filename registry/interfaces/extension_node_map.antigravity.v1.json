@@ -1,0 +1,69 @@
+{
+  "version": "v1",
+  "generated_at": "2026-03-05T22:49:54Z",
+  "target": "antigravity",
+  "nodes": [
+    {
+      "id": "root-memory",
+      "kind": "memory",
+      "interface": "root-memory",
+      "target": "shared",
+      "approval_mode": "none",
+      "capabilities": [
+        "workspace_preferences",
+        "skill_memory"
+      ],
+      "worker_prompt": "Load the root anchor files, normalize working style, and expose only the context needed for the current execution step.",
+      "reward_channel": "semantic"
+    },
+    {
+      "id": "frontier-registry",
+      "kind": "registry",
+      "interface": "frontier-registry",
+      "target": "shared",
+      "approval_mode": "checkpointed",
+      "capabilities": [
+        "agent_cards",
+        "rbac_tool_scope",
+        "runtime_tokens"
+      ],
+      "worker_prompt": "Compile the frontier registry from the XML map, root memory, and role policy without manual rewiring.",
+      "reward_channel": "systems"
+    },
+    {
+      "id": "antigravity-hitl",
+      "kind": "sandbox",
+      "interface": "antigravity-hitl",
+      "target": "antigravity",
+      "approval_mode": "browser_hitl",
+      "capabilities": [
+        "browser_review",
+        "cost_estimation",
+        "approval_gate"
+      ],
+      "worker_prompt": "Render the runtime estimate, checkpoint list, and cost model in a browser before any high-impact execution path begins.",
+      "reward_channel": "systems"
+    }
+  ],
+  "extensions": [
+    {
+      "id": "antigravity_sandbox",
+      "provider": "local",
+      "node_ref": "antigravity-hitl",
+      "interface": "antigravity-hitl",
+      "rollout_status": "active",
+      "health_state": "planned",
+      "owning_agent_role": "timekeeper",
+      "webhook_endpoint": "/webhooks/antigravity-hitl",
+      "scopes": [
+        "sandbox.launch",
+        "browser.hitl"
+      ],
+      "env_vars": [
+        "BLACKMAMBA_SERVER_HOST",
+        "BLACKMAMBA_SERVER_PORT"
+      ],
+      "worker_prompt": "Expose the HITL browser checkpoint and the deterministic estimate results to the operator before execution."
+    }
+  ]
+}

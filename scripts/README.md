@@ -85,6 +85,7 @@ python deployment_bot.py recover --service orchestrator
 ## Other Scripts
 
 - `automate_healing.py` – Service healing automation
+- `automation_runtime.ps1` – Bring up the simulator/runtime automation environment
 - `build_multimodal_rag_bundle.py` – RAG bundle builder
 - `build_worldline_block.py` – World line block builder
 - `cleanup_repo.py` – Repository cleanup

@@ -28,9 +28,17 @@ Artifacts written by the command:
 | `agent:frontier.anthropic.claude` | `anthropic / claude-3-5-sonnet-latest` | `admin` | governance, policy_enforcement, orchestration, release_governance | full MCP tool scope |
 | `agent:frontier.vertex.gemini` | `vertex / gemini-1.5-pro` | `pipeline_operator` | architecture_mapping, context_synthesis, integration | full MCP tool scope |
 | `agent:frontier.ollama.llama` | `ollama / llama3.1` | `healer` | regression_triage, self_healing, patch_synthesis, verification | healing + read-oriented MCP tools |
+| `agent:frontier.reviewer` | `endpoint / gpt-4o-mini` | `observer` | code_review, security_audit, performance_analysis | full MCP tool scope |
 
 ## Build and test commands
 Use the smallest command set needed for the files you touched.
+
+### Local automation runtime (Docker compose helper)
+- Start (with build): `.\scripts\automation_runtime.ps1 -Action up -Build`
+- Validate prerequisites/config: `.\scripts\automation_runtime.ps1 -Action validate`
+- Health check: `.\scripts\automation_runtime.ps1 -Action health`
+- Stop runtime: `.\scripts\automation_runtime.ps1 -Action down`
+- Prerequisite: Docker Compose plugin required; Docker Desktop running for `up`, `down`, and `health`.
 
 ### Python environment
 - Install dependencies: `pip install -r requirements.txt`

@@ -39,6 +39,8 @@ Reference diagrams:
 
 - [`docs/architecture/a2a_mcp_fsm_stateflow.mmd`](./a2a_mcp_fsm_stateflow.mmd)
 - [`docs/architecture/a2a_mcp_control_model.mmd`](./a2a_mcp_control_model.mmd)
+- [`docs/architecture/mcp_extension_route_map.mmd`](./mcp_extension_route_map.mmd)
+- [`docs/architecture/mcp_extension_route_map.md`](./mcp_extension_route_map.md)
 
 ## Environment Contract
 
@@ -79,6 +81,9 @@ Canonical tool registry for MCP gateway (`app.mcp_tooling`):
 
 1. `ingest_repository_data`
 2. `ingest_avatar_token_stream`
+
+For the full ingress, registry, runtime, tenant, and extension seam map, see
+[`docs/architecture/mcp_extension_route_map.md`](./mcp_extension_route_map.md).
 
 `/tools/call` payload shape:
 

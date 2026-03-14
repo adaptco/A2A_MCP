@@ -151,3 +151,12 @@ def test_verify_endpoint_returns_409_on_tampered_execution() -> None:
     response = client.get(f"/a2a/executions/{execution_id}/verify")
     assert response.status_code == 409
     assert response.json()["detail"]["valid"] is False
+
+
+def test_runtime_api_healthz_endpoint() -> None:
+    client = TestClient(app)
+
+    response = client.get("/healthz")
+
+    assert response.status_code == 200
+    assert response.json() == {"status": "ok"}

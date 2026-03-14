@@ -23,6 +23,7 @@ dependencies = [
     "mcp[cli]",
     "numpy>=1.24",
     "scipy",
+    "croniter",
 ]
 
 [project.optional-dependencies]

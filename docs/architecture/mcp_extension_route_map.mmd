@@ -1,0 +1,47 @@
+flowchart LR
+
+subgraph GW["Canonical MCP Gateway"]
+    Client["Client / Agent / GitHub Action"] --> Gateway["app.mcp_gateway:app"]
+    Gateway --> MCP["/mcp"]
+    Gateway --> Compat["/tools/call"]
+    MCP --> Registry["app.mcp_tooling register_tools(mcp)"]
+    Compat --> RegistryCall["app.mcp_tooling call_tool_by_name(...)"]
+    Registry --> Protected["Protected tooling\nOIDC + bearer"]
+    Registry --> Public["Public tooling"]
+    RegistryCall --> Protected
+    RegistryCall --> Public
+end
+
+subgraph WR["Worldline and Runtime Handoff"]
+    Public --> Worldline["world_foundation_model.build_worldline_block"]
+    Worldline -. "github_mcp_tool_call" .-> Compat
+    Worldline --> Bridge["orchestrator.runtime_bridge.build_handshake_bundle"]
+    Bridge --> Assignment["runtime.assignment.v1"]
+    Assignment --> RuntimeMCP["a2a_mcp.runtime_mcp_server"]
+    RuntimeMCP --> AssignmentStore["_RUNTIME_ASSIGNMENTS"]
+    RuntimeMCP --> Embed["embed_control_plane"]
+    RuntimeMCP --> Intent["route_a2a_intent"]
+end
+
+subgraph TN["Tenant and Simulator Routes"]
+    Tenant["Tenant / Simulator Client"] --> Multi["app.multi_client_api:app"]
+    Multi --> Router["src.multi_client_router.MultiClientMCPRouter"]
+    Multi --> Handshake["A2AHandshakeService"]
+    Router --> Scenario["src.runtime_scenario_service.RuntimeScenarioService"]
+    Scenario --> Rag["RAG context"]
+    Scenario --> Lora["LoRA dataset"]
+    Scenario --> Verify["Lineage verification"]
+end
+
+subgraph SEAMS["Primary Extension Seams"]
+    NewCanonical["New canonical MCP tool"]
+    NewRuntime["New runtime or embed tool"]
+    NewTenant["New tenant-facing route"]
+    NewMetadata["New worldline or assignment field"]
+end
+
+NewCanonical --> Registry
+NewRuntime --> RuntimeMCP
+NewTenant --> Multi
+NewMetadata --> Worldline
+NewMetadata --> Bridge

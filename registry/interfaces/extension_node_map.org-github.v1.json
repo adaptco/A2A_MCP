@@ -1,0 +1,329 @@
+{
+  "version": "v1",
+  "generated_at": "2026-03-05T22:49:54Z",
+  "target": "org-github",
+  "nodes": [
+    {
+      "id": "root-memory",
+      "kind": "memory",
+      "interface": "root-memory",
+      "target": "shared",
+      "approval_mode": "none",
+      "capabilities": [
+        "workspace_preferences",
+        "skill_memory"
+      ],
+      "worker_prompt": "Load the root anchor files, normalize working style, and expose only the context needed for the current execution step.",
+      "reward_channel": "semantic"
+    },
+    {
+      "id": "frontier-registry",
+      "kind": "registry",
+      "interface": "frontier-registry",
+      "target": "shared",
+      "approval_mode": "checkpointed",
+      "capabilities": [
+        "agent_cards",
+        "rbac_tool_scope",
+        "runtime_tokens"
+      ],
+      "worker_prompt": "Compile the frontier registry from the XML map, root memory, and role policy without manual rewiring.",
+      "reward_channel": "systems"
+    },
+    {
+      "id": "office-graph",
+      "kind": "integration",
+      "interface": "office-graph",
+      "target": "org-github",
+      "approval_mode": "checkpointed",
+      "capabilities": [
+        "mail",
+        "calendar",
+        "documents"
+      ],
+      "worker_prompt": "Coordinate Office tasks through the same MCP topology and preserve enterprise approval boundaries.",
+      "reward_channel": "domain"
+    },
+    {
+      "id": "google-workspace-sync",
+      "kind": "integration",
+      "interface": "google-workspace-sync",
+      "target": "org-github",
+      "approval_mode": "checkpointed",
+      "capabilities": [
+        "gmail",
+        "calendar",
+        "drive"
+      ],
+      "worker_prompt": "Sync Google Workspace actions through the shared registry and only emit replayable receipts.",
+      "reward_channel": "domain"
+    },
+    {
+      "id": "airtable-agent-base",
+      "kind": "integration",
+      "interface": "airtable-agent-base",
+      "target": "org-github",
+      "approval_mode": "checkpointed",
+      "capabilities": [
+        "role_assignment",
+        "enterprise_roster"
+      ],
+      "worker_prompt": "Map enterprise roles to agents and keep the role ownership graph aligned with the canonical XML map.",
+      "reward_channel": "domain"
+    },
+    {
+      "id": "github-actions-control",
+      "kind": "integration",
+      "interface": "github-actions-control",
+      "target": "org-github",
+      "approval_mode": "checkpointed",
+      "capabilities": [
+        "ci_cd",
+        "pull_requests"
+      ],
+      "worker_prompt": "Control CI, PR, and release actions from the same deterministic agent topology.",
+      "reward_channel": "systems"
+    },
+    {
+      "id": "firebase-studio-sandbox",
+      "kind": "integration",
+      "interface": "firebase-studio-sandbox",
+      "target": "org-github",
+      "approval_mode": "checkpointed",
+      "capabilities": [
+        "studio_bootstrap",
+        "sandbox_release"
+      ],
+      "worker_prompt": "Generate Firebase Studio artifacts from the same canonical topology used by the runtime cards and checkpoints.",
+      "reward_channel": "semantic"
+    },
+    {
+      "id": "vertex-ai-orchestrator",
+      "kind": "integration",
+      "interface": "vertex-ai-orchestrator",
+      "target": "org-github",
+      "approval_mode": "checkpointed",
+      "capabilities": [
+        "artifact_orchestration",
+        "model_planning"
+      ],
+      "worker_prompt": "Use Vertex AI as the artifact orchestrator and keep reward routing consistent with the enterprise role ledger.",
+      "reward_channel": "semantic"
+    },
+    {
+      "id": "doors-requirements",
+      "kind": "integration",
+      "interface": "doors-requirements",
+      "target": "org-github",
+      "approval_mode": "checkpointed",
+      "capabilities": [
+        "requirements_ingest",
+        "traceability"
+      ],
+      "worker_prompt": "Ingest IBM DOORS requirements and normalize them into replayable engineering tasks.",
+      "reward_channel": "domain"
+    },
+    {
+      "id": "windchill-rvs-delivery",
+      "kind": "integration",
+      "interface": "windchill-rvs-delivery",
+      "target": "org-github",
+      "approval_mode": "checkpointed",
+      "capabilities": [
+        "delivery_ticketing",
+        "production_release"
+      ],
+      "worker_prompt": "Create Windchill RV&S delivery artifacts with explicit traceability back to the XML-authored plan.",
+      "reward_channel": "domain"
+    },
+    {
+      "id": "canvas-frontdoor",
+      "kind": "integration",
+      "interface": "canvas-frontdoor",
+      "target": "org-github",
+      "approval_mode": "checkpointed",
+      "capabilities": [
+        "mock_frontend",
+        "prompt_hosting"
+      ],
+      "worker_prompt": "Emit Canvas-ready system instructions from the same source map that drives the backend workflow.",
+      "reward_channel": "semantic"
+    }
+  ],
+  "extensions": [
+    {
+      "id": "office365",
+      "provider": "microsoft",
+      "node_ref": "office-graph",
+      "interface": "office-graph",
+      "rollout_status": "staged",
+      "health_state": "planned",
+      "owning_agent_role": "delivery",
+      "webhook_endpoint": "/webhooks/office365",
+      "scopes": [
+        "mail.readwrite",
+        "files.readwrite",
+        "calendar.readwrite"
+      ],
+      "env_vars": [
+        "MSGRAPH_CLIENT_ID",
+        "MSGRAPH_TENANT_ID",
+        "MSGRAPH_CLIENT_SECRET"
+      ],
+      "worker_prompt": "Use Office Graph only after the browser checkpoint clears the scope and cost estimates."
+    },
+    {
+      "id": "google_workspace",
+      "provider": "google",
+      "node_ref": "google-workspace-sync",
+      "interface": "google-workspace-sync",
+      "rollout_status": "staged",
+      "health_state": "planned",
+      "owning_agent_role": "delivery",
+      "webhook_endpoint": "/webhooks/google-workspace",
+      "scopes": [
+        "gmail.modify",
+        "drive.file",
+        "calendar.events"
+      ],
+      "env_vars": [
+        "GOOGLE_CLIENT_ID",
+        "GOOGLE_CLIENT_SECRET",
+        "GOOGLE_WORKSPACE_PROJECT"
+      ],
+      "worker_prompt": "Route Google actions through the same memory and reward topology used by the coding loop."
+    },
+    {
+      "id": "airtable_agent_base",
+      "provider": "airtable",
+      "node_ref": "airtable-agent-base",
+      "interface": "airtable-agent-base",
+      "rollout_status": "staged",
+      "health_state": "planned",
+      "owning_agent_role": "governance",
+      "webhook_endpoint": "/webhooks/airtable-agent-base",
+      "scopes": [
+        "schema.read",
+        "records.readwrite"
+      ],
+      "env_vars": [
+        "AIRTABLE_API_KEY",
+        "AIRTABLE_AGENT_BASE_ID"
+      ],
+      "worker_prompt": "Assign enterprise roles to agents and persist that mapping as a reward-aware control surface."
+    },
+    {
+      "id": "github_actions",
+      "provider": "github",
+      "node_ref": "github-actions-control",
+      "interface": "github-actions-control",
+      "rollout_status": "active",
+      "health_state": "planned",
+      "owning_agent_role": "governance",
+      "webhook_endpoint": "/webhooks/github-actions",
+      "scopes": [
+        "actions:read",
+        "pull_requests:write",
+        "contents:write"
+      ],
+      "env_vars": [
+        "GITHUB_TOKEN"
+      ],
+      "worker_prompt": "Manage PRs, CI, and release packaging through the shared role and reward policy."
+    },
+    {
+      "id": "firebase_studio",
+      "provider": "google",
+      "node_ref": "firebase-studio-sandbox",
+      "interface": "firebase-studio-sandbox",
+      "rollout_status": "staged",
+      "health_state": "planned",
+      "owning_agent_role": "architecture",
+      "webhook_endpoint": "/webhooks/firebase-studio",
+      "scopes": [
+        "firebase.projects.get",
+        "firebase.studio.generate"
+      ],
+      "env_vars": [
+        "FIREBASE_TOKEN",
+        "FIREBASE_PROJECT_ID"
+      ],
+      "worker_prompt": "Generate Firebase Studio sandbox artifacts that mirror the enterprise topology and mobile UI assumptions."
+    },
+    {
+      "id": "vertex_ai",
+      "provider": "google",
+      "node_ref": "vertex-ai-orchestrator",
+      "interface": "vertex-ai-orchestrator",
+      "rollout_status": "staged",
+      "health_state": "planned",
+      "owning_agent_role": "architecture",
+      "webhook_endpoint": "/webhooks/vertex-ai",
+      "scopes": [
+        "aiplatform.endpoints.predict",
+        "aiplatform.pipelineJobs.create"
+      ],
+      "env_vars": [
+        "VERTEX_PROJECT_ID",
+        "VERTEX_LOCATION"
+      ],
+      "worker_prompt": "Use Vertex to orchestrate artifact generation and keep reward shaping aligned with acceptance thresholds."
+    },
+    {
+      "id": "ibm_doors",
+      "provider": "ibm",
+      "node_ref": "doors-requirements",
+      "interface": "doors-requirements",
+      "rollout_status": "staged",
+      "health_state": "planned",
+      "owning_agent_role": "governance",
+      "webhook_endpoint": "/webhooks/ibm-doors",
+      "scopes": [
+        "requirements.read",
+        "traceability.write"
+      ],
+      "env_vars": [
+        "DOORS_BASE_URL",
+        "DOORS_API_TOKEN"
+      ],
+      "worker_prompt": "Normalize DOORS requirements into build-ready artifacts with traceable receipts."
+    },
+    {
+      "id": "ptc_windchill_rvs",
+      "provider": "ptc",
+      "node_ref": "windchill-rvs-delivery",
+      "interface": "windchill-rvs-delivery",
+      "rollout_status": "staged",
+      "health_state": "planned",
+      "owning_agent_role": "delivery",
+      "webhook_endpoint": "/webhooks/windchill-rvs",
+      "scopes": [
+        "items.readwrite",
+        "workflow.trigger"
+      ],
+      "env_vars": [
+        "PTC_RVS_URL",
+        "PTC_RVS_TOKEN"
+      ],
+      "worker_prompt": "Create SW delivery tickets after cost and checkpoint validation are approved by HITL."
+    },
+    {
+      "id": "chatgpt_canvas",
+      "provider": "openai",
+      "node_ref": "canvas-frontdoor",
+      "interface": "canvas-frontdoor",
+      "rollout_status": "staged",
+      "health_state": "planned",
+      "owning_agent_role": "architecture",
+      "webhook_endpoint": "/webhooks/canvas-frontdoor",
+      "scopes": [
+        "canvas.prompts.write",
+        "canvas.projects.readwrite"
+      ],
+      "env_vars": [
+        "OPENAI_API_KEY"
+      ],
+      "worker_prompt": "Emit system instructions for the mock frontend host without losing the backend role topology."
+    }
+  ]
+}

@@ -24,6 +24,12 @@ from uuid import uuid4
 
 from croniter import croniter
 
+from orchestrator.capsule_store import (
+    append_capsule_hybrid,
+    init_capsule_mirror_db,
+    recompute_lineage_digest,
+)
+
 LOGGER = logging.getLogger(__name__)
 
 
@@ -97,11 +103,22 @@ class UnityMLOpsOrchestrator:
         llm_provider: Optional[Any] = None,
         vertex_project: Optional[str] = None,
         vertex_region: Optional[str] = None,
+        mirror_db: Optional[str] = None,
+        archive_dir: Optional[str] = None,
     ) -> None:
         self.unity_executable = unity_executable
         self.llm_provider = llm_provider
         self.vertex_project = vertex_project or os.getenv("VERTEX_PROJECT")
         self.vertex_region = vertex_region or os.getenv("VERTEX_REGION", "us-central1")
+        self.mirror_db = mirror_db
+        self.archive_dir = archive_dir
+        self._db_conn = None
+        if self.mirror_db:
+            db_path = Path(self.mirror_db)
+            db_path.parent.mkdir(parents=True, exist_ok=True)
+            self._db_conn = init_capsule_mirror_db(str(db_path))
+            if self.archive_dir:
+                Path(self.archive_dir).mkdir(parents=True, exist_ok=True)
 
     async def execute_training_job(self, job: TrainingJob) -> TrainingResult:
         result = TrainingResult(job_id=job.job_id, status="running")
@@ -120,12 +137,47 @@ class UnityMLOpsOrchestrator:
                 result.vertex_model_resource = await self.register_model_in_vertex(job, result, base_dir)
 
             result.status = "completed"
+
+            if self._db_conn and self.archive_dir:
+                self._persist_as_capsule(job, result)
+
             return result
         except Exception as exc:  # noqa: BLE001
             LOGGER.exception("Training job failed: %s", job.job_id)
             result.status = "failed"
             result.error = str(exc)
             return result
+
+    def _persist_as_capsule(self, job: TrainingJob, result: TrainingResult) -> None:
+        # Create a deterministic input hash for the lineage
+        input_data = {
+            "asset_id": job.asset_spec.asset_id,
+            "rl_config": asdict(job.rl_config),
+            "project_path": job.project_path,
+        }
+        input_hash = hashlib.sha256(
+            json.dumps(input_data, sort_keys=True, separators=(",", ":")).encode("utf-8")
+        ).hexdigest()
+
+        lineage = {
+            "digest_id": "",
+            "input_hash": input_hash,
+            "rule30_seed": job.rl_config.merkle_seed,
+            "env_version": "unity-mlops-v1",
+        }
+        lineage["digest_id"] = recompute_lineage_digest(lineage)
+
+        capsule = {
+            "state_id": job.job_id,
+            "agent_reasoning": f"Unity MLOps training completion for {job.asset_spec.name}",
+            "lineage": lineage,
+            "job": asdict(job),
+            "result": asdict(result),
+            "generated_at": datetime.now(timezone.utc).isoformat(),
+        }
+
+        append_capsule_hybrid(self._db_conn, self.archive_dir, capsule)
+        LOGGER.info("Training result persisted as capsule: %s", job.job_id)
 
     async def generate_unity_code(self, job: TrainingJob, output_dir: Path) -> str:
         script_body = self._generate_csharp(job.asset_spec)

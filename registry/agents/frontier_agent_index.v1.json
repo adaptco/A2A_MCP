@@ -1,18 +1,20 @@
 {
   "version": "v1",
-  "generated_at": "2026-03-05T13:48:18Z",
+  "generated_at": "2026-03-13T23:42:36Z",
   "sources": {
     "agent_registry": "registry/agents/agent_registry.json",
     "expert_catalog": "registry/experts/expert_catalog.v1.json",
     "rbac_models": "rbac/models.py"
   },
-  "frontier_agent_count": 4,
-  "mcp_tool_count": 10,
+  "frontier_agent_count": 5,
+  "mcp_tool_count": 12,
   "mcp_tools": [
+    "build_local_world_foundation_model",
     "embed_dispatch_batch",
     "embed_lookup",
     "embed_status",
     "embed_submit",
+    "get_coding_agent_avatar_cast",
     "get_runtime_assignment",
     "ingest_avatar_token_stream",
     "ingest_repository_data",
@@ -20,6 +22,10 @@
     "route_a2a_intent",
     "submit_runtime_assignment"
   ],
+  "workspace_preferences": {
+    "memory_anchors": [],
+    "memory_anchor_count": 0
+  },
   "agents": [
     {
       "agent_id": "agent:frontier.endpoint.gpt",
@@ -48,6 +54,13 @@
       "provider": "ollama",
       "model_family": "llama",
       "card_ref": "registry/agents/frontier_agent_cards.v1.json#agent:frontier.ollama.llama"
+    },
+    {
+      "agent_id": "agent:frontier.reviewer",
+      "role": "observer",
+      "provider": "endpoint",
+      "model_family": "gpt",
+      "card_ref": "registry/agents/frontier_agent_cards.v1.json#agent:frontier.reviewer"
     }
   ]
 }

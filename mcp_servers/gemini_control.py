@@ -75,22 +75,33 @@ def _load_snapshot(path: pathlib.Path) -> dict[str, Any]:
     return {}
 
 
+def _snapshot_items(snapshot: dict[str, Any]) -> list[dict[str, Any]]:
+    artifacts = snapshot.get("artifacts")
+    if isinstance(artifacts, list) and artifacts:
+        return [item for item in artifacts if isinstance(item, dict)]
+
+    vectors = snapshot.get("vectors")
+    if isinstance(vectors, list):
+        return [item for item in vectors if isinstance(item, dict)]
+
+    return [item for item in artifacts or [] if isinstance(item, dict)]
+
+
 # ─── MCP Resource endpoints ──────────────────────────────────────────────────
 
 @app.get("/mcp/resources", summary="List MCP artifact resources from the data lake")
 async def list_mcp_resources() -> dict:
     snap = _load_snapshot(VECTOR_LAKE_DIR / "snapshot.json")
-    items = snap.get("artifacts", snap.get("vectors", []))
+    items = _snapshot_items(snap)
     resources = []
     for a in items:
-        if isinstance(a, dict):
-            path = a.get("path", "")
-            resources.append({
-                "uri": f"mcp://a2a/{path.replace(os.sep, '/')}",
-                "name": pathlib.Path(path).name if path else "unknown",
-                "fingerprint": a.get("fingerprint"),
-                "mimeType": "text/plain",
-            })
+        path = a.get("path", "")
+        resources.append({
+            "uri": f"mcp://a2a/{path.replace(os.sep, '/')}",
+            "name": pathlib.Path(path).name if path else "unknown",
+            "fingerprint": a.get("fingerprint"),
+            "mimeType": "text/plain",
+        })
     return {
         "resources": resources,
         "count": len(resources),
@@ -102,9 +113,12 @@ async def list_mcp_resources() -> dict:
 @app.get("/mcp/resources/{resource_id:path}", summary="Get a specific MCP resource")
 async def get_mcp_resource(resource_id: str) -> dict:
     snap = _load_snapshot(VECTOR_LAKE_DIR / "snapshot.json")
-    for a in snap.get("artifacts", []):
-        if isinstance(a, dict) and resource_id in a.get("path", ""):
-            p = pathlib.Path(a["path"])
+    normalized_resource_id = resource_id.replace("\\", "/")
+    for a in _snapshot_items(snap):
+        path = a.get("path", "")
+        normalized_path = path.replace("\\", "/")
+        if normalized_resource_id == normalized_path:
+            p = pathlib.Path(path)
             content = None
             if p.exists() and p.stat().st_size < 100_000:
                 try:
@@ -176,7 +190,7 @@ async def list_ui_sites() -> dict:
 @app.get("/", summary="MCP control layer index")
 async def index() -> dict:
     snap = _load_snapshot(VECTOR_LAKE_DIR / "snapshot.json")
-    items = snap.get("artifacts", snap.get("vectors", []))
+    items = _snapshot_items(snap)
     return {
         "service": "Gemini OS MCP Control Layer",
         "version": "1.0.0",

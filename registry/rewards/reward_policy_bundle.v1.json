@@ -1,0 +1,101 @@
+{
+  "version": "v1",
+  "generated_at": "2026-03-05T22:49:54Z",
+  "profiles": [
+    {
+      "id": "delivery",
+      "purpose": "functional_throughput",
+      "dimensions": [
+        {
+          "name": "semantic",
+          "weight": 0.34
+        },
+        {
+          "name": "systems",
+          "weight": 0.36
+        },
+        {
+          "name": "domain",
+          "weight": 0.3
+        }
+      ],
+      "acceptance_threshold": 0.75
+    },
+    {
+      "id": "governance",
+      "purpose": "policy_and_release",
+      "dimensions": [
+        {
+          "name": "semantic",
+          "weight": 0.23
+        },
+        {
+          "name": "systems",
+          "weight": 0.27
+        },
+        {
+          "name": "domain",
+          "weight": 0.5
+        }
+      ],
+      "acceptance_threshold": 0.82
+    },
+    {
+      "id": "architecture",
+      "purpose": "topology_and_artifacts",
+      "dimensions": [
+        {
+          "name": "semantic",
+          "weight": 0.44
+        },
+        {
+          "name": "systems",
+          "weight": 0.29
+        },
+        {
+          "name": "domain",
+          "weight": 0.27
+        }
+      ],
+      "acceptance_threshold": 0.78
+    },
+    {
+      "id": "healing",
+      "purpose": "runtime_recovery",
+      "dimensions": [
+        {
+          "name": "semantic",
+          "weight": 0.22
+        },
+        {
+          "name": "systems",
+          "weight": 0.56
+        },
+        {
+          "name": "domain",
+          "weight": 0.22
+        }
+      ],
+      "acceptance_threshold": 0.74
+    },
+    {
+      "id": "blackmamba",
+      "purpose": "budget_and_checkpointing",
+      "dimensions": [
+        {
+          "name": "semantic",
+          "weight": 0.25
+        },
+        {
+          "name": "systems",
+          "weight": 0.5
+        },
+        {
+          "name": "domain",
+          "weight": 0.25
+        }
+      ],
+      "acceptance_threshold": 0.8
+    }
+  ]
+}

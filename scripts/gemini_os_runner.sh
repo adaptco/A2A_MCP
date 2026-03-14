@@ -51,18 +51,20 @@ run_test() {
   if ! command -v pytest &>/dev/null; then
     fail "pytest not found — run: pip install -e .[dev]"
   fi
-  pytest "${REPO_ROOT}/tests" \
+  if ! pytest "${REPO_ROOT}/tests" \
     -v \
     --tb=short \
     --junit-xml="${OUTPUT_DIR}/test-report.xml" \
     --ignore="${REPO_ROOT}/worktrees" \
     --ignore="${REPO_ROOT}/OfficeDocker" \
-    2>&1 | tee "${OUTPUT_DIR}/pytest.log" || warn "Some tests failed — check ${OUTPUT_DIR}/pytest.log"
+    2>&1 | tee "${OUTPUT_DIR}/pytest.log"; then
+    fail "Some tests failed — check ${OUTPUT_DIR}/pytest.log"
+  fi
   ok "Test phase complete"
 }
 
 # =============================================================================
-# PHASE: embed — Agent pipeline → Vector Data Lake
+# PHASE: embed - Agent pipeline -> Vector Data Lake
 # Maps the agent pipeline as the data embedding layer for the vector space.
 # Agents are Avatars in 4D space; their prompt tokens are encoded as embedding
 # vectors and stored in data/vector_lake/ as the stateful data lake.
@@ -73,7 +75,6 @@ run_embed() {
   python - <<'PYEOF'
 import sys, json, pathlib, hashlib, datetime, glob
 
-REPO_ROOT = pathlib.Path(sys.argv[0]).resolve().parents[1] if len(sys.argv) > 0 else pathlib.Path(".")
 REPO_ROOT = pathlib.Path(".")
 OUT = pathlib.Path("data/vector_lake")
 OUT.mkdir(parents=True, exist_ok=True)
@@ -81,10 +82,18 @@ OUT.mkdir(parents=True, exist_ok=True)
 # Try to use world_vectors encoder if available
 try:
     from world_vectors.encoder import encode_artifacts
-    vectors = encode_artifacts(str(REPO_ROOT / "artifacts"))
-    snap = {"timestamp": datetime.datetime.utcnow().isoformat(), "vectors": vectors}
-    print(f"[embed] Encoded {len(vectors)} artifact vectors via world_vectors.encoder")
-except Exception:
+except ImportError:
+    encode_artifacts = None
+
+if encode_artifacts is not None:
+    artifacts = encode_artifacts(str(REPO_ROOT / "artifacts"))
+    snap = {
+        "timestamp": datetime.datetime.utcnow().isoformat(),
+        "commit": "local",
+        "artifacts": artifacts,
+    }
+    print(f"[embed] Encoded {len(artifacts)} artifact vectors via world_vectors.encoder")
+else:
     # Fallback: fingerprint all source files as compact token index
     patterns = ["a2a_mcp/**/*.py", "orchestrator/**/*.py", "agents/**/*.py",
                 "schemas/**/*.py", "mcp_servers/**/*.py", "telemetry/**/*.py"]
@@ -94,7 +103,7 @@ except Exception:
             try:
                 data = pathlib.Path(f).read_bytes()
                 fp = hashlib.sha256(data).hexdigest()[:16]
-                # Encode fingerprint hex as a 16-dim float vector (each byte → [0,1])
+                # Encode fingerprint hex as a 16-dim float vector (each byte -> [0,1])
                 vec = [int(fp[i:i+2], 16) / 255.0 for i in range(0, 32, 2)]
                 artifacts.append({"path": f, "fingerprint": fp, "vector": vec})
             except Exception:
@@ -104,7 +113,7 @@ except Exception:
     print(f"[embed] Fallback: indexed {len(artifacts)} source files as token vectors")
 
 (OUT / "snapshot.json").write_text(json.dumps(snap, indent=2))
-print(f"[embed] Snapshot written → {OUT}/snapshot.json")
+print(f"[embed] Snapshot written -> {OUT}/snapshot.json")
 PYEOF
 
   ok "Embed phase complete — vectors in ${VECTOR_LAKE_DIR}"

@@ -1,8 +1,9 @@
 """Pluggable embedding encoder for world vectorization."""
 
 from dataclasses import dataclass
-from typing import List, Optional, Any
 import hashlib
+import pathlib
+from typing import Any, List, Optional
 
 
 @dataclass
@@ -64,3 +65,30 @@ class EmbeddingEncoder:
 
     def __repr__(self) -> str:
         return f"<EmbeddingEncoder dim={self.dim}>"
+
+
+def encode_artifacts(root: str) -> List[dict[str, Any]]:
+    """Encode artifact files under ``root`` into path-aware vector entries."""
+    artifact_root = pathlib.Path(root)
+    encoder = EmbeddingEncoder()
+    entries: List[dict[str, Any]] = []
+
+    if not artifact_root.exists():
+        return entries
+
+    for path in sorted(candidate for candidate in artifact_root.rglob("*") if candidate.is_file()):
+        data = path.read_bytes()
+        text = data.decode("utf-8", errors="replace")
+        embedding = encoder.encode(
+            text,
+            metadata={"path": str(path).replace("\\", "/")},
+        )
+        entries.append(
+            {
+                "path": str(path).replace("\\", "/"),
+                "fingerprint": hashlib.sha256(data).hexdigest()[:16],
+                "vector": embedding.vector,
+            }
+        )
+
+    return entries

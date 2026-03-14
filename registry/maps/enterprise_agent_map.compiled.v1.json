@@ -1,0 +1,1472 @@
+{
+  "version": "v1",
+  "generated_at": "2026-03-05T22:49:54Z",
+  "map_id": "enterprise_agent_map_v1",
+  "workspace": {
+    "root_path": "C:\\",
+    "memory_path": "C:\\AGENTS.md",
+    "skills_path": "C:\\Skills.md",
+    "working_style": "direct-rigorous-pragmatic",
+    "normalization_ref": "specs/xml_normalization_map.yaml",
+    "phase_map_ref": "agent/qube.phase_map.yaml",
+    "dmn_ref": "C:\\Users\\eqhsp\\.antigravity\\.agents\\workflows\\managing_agent_workflow.dmn.xml",
+    "preferences": [
+      {
+        "key": "execution_mode",
+        "value": "deterministic_moa_loop"
+      },
+      {
+        "key": "context_strategy",
+        "value": "chunk_relevant_context"
+      },
+      {
+        "key": "reward_system",
+        "value": "semantic_systems_domain"
+      },
+      {
+        "key": "hitl_mode",
+        "value": "browser_checkpoint_gate"
+      }
+    ]
+  },
+  "workspace_memory": {
+    "root_path": "C:\\",
+    "workspace_preferences": {
+      "working_style": {
+        "tone": "direct",
+        "execution_mode": "deterministic_moa_loop",
+        "planning_bias": "implementation_first",
+        "risk_posture": "guarded_delivery",
+        "context_strategy": "chunk_relevant_context",
+        "time_management": "checkpointed",
+        "token_management": "budgeted"
+      },
+      "topology_mode": "single_mcp_environment",
+      "runtime_priority": [
+        "planner",
+        "architect",
+        "coder",
+        "tester",
+        "reviewer"
+      ],
+      "approval_mode": "browser_hitl",
+      "reward_focus": [
+        "semantic",
+        "systems",
+        "domain"
+      ]
+    },
+    "working_style": {
+      "tone": "direct",
+      "execution_mode": "deterministic_moa_loop",
+      "planning_bias": "implementation_first",
+      "risk_posture": "guarded_delivery",
+      "context_strategy": "chunk_relevant_context",
+      "time_management": "checkpointed",
+      "token_management": "budgeted"
+    },
+    "agent_overrides": {
+      "agent:blackmamba": {
+        "enterprise_role": "timekeeper",
+        "working_style": {
+          "tone": "precise",
+          "time_management": "cost_estimation_first",
+          "token_management": "predict_then_allocate"
+        }
+      }
+    },
+    "milestones": [
+      {
+        "id": "M1",
+        "name": "Canonical model and memory refactor",
+        "duration_business_days": [
+          2,
+          3
+        ],
+        "token_budget": [
+          120000,
+          180000
+        ]
+      },
+      {
+        "id": "M2",
+        "name": "MAP XML and expanded agent-card compiler",
+        "duration_business_days": [
+          3,
+          4
+        ],
+        "token_budget": [
+          180000,
+          260000
+        ]
+      },
+      {
+        "id": "M3",
+        "name": "Extension/interface topology wiring",
+        "duration_business_days": [
+          3,
+          5
+        ],
+        "token_budget": [
+          220000,
+          320000
+        ]
+      },
+      {
+        "id": "M4",
+        "name": "BlackMamba library and economics model",
+        "duration_business_days": [
+          4,
+          5
+        ],
+        "token_budget": [
+          240000,
+          340000
+        ]
+      },
+      {
+        "id": "M5",
+        "name": "HITL browser app and sandbox validation",
+        "duration_business_days": [
+          3,
+          4
+        ],
+        "token_budget": [
+          180000,
+          260000
+        ]
+      },
+      {
+        "id": "M6",
+        "name": "PR reconciliation and release hardening",
+        "duration_business_days": [
+          4,
+          6
+        ],
+        "token_budget": [
+          260000,
+          380000
+        ]
+      },
+      {
+        "id": "M7",
+        "name": "Org .github promotion and live enterprise connectors",
+        "duration_business_days": [
+          5,
+          8
+        ],
+        "token_budget": [
+          300000,
+          500000
+        ]
+      }
+    ],
+    "token_budget": {
+      "loop_1": {
+        "tokens": [
+          940000,
+          1360000
+        ],
+        "business_days": [
+          15,
+          21
+        ]
+      },
+      "program": {
+        "tokens": [
+          1500000,
+          2240000
+        ],
+        "business_days": [
+          24,
+          35
+        ]
+      }
+    },
+    "shared_skills": [
+      "moa-cli-coding-fabric",
+      "agents-as-embodied-avatars",
+      "runtime-avatar-wasm-generator",
+      "playwright",
+      "linear",
+      "openai-docs"
+    ],
+    "integration_nodes": [
+      "office-graph",
+      "google-workspace-sync",
+      "airtable-agent-base",
+      "github-actions-control",
+      "firebase-studio-sandbox",
+      "vertex-ai-orchestrator",
+      "doors-requirements",
+      "windchill-rvs-delivery",
+      "canvas-frontdoor",
+      "antigravity-hitl"
+    ],
+    "memory_sources": [
+      {
+        "kind": "agents",
+        "path": "C:\\Users\\eqhsp\\AGENTS.md",
+        "exists": true
+      },
+      {
+        "kind": "skills",
+        "path": "C:\\Users\\eqhsp\\Skills.md",
+        "exists": true
+      }
+    ]
+  },
+  "topology_nodes": [
+    {
+      "id": "root-memory",
+      "kind": "memory",
+      "interface": "root-memory",
+      "target": "shared",
+      "approval_mode": "none",
+      "capabilities": [
+        "workspace_preferences",
+        "skill_memory"
+      ],
+      "worker_prompt": "Load the root anchor files, normalize working style, and expose only the context needed for the current execution step.",
+      "reward_channel": "semantic"
+    },
+    {
+      "id": "frontier-registry",
+      "kind": "registry",
+      "interface": "frontier-registry",
+      "target": "shared",
+      "approval_mode": "checkpointed",
+      "capabilities": [
+        "agent_cards",
+        "rbac_tool_scope",
+        "runtime_tokens"
+      ],
+      "worker_prompt": "Compile the frontier registry from the XML map, root memory, and role policy without manual rewiring.",
+      "reward_channel": "systems"
+    },
+    {
+      "id": "office-graph",
+      "kind": "integration",
+      "interface": "office-graph",
+      "target": "org-github",
+      "approval_mode": "checkpointed",
+      "capabilities": [
+        "mail",
+        "calendar",
+        "documents"
+      ],
+      "worker_prompt": "Coordinate Office tasks through the same MCP topology and preserve enterprise approval boundaries.",
+      "reward_channel": "domain"
+    },
+    {
+      "id": "google-workspace-sync",
+      "kind": "integration",
+      "interface": "google-workspace-sync",
+      "target": "org-github",
+      "approval_mode": "checkpointed",
+      "capabilities": [
+        "gmail",
+        "calendar",
+        "drive"
+      ],
+      "worker_prompt": "Sync Google Workspace actions through the shared registry and only emit replayable receipts.",
+      "reward_channel": "domain"
+    },
+    {
+      "id": "airtable-agent-base",
+      "kind": "integration",
+      "interface": "airtable-agent-base",
+      "target": "org-github",
+      "approval_mode": "checkpointed",
+      "capabilities": [
+        "role_assignment",
+        "enterprise_roster"
+      ],
+      "worker_prompt": "Map enterprise roles to agents and keep the role ownership graph aligned with the canonical XML map.",
+      "reward_channel": "domain"
+    },
+    {
+      "id": "github-actions-control",
+      "kind": "integration",
+      "interface": "github-actions-control",
+      "target": "org-github",
+      "approval_mode": "checkpointed",
+      "capabilities": [
+        "ci_cd",
+        "pull_requests"
+      ],
+      "worker_prompt": "Control CI, PR, and release actions from the same deterministic agent topology.",
+      "reward_channel": "systems"
+    },
+    {
+      "id": "firebase-studio-sandbox",
+      "kind": "integration",
+      "interface": "firebase-studio-sandbox",
+      "target": "org-github",
+      "approval_mode": "checkpointed",
+      "capabilities": [
+        "studio_bootstrap",
+        "sandbox_release"
+      ],
+      "worker_prompt": "Generate Firebase Studio artifacts from the same canonical topology used by the runtime cards and checkpoints.",
+      "reward_channel": "semantic"
+    },
+    {
+      "id": "vertex-ai-orchestrator",
+      "kind": "integration",
+      "interface": "vertex-ai-orchestrator",
+      "target": "org-github",
+      "approval_mode": "checkpointed",
+      "capabilities": [
+        "artifact_orchestration",
+        "model_planning"
+      ],
+      "worker_prompt": "Use Vertex AI as the artifact orchestrator and keep reward routing consistent with the enterprise role ledger.",
+      "reward_channel": "semantic"
+    },
+    {
+      "id": "doors-requirements",
+      "kind": "integration",
+      "interface": "doors-requirements",
+      "target": "org-github",
+      "approval_mode": "checkpointed",
+      "capabilities": [
+        "requirements_ingest",
+        "traceability"
+      ],
+      "worker_prompt": "Ingest IBM DOORS requirements and normalize them into replayable engineering tasks.",
+      "reward_channel": "domain"
+    },
+    {
+      "id": "windchill-rvs-delivery",
+      "kind": "integration",
+      "interface": "windchill-rvs-delivery",
+      "target": "org-github",
+      "approval_mode": "checkpointed",
+      "capabilities": [
+        "delivery_ticketing",
+        "production_release"
+      ],
+      "worker_prompt": "Create Windchill RV&S delivery artifacts with explicit traceability back to the XML-authored plan.",
+      "reward_channel": "domain"
+    },
+    {
+      "id": "canvas-frontdoor",
+      "kind": "integration",
+      "interface": "canvas-frontdoor",
+      "target": "org-github",
+      "approval_mode": "checkpointed",
+      "capabilities": [
+        "mock_frontend",
+        "prompt_hosting"
+      ],
+      "worker_prompt": "Emit Canvas-ready system instructions from the same source map that drives the backend workflow.",
+      "reward_channel": "semantic"
+    },
+    {
+      "id": "antigravity-hitl",
+      "kind": "sandbox",
+      "interface": "antigravity-hitl",
+      "target": "antigravity",
+      "approval_mode": "browser_hitl",
+      "capabilities": [
+        "browser_review",
+        "cost_estimation",
+        "approval_gate"
+      ],
+      "worker_prompt": "Render the runtime estimate, checkpoint list, and cost model in a browser before any high-impact execution path begins.",
+      "reward_channel": "systems"
+    }
+  ],
+  "extensions": [
+    {
+      "id": "office365",
+      "provider": "microsoft",
+      "node_ref": "office-graph",
+      "interface": "office-graph",
+      "rollout_status": "staged",
+      "health_state": "planned",
+      "owning_agent_role": "delivery",
+      "webhook_endpoint": "/webhooks/office365",
+      "scopes": [
+        "mail.readwrite",
+        "files.readwrite",
+        "calendar.readwrite"
+      ],
+      "env_vars": [
+        "MSGRAPH_CLIENT_ID",
+        "MSGRAPH_TENANT_ID",
+        "MSGRAPH_CLIENT_SECRET"
+      ],
+      "worker_prompt": "Use Office Graph only after the browser checkpoint clears the scope and cost estimates."
+    },
+    {
+      "id": "google_workspace",
+      "provider": "google",
+      "node_ref": "google-workspace-sync",
+      "interface": "google-workspace-sync",
+      "rollout_status": "staged",
+      "health_state": "planned",
+      "owning_agent_role": "delivery",
+      "webhook_endpoint": "/webhooks/google-workspace",
+      "scopes": [
+        "gmail.modify",
+        "drive.file",
+        "calendar.events"
+      ],
+      "env_vars": [
+        "GOOGLE_CLIENT_ID",
+        "GOOGLE_CLIENT_SECRET",
+        "GOOGLE_WORKSPACE_PROJECT"
+      ],
+      "worker_prompt": "Route Google actions through the same memory and reward topology used by the coding loop."
+    },
+    {
+      "id": "airtable_agent_base",
+      "provider": "airtable",
+      "node_ref": "airtable-agent-base",
+      "interface": "airtable-agent-base",
+      "rollout_status": "staged",
+      "health_state": "planned",
+      "owning_agent_role": "governance",
+      "webhook_endpoint": "/webhooks/airtable-agent-base",
+      "scopes": [
+        "schema.read",
+        "records.readwrite"
+      ],
+      "env_vars": [
+        "AIRTABLE_API_KEY",
+        "AIRTABLE_AGENT_BASE_ID"
+      ],
+      "worker_prompt": "Assign enterprise roles to agents and persist that mapping as a reward-aware control surface."
+    },
+    {
+      "id": "github_actions",
+      "provider": "github",
+      "node_ref": "github-actions-control",
+      "interface": "github-actions-control",
+      "rollout_status": "active",
+      "health_state": "planned",
+      "owning_agent_role": "governance",
+      "webhook_endpoint": "/webhooks/github-actions",
+      "scopes": [
+        "actions:read",
+        "pull_requests:write",
+        "contents:write"
+      ],
+      "env_vars": [
+        "GITHUB_TOKEN"
+      ],
+      "worker_prompt": "Manage PRs, CI, and release packaging through the shared role and reward policy."
+    },
+    {
+      "id": "firebase_studio",
+      "provider": "google",
+      "node_ref": "firebase-studio-sandbox",
+      "interface": "firebase-studio-sandbox",
+      "rollout_status": "staged",
+      "health_state": "planned",
+      "owning_agent_role": "architecture",
+      "webhook_endpoint": "/webhooks/firebase-studio",
+      "scopes": [
+        "firebase.projects.get",
+        "firebase.studio.generate"
+      ],
+      "env_vars": [
+        "FIREBASE_TOKEN",
+        "FIREBASE_PROJECT_ID"
+      ],
+      "worker_prompt": "Generate Firebase Studio sandbox artifacts that mirror the enterprise topology and mobile UI assumptions."
+    },
+    {
+      "id": "vertex_ai",
+      "provider": "google",
+      "node_ref": "vertex-ai-orchestrator",
+      "interface": "vertex-ai-orchestrator",
+      "rollout_status": "staged",
+      "health_state": "planned",
+      "owning_agent_role": "architecture",
+      "webhook_endpoint": "/webhooks/vertex-ai",
+      "scopes": [
+        "aiplatform.endpoints.predict",
+        "aiplatform.pipelineJobs.create"
+      ],
+      "env_vars": [
+        "VERTEX_PROJECT_ID",
+        "VERTEX_LOCATION"
+      ],
+      "worker_prompt": "Use Vertex to orchestrate artifact generation and keep reward shaping aligned with acceptance thresholds."
+    },
+    {
+      "id": "ibm_doors",
+      "provider": "ibm",
+      "node_ref": "doors-requirements",
+      "interface": "doors-requirements",
+      "rollout_status": "staged",
+      "health_state": "planned",
+      "owning_agent_role": "governance",
+      "webhook_endpoint": "/webhooks/ibm-doors",
+      "scopes": [
+        "requirements.read",
+        "traceability.write"
+      ],
+      "env_vars": [
+        "DOORS_BASE_URL",
+        "DOORS_API_TOKEN"
+      ],
+      "worker_prompt": "Normalize DOORS requirements into build-ready artifacts with traceable receipts."
+    },
+    {
+      "id": "ptc_windchill_rvs",
+      "provider": "ptc",
+      "node_ref": "windchill-rvs-delivery",
+      "interface": "windchill-rvs-delivery",
+      "rollout_status": "staged",
+      "health_state": "planned",
+      "owning_agent_role": "delivery",
+      "webhook_endpoint": "/webhooks/windchill-rvs",
+      "scopes": [
+        "items.readwrite",
+        "workflow.trigger"
+      ],
+      "env_vars": [
+        "PTC_RVS_URL",
+        "PTC_RVS_TOKEN"
+      ],
+      "worker_prompt": "Create SW delivery tickets after cost and checkpoint validation are approved by HITL."
+    },
+    {
+      "id": "chatgpt_canvas",
+      "provider": "openai",
+      "node_ref": "canvas-frontdoor",
+      "interface": "canvas-frontdoor",
+      "rollout_status": "staged",
+      "health_state": "planned",
+      "owning_agent_role": "architecture",
+      "webhook_endpoint": "/webhooks/canvas-frontdoor",
+      "scopes": [
+        "canvas.prompts.write",
+        "canvas.projects.readwrite"
+      ],
+      "env_vars": [
+        "OPENAI_API_KEY"
+      ],
+      "worker_prompt": "Emit system instructions for the mock frontend host without losing the backend role topology."
+    },
+    {
+      "id": "antigravity_sandbox",
+      "provider": "local",
+      "node_ref": "antigravity-hitl",
+      "interface": "antigravity-hitl",
+      "rollout_status": "active",
+      "health_state": "planned",
+      "owning_agent_role": "timekeeper",
+      "webhook_endpoint": "/webhooks/antigravity-hitl",
+      "scopes": [
+        "sandbox.launch",
+        "browser.hitl"
+      ],
+      "env_vars": [
+        "BLACKMAMBA_SERVER_HOST",
+        "BLACKMAMBA_SERVER_PORT"
+      ],
+      "worker_prompt": "Expose the HITL browser checkpoint and the deterministic estimate results to the operator before execution."
+    }
+  ],
+  "agent_cards": [
+    {
+      "agent_id": "agent:frontier.endpoint.gpt",
+      "display_name": "Endpoint GPT Operator",
+      "provider": "endpoint",
+      "model_family": "gpt",
+      "default_model": "gpt-4o-mini",
+      "enterprise_role": "delivery",
+      "reward_profile": "delivery",
+      "approval_mode": "checkpointed",
+      "role_summary": "Primary implementation engine for coding tasks, artifact assembly, and pipeline execution.",
+      "tool_scope": [
+        "all_frontier_tools",
+        "code_generation",
+        "task_planning"
+      ],
+      "topology_node_refs": [
+        "frontier-registry",
+        "github-actions-control",
+        "firebase-studio-sandbox"
+      ],
+      "worker_prompt": "Implement the scoped change set, keep artifacts deterministic, and defer risky steps until the HITL gate approves them.",
+      "reward_weights": {
+        "semantic": 0.32,
+        "systems": 0.38,
+        "domain": 0.3
+      },
+      "escalation_policy": {
+        "on_risk": "agent:frontier.anthropic.claude",
+        "on_architecture": "agent:frontier.vertex.gemini",
+        "on_recovery": "agent:frontier.ollama.llama"
+      },
+      "ownership": {
+        "enterprise_function": "engineering",
+        "owner": "delivery-core"
+      },
+      "budget_defaults": {
+        "minutes": 88,
+        "tokens": 240000,
+        "cost_usd": 28.0
+      },
+      "working_style": {
+        "tone": "direct",
+        "execution_mode": "deterministic_moa_loop",
+        "planning_bias": "implementation_first",
+        "risk_posture": "guarded_delivery",
+        "context_strategy": "chunk_relevant_context",
+        "time_management": "checkpointed",
+        "token_management": "budgeted"
+      },
+      "memory_sources": [
+        {
+          "kind": "agents",
+          "path": "C:\\Users\\eqhsp\\AGENTS.md",
+          "exists": true
+        },
+        {
+          "kind": "skills",
+          "path": "C:\\Users\\eqhsp\\Skills.md",
+          "exists": true
+        }
+      ],
+      "shared_skills": [
+        "moa-cli-coding-fabric",
+        "agents-as-embodied-avatars",
+        "runtime-avatar-wasm-generator",
+        "playwright",
+        "linear",
+        "openai-docs"
+      ],
+      "integration_scopes": [
+        "actions:read",
+        "contents:write",
+        "firebase.projects.get",
+        "firebase.studio.generate",
+        "pull_requests:write"
+      ],
+      "interface_bindings": [
+        {
+          "id": "frontier-registry",
+          "kind": "registry",
+          "interface": "frontier-registry",
+          "target": "shared",
+          "approval_mode": "checkpointed",
+          "capabilities": [
+            "agent_cards",
+            "rbac_tool_scope",
+            "runtime_tokens"
+          ],
+          "worker_prompt": "Compile the frontier registry from the XML map, root memory, and role policy without manual rewiring.",
+          "reward_channel": "systems"
+        },
+        {
+          "id": "github-actions-control",
+          "kind": "integration",
+          "interface": "github-actions-control",
+          "target": "org-github",
+          "approval_mode": "checkpointed",
+          "capabilities": [
+            "ci_cd",
+            "pull_requests"
+          ],
+          "worker_prompt": "Control CI, PR, and release actions from the same deterministic agent topology.",
+          "reward_channel": "systems"
+        },
+        {
+          "id": "firebase-studio-sandbox",
+          "kind": "integration",
+          "interface": "firebase-studio-sandbox",
+          "target": "org-github",
+          "approval_mode": "checkpointed",
+          "capabilities": [
+            "studio_bootstrap",
+            "sandbox_release"
+          ],
+          "worker_prompt": "Generate Firebase Studio artifacts from the same canonical topology used by the runtime cards and checkpoints.",
+          "reward_channel": "semantic"
+        }
+      ]
+    },
+    {
+      "agent_id": "agent:frontier.anthropic.claude",
+      "display_name": "Claude Governance Lead",
+      "provider": "anthropic",
+      "model_family": "claude",
+      "default_model": "claude-3-5-sonnet-latest",
+      "enterprise_role": "governance",
+      "reward_profile": "governance",
+      "approval_mode": "checkpointed",
+      "role_summary": "Release governance, policy adjudication, and final review authority.",
+      "tool_scope": [
+        "policy_adjudication",
+        "release_governance",
+        "review"
+      ],
+      "topology_node_refs": [
+        "frontier-registry",
+        "github-actions-control",
+        "airtable-agent-base"
+      ],
+      "worker_prompt": "Review the plan for policy compliance, release safety, and traceable acceptance before promotion.",
+      "reward_weights": {
+        "semantic": 0.22,
+        "systems": 0.28,
+        "domain": 0.5
+      },
+      "escalation_policy": {
+        "on_risk": "agent:frontier.anthropic.claude",
+        "on_architecture": "agent:frontier.vertex.gemini",
+        "on_recovery": "agent:frontier.ollama.llama"
+      },
+      "ownership": {
+        "enterprise_function": "governance",
+        "owner": "release-council"
+      },
+      "budget_defaults": {
+        "minutes": 64,
+        "tokens": 175000,
+        "cost_usd": 21.0
+      },
+      "working_style": {
+        "tone": "direct",
+        "execution_mode": "deterministic_moa_loop",
+        "planning_bias": "implementation_first",
+        "risk_posture": "guarded_delivery",
+        "context_strategy": "chunk_relevant_context",
+        "time_management": "checkpointed",
+        "token_management": "budgeted"
+      },
+      "memory_sources": [
+        {
+          "kind": "agents",
+          "path": "C:\\Users\\eqhsp\\AGENTS.md",
+          "exists": true
+        },
+        {
+          "kind": "skills",
+          "path": "C:\\Users\\eqhsp\\Skills.md",
+          "exists": true
+        }
+      ],
+      "shared_skills": [
+        "moa-cli-coding-fabric",
+        "agents-as-embodied-avatars",
+        "runtime-avatar-wasm-generator",
+        "playwright",
+        "linear",
+        "openai-docs"
+      ],
+      "integration_scopes": [
+        "actions:read",
+        "contents:write",
+        "pull_requests:write",
+        "records.readwrite",
+        "schema.read"
+      ],
+      "interface_bindings": [
+        {
+          "id": "frontier-registry",
+          "kind": "registry",
+          "interface": "frontier-registry",
+          "target": "shared",
+          "approval_mode": "checkpointed",
+          "capabilities": [
+            "agent_cards",
+            "rbac_tool_scope",
+            "runtime_tokens"
+          ],
+          "worker_prompt": "Compile the frontier registry from the XML map, root memory, and role policy without manual rewiring.",
+          "reward_channel": "systems"
+        },
+        {
+          "id": "github-actions-control",
+          "kind": "integration",
+          "interface": "github-actions-control",
+          "target": "org-github",
+          "approval_mode": "checkpointed",
+          "capabilities": [
+            "ci_cd",
+            "pull_requests"
+          ],
+          "worker_prompt": "Control CI, PR, and release actions from the same deterministic agent topology.",
+          "reward_channel": "systems"
+        },
+        {
+          "id": "airtable-agent-base",
+          "kind": "integration",
+          "interface": "airtable-agent-base",
+          "target": "org-github",
+          "approval_mode": "checkpointed",
+          "capabilities": [
+            "role_assignment",
+            "enterprise_roster"
+          ],
+          "worker_prompt": "Map enterprise roles to agents and keep the role ownership graph aligned with the canonical XML map.",
+          "reward_channel": "domain"
+        }
+      ]
+    },
+    {
+      "agent_id": "agent:frontier.vertex.gemini",
+      "display_name": "Gemini Architecture Mapper",
+      "provider": "vertex",
+      "model_family": "gemini",
+      "default_model": "gemini-1.5-pro",
+      "enterprise_role": "architecture",
+      "reward_profile": "architecture",
+      "approval_mode": "checkpointed",
+      "role_summary": "Architecture synthesis, topology wiring, and artifact planning for external orchestration systems.",
+      "tool_scope": [
+        "architecture_mapping",
+        "context_synthesis",
+        "artifact_planning"
+      ],
+      "topology_node_refs": [
+        "frontier-registry",
+        "vertex-ai-orchestrator",
+        "canvas-frontdoor"
+      ],
+      "worker_prompt": "Map the design intent into topology nodes, extension prompts, and derived artifacts without drifting from the canonical XML.",
+      "reward_weights": {
+        "semantic": 0.44,
+        "systems": 0.28,
+        "domain": 0.28
+      },
+      "escalation_policy": {
+        "on_risk": "agent:frontier.anthropic.claude",
+        "on_architecture": "agent:frontier.vertex.gemini",
+        "on_recovery": "agent:frontier.ollama.llama"
+      },
+      "ownership": {
+        "enterprise_function": "architecture",
+        "owner": "platform-design"
+      },
+      "budget_defaults": {
+        "minutes": 70,
+        "tokens": 190000,
+        "cost_usd": 24.0
+      },
+      "working_style": {
+        "tone": "direct",
+        "execution_mode": "deterministic_moa_loop",
+        "planning_bias": "implementation_first",
+        "risk_posture": "guarded_delivery",
+        "context_strategy": "chunk_relevant_context",
+        "time_management": "checkpointed",
+        "token_management": "budgeted"
+      },
+      "memory_sources": [
+        {
+          "kind": "agents",
+          "path": "C:\\Users\\eqhsp\\AGENTS.md",
+          "exists": true
+        },
+        {
+          "kind": "skills",
+          "path": "C:\\Users\\eqhsp\\Skills.md",
+          "exists": true
+        }
+      ],
+      "shared_skills": [
+        "moa-cli-coding-fabric",
+        "agents-as-embodied-avatars",
+        "runtime-avatar-wasm-generator",
+        "playwright",
+        "linear",
+        "openai-docs"
+      ],
+      "integration_scopes": [
+        "aiplatform.endpoints.predict",
+        "aiplatform.pipelineJobs.create",
+        "canvas.projects.readwrite",
+        "canvas.prompts.write"
+      ],
+      "interface_bindings": [
+        {
+          "id": "frontier-registry",
+          "kind": "registry",
+          "interface": "frontier-registry",
+          "target": "shared",
+          "approval_mode": "checkpointed",
+          "capabilities": [
+            "agent_cards",
+            "rbac_tool_scope",
+            "runtime_tokens"
+          ],
+          "worker_prompt": "Compile the frontier registry from the XML map, root memory, and role policy without manual rewiring.",
+          "reward_channel": "systems"
+        },
+        {
+          "id": "vertex-ai-orchestrator",
+          "kind": "integration",
+          "interface": "vertex-ai-orchestrator",
+          "target": "org-github",
+          "approval_mode": "checkpointed",
+          "capabilities": [
+            "artifact_orchestration",
+            "model_planning"
+          ],
+          "worker_prompt": "Use Vertex AI as the artifact orchestrator and keep reward routing consistent with the enterprise role ledger.",
+          "reward_channel": "semantic"
+        },
+        {
+          "id": "canvas-frontdoor",
+          "kind": "integration",
+          "interface": "canvas-frontdoor",
+          "target": "org-github",
+          "approval_mode": "checkpointed",
+          "capabilities": [
+            "mock_frontend",
+            "prompt_hosting"
+          ],
+          "worker_prompt": "Emit Canvas-ready system instructions from the same source map that drives the backend workflow.",
+          "reward_channel": "semantic"
+        }
+      ]
+    },
+    {
+      "agent_id": "agent:frontier.ollama.llama",
+      "display_name": "Llama Healer",
+      "provider": "ollama",
+      "model_family": "llama",
+      "default_model": "llama3.1",
+      "enterprise_role": "healing",
+      "reward_profile": "healing",
+      "approval_mode": "checkpointed",
+      "role_summary": "Regression triage, sandbox recovery, and self-healing verification.",
+      "tool_scope": [
+        "regression_triage",
+        "self_healing",
+        "verification"
+      ],
+      "topology_node_refs": [
+        "frontier-registry",
+        "antigravity-hitl",
+        "windchill-rvs-delivery"
+      ],
+      "worker_prompt": "Validate fixes, recover broken paths, and prove the result with replayable checks.",
+      "reward_weights": {
+        "semantic": 0.22,
+        "systems": 0.55,
+        "domain": 0.23
+      },
+      "escalation_policy": {
+        "on_risk": "agent:frontier.anthropic.claude",
+        "on_architecture": "agent:frontier.vertex.gemini",
+        "on_recovery": "agent:frontier.ollama.llama"
+      },
+      "ownership": {
+        "enterprise_function": "operations",
+        "owner": "runtime-healing"
+      },
+      "budget_defaults": {
+        "minutes": 54,
+        "tokens": 120000,
+        "cost_usd": 12.0
+      },
+      "working_style": {
+        "tone": "direct",
+        "execution_mode": "deterministic_moa_loop",
+        "planning_bias": "implementation_first",
+        "risk_posture": "guarded_delivery",
+        "context_strategy": "chunk_relevant_context",
+        "time_management": "checkpointed",
+        "token_management": "budgeted"
+      },
+      "memory_sources": [
+        {
+          "kind": "agents",
+          "path": "C:\\Users\\eqhsp\\AGENTS.md",
+          "exists": true
+        },
+        {
+          "kind": "skills",
+          "path": "C:\\Users\\eqhsp\\Skills.md",
+          "exists": true
+        }
+      ],
+      "shared_skills": [
+        "moa-cli-coding-fabric",
+        "agents-as-embodied-avatars",
+        "runtime-avatar-wasm-generator",
+        "playwright",
+        "linear",
+        "openai-docs"
+      ],
+      "integration_scopes": [
+        "browser.hitl",
+        "items.readwrite",
+        "sandbox.launch",
+        "workflow.trigger"
+      ],
+      "interface_bindings": [
+        {
+          "id": "frontier-registry",
+          "kind": "registry",
+          "interface": "frontier-registry",
+          "target": "shared",
+          "approval_mode": "checkpointed",
+          "capabilities": [
+            "agent_cards",
+            "rbac_tool_scope",
+            "runtime_tokens"
+          ],
+          "worker_prompt": "Compile the frontier registry from the XML map, root memory, and role policy without manual rewiring.",
+          "reward_channel": "systems"
+        },
+        {
+          "id": "antigravity-hitl",
+          "kind": "sandbox",
+          "interface": "antigravity-hitl",
+          "target": "antigravity",
+          "approval_mode": "browser_hitl",
+          "capabilities": [
+            "browser_review",
+            "cost_estimation",
+            "approval_gate"
+          ],
+          "worker_prompt": "Render the runtime estimate, checkpoint list, and cost model in a browser before any high-impact execution path begins.",
+          "reward_channel": "systems"
+        },
+        {
+          "id": "windchill-rvs-delivery",
+          "kind": "integration",
+          "interface": "windchill-rvs-delivery",
+          "target": "org-github",
+          "approval_mode": "checkpointed",
+          "capabilities": [
+            "delivery_ticketing",
+            "production_release"
+          ],
+          "worker_prompt": "Create Windchill RV&S delivery artifacts with explicit traceability back to the XML-authored plan.",
+          "reward_channel": "domain"
+        }
+      ]
+    },
+    {
+      "agent_id": "agent:blackmamba",
+      "display_name": "Agent BlackMamba",
+      "provider": "local",
+      "model_family": "python",
+      "default_model": "signal-economics-v1",
+      "enterprise_role": "timekeeper",
+      "reward_profile": "blackmamba",
+      "approval_mode": "browser_hitl",
+      "role_summary": "Task-time governance, token allocation, cost estimation, and checkpoint planning across the deterministic MoA loop.",
+      "tool_scope": [
+        "time_budgeting",
+        "token_allocation",
+        "cost_estimation",
+        "checkpoint_planning"
+      ],
+      "topology_node_refs": [
+        "root-memory",
+        "frontier-registry",
+        "antigravity-hitl"
+      ],
+      "worker_prompt": "Estimate cost and time first, stage approval checkpoints, and expose the plan to the operator in the browser.",
+      "reward_weights": {
+        "semantic": 0.25,
+        "systems": 0.5,
+        "domain": 0.25
+      },
+      "escalation_policy": {
+        "on_risk": "agent:frontier.anthropic.claude",
+        "on_architecture": "agent:frontier.vertex.gemini",
+        "on_recovery": "agent:frontier.ollama.llama"
+      },
+      "ownership": {
+        "enterprise_function": "program-management",
+        "owner": "blackmamba-control"
+      },
+      "budget_defaults": {
+        "minutes": 44,
+        "tokens": 96000,
+        "cost_usd": 10.5
+      },
+      "working_style": {
+        "tone": "precise",
+        "execution_mode": "deterministic_moa_loop",
+        "planning_bias": "implementation_first",
+        "risk_posture": "guarded_delivery",
+        "context_strategy": "chunk_relevant_context",
+        "time_management": "cost_estimation_first",
+        "token_management": "predict_then_allocate"
+      },
+      "memory_sources": [
+        {
+          "kind": "agents",
+          "path": "C:\\Users\\eqhsp\\AGENTS.md",
+          "exists": true
+        },
+        {
+          "kind": "skills",
+          "path": "C:\\Users\\eqhsp\\Skills.md",
+          "exists": true
+        }
+      ],
+      "shared_skills": [
+        "moa-cli-coding-fabric",
+        "agents-as-embodied-avatars",
+        "runtime-avatar-wasm-generator",
+        "playwright",
+        "linear",
+        "openai-docs"
+      ],
+      "integration_scopes": [
+        "browser.hitl",
+        "sandbox.launch"
+      ],
+      "interface_bindings": [
+        {
+          "id": "root-memory",
+          "kind": "memory",
+          "interface": "root-memory",
+          "target": "shared",
+          "approval_mode": "none",
+          "capabilities": [
+            "workspace_preferences",
+            "skill_memory"
+          ],
+          "worker_prompt": "Load the root anchor files, normalize working style, and expose only the context needed for the current execution step.",
+          "reward_channel": "semantic"
+        },
+        {
+          "id": "frontier-registry",
+          "kind": "registry",
+          "interface": "frontier-registry",
+          "target": "shared",
+          "approval_mode": "checkpointed",
+          "capabilities": [
+            "agent_cards",
+            "rbac_tool_scope",
+            "runtime_tokens"
+          ],
+          "worker_prompt": "Compile the frontier registry from the XML map, root memory, and role policy without manual rewiring.",
+          "reward_channel": "systems"
+        },
+        {
+          "id": "antigravity-hitl",
+          "kind": "sandbox",
+          "interface": "antigravity-hitl",
+          "target": "antigravity",
+          "approval_mode": "browser_hitl",
+          "capabilities": [
+            "browser_review",
+            "cost_estimation",
+            "approval_gate"
+          ],
+          "worker_prompt": "Render the runtime estimate, checkpoint list, and cost model in a browser before any high-impact execution path begins.",
+          "reward_channel": "systems"
+        }
+      ]
+    }
+  ],
+  "reward_profiles": [
+    {
+      "id": "delivery",
+      "purpose": "functional_throughput",
+      "dimensions": [
+        {
+          "name": "semantic",
+          "weight": 0.34
+        },
+        {
+          "name": "systems",
+          "weight": 0.36
+        },
+        {
+          "name": "domain",
+          "weight": 0.3
+        }
+      ],
+      "acceptance_threshold": 0.75
+    },
+    {
+      "id": "governance",
+      "purpose": "policy_and_release",
+      "dimensions": [
+        {
+          "name": "semantic",
+          "weight": 0.23
+        },
+        {
+          "name": "systems",
+          "weight": 0.27
+        },
+        {
+          "name": "domain",
+          "weight": 0.5
+        }
+      ],
+      "acceptance_threshold": 0.82
+    },
+    {
+      "id": "architecture",
+      "purpose": "topology_and_artifacts",
+      "dimensions": [
+        {
+          "name": "semantic",
+          "weight": 0.44
+        },
+        {
+          "name": "systems",
+          "weight": 0.29
+        },
+        {
+          "name": "domain",
+          "weight": 0.27
+        }
+      ],
+      "acceptance_threshold": 0.78
+    },
+    {
+      "id": "healing",
+      "purpose": "runtime_recovery",
+      "dimensions": [
+        {
+          "name": "semantic",
+          "weight": 0.22
+        },
+        {
+          "name": "systems",
+          "weight": 0.56
+        },
+        {
+          "name": "domain",
+          "weight": 0.22
+        }
+      ],
+      "acceptance_threshold": 0.74
+    },
+    {
+      "id": "blackmamba",
+      "purpose": "budget_and_checkpointing",
+      "dimensions": [
+        {
+          "name": "semantic",
+          "weight": 0.25
+        },
+        {
+          "name": "systems",
+          "weight": 0.5
+        },
+        {
+          "name": "domain",
+          "weight": 0.25
+        }
+      ],
+      "acceptance_threshold": 0.8
+    }
+  ],
+  "orchestration_routes": [
+    {
+      "id": "route-root-memory",
+      "from": "root-memory",
+      "to": "frontier-registry",
+      "condition": "task_received",
+      "description": "Root memory is always loaded before card compilation or task execution."
+    },
+    {
+      "id": "route-planning",
+      "from": "frontier-registry",
+      "to": "vertex-ai-orchestrator",
+      "condition": "architecture_heavy || external_artifact_required",
+      "description": "Architecture-heavy work is routed through the orchestration plane for artifact planning."
+    },
+    {
+      "id": "route-delivery",
+      "from": "frontier-registry",
+      "to": "github-actions-control",
+      "condition": "implementation_ready",
+      "description": "Implementation and release tasks route into CI/CD control after card resolution."
+    },
+    {
+      "id": "route-approval",
+      "from": "frontier-registry",
+      "to": "antigravity-hitl",
+      "condition": "human_review_required",
+      "description": "All risky or costly transitions route through the browser checkpoint before execution."
+    }
+  ],
+  "pinn_constraints": [
+    {
+      "id": "xml-normalization",
+      "type": "invariant",
+      "expression": "xml_normalization_pass == true",
+      "description": "All XML inputs must normalize cleanly through the canonical contract."
+    },
+    {
+      "id": "phase-map-alignment",
+      "type": "state_guard",
+      "expression": "qube_phase_transition_valid == true",
+      "description": "The action loop must preserve the existing QUBE state transitions and receipt chain."
+    },
+    {
+      "id": "hitl-receipt",
+      "type": "approval_guard",
+      "expression": "browser_checkpoint_receipt_present == true",
+      "description": "No high-impact execution path may proceed without a recorded approval checkpoint."
+    }
+  ],
+  "embeddings": [
+    {
+      "id": "enterprise-process-models",
+      "strategy": "reward_weighted_mean",
+      "tokenization": "4d-token-hint",
+      "hints": [
+        {
+          "key": "compression_goal",
+          "value": "compact_instruction_packets"
+        },
+        {
+          "key": "semantic_focus",
+          "value": "enterprise_process_models"
+        },
+        {
+          "key": "routing_shape",
+          "value": "upper_hyperbolic_loop"
+        },
+        {
+          "key": "verification_shape",
+          "value": "lower_pinn_plane"
+        }
+      ]
+    }
+  ],
+  "hitl_checkpoints": [
+    {
+      "id": "scope-review",
+      "stage": "pre-plan",
+      "required": true,
+      "viewer": "browser",
+      "description": "Review the implementation scope before allocating the loop budget."
+    },
+    {
+      "id": "cost-review",
+      "stage": "pre-execute",
+      "required": true,
+      "viewer": "browser",
+      "description": "Approve the predicted time, token budget, and cost estimate before execution."
+    },
+    {
+      "id": "release-review",
+      "stage": "pre-release",
+      "required": true,
+      "viewer": "browser",
+      "description": "Approve risky or release-bound changes before promotion to CI/CD or production packaging."
+    }
+  ],
+  "economics": {
+    "id": "signal-derived-economics",
+    "currency": "USD",
+    "base_tokens": 48000,
+    "base_minutes": 42.0,
+    "base_token_rate": 3.5e-05,
+    "base_minute_rate": 0.42,
+    "approval_penalty_minutes": 3.0,
+    "risk_multiplier": 0.65,
+    "interface_multiplier": 0.12,
+    "dependency_multiplier": 0.07,
+    "checkpoint_penalty_tokens": 1200
+  },
+  "milestones": [
+    {
+      "id": "M1",
+      "name": "Canonical model and memory refactor",
+      "duration_business_days": [
+        2,
+        3
+      ],
+      "token_budget": [
+        120000,
+        180000
+      ],
+      "output": "Root memory files, preference loader, XML schema draft, and cleanup inventory."
+    },
+    {
+      "id": "M2",
+      "name": "MAP XML and expanded agent-card compiler",
+      "duration_business_days": [
+        3,
+        4
+      ],
+      "token_budget": [
+        180000,
+        260000
+      ],
+      "output": "Canonical XML map, parser, compiler, and derived agent/integration artifacts."
+    },
+    {
+      "id": "M3",
+      "name": "Extension and topology wiring",
+      "duration_business_days": [
+        3,
+        5
+      ],
+      "token_budget": [
+        220000,
+        320000
+      ],
+      "output": "Interface-node registry, embedded worker prompts, and topology bindings."
+    },
+    {
+      "id": "M4",
+      "name": "BlackMamba library and economics model",
+      "duration_business_days": [
+        4,
+        5
+      ],
+      "token_budget": [
+        240000,
+        340000
+      ],
+      "output": "Python library, token and time estimator, cost model, and planner fixtures."
+    },
+    {
+      "id": "M5",
+      "name": "HITL browser app and sandbox validation",
+      "duration_business_days": [
+        3,
+        4
+      ],
+      "token_budget": [
+        180000,
+        260000
+      ],
+      "output": "Local browser app, approval flow, browser checks, and checkpoint artifact pack."
+    },
+    {
+      "id": "M6",
+      "name": "PR reconciliation and release hardening",
+      "duration_business_days": [
+        4,
+        6
+      ],
+      "token_budget": [
+        260000,
+        380000
+      ],
+      "output": "Clean branches, reconciled PRs, green CI targets, and release manifest."
+    },
+    {
+      "id": "M7",
+      "name": "Org .github promotion and live enterprise connectors",
+      "duration_business_days": [
+        5,
+        8
+      ],
+      "token_budget": [
+        300000,
+        500000
+      ],
+      "output": "Reusable workflows, shared catalogs, staged live connectors, and rollout docs."
+    }
+  ]
+}

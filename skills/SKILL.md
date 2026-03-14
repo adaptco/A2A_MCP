@@ -5,16 +5,17 @@ description: Consolidated skill registry generated for agent automation and CI u
 
 # Skills Catalog
 
-_Generated: 2026-03-05T19:09:10Z (UTC)_
+_Generated: 2026-03-13T19:39:08Z (UTC)_
 
-- Total skills discovered: **49**
-- Workflow definitions discovered: **55**
+- Total skills discovered: **54**
+- Workflow definitions discovered: **59**
 
 ## Skills
 
 | Name | Source Root | Path | Description |
 |---|---|---|---|
 | `appinsights-instrumentation` | `skills` | `skills/appinsights-instrumentation/SKILL.md` | >- |
+| `avatar-mcp-root-context` | `skills` | `skills/avatar-mcp-root-context/SKILL.md` | Build zero-shot root-repo launch context for Codex avatar flows in the A2A_MCP repository by combining AGENTS.md, avatar bindings, frontier agent cards, and MCP tool surfaces into a compact packet. Use when API-triggered avatar tokens must launch from the MCP node, when a chat model needs root GitHub codebase context before tool use, or when preparing payloads for ingest_repository_data, ingest_avatar_token_stream, build_local_world_foundation_model, get_coding_agent_avatar_cast, or route_a2a_intent. |
 | `azure-ai` | `skills` | `skills/azure-ai/SKILL.md` | Use for Azure AI: Search, Speech, OpenAI, Document Intelligence. Helps with search, vector/hybrid search, speech-to-text, text-to-speech, transcription, OCR. USE FOR: AI Search, query search, vector search, hybrid search, semantic search, speech-to-text, text-to-speech, transcribe, OCR, convert text to speech. DO NOT USE FOR: Function apps/Functions (use azure-functions), databases (azure-postgres/azure-kusto), general Azure resources. |
 | `azure-aigateway` | `skills` | `skills/azure-aigateway/SKILL.md` | >- |
 | `azure-compliance` | `skills` | `skills/azure-compliance/SKILL.md` | >- |
@@ -33,12 +34,14 @@ _Generated: 2026-03-05T19:09:10Z (UTC)_
 | `azure-storage` | `skills` | `skills/azure-storage/SKILL.md` | >- |
 | `azure-validate` | `skills` | `skills/azure-validate/SKILL.md` | >- |
 | `entra-app-registration` | `skills` | `skills/entra-app-registration/SKILL.md` | >- |
+| `mcp-entropy-template-router` | `skills` | `skills/mcp-entropy-template-router/SKILL.md` | Generate deterministic MCP routing controls that combine API skill tokens, enthalpy/entropy style temperature tuning, and uniform dotproduct template selection for frontend/backend/fullstack actions. Use when orchestrator payloads need stable template-triggered implementation actions and avatar runtime token bindings. |
 | `capacity` | `skills` | `skills/microsoft-foundry/models/deploy-model/capacity/SKILL.md` | >- |
 | `customize` | `skills` | `skills/microsoft-foundry/models/deploy-model/customize/SKILL.md` | >- |
 | `preset` | `skills` | `skills/microsoft-foundry/models/deploy-model/preset/SKILL.md` | >- |
 | `deploy-model` | `skills` | `skills/microsoft-foundry/models/deploy-model/SKILL.md` | >- |
 | `microsoft-foundry` | `skills` | `skills/microsoft-foundry/SKILL.md` | >- |
 | `optimize-complexity` | `skills` | `skills/optimize-complexity/SKILL.md` | Optimize tool complexity distribution from orchestration checkpoint CSV files using deterministic embedding similarity and complexity relabeling. Use when you need to analyze token bottlenecks, rebalance tool complexity, generate optimization reports, or prepare CI-ready complexity artifacts from a single checkpoint CSV. |
+| `skills-catalog` | `skills` | `skills/SKILL.md` | Consolidated skill registry generated for agent automation and CI upskill loops. |
 | `appinsights-instrumentation` | `a2a_mcp/skills` | `a2a_mcp/skills/appinsights-instrumentation/SKILL.md` | >- |
 | `azure-ai` | `a2a_mcp/skills` | `a2a_mcp/skills/azure-ai/SKILL.md` | Use for Azure AI: Search, Speech, OpenAI, Document Intelligence. Helps with search, vector/hybrid search, speech-to-text, text-to-speech, transcription, OCR. USE FOR: AI Search, query search, vector search, hybrid search, semantic search, speech-to-text, text-to-speech, transcribe, OCR, convert text to speech. DO NOT USE FOR: Function apps/Functions (use azure-functions), databases (azure-postgres/azure-kusto), general Azure resources. |
 | `azure-aigateway` | `a2a_mcp/skills` | `a2a_mcp/skills/azure-aigateway/SKILL.md` | >- |
@@ -58,17 +61,20 @@ _Generated: 2026-03-05T19:09:10Z (UTC)_
 | `azure-storage` | `a2a_mcp/skills` | `a2a_mcp/skills/azure-storage/SKILL.md` | >- |
 | `azure-validate` | `a2a_mcp/skills` | `a2a_mcp/skills/azure-validate/SKILL.md` | >- |
 | `entra-app-registration` | `a2a_mcp/skills` | `a2a_mcp/skills/entra-app-registration/SKILL.md` | >- |
+| `mcp-entropy-template-router` | `a2a_mcp/skills` | `a2a_mcp/skills/mcp-entropy-template-router/SKILL.md` | Generate deterministic MCP routing controls that combine API skill tokens, enthalpy/entropy style temperature tuning, and uniform dotproduct template selection for frontend/backend/fullstack actions. Use when orchestrator payloads need stable template-triggered implementation actions and avatar runtime token bindings. |
 | `capacity` | `a2a_mcp/skills` | `a2a_mcp/skills/microsoft-foundry/models/deploy-model/capacity/SKILL.md` | >- |
 | `customize` | `a2a_mcp/skills` | `a2a_mcp/skills/microsoft-foundry/models/deploy-model/customize/SKILL.md` | >- |
 | `preset` | `a2a_mcp/skills` | `a2a_mcp/skills/microsoft-foundry/models/deploy-model/preset/SKILL.md` | >- |
 | `deploy-model` | `a2a_mcp/skills` | `a2a_mcp/skills/microsoft-foundry/models/deploy-model/SKILL.md` | >- |
 | `microsoft-foundry` | `a2a_mcp/skills` | `a2a_mcp/skills/microsoft-foundry/SKILL.md` | >- |
+| `optimize-complexity` | `a2a_mcp/skills` | `a2a_mcp/skills/optimize-complexity/SKILL.md` | Optimize tool complexity distribution from orchestration checkpoint CSV files using deterministic embedding similarity and complexity relabeling. Use when you need to analyze token bottlenecks, rebalance tool complexity, generate optimization reports, or prepare CI-ready complexity artifacts from a single checkpoint CSV. |
 
 ## Workflow Surface
 
 - `.github/workflows/agents-ci-cd.yml`
 - `.github/workflows/agents-unit-tests.yml`
 - `.github/workflows/art.i.fact.yml`
+- `.github/workflows/automerge-threads.yml`
 - `.github/workflows/avatar-bindings-ci.yml`
 - `.github/workflows/avatar-bindings-governance.yml`
 - `.github/workflows/avatar-engine.yml`
@@ -89,6 +95,7 @@ _Generated: 2026-03-05T19:09:10Z (UTC)_
 - `.github/workflows/fonts-proxy-ci-cd.yml`
 - `.github/workflows/freeze_artifact.yml`
 - `.github/workflows/game-validation.yml`
+- `.github/workflows/gemini-os-pipeline.yml`
 - `.github/workflows/governance_check.yml`
 - `.github/workflows/integration_test.yml`
 - `.github/workflows/invariant-check.yml`
@@ -98,6 +105,7 @@ _Generated: 2026-03-05T19:09:10Z (UTC)_
 - `.github/workflows/lint-diff-build-test.yml`
 - `.github/workflows/main.yml`
 - `.github/workflows/manual-ci.yml`
+- `.github/workflows/mcp-server-client-api-validation.yml`
 - `.github/workflows/milestone_autopublish.yml`
 - `.github/workflows/ml_pipeline.yml`
 - `.github/workflows/multimodal-rag-cicd.yml`
@@ -105,6 +113,7 @@ _Generated: 2026-03-05T19:09:10Z (UTC)_
 - `.github/workflows/override_request.yml`
 - `.github/workflows/pr_commit_validation.yml`
 - `.github/workflows/prime_pipeline_ci.yml`
+- `.github/workflows/production-ci.yml`
 - `.github/workflows/push_knowledge.yml`
 - `.github/workflows/pylint.yml`
 - `.github/workflows/python-app.yml`

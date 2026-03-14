@@ -10,12 +10,9 @@
     "build": "turbo run build",
     "chain:up": "anvil --host 0.0.0.0 --port 8545",
     "contracts:deploy": "pnpm --filter contracts deploy",
-    "prepare": "husky install"
+    "prepare": "husky install || true"
   },
   "devDependencies": {
     "turbo": "^2.2.3"
-  },
-  "dependencies": {
-    "express-rate-limit": "^8.2.1"
-}
+  }
 }

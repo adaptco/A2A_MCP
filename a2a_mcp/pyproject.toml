@@ -13,11 +13,12 @@ dependencies = [
     "pydantic",
     "pydantic-settings",
     "PyJWT",
+    "PyYAML",
     "python-dotenv",
     "fastapi",
     "uvicorn",
     "httpx",
-    "requests",
+    "requests>=2.31.0",
     "jsonschema",
     "mcp[cli]",
     "numpy>=1.24",
@@ -28,6 +29,7 @@ dependencies = [
 dev = [
     "pytest",
     "pytest-asyncio",
+    "pytest-cov",
 ]
 integrations = [
     "aiohttp",
@@ -45,15 +47,51 @@ asyncio_mode = "auto"
 pythonpath = ["src", ".", "ghost-void"]
 addopts = "-q --doctest-modules --ignore=tests/test_a2a_mcp.py --ignore=tests/test_canonical_json.py --ignore=tests/test_drift_gate.py --ignore=pipeline/replay_test.py"
 
+[tool.setuptools]
+include-package-data = true
+
 [tool.setuptools.packages.find]
-where = [".", "src"]
+where = ["."]
+include = [
+    "a2a_mcp*",
+    "app*",
+    "orchestrator*",
+    "rbac*",
+    "schemas*",
+    "agents*",
+    "mcp_adk*",
+    "core_orchestrator*",
+    "drift_suite*",
+    "integrations*",
+    "prime_directive*",
+]
 exclude = [
     "tests*",
     "docs*",
     "deploy*",
+    "ghost-void*",
+    "qube*",
+    "qube-forensic-console*",
     "qube_forensics*",
     "qube_moemodel_v1*",
     "qube_forensic_console*",
+    "packages*",
+    "skills*",
+    "ui*",
+    "web-pet-kernel*",
+    "public*",
+    "apps*",
+    "tools*",
+]
+
+[tool.setuptools.package-data]
+mcp_adk = [
+    "contracts/*.json",
+    "contracts/*.md",
+    "artifact_schemas/*.json",
+    "templates/python_agent/*",
+    "templates/python_agent/handlers/*.py",
+    "templates/ts_agent/*",
 ]
 
 [project.scripts]

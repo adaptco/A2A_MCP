@@ -6,6 +6,7 @@ __pycache__/
 # Environments
 .env
 .env.*
+!.env.automation.example
 .venv
 env/
 venv/
@@ -18,6 +19,9 @@ build/
 out/
 tmp/
 temp/
+node_modules/
+frontend/node_modules/
+chatgpt-app/node_modules/
 
 # IDEs
 .vscode/
@@ -43,6 +47,8 @@ logs/
 coverage/
 .nyc_output/
 runtime/rbac/*.local.json
+data/events/
+data/vector_lake/snapshot.json
 
 # Agent temp files
 tmpclaude-*
@@ -81,3 +87,8 @@ runtime/cie_v1_smoke.log.jsonl
 
 # OfficeDocker MCP node_modules (broken pnpm symlinks on Windows)
 OfficeDocker/**/node_modules/
+
+# Local nested repos / worktrees
+worktrees/
+OfficeDocker/gemini-95/Telegram Desktop/Parker_Map/
+OfficeDocker/gemini-95/Telegram Desktop/core-orchestrator/

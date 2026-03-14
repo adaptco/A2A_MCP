@@ -23,6 +23,11 @@ from runtime_scenario_service import RuntimeScenarioService
 app = FastAPI(title="A2A MCP Multi-Client API")
 
 
+@app.get("/healthz")
+async def healthz() -> dict[str, str]:
+    return {"status": "ok"}
+
+
 class StreamRequest(BaseModel):
     tokens: list[float] = Field(default_factory=list)
     runtime_hints: dict[str, Any] = Field(default_factory=dict)

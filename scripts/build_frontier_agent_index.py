@@ -61,6 +61,15 @@ FRONTIER_MODELS: list[dict[str, Any]] = [
         "role": "healer",
         "extra_skills": ["regression_triage", "self_healing"],
     },
+    {
+        "agent_id": "agent:frontier.reviewer",
+        "display_name": "Frontier Reviewer",
+        "provider": "endpoint",
+        "model_family": "gpt",
+        "default_model": "gpt-4o-mini",
+        "role": "observer",
+        "extra_skills": ["code_review", "security_audit"],
+    },
 ]
 
 

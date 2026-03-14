@@ -2,7 +2,7 @@
 +++ b/.github/workflows/claude_release_orchestrator.yml
 @@ -1,6 +1,8 @@
  name: Claude Release Orchestrator
-
+ 
  on:
    workflow_dispatch:
      inputs:
@@ -16,7 +16,7 @@
 +env:
 +  REGISTRY: gcr.io
 +  KOMPOSE_VERSION: 1.28.0
-
+ 
  jobs:
    wait-for-claude:
 @@ -63,6 +70,8 @@ jobs:
@@ -34,7 +34,7 @@
 @@ -72,6 +81,14 @@ jobs:
          with:
            python-version: "3.11"
-
+ 
 +      - name: Compute dependency hashes
 +        id: hashes
 +        run: |
@@ -43,19 +43,19 @@
 +
        - name: Install dependencies
          run: pip install -r requirements.txt
-
+ 
 @@ -79,7 +96,7 @@ jobs:
          id: tests
          run: |
 -          pytest -q tests/test_release_orchestrator.py tests/test_mcp_agents.py
 +          pytest -q tests/test_release_orchestrator.py tests/test_mcp_agents.py --tb=short
-
+ 
        - name: Check merge conflicts against main
          id: conflicts
 @@ -94,6 +111,127 @@ jobs:
            fi
            echo "conflicts_resolved=true" >> "$GITHUB_OUTPUT"
-
+ 
 +  generate-kompose-manifests:
 +    needs: validate-and-check-conflicts
 +    runs-on: ubuntu-latest
@@ -143,17 +143,17 @@
 +      gate_receipt_artifact: gate-receipt-${{ github.run_number }}
      steps:
        - uses: actions/checkout@v4
-
+ 
        - uses: actions/setup-python@v5
          with:
            python-version: "3.11"
-
+ 
        - name: Build release orchestration state
          run: |
            python - <<'PY'
            import json
            from orchestrator.release_orchestrator import ReleaseOrchestrator, ReleaseSignals
-
+ 
            signals = ReleaseSignals(
                claude_task_complete=True,
 -              tests_passed="${{ needs.validate-and-check-conflicts.outputs.tests_passed }}" == "true",
@@ -164,7 +164,7 @@
                claude_total_todos=int("${{ needs.wait-for-claude.outputs.total_todos }}" or "0"),
            )
            state = ReleaseOrchestrator().system_state(signals)
-+
++          
 +          # Add determinism metadata
 +          state["determinism_metadata"] = {
 +              "canonicalizer": "RFC8785",
@@ -175,13 +175,13 @@
 +              "requirements_hash": "${{ needs.validate-and-check-conflicts.outputs.requirements_hash }}",
 +              "compose_hash": "${{ needs.validate-and-check-conflicts.outputs.compose_hash }}"
 +          }
-+
++          
            with open("system_state.json", "w", encoding="utf-8") as f:
 -              json.dump(state, f, indent=2)
 +              json.dump(state, f, indent=2, sort_keys=True)
            print(json.dumps(state, indent=2))
            PY
-
+ 
 +      - name: Build deterministic Gate Receipt (RFC8785 JCS)
 +        id: receipt
 +        run: |
@@ -194,7 +194,7 @@
 +          # Load and canonicalize system state (RFC8785 JCS)
 +          with open("system_state.json", "r") as f:
 +              state = json.load(f)
-+
++          
 +          # RFC8785: sorted keys, no whitespace
 +          canonical_json = json.dumps(state, sort_keys=True, separators=(',', ':'))
 +          bundle_sha256 = hashlib.sha256(canonical_json.encode()).hexdigest()
@@ -239,7 +239,7 @@
 +
 +          with open("gate_receipt.json", "w") as f:
 +              json.dump(receipt, f, indent=2, sort_keys=True)
-+
++          
 +          print("=== Gate Receipt ===")
 +          print(json.dumps(receipt, indent=2))
 +          print(f"\n✓ Bundle SHA256: {bundle_sha256}")
@@ -268,14 +268,14 @@
 +            | Tests Passed | ${{ needs.validate-and-check-conflicts.outputs.tests_passed == 'true' && '✅' || '❌' }} |
 +            | Conflicts Resolved | ${{ needs.validate-and-check-conflicts.outputs.conflicts_resolved == 'true' && '✅' || '❌' }} |
 +            | Kompose Validated | ✅ |
-+
-+            **System State Artifact**: \`system-state-${{ github.run_number }}\`
-+            **Gate Receipt**: \`gate-receipt-${{ github.run_number }}\`
++            
++            **System State Artifact**: \`system-state-${{ github.run_number }}\`  
++            **Gate Receipt**: \`gate-receipt-${{ github.run_number }}\`  
 +            **K8s Manifests**: \`k8s-manifests-${{ github.run_number }}\`
 +
 +            Seal phrase: \`Canonical truth, attested and replayable.\`
              `;
-
+ 
              const comments = await github.paginate(github.rest.issues.listComments, {
                owner: context.repo.owner,
                repo: context.repo.repo,

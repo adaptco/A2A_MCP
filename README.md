@@ -21,6 +21,8 @@ Compatibility entrypoints are still present for legacy integrations:
 - `mcp_server.py` (stdio MCP compatibility server)
 
 See `docs/architecture/canonical_control_plane.md` for the source-of-truth architecture map.
+See `docs/architecture/mcp_extension_route_map.mmd` for the companion Mermaid route diagram.
+See `docs/architecture/mcp_extension_route_map.md` for the end-to-end route and extension seam map.
 
 ## Overview
 
@@ -126,6 +128,22 @@ uvicorn rbac.rbac_service:app --reload --port 8001
 ```bash
 pytest tests/ -v
 ```
+
+### Automation Environment
+
+For browser or desktop automations, use the dedicated simulator/runtime stack:
+
+```powershell
+Copy-Item .env.automation.example .env.automation
+.\scripts\automation_runtime.ps1 -Action up -Build
+```
+
+This starts:
+
+- Runtime API: `http://localhost:8010/healthz`
+- Simulator frontend: `http://localhost:4173`
+
+The automation stack uses `app.multi_client_api:app`, so the simulator can register a client, build runtime scenarios, request RAG context, export LoRA datasets, and verify lineage without the full unified stack.
 
 ## 🔐 Security & Integrity
 

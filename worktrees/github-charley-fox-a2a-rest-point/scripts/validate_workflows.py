@@ -12,7 +12,7 @@ import yaml
 
 def validate_workflow(path: Path, repo_root: Path) -> list[str]:
     issues: list[str] = []
-    data = yaml.load(path.read_text(encoding="utf-8"), Loader=yaml.BaseLoader)
+    data = yaml.safe_load(path.read_text(encoding="utf-8"))
     if not isinstance(data, dict):
         return [f"{path}: workflow must be a YAML object"]
 

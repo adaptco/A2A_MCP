@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 import uuid
+import jsonschema
 from typing import Any, Dict, List
-from fastapi import APIRouter, Depends, HTTPException, Body
+from fastapi import APIRouter, Depends, HTTPException, Body, status
 from schemas.action_model import ActionActionModel
 from orchestrator.auth import authenticate_user
 
@@ -37,10 +38,23 @@ async def execute_action(
         raise HTTPException(status_code=404, detail=f"Action {action_id} not found in catalog")
 
     # 1. Schema Gate (Input Validation)
-    # TODO: Implement jsonschema validation against action.input_schema
+    try:
+        jsonschema.validate(instance=inputs, schema=action.input_schema)
+    except jsonschema.ValidationError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Input validation failed: {exc.message}"
+        ) from exc
 
     # 2. Auth/Policy Gate
-    # TODO: Enforce RBAC scopes from action.auth.required_scopes
+    user_scopes = set(auth.get("scopes", []))
+    required_scopes = set(action.auth.required_scopes)
+    if not required_scopes.issubset(user_scopes):
+        missing = required_scopes - user_scopes
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"Missing required RBAC scopes: {', '.join(sorted(missing))}"
+        )
 
     request_id = str(uuid.uuid4())
     

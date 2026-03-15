@@ -27,11 +27,7 @@ def test_artifact_persistence_lifecycle():
     retrieved = db.get_artifact(test_id)
     
     assert retrieved is not None
-<<<<<<< HEAD
-    assert retrieved.agent_name == "TestAgent"
-=======
     assert retrieved.agent_name == "UnknownAgent"
->>>>>>> origin/main
     content = json.loads(retrieved.content) if isinstance(retrieved.content, str) else retrieved.content
     assert content["status"] == "verified"
     print(f"✓ Persistence Lifecycle Verified for ID: {test_id}")
